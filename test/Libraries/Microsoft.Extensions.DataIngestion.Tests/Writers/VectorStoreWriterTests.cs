@@ -72,7 +72,7 @@ public abstract class VectorStoreWriterTests
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
 
         var collection = vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
-            "chunks", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks", TestEmbeddingGenerator<string>.DimensionCount, "embedding");
 
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
 
@@ -133,7 +133,7 @@ public abstract class VectorStoreWriterTests
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
 
         var collection = vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
-            "chunks-incr", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-incr", TestEmbeddingGenerator<string>.DimensionCount, "embedding");
 
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(
             collection,
@@ -203,7 +203,7 @@ public abstract class VectorStoreWriterTests
         }
 
         var collection = vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
-            "chunks-batch", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-batch", TestEmbeddingGenerator<string>.DimensionCount, "embedding");
 
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(
             collection,
@@ -234,7 +234,7 @@ public abstract class VectorStoreWriterTests
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
 
         var collection = vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
-            "chunks-many", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-many", TestEmbeddingGenerator<string>.DimensionCount, "embedding");
 
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(
             collection,

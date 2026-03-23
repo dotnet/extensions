@@ -87,7 +87,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         var collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
-            "chunks", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks", TestEmbeddingGenerator<string>.DimensionCount, "embedding");
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
 
         using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
@@ -123,7 +123,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         var collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
-            "chunks-dir", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-dir", TestEmbeddingGenerator<string>.DimensionCount, "embedding");
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
 
         using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
@@ -160,7 +160,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         var collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<DataContent>, DataContent>(
-            "chunks-img", TestEmbeddingGenerator<DataContent>.DimensionCount);
+            "chunks-img", TestEmbeddingGenerator<DataContent>.DimensionCount, "embedding");
         using VectorStoreWriter<DataContent, IngestionChunkVectorRecord<DataContent>> vectorStoreWriter = new(collection);
         using IngestionPipeline<DataContent> pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
 
@@ -212,7 +212,7 @@ public sealed class IngestionPipelineTests : IDisposable
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         var collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
-            "chunks-fail", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-fail", TestEmbeddingGenerator<string>.DimensionCount, "embedding");
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
 
         using IngestionPipeline<string> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);

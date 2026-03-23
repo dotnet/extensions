@@ -65,8 +65,14 @@ public class MetadataWriter : VectorStoreWriter<string, ChunkWithMetadata>
 
     protected override void SetMetadata(ChunkWithMetadata record, string key, object? value)
     {
-        if (key == nameof(ChunkWithMetadata.Classification))
-            record.Classification = value as string;
+        switch (key)
+        {
+            case nameof(ChunkWithMetadata.Classification):
+                record.Classification = value as string;
+                break;
+            default:
+                throw new UnreachableException($"Unknown metadata key: {key}");
+        }
     }
 }
 ```
