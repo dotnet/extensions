@@ -22,6 +22,7 @@ using OpenAI.Files;
 using OpenAI.Images;
 using OpenAI.Responses;
 
+#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
@@ -166,6 +167,14 @@ public static class OpenAIClientExtensions
     [Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
+
+    /// <summary>Gets an <see cref="ITextToSpeechClient"/> for use with this <see cref="AudioClient"/>.</summary>
+    /// <param name="audioClient">The client.</param>
+    /// <returns>An <see cref="ITextToSpeechClient"/> that can be used to generate speech via the <see cref="AudioClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="audioClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AITextToSpeech, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static ITextToSpeechClient AsITextToSpeechClient(this AudioClient audioClient) =>
+        new OpenAITextToSpeechClient(audioClient);
 
     /// <summary>Gets an <see cref="IImageGenerator"/> for use with this <see cref="ImageClient"/>.</summary>
     /// <param name="imageClient">The client.</param>

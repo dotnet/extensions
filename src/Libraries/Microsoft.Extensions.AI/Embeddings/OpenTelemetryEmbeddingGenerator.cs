@@ -38,18 +38,20 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     private readonly string? _endpointAddress;
     private readonly int _endpointPort;
 
+    private readonly ILogger? _logger;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenTelemetryEmbeddingGenerator{TInput, TEmbedding}"/> class.
     /// </summary>
     /// <param name="innerGenerator">The underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>, which is the next stage of the pipeline.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the generator.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-#pragma warning disable IDE0060 // Remove unused parameter; it exists for future use and consistency with OpenTelemetryChatClient
     public OpenTelemetryEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, ILogger? logger = null, string? sourceName = null)
-#pragma warning restore IDE0060
         : base(innerGenerator)
     {
         Debug.Assert(innerGenerator is not null, "Should have been validated by the base ctor.");
+
+        _logger = logger;
 
         if (innerGenerator!.GetService<EmbeddingGeneratorMetadata>() is EmbeddingGeneratorMetadata metadata)
         {
@@ -235,6 +237,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                 _ = activity
                     .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
                     .SetStatus(ActivityStatusCode.Error, error.Message);
+
+                if (_logger is not null)
+                {
+                    OpenTelemetryLog.OperationException(_logger, error);
+                }
             }
 
             if (inputTokens.HasValue)

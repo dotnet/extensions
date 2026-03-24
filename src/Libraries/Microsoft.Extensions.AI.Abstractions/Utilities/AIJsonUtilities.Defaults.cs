@@ -148,6 +148,13 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
     [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
 
+    // ITextToSpeechClient
+    [JsonSerializable(typeof(TextToSpeechOptions))]
+    [JsonSerializable(typeof(TextToSpeechClientMetadata))]
+    [JsonSerializable(typeof(TextToSpeechResponse))]
+    [JsonSerializable(typeof(TextToSpeechResponseUpdate))]
+    [JsonSerializable(typeof(IReadOnlyList<TextToSpeechResponseUpdate>))]
+
     // IImageGenerator
     [JsonSerializable(typeof(ImageGenerationOptions))]
     [JsonSerializable(typeof(ImageGenerationResponse))]

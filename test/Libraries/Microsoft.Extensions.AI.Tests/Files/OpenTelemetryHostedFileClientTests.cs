@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using OpenTelemetry.Trace;
 using Xunit;
 
@@ -260,6 +262,9 @@ public class OpenTelemetryHostedFileClientTests
             .AddInMemoryExporter(activities)
             .Build();
 
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
         using var innerClient = new TestHostedFileClient
         {
             UploadAsyncCallback = (stream, mediaType, fileName, options, ct) =>
@@ -269,7 +274,7 @@ public class OpenTelemetryHostedFileClientTests
 
         using var client = innerClient
             .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
+            .UseOpenTelemetry(loggerFactory, sourceName)
             .Build();
 
         using var stream = new MemoryStream(new byte[] { 1 });
@@ -279,6 +284,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("upload failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionLogged(collector, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -290,6 +296,9 @@ public class OpenTelemetryHostedFileClientTests
             .AddSource(sourceName)
             .AddInMemoryExporter(activities)
             .Build();
+
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
 
         using var innerClient = new TestHostedFileClient
         {
@@ -306,7 +315,7 @@ public class OpenTelemetryHostedFileClientTests
 
         using var client = innerClient
             .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
+            .UseOpenTelemetry(loggerFactory, sourceName)
             .Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
@@ -321,6 +330,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
         Assert.Equal(1, activity.GetTagItem("files.list.count"));
+        AssertExceptionLogged(collector, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -378,6 +388,9 @@ public class OpenTelemetryHostedFileClientTests
             .AddInMemoryExporter(activities)
             .Build();
 
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
         using var innerClient = new TestHostedFileClient
         {
             DownloadAsyncCallback = (fileId, options, ct) =>
@@ -387,7 +400,7 @@ public class OpenTelemetryHostedFileClientTests
 
         using var client = innerClient
             .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
+            .UseOpenTelemetry(loggerFactory, sourceName)
             .Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.DownloadAsync("file-1"));
@@ -397,6 +410,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("download failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionLogged(collector, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -409,6 +423,9 @@ public class OpenTelemetryHostedFileClientTests
             .AddInMemoryExporter(activities)
             .Build();
 
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
         using var innerClient = new TestHostedFileClient
         {
             DeleteAsyncCallback = (fileId, options, ct) =>
@@ -418,7 +435,7 @@ public class OpenTelemetryHostedFileClientTests
 
         using var client = innerClient
             .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
+            .UseOpenTelemetry(loggerFactory, sourceName)
             .Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.DeleteAsync("file-1"));
@@ -428,6 +445,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("delete failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionLogged(collector, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -440,6 +458,9 @@ public class OpenTelemetryHostedFileClientTests
             .AddInMemoryExporter(activities)
             .Build();
 
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
         using var innerClient = new TestHostedFileClient
         {
             GetFileInfoAsyncCallback = (fileId, options, ct) =>
@@ -449,7 +470,7 @@ public class OpenTelemetryHostedFileClientTests
 
         using var client = innerClient
             .AsBuilder()
-            .UseOpenTelemetry(sourceName: sourceName)
+            .UseOpenTelemetry(loggerFactory, sourceName)
             .Build();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetFileInfoAsync("file-1"));
@@ -459,6 +480,7 @@ public class OpenTelemetryHostedFileClientTests
         Assert.Equal(ActivityStatusCode.Error, activity.Status);
         Assert.Equal("get info failed", activity.StatusDescription);
         Assert.Equal(typeof(InvalidOperationException).FullName, activity.GetTagItem("error.type"));
+        AssertExceptionLogged(collector, typeof(InvalidOperationException));
     }
 
     [Fact]
@@ -575,6 +597,15 @@ public class OpenTelemetryHostedFileClientTests
         (serviceType, serviceKey) =>
             serviceType == typeof(HostedFileClientMetadata) ? new HostedFileClientMetadata("testprovider", new Uri("http://localhost:8080/files")) :
             null;
+
+    private static void AssertExceptionLogged(FakeLogCollector collector, Type expectedExceptionType)
+    {
+        var logEntry = Assert.Single(collector.GetSnapshot());
+        Assert.Equal("gen_ai.client.operation.exception", logEntry.Id.Name);
+        Assert.Equal(LogLevel.Warning, logEntry.Level);
+        Assert.NotNull(logEntry.Exception);
+        Assert.IsType(expectedExceptionType, logEntry.Exception);
+    }
 
     private sealed class TestDownloadStream : HostedFileDownloadStream
     {
