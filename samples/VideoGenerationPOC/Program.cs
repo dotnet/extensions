@@ -1,13 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// Video Generation POC - Microsoft.Extensions.AI
-// Usage: set OPENAI_API_KEY environment variable, then run:
-//   dotnet run -- "A cat playing piano"
-//   dotnet run -- "She turns and smiles" --input reference.jpg
-//   dotnet run -- "Change the sky to sunset" --edit video_abc123
-//   dotnet run -- "Continue the scene" --extend video_abc123
-//   dotnet run -- "A tracking shot of Mossy" --character char_abc123
+// Video Generation POC — Microsoft.Extensions.AI general-purpose CLI
+//
+// Usage examples:
+//   dotnet run -- generate "A cat playing piano"
+//   dotnet run -- generate "She turns and smiles" --input reference.jpg
+//   dotnet run -- generate "A tracking shot of DotBot" --character char_abc123
+//   dotnet run -- upload-character DotBot --input clip.mp4
+//   dotnet run -- edit "Change the sky to sunset" --video video_abc123
+//   dotnet run -- extend "Continue the scene" --video video_abc123
+//
+// All commands print machine-parseable lines (OPERATION_ID, CHARACTER_ID) for scripting.
 
 using System.CommandLine;
 using System.Drawing;
@@ -16,133 +20,197 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using OpenAI;
 
-var promptArg = new Argument<string>("prompt", () => "A serene lake at sunset with gentle ripples", "Text prompt describing the video to generate.");
-var modelOption = new Option<string>("--model", () => "sora-2", "Model ID to use for video generation.");
-var outputOption = new Option<string>("--output", () => $"video_{DateTime.Now:yyyyMMdd_HHmmss}.mp4", "Output file path for the generated video.");
-var inputOption = new Option<string[]>("--input", "Input file(s) — images for image-to-video, or a video for editing.") { AllowMultipleArgumentsPerToken = true };
-var editOption = new Option<string?>("--edit", "Video ID of an existing generation to edit (POST /videos/edits).");
-var extendOption = new Option<string?>("--extend", "Video ID of a completed video to extend (POST /videos/extensions).");
-var characterOption = new Option<string[]>("--character", "Character ID(s) to include in the generation.") { AllowMultipleArgumentsPerToken = true };
+// ── Shared options ─────────────────────────────────────────────────────────
+var modelOption = new Option<string>("--model", () => "sora-2", "Model ID.");
+var outputOption = new Option<string?>("--output", "Output file path (.mp4). Omit for URI-only display.");
+var durationOption = new Option<int?>("--duration", "Duration in seconds.");
+var widthOption = new Option<int?>("--width", () => 1280, "Video width.");
+var heightOption = new Option<int?>("--height", () => 720, "Video height.");
+var formatOption = new Option<string>("--format", () => "data", "Response format: data or uri.");
 
-var rootCommand = new RootCommand("Video Generation POC — demonstrates Microsoft.Extensions.AI video generation with OpenAI.")
+// ── generate ───────────────────────────────────────────────────────────────
+var generatePromptArg = new Argument<string>("prompt", "Text prompt describing the video to generate.");
+var inputOption = new Option<string[]>("--input", "Input file(s) — images for image-to-video, or a video for editing.") { AllowMultipleArgumentsPerToken = true };
+var characterOption = new Option<string[]>("--character", "Character ID(s) to include.") { AllowMultipleArgumentsPerToken = true };
+
+var generateCommand = new Command("generate", "Generate a new video from a text prompt (optionally with input images and characters).")
 {
-    promptArg,
-    modelOption,
-    outputOption,
-    inputOption,
-    editOption,
-    extendOption,
-    characterOption,
+    generatePromptArg, modelOption, outputOption, inputOption, characterOption, durationOption, widthOption, heightOption, formatOption,
 };
 
-rootCommand.SetHandler(async (context) =>
+generateCommand.SetHandler(async (context) =>
 {
-    string prompt = context.ParseResult.GetValueForArgument(promptArg);
+    string prompt = context.ParseResult.GetValueForArgument(generatePromptArg);
     string model = context.ParseResult.GetValueForOption(modelOption)!;
-    string outputPath = context.ParseResult.GetValueForOption(outputOption)!;
+    string? outputPath = context.ParseResult.GetValueForOption(outputOption);
     string[] inputPaths = context.ParseResult.GetValueForOption(inputOption) ?? [];
-    string? editVideoId = context.ParseResult.GetValueForOption(editOption);
-    string? extendVideoId = context.ParseResult.GetValueForOption(extendOption);
     string[] characterIds = context.ParseResult.GetValueForOption(characterOption) ?? [];
+    int? duration = context.ParseResult.GetValueForOption(durationOption);
+    int? width = context.ParseResult.GetValueForOption(widthOption);
+    int? height = context.ParseResult.GetValueForOption(heightOption);
+    string format = context.ParseResult.GetValueForOption(formatOption)!;
 
-    // --- API key ---
-    string? apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-    if (string.IsNullOrEmpty(apiKey))
+    using var generator = CreateGenerator(model);
+
+    List<AIContent>? originalMedia = await LoadInputFilesAsync(inputPaths);
+    if (originalMedia is null && inputPaths.Length > 0)
     {
-        Console.Error.WriteLine("Error: Set the OPENAI_API_KEY environment variable.");
         context.ExitCode = 1;
         return;
     }
 
-    Console.WriteLine($"Prompt:  {prompt}");
-    Console.WriteLine($"Model:   {model}");
-    Console.WriteLine($"Output:  {outputPath}");
-    if (inputPaths.Length > 0)
+    var options = BuildOptions(duration, width, height, format, characterIds);
+    var request = new VideoGenerationRequest(prompt, originalMedia);
+
+    var operation = await generator.GenerateAsync(request, options);
+    await CompleteAndSaveAsync(operation, options, outputPath);
+});
+
+// ── upload-character ───────────────────────────────────────────────────────
+var charNameArg = new Argument<string>("name", "Name for the character (mention this name verbatim in prompts).");
+var charInputOption = new Option<string>("--input", "Video file (.mp4) to upload as the character source.") { IsRequired = true };
+
+var uploadCharCommand = new Command("upload-character", "Upload a video clip as a reusable character asset.")
+{
+    charNameArg, charInputOption, modelOption,
+};
+
+uploadCharCommand.SetHandler(async (context) =>
+{
+    string name = context.ParseResult.GetValueForArgument(charNameArg);
+    string inputPath = context.ParseResult.GetValueForOption(charInputOption)!;
+    string model = context.ParseResult.GetValueForOption(modelOption)!;
+
+    if (!File.Exists(inputPath))
     {
-        Console.WriteLine($"Inputs:  {string.Join(", ", inputPaths)}");
+        Console.Error.WriteLine($"Error: File not found: {inputPath}");
+        context.ExitCode = 1;
+        return;
     }
 
-    if (editVideoId is not null)
+    using var generator = CreateGenerator(model);
+    DataContent videoContent = await DataContent.LoadFromAsync(inputPath);
+
+    Console.WriteLine($"Uploading character '{name}' from {inputPath} ({videoContent.Data.Length} bytes)...");
+    string characterId = await generator.UploadVideoCharacterAsync(name, videoContent);
+
+    Console.WriteLine($"CHARACTER_ID: {characterId}");
+});
+
+// ── edit ───────────────────────────────────────────────────────────────────
+var editPromptArg = new Argument<string>("prompt", "Prompt describing the edit to apply.");
+var editVideoOption = new Option<string>("--video", "Video ID of the generation to edit.") { IsRequired = true };
+
+var editCommand = new Command("edit", "Edit an existing video by ID.")
+{
+    editPromptArg, editVideoOption, modelOption, outputOption, formatOption,
+};
+
+editCommand.SetHandler(async (context) =>
+{
+    string prompt = context.ParseResult.GetValueForArgument(editPromptArg);
+    string videoId = context.ParseResult.GetValueForOption(editVideoOption)!;
+    string model = context.ParseResult.GetValueForOption(modelOption)!;
+    string? outputPath = context.ParseResult.GetValueForOption(outputOption);
+    string format = context.ParseResult.GetValueForOption(formatOption)!;
+
+    using var generator = CreateGenerator(model);
+
+    var options = BuildOptions(duration: null, width: null, height: null, format, characterIds: []);
+    var request = new VideoGenerationRequest(prompt)
     {
-        Console.WriteLine($"Edit:    {editVideoId}");
+        OperationKind = VideoOperationKind.Edit,
+        SourceVideoId = videoId,
+    };
+
+    var operation = await generator.GenerateAsync(request, options);
+    await CompleteAndSaveAsync(operation, options, outputPath);
+});
+
+// ── extend ─────────────────────────────────────────────────────────────────
+var extendPromptArg = new Argument<string>("prompt", "Prompt describing how the scene should continue.");
+var extendVideoOption = new Option<string>("--video", "Video ID of the completed video to extend.") { IsRequired = true };
+
+var extendCommand = new Command("extend", "Extend a completed video by ID.")
+{
+    extendPromptArg, extendVideoOption, modelOption, outputOption, durationOption, formatOption,
+};
+
+extendCommand.SetHandler(async (context) =>
+{
+    string prompt = context.ParseResult.GetValueForArgument(extendPromptArg);
+    string videoId = context.ParseResult.GetValueForOption(extendVideoOption)!;
+    string model = context.ParseResult.GetValueForOption(modelOption)!;
+    string? outputPath = context.ParseResult.GetValueForOption(outputOption);
+    int? duration = context.ParseResult.GetValueForOption(durationOption);
+    string format = context.ParseResult.GetValueForOption(formatOption)!;
+
+    using var generator = CreateGenerator(model);
+
+    var options = BuildOptions(duration, width: null, height: null, format, characterIds: []);
+    var request = new VideoGenerationRequest(prompt)
+    {
+        OperationKind = VideoOperationKind.Extend,
+        SourceVideoId = videoId,
+    };
+
+    var operation = await generator.GenerateAsync(request, options);
+    await CompleteAndSaveAsync(operation, options, outputPath);
+});
+
+// ── Root command ───────────────────────────────────────────────────────────
+var rootCommand = new RootCommand("Video Generation POC — Microsoft.Extensions.AI CLI for video generation, editing, extending, and character management.")
+{
+    generateCommand,
+    uploadCharCommand,
+    editCommand,
+    extendCommand,
+};
+
+return await rootCommand.InvokeAsync(args);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════════════════
+static IVideoGenerator CreateGenerator(string model)
+{
+    string? apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+    if (string.IsNullOrEmpty(apiKey))
+    {
+        Console.Error.WriteLine("Error: Set the OPENAI_API_KEY environment variable.");
+        Environment.Exit(1);
     }
 
-    if (extendVideoId is not null)
-    {
-        Console.WriteLine($"Extend:  {extendVideoId}");
-    }
-
-    if (characterIds.Length > 0)
-    {
-        Console.WriteLine($"Characters: {string.Join(", ", characterIds)}");
-    }
-
-    Console.WriteLine();
-
-    // --- Create the video generator with middleware pipeline ---
-    using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Debug));
-
+    var loggerFactory = LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(LogLevel.Debug));
     var openAIClient = new OpenAIClient(apiKey);
-    using IVideoGenerator generator = openAIClient
+
+    return openAIClient
         .GetVideoClient()
         .AsIVideoGenerator(model)
         .AsBuilder()
         .UseLogging(loggerFactory)
         .UseOpenTelemetry(loggerFactory)
-        .ConfigureOptions(options =>
-        {
-            options.Count ??= 1;
-            options.Duration ??= TimeSpan.FromSeconds(12);
-            options.VideoSize ??= new Size(1280, 720);
-        })
         .Build();
+}
 
-    // --- Show metadata ---
-    var metadata = generator.GetService<VideoGeneratorMetadata>();
-    if (metadata is not null)
+static VideoGenerationOptions BuildOptions(int? duration, int? width, int? height, string format, string[] characterIds)
+{
+    var options = new VideoGenerationOptions
     {
-        Console.WriteLine($"Provider:      {metadata.ProviderName}");
-        Console.WriteLine($"Endpoint:      {metadata.ProviderUri}");
-        Console.WriteLine($"Default Model: {metadata.DefaultModelId}");
-        Console.WriteLine();
-    }
-
-    // --- Build request ---
-    List<AIContent>? originalMedia = null;
-    if (inputPaths.Length > 0)
-    {
-        originalMedia = [];
-        foreach (string inputPath in inputPaths)
-        {
-            if (!File.Exists(inputPath))
-            {
-                Console.Error.WriteLine($"Error: Input file not found: {inputPath}");
-                context.ExitCode = 1;
-                return;
-            }
-
-            DataContent loaded = await DataContent.LoadFromAsync(inputPath);
-            originalMedia.Add(loaded);
-            Console.WriteLine($"  Loaded input: {inputPath} ({loaded.MediaType}, {loaded.Data.Length} bytes)");
-        }
-
-        Console.WriteLine();
-    }
-
-    // --- Generate video ---
-    string mode =
-        extendVideoId is not null ? "Extending" :
-        editVideoId is not null ? "Editing (by video ID)" :
-        originalMedia?.Exists(c => c is DataContent dc && dc.HasTopLevelMediaType("video")) == true ? "Editing (uploaded video)" :
-        originalMedia is not null ? "Generating (image-to-video)" :
-        "Generating (text-to-video)";
-    Console.WriteLine($"{mode}...");
-    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-    var generateOptions = new VideoGenerationOptions
-    {
-        ResponseFormat = VideoGenerationResponseFormat.Data,
+        ResponseFormat = string.Equals(format, "uri", StringComparison.OrdinalIgnoreCase)
+            ? VideoGenerationResponseFormat.Uri
+            : VideoGenerationResponseFormat.Data,
     };
+
+    if (duration.HasValue)
+    {
+        options.Duration = TimeSpan.FromSeconds(duration.Value);
+    }
+
+    if (width.HasValue && height.HasValue)
+    {
+        options.VideoSize = new Size(width.Value, height.Value);
+    }
 
     if (characterIds.Length > 0)
     {
@@ -152,58 +220,84 @@ rootCommand.SetHandler(async (context) =>
             chars.Add(new JsonObject { ["id"] = charId });
         }
 
-        generateOptions.AdditionalProperties ??= [];
-        generateOptions.AdditionalProperties["characters"] = chars;
+        options.AdditionalProperties = new() { ["characters"] = chars };
     }
 
-    var request = new VideoGenerationRequest(prompt, originalMedia);
+    return options;
+}
 
-    if (editVideoId is not null)
+static async Task<List<AIContent>?> LoadInputFilesAsync(string[] inputPaths)
+{
+    if (inputPaths.Length == 0)
     {
-        request.OperationKind = VideoOperationKind.Edit;
-        request.SourceVideoId = editVideoId;
+        return null;
     }
-    else if (extendVideoId is not null)
+
+    var media = new List<AIContent>();
+    foreach (string path in inputPaths)
     {
-        request.OperationKind = VideoOperationKind.Extend;
-        request.SourceVideoId = extendVideoId;
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine($"Error: Input file not found: {path}");
+            return null;
+        }
+
+        DataContent loaded = await DataContent.LoadFromAsync(path);
+        media.Add(loaded);
+        Console.WriteLine($"  Loaded: {path} ({loaded.MediaType}, {loaded.Data.Length} bytes)");
     }
 
-    var operation = await generator.GenerateAsync(request, generateOptions);
+    return media;
+}
 
-    Console.WriteLine($"  Operation ID: {operation.OperationId}");
-    Console.WriteLine($"  Initial status: {operation.Status}");
+static async Task CompleteAndSaveAsync(VideoGenerationOperation operation, VideoGenerationOptions options, string? outputPath)
+{
+    Console.WriteLine($"OPERATION_ID: {operation.OperationId}");
+    Console.WriteLine($"  Status: {operation.Status}");
 
+    var sw = System.Diagnostics.Stopwatch.StartNew();
     await operation.WaitForCompletionAsync(
         new Progress<VideoGenerationProgress>(p =>
-            Console.WriteLine($"  Status: {p.Status}{(p.PercentComplete.HasValue ? $" ({p.PercentComplete}%)" : string.Empty)}")));
+            Console.WriteLine($"  Progress: {p.Status}{(p.PercentComplete.HasValue ? $" ({p.PercentComplete}%)" : string.Empty)}")));
 
-    stopwatch.Stop();
-    Console.WriteLine($"Completed in {stopwatch.Elapsed.TotalSeconds:F1}s");
-    Console.WriteLine();
+    sw.Stop();
+    Console.WriteLine($"  Completed in {sw.Elapsed.TotalSeconds:F1}s");
 
-    // --- Download and process contents ---
     if (operation.Usage is { } usage)
     {
-        Console.WriteLine($"Token Usage: input={usage.InputTokenCount}, output={usage.OutputTokenCount}, total={usage.TotalTokenCount}");
+        Console.WriteLine($"  Tokens: input={usage.InputTokenCount}, output={usage.OutputTokenCount}, total={usage.TotalTokenCount}");
     }
 
-    var contents = await operation.GetContentsAsync(generateOptions);
-    Console.WriteLine($"Generated {contents.Count} content item(s):");
+    var contents = await operation.GetContentsAsync(options);
+    Console.WriteLine($"  {contents.Count} content item(s)");
+
     for (int i = 0; i < contents.Count; i++)
     {
-        var content = contents[i];
-        switch (content)
+        switch (contents[i])
         {
             case DataContent dc:
-                string filePath = contents.Count == 1
-                    ? outputPath
-                    : Path.Combine(
-                        Path.GetDirectoryName(outputPath) ?? ".",
-                        $"{Path.GetFileNameWithoutExtension(outputPath)}_{i}{Path.GetExtension(outputPath)}");
+                if (outputPath is not null)
+                {
+                    string filePath = contents.Count == 1
+                        ? outputPath
+                        : Path.Combine(
+                            Path.GetDirectoryName(outputPath) ?? ".",
+                            $"{Path.GetFileNameWithoutExtension(outputPath)}_{i}{Path.GetExtension(outputPath)}");
 
-                await dc.SaveToAsync(filePath);
-                Console.WriteLine($"  [{i}] Saved {dc.Data.Length} bytes ({dc.MediaType}) -> {filePath}");
+                    string? dir = Path.GetDirectoryName(filePath);
+                    if (dir is not null)
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+
+                    await dc.SaveToAsync(filePath);
+                    Console.WriteLine($"  [{i}] Saved: {filePath} ({dc.Data.Length} bytes, {dc.MediaType})");
+                }
+                else
+                {
+                    Console.WriteLine($"  [{i}] DataContent: {dc.Data.Length} bytes ({dc.MediaType})");
+                }
+
                 break;
 
             case UriContent uc:
@@ -211,13 +305,8 @@ rootCommand.SetHandler(async (context) =>
                 break;
 
             default:
-                Console.WriteLine($"  [{i}] {content.GetType().Name}: {content}");
+                Console.WriteLine($"  [{i}] {contents[i].GetType().Name}");
                 break;
         }
     }
-
-    Console.WriteLine();
-    Console.WriteLine("Done!");
-});
-
-return await rootCommand.InvokeAsync(args);
+}

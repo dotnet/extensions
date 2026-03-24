@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Text;
 using OpenAI.Videos;
 
 namespace Microsoft.Extensions.AI;
@@ -159,7 +160,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
             if (options?.Duration is TimeSpan extDuration)
             {
-                body["seconds"] = (int)extDuration.TotalSeconds;
+                body["seconds"] = ((int)extDuration.TotalSeconds).ToInvariantString();
             }
 
             ForwardAdditionalProperties(body, options);
@@ -222,7 +223,7 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
             if (options?.Duration is TimeSpan duration)
             {
-                requestBody["seconds"] = (int)duration.TotalSeconds;
+                requestBody["seconds"] = ((int)duration.TotalSeconds).ToInvariantString();
             }
 
             if (options?.Count is int count && count > 1)
@@ -239,22 +240,21 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
                     ["image_url"] = imageReferenceUri.Uri.ToString(),
                 };
             }
+            else if (imageReferenceData is not null)
+            {
+                // The API expects input_reference as a JSON object, not a multipart file.
+                // Convert to a data URI so the image bytes are sent inline.
+                string mediaType = imageReferenceData.MediaType ?? "application/octet-stream";
+                string base64 = Convert.ToBase64String(imageReferenceData.Data.ToArray());
+                requestBody["input_reference"] = new JsonObject
+                {
+                    ["image_url"] = $"data:{mediaType};base64,{base64}",
+                };
+            }
 
-            if (imageReferenceData is not null)
-            {
-                using BinaryContent multipartContent = BuildMultipartContent(
-                    requestBody, imageReferenceData, "input_reference",
-                    out string multipartContentType);
-                createResult = await _videoClient.CreateVideoAsync(
-                    multipartContent, multipartContentType,
-                    reqOpts).ConfigureAwait(false);
-            }
-            else
-            {
-                using var content = CreateJsonContent(requestBody);
-                createResult = await _videoClient.CreateVideoAsync(
-                    content, "application/json", reqOpts).ConfigureAwait(false);
-            }
+            using var content = CreateJsonContent(requestBody);
+            createResult = await _videoClient.CreateVideoAsync(
+                content, "application/json", reqOpts).ConfigureAwait(false);
         }
 
         // Parse the creation response to get the video ID and initial status
@@ -311,8 +311,26 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
         await _videoClient.Pipeline.SendAsync(message).ConfigureAwait(false);
 
-        using JsonDocument doc = JsonDocument.Parse(message.Response!.Content);
-        return doc.RootElement.GetProperty("id").GetString()!;
+        PipelineResponse response = message.Response!;
+        using JsonDocument doc = JsonDocument.Parse(response.Content);
+        JsonElement root = doc.RootElement;
+
+        // The API may return an error object with a "message" property.
+        if (root.TryGetProperty("error", out JsonElement errorElement))
+        {
+            string errorMessage = errorElement.TryGetProperty("message", out JsonElement msgElement)
+                ? msgElement.GetString() ?? "Unknown error"
+                : errorElement.ToString();
+            throw new InvalidOperationException($"Character upload failed: {errorMessage}");
+        }
+
+        if (root.TryGetProperty("id", out JsonElement idElement))
+        {
+            return idElement.GetString()!;
+        }
+
+        throw new InvalidOperationException(
+            $"Character upload response did not contain an 'id' property. Response: {response.Content}");
     }
 
     /// <summary>Creates a <see cref="PipelineMessage"/> for a POST request to a path not yet exposed by the SDK.</summary>

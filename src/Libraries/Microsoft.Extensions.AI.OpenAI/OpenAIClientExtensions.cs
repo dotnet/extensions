@@ -260,7 +260,7 @@ public static class OpenAIClientExtensions
         _ = Throw.IfNull(generator);
         _ = Throw.IfNull(videoContent);
 
-        OpenAIVideoGenerator openAIGenerator = generator as OpenAIVideoGenerator
+        OpenAIVideoGenerator openAIGenerator = generator.GetService<OpenAIVideoGenerator>()
             ?? throw new InvalidOperationException("The video generator is not backed by an OpenAI VideoClient.");
 
         return openAIGenerator.UploadVideoCharacterAsync(name, videoContent, cancellationToken);
