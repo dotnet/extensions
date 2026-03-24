@@ -237,39 +237,37 @@ public static class ChatResponseExtensions
 
         for (int i = 0; i < contents.Count; i++)
         {
-            if (contents[i] is WebSearchToolCallContent webSearchCall && !string.IsNullOrEmpty(webSearchCall.CallId))
+            if (contents[i] is WebSearchToolCallContent webSearchCall)
             {
                 webSearchCallIndexById ??= new(StringComparer.Ordinal);
 
-                if (webSearchCallIndexById.TryGetValue(webSearchCall.CallId!, out int existingIndex))
+                if (webSearchCallIndexById.TryGetValue(webSearchCall.CallId, out int existingIndex))
                 {
-                    // Merge data from the new item into the existing one.
+                    // Create a new merged content rather than mutating the original content objects.
+                    // The same content objects may be shared across multiple ToChatResponse calls
+                    // (e.g. FunctionInvokingChatClient and the caller both call ToChatResponse on
+                    // the same streaming updates), and in-place mutation would corrupt subsequent calls.
                     var existing = (WebSearchToolCallContent)contents[existingIndex];
 
-                    if (webSearchCall.Queries is { Count: > 0 })
+                    if (!ReferenceEquals(existing, webSearchCall))
                     {
-                        if (existing.Queries is null)
+                        contents[existingIndex] = new WebSearchToolCallContent(existing.CallId)
                         {
-                            existing.Queries = webSearchCall.Queries;
-                        }
-                        else
-                        {
-                            foreach (var query in webSearchCall.Queries)
-                            {
-                                existing.Queries.Add(query);
-                            }
-                        }
+                            Queries = webSearchCall.Queries is not { Count: > 0 } ? existing.Queries :
+                                      existing.Queries is not { Count: > 0 } ? webSearchCall.Queries :
+                                      [.. existing.Queries, .. webSearchCall.Queries],
+                            RawRepresentation = existing.RawRepresentation ?? webSearchCall.RawRepresentation,
+                            AdditionalProperties = existing.AdditionalProperties ?? webSearchCall.AdditionalProperties,
+                            Annotations = existing.Annotations ?? webSearchCall.Annotations,
+                        };
                     }
-
-                    existing.RawRepresentation ??= webSearchCall.RawRepresentation;
-                    existing.AdditionalProperties ??= webSearchCall.AdditionalProperties;
 
                     contents[i] = null!;
                     hasRemovals = true;
                 }
                 else
                 {
-                    webSearchCallIndexById[webSearchCall.CallId!] = i;
+                    webSearchCallIndexById[webSearchCall.CallId] = i;
                 }
             }
         }

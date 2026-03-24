@@ -3357,11 +3357,11 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(string uri, string mediaType);",
+          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(string uri, string? mediaType = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(System.Uri uri, string mediaType);",
+          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(System.Uri uri, string? mediaType = null);",
           "Stage": "Stable"
         },
         {

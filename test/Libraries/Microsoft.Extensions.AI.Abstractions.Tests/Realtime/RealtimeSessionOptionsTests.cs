@@ -26,6 +26,7 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.OutputModalities);
         Assert.Null(options.ToolMode);
         Assert.Null(options.Tools);
+        Assert.Null(options.VoiceActivityDetection);
     }
 
     [Fact]
@@ -90,4 +91,49 @@ public class RealtimeSessionOptionsTests
         Assert.Null(options.Prompt);
     }
 
+    [Fact]
+    public void VoiceActivityDetection_DefaultsToNull()
+    {
+        RealtimeSessionOptions options = new();
+        Assert.Null(options.VoiceActivityDetection);
+    }
+
+    [Fact]
+    public void VoiceActivityDetection_Roundtrip()
+    {
+        var vad = new VoiceActivityDetectionOptions();
+        RealtimeSessionOptions options = new()
+        {
+            VoiceActivityDetection = vad,
+        };
+
+        Assert.Same(vad, options.VoiceActivityDetection);
+    }
+
+    [Fact]
+    public void VoiceActivityDetectionOptions_DefaultValues()
+    {
+        var vad = new VoiceActivityDetectionOptions();
+        Assert.True(vad.Enabled);
+        Assert.True(vad.AllowInterruption);
+    }
+
+    [Fact]
+    public void VoiceActivityDetectionOptions_Properties_Roundtrip()
+    {
+        var vad = new VoiceActivityDetectionOptions
+        {
+            Enabled = false,
+            AllowInterruption = false,
+        };
+
+        Assert.False(vad.Enabled);
+        Assert.False(vad.AllowInterruption);
+
+        vad.Enabled = true;
+        vad.AllowInterruption = true;
+
+        Assert.True(vad.Enabled);
+        Assert.True(vad.AllowInterruption);
+    }
 }
