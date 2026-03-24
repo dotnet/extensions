@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
+using OpenAI;
 using OpenAI.Responses;
 
 #pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
@@ -702,7 +703,20 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return rtat.Tool;
 
             case AIFunctionDeclaration aiFunction:
-                return ToResponseTool(aiFunction, options);
+                var functionTool = ToResponseTool(aiFunction, options);
+                if (tool.GetService<SearchableAIFunctionDeclaration>() is { } searchable)
+                {
+                    functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
+                    if (searchable.Namespace is { } ns)
+                    {
+                        functionTool.Patch.Set("$.namespace"u8, JsonSerializer.SerializeToUtf8Bytes(ns, OpenAIJsonContext.Default.String).AsSpan());
+                    }
+                }
+
+                return functionTool;
+
+            case HostedToolSearchTool:
+                return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
 
             case HostedWebSearchTool webSearchTool:
                 return new WebSearchTool
