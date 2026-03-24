@@ -35,36 +35,4 @@ public class HostedToolSearchToolTests
 
         Assert.Empty(tool.AdditionalProperties);
     }
-
-    [Fact]
-    public void DeferredTools_DefaultIsNull()
-    {
-        var tool = new HostedToolSearchTool();
-        Assert.Null(tool.DeferredTools);
-    }
-
-    [Fact]
-    public void DeferredTools_Roundtrips()
-    {
-        var tool = new HostedToolSearchTool();
-        var list = new List<string> { "func1", "func2" };
-        tool.DeferredTools = list;
-        Assert.Same(list, tool.DeferredTools);
-    }
-
-    [Fact]
-    public void NonDeferredTools_DefaultIsNull()
-    {
-        var tool = new HostedToolSearchTool();
-        Assert.Null(tool.NonDeferredTools);
-    }
-
-    [Fact]
-    public void NonDeferredTools_Roundtrips()
-    {
-        var tool = new HostedToolSearchTool();
-        var list = new List<string> { "func3" };
-        tool.NonDeferredTools = list;
-        Assert.Same(list, tool.NonDeferredTools);
-    }
 }

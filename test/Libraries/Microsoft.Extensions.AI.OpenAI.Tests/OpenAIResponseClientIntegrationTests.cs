@@ -770,8 +770,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 Tools =
                 [
                     new HostedToolSearchTool(),
-                    getWeather,
-                    getTime,
+                    new SearchableAIFunctionDeclaration(getWeather),
+                    new SearchableAIFunctionDeclaration(getTime),
                 ],
             });
 

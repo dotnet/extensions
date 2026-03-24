@@ -602,23 +602,23 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_WithHostedToolSearchTool_CachesResult()
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_ProducesNewInstanceEachTime()
     {
         var result1 = new HostedToolSearchTool().AsOpenAIResponseTool();
         var result2 = new HostedToolSearchTool().AsOpenAIResponseTool();
 
         Assert.NotNull(result1);
-        Assert.Same(result1, result2);
+        Assert.NotNull(result2);
+        Assert.NotSame(result1, result2);
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_AllToolsDeferred_WhenBothListsNull()
+    public void AsOpenAIResponseTool_WithSearchableAIFunctionDeclaration_PatchesDeferLoading()
     {
-        var func = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
-        var toolSearch = new HostedToolSearchTool();
-        var options = new ChatOptions { Tools = [toolSearch, func] };
+        var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var searchable = new SearchableAIFunctionDeclaration(inner);
 
-        var result = func.AsOpenAIResponseTool(options);
+        var result = ((AITool)searchable).AsOpenAIResponseTool();
 
         Assert.NotNull(result);
         var functionTool = Assert.IsType<FunctionTool>(result);
@@ -628,70 +628,30 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_NoDeferLoading_WhenNoHostedToolSearchTool()
+    public void AsOpenAIResponseTool_WithSearchableAIFunctionDeclarationWithNamespace_PatchesNamespace()
     {
-        var func = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
-        var options = new ChatOptions { Tools = [func] };
+        var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var searchable = new SearchableAIFunctionDeclaration(inner, namespaceName: "myNamespace");
 
-        var result = func.AsOpenAIResponseTool(options);
+        var result = ((AITool)searchable).AsOpenAIResponseTool();
 
         Assert.NotNull(result);
         var functionTool = Assert.IsType<FunctionTool>(result);
         var json = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json).ToString();
-        Assert.DoesNotContain("defer_loading", json);
+        Assert.Contains("namespace", json);
+        Assert.Contains("myNamespace", json);
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_OnlyDeferredToolsGetDeferLoading()
+    public void AsOpenAIResponseTool_WithPlainAIFunction_NoDeferLoading()
     {
-        var func1 = AIFunctionFactory.Create(() => 1, "Func1");
-        var func2 = AIFunctionFactory.Create(() => 2, "Func2");
-        var toolSearch = new HostedToolSearchTool { DeferredTools = ["Func1"] };
-        var options = new ChatOptions { Tools = [toolSearch, func1, func2] };
+        var func = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
 
-        var result1 = func1.AsOpenAIResponseTool(options);
-        var result2 = func2.AsOpenAIResponseTool(options);
-
-        var json1 = ModelReaderWriter.Write(result1!, ModelReaderWriterOptions.Json).ToString();
-        Assert.Contains("defer_loading", json1);
-
-        var json2 = ModelReaderWriter.Write(result2!, ModelReaderWriterOptions.Json).ToString();
-        Assert.DoesNotContain("defer_loading", json2);
-    }
-
-    [Fact]
-    public void AsOpenAIResponseTool_NonDeferredToolsExcluded()
-    {
-        var func1 = AIFunctionFactory.Create(() => 1, "Func1");
-        var func2 = AIFunctionFactory.Create(() => 2, "Func2");
-        var toolSearch = new HostedToolSearchTool { NonDeferredTools = ["Func2"] };
-        var options = new ChatOptions { Tools = [toolSearch, func1, func2] };
-
-        var result1 = func1.AsOpenAIResponseTool(options);
-        var result2 = func2.AsOpenAIResponseTool(options);
-
-        var json1 = ModelReaderWriter.Write(result1!, ModelReaderWriterOptions.Json).ToString();
-        Assert.Contains("defer_loading", json1);
-
-        var json2 = ModelReaderWriter.Write(result2!, ModelReaderWriterOptions.Json).ToString();
-        Assert.DoesNotContain("defer_loading", json2);
-    }
-
-    [Fact]
-    public void AsOpenAIResponseTool_BothLists_DisableTakesPrecedence()
-    {
-        var func = AIFunctionFactory.Create(() => 42, "MyFunc");
-        var toolSearch = new HostedToolSearchTool
-        {
-            DeferredTools = ["MyFunc"],
-            NonDeferredTools = ["MyFunc"],
-        };
-        var options = new ChatOptions { Tools = [toolSearch, func] };
-
-        var result = func.AsOpenAIResponseTool(options);
+        var result = ((AITool)func).AsOpenAIResponseTool();
 
         Assert.NotNull(result);
-        var json = ModelReaderWriter.Write(result!, ModelReaderWriterOptions.Json).ToString();
+        var functionTool = Assert.IsType<FunctionTool>(result);
+        var json = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json).ToString();
         Assert.DoesNotContain("defer_loading", json);
     }
 
