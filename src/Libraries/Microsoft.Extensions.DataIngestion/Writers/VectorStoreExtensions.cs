@@ -12,8 +12,6 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </summary>
 public static class VectorStoreExtensions
 {
-    internal const string EmbeddingStorageName = "embedding";
-
     /// <summary>
     /// Provides a convenient method to get a vector store collection specifically designed for storing ingested chunk records
     /// using the default <see cref="IngestionChunkVectorRecord{TChunk}"/> type with <see langword="string"/> content.
@@ -86,7 +84,6 @@ public static class VectorStoreExtensions
                 // to handle the conversion from TChunk to the actual vector type it supports.
                 new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord<>.Embedding), typeof(TChunk), dimensionCount)
                 {
-                    StorageName = EmbeddingStorageName,
                     DistanceFunction = distanceFunction,
                     IndexKind = indexKind,
                 },
