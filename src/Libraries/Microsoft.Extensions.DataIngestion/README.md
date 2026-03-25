@@ -51,7 +51,7 @@ To store custom metadata alongside each chunk, create a type derived from `Inges
 ```csharp
 public class ChunkWithMetadata : IngestionChunkVectorRecord<string>
 {
-    [VectorStoreVector(1536, DistanceFunction = DistanceFunction.CosineSimilarity)]
+    [VectorStoreVector(1536)]
     public override string? Embedding => Content;
 
     [VectorStoreData(StorageName = "classification")]
