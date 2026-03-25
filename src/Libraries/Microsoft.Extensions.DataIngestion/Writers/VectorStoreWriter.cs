@@ -28,7 +28,7 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
     /// <param name="options">The options for the vector store writer.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="collection"/> is null.</exception>
     /// <remarks>
-    /// You can use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string, string?, string?)"/>
+    /// You can use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string?, string?)"/>
     /// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> with the appropriate schema for storing ingestion chunks.
     /// </remarks>
     public VectorStoreWriter(VectorStoreCollection<Guid, TRecord> collection, VectorStoreWriterOptions? options = default)
@@ -130,7 +130,13 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
         }
 
         // Each Vector Store has a different max top count limit, so we use low value and loop.
-        const int MaxTopCount = 1_000;
+        // Use smaller batch size in debug to be able to test the looping logic without needing to insert a lot of records.
+        const int MaxTopCount =
+#if RELEASE
+            1_000;
+#else
+            10;
+#endif
 
         List<Guid> keys = [];
         int insertedCount;

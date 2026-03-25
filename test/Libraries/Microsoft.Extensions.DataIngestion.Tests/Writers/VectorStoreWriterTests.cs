@@ -245,10 +245,9 @@ public abstract class VectorStoreWriterTests
 
         IngestionDocument document = new(documentId);
 
-        // Create more chunks than the MaxTopCount (1000) to test pagination
-        // We create 2500 chunks to ensure multiple batches
+        // Create enough chunks to exercise the incremental ingestion delete-all behavior in DEBUG builds
         List<IngestionChunk<string>> chunks = [];
-        for (int i = 0; i < 2500; i++)
+        for (int i = 0; i < 50; i++)
         {
             chunks.Add(TestChunkFactory.CreateChunk($"chunk {i}", document));
         }
