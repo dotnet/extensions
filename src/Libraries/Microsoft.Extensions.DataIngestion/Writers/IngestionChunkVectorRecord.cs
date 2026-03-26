@@ -20,37 +20,27 @@ namespace Microsoft.Extensions.DataIngestion;
 public class IngestionChunkVectorRecord<TChunk>
 {
     /// <summary>
-    /// The storage name for the <see cref="Embedding"/> property.
-    /// </summary>
-    protected const string EmbeddingStorageName = VectorStoreExtensions.EmbeddingStorageName;
-
-    private const string KeyStorageName = "key";
-    private const string DocumentIdStorageName = "documentid";
-    private const string ContentStorageName = "content";
-    private const string ContextStorageName = "context";
-
-    /// <summary>
     /// Gets or sets the unique key for this record.
     /// </summary>
-    [VectorStoreKey(StorageName = KeyStorageName)]
+    [VectorStoreKey]
     public virtual Guid Key { get; set; }
 
     /// <summary>
     /// Gets or sets the identifier of the document from which this chunk was extracted.
     /// </summary>
-    [VectorStoreData(StorageName = DocumentIdStorageName)]
+    [VectorStoreData]
     public virtual string DocumentId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the content of the chunk.
     /// </summary>
-    [VectorStoreData(StorageName = ContentStorageName)]
+    [VectorStoreData]
     public virtual TChunk? Content { get; set; }
 
     /// <summary>
     /// Gets or sets additional context for the chunk.
     /// </summary>
-    [VectorStoreData(StorageName = ContextStorageName)]
+    [VectorStoreData]
     public virtual string? Context { get; set; }
 
     /// <summary>

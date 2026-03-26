@@ -9,6 +9,6 @@ public class IngestedChunk : IngestionChunkVectorRecord<string>
     public const string VectorDistanceFunction = DistanceFunction.CosineDistance;
     public const string CollectionName = "data-aichatweb-chunks";
 
-    [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction, StorageName = EmbeddingStorageName)]
+    [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction)]
     public override string? Embedding => Content;
 }
