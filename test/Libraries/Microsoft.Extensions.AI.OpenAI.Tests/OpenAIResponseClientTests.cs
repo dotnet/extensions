@@ -7101,5 +7101,313 @@ public class OpenAIResponseClientTests
         var textContent = message.Contents.OfType<TextContent>().Single();
         Assert.Equal(".NET 10 was officially released.", textContent.Text);
     }
+
+    [Fact]
+    public async Task ToolSearchTool_OnlyToolSearch_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-4o-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools = [new HostedToolSearchTool()],
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolSearchTool_SearchableFunctionsDeferred_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "function",
+                        "name": "GetWeather",
+                        "description": "Gets the weather.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true,
+                        "defer_loading": true
+                    },
+                    {
+                        "type": "function",
+                        "name": "GetForecast",
+                        "description": "Gets the forecast.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true,
+                        "defer_loading": true
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-4o-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var getWeather = AIFunctionFactory.Create(() => 42, "GetWeather", "Gets the weather.");
+        var getForecast = AIFunctionFactory.Create(() => 42, "GetForecast", "Gets the forecast.");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool(),
+                new SearchableAIFunctionDeclaration(getWeather),
+                new SearchableAIFunctionDeclaration(getForecast),
+            ],
+            AdditionalProperties = new() { ["strict"] = true },
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolSearchTool_MixedSearchableAndPlainFunctions_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "function",
+                        "name": "GetWeather",
+                        "description": "Gets the weather.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true,
+                        "defer_loading": true
+                    },
+                    {
+                        "type": "function",
+                        "name": "ImportantTool",
+                        "description": "An important tool.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-4o-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var getWeather = AIFunctionFactory.Create(() => 42, "GetWeather", "Gets the weather.");
+        var importantTool = AIFunctionFactory.Create(() => 42, "ImportantTool", "An important tool.");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool(),
+                new SearchableAIFunctionDeclaration(getWeather),
+                importantTool,
+            ],
+            AdditionalProperties = new() { ["strict"] = true },
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolSearchTool_NoFunctionTools_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "web_search"
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-4o-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool(),
+                new HostedWebSearchTool(),
+            ],
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
 }
 
