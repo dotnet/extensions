@@ -27,15 +27,23 @@ public class VideoGenerationOptions
         }
 
         AdditionalProperties = other.AdditionalProperties?.Clone();
+        AspectRatio = other.AspectRatio;
         Count = other.Count;
         Duration = other.Duration;
         FramesPerSecond = other.FramesPerSecond;
+        GenerateAudio = other.GenerateAudio;
         MediaType = other.MediaType;
         ModelId = other.ModelId;
         RawRepresentationFactory = other.RawRepresentationFactory;
         ResponseFormat = other.ResponseFormat;
+        Seed = other.Seed;
         VideoSize = other.VideoSize;
     }
+
+    /// <summary>
+    /// Gets or sets the desired aspect ratio for the generated video (e.g., "16:9", "9:16", "1:1").
+    /// </summary>
+    public string? AspectRatio { get; set; }
 
     /// <summary>
     /// Gets or sets the number of videos to generate.
@@ -54,6 +62,11 @@ public class VideoGenerationOptions
     /// Gets or sets the desired frames per second for the generated video.
     /// </summary>
     public int? FramesPerSecond { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to generate synchronized audio alongside the video.
+    /// </summary>
+    public bool? GenerateAudio { get; set; }
 
     /// <summary>
     /// Gets or sets the media type (also known as MIME type) of the generated video.
@@ -90,6 +103,11 @@ public class VideoGenerationOptions
     public VideoGenerationResponseFormat? ResponseFormat { get; set; }
 
     /// <summary>
+    /// Gets or sets a seed value for reproducible generation.
+    /// </summary>
+    public int? Seed { get; set; }
+
+    /// <summary>
     /// Gets or sets the size (resolution) of the generated video.
     /// </summary>
     /// <remarks>
@@ -113,9 +131,6 @@ public class VideoGenerationOptions
 /// <summary>
 /// Represents the requested response format of the generated video.
 /// </summary>
-/// <remarks>
-/// Not all implementations support all response formats and this value might be ignored by the implementation if not supported.
-/// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIVideoGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public enum VideoGenerationResponseFormat
 {

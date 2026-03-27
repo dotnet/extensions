@@ -35,6 +35,9 @@ public class VideoGenerationRequest
     /// <summary>Gets or sets the prompt to guide the video generation.</summary>
     public string? Prompt { get; set; }
 
+    /// <summary>Gets or sets a negative prompt describing what to avoid in the generated video.</summary>
+    public string? NegativePrompt { get; set; }
+
     /// <summary>Gets or sets the kind of video operation to perform.</summary>
     /// <remarks>
     /// Defaults to <see cref="VideoOperationKind.Create"/>. Set to <see cref="VideoOperationKind.Edit"/> or
