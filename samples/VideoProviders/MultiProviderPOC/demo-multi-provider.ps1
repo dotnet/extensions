@@ -57,7 +57,7 @@ $providerMap = @{
 }
 
 if ($Providers -ne "") {
-    $activeProviders = $Providers -split "," | ForEach-Object { $_.Trim().ToLower() }
+    $activeProviders = @($Providers -split "," | ForEach-Object { $_.Trim().ToLower() })
 } else {
     $activeProviders = @()
     foreach ($p in $providerMap.Keys) {
@@ -187,16 +187,15 @@ function Run-Veo {
     Write-Host ""
     Write-Host ("═" * 70) -ForegroundColor Green
     Write-Host "  GOOGLE VEO" -ForegroundColor Green
-    Write-Host "  Features: text-to-video, image-to-video, audio, negative prompt, seed, aspect ratio" -ForegroundColor Green
+    Write-Host "  Features: text-to-video, image-to-video, native audio, negative prompt, seed, aspect ratio" -ForegroundColor Green
     Write-Host ("═" * 70) -ForegroundColor Green
 
-    # 1. Text-to-video with audio and negative prompt
-    $t2vPath = Join-Path $OutputDir "veo_01_text2video_audio.mp4"
-    Skip-OrRun "veo_t2v" "Veo: Text-to-video with audio" $t2vPath {
-        $out = Invoke-Tool "Veo: Text-to-video + audio + negative prompt" @(
+    # 1. Text-to-video with negative prompt
+    $t2vPath = Join-Path $OutputDir "veo_01_text2video.mp4"
+    Skip-OrRun "veo_t2v" "Veo: Text-to-video" $t2vPath {
+        $out = Invoke-Tool "Veo: Text-to-video + negative prompt" @(
             "generate", "--provider", "veo",
             "A serene mountain lake at dawn, birds singing, gentle water ripples.",
-            "--audio",
             "--negative-prompt", "people, buildings, cars, text, watermark",
             "--aspect-ratio", "16:9",
             "--duration", "8",
@@ -223,11 +222,11 @@ function Run-Veo {
     if ($ReferenceImage -ne "" -and (Test-Path $ReferenceImage)) {
         $i2vPath = Join-Path $OutputDir "veo_03_image2video.mp4"
         Skip-OrRun "veo_i2v" "Veo: Image-to-video" $i2vPath {
-            $out = Invoke-Tool "Veo: Image-to-video with audio" @(
+            $out = Invoke-Tool "Veo: Image-to-video" @(
                 "image-to-video", "--provider", "veo",
                 "The scene in the image comes to life with natural movement and ambient sounds.",
                 "--image", $ReferenceImage,
-                "--audio", "--duration", "4",
+                "--duration", "4",
                 "--output", $i2vPath
             )
             return (Extract-Id $out "OPERATION_ID")

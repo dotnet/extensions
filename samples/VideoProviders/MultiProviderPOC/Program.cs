@@ -394,8 +394,10 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
         VideoGenerationRequest request, VideoGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         string model = options?.ModelId ?? _modelId;
-        var body = new JsonObject();
-        if (request.Prompt is not null) body["prompt"] = request.Prompt;
+
+        // Build the instance object (prompt, image)
+        var instance = new JsonObject();
+        if (request.Prompt is not null) instance["prompt"] = request.Prompt;
 
         if (request.OperationKind == VideoOperationKind.Create && request.OriginalMedia is not null)
         {
@@ -403,33 +405,43 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
             {
                 if (item is DataContent dc && (dc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ?? false) && dc.Data.Length > 0)
                 {
-                    body["image"] = new JsonObject { ["imageBytes"] = Convert.ToBase64String(dc.Data.ToArray()), ["mimeType"] = dc.MediaType };
+                    instance["image"] = new JsonObject { ["bytesBase64Encoded"] = Convert.ToBase64String(dc.Data.ToArray()), ["mimeType"] = dc.MediaType };
                     break;
                 }
 
                 if (item is UriContent uc)
                 {
-                    body["image"] = new JsonObject { ["imageUri"] = uc.Uri.ToString() };
+                    instance["image"] = new JsonObject { ["gcsUri"] = uc.Uri.ToString() };
                     break;
                 }
             }
         }
 
-        var config = new JsonObject();
-        if (options?.Duration is { } dur) config["durationSeconds"] = ((int)dur.TotalSeconds).ToString();
-        if (options?.AspectRatio is { } ar) config["aspectRatio"] = ar;
-        if (options?.Count is { } cnt) config["numberOfVideos"] = cnt;
-        if (options?.Seed is int seed) config["seed"] = seed;
-        if (options?.GenerateAudio == true) config["generateAudio"] = true;
-        if (request.NegativePrompt is { } neg) config["negativePrompt"] = neg;
-        if (options?.AdditionalProperties?.TryGetValue("personGeneration", out object? pg) == true && pg is string pgs) config["personGeneration"] = pgs;
-        if (config.Count > 0) body["generationConfig"] = config;
+        // Build the parameters object (generation config)
+        var parameters = new JsonObject();
+        if (options?.Duration is { } dur) parameters["durationSeconds"] = (int)dur.TotalSeconds;
+        if (options?.AspectRatio is { } ar) parameters["aspectRatio"] = ar;
+        if (options?.Count is { } cnt) parameters["numberOfVideos"] = cnt;
+        if (options?.Seed is int seed) parameters["seed"] = seed;
+        if (options?.GenerateAudio == true) parameters["generateAudio"] = true;
+        if (request.NegativePrompt is { } neg) parameters["negativePrompt"] = neg;
+        if (options?.AdditionalProperties?.TryGetValue("personGeneration", out object? pg) == true && pg is string pgs) parameters["personGeneration"] = pgs;
 
-        string url = $"{BaseUrl}/models/{model}:generateVideos?key={_apiKey}";
+        // Wrap in instances/parameters envelope for predictLongRunning
+        var body = new JsonObject
+        {
+            ["instances"] = new JsonArray { instance },
+        };
+        if (parameters.Count > 0) body["parameters"] = parameters;
+
+        string url = $"{BaseUrl}/models/{model}:predictLongRunning?key={_apiKey}";
         using var content = new StringContent(body.ToJsonString(), System.Text.Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync(url, content, cancellationToken);
         string responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Google Veo API error {(int)response.StatusCode} ({response.StatusCode}): {responseBody}");
+        }
         var result = JsonDocument.Parse(responseBody);
         string opName = result.RootElement.GetProperty("name").GetString()!;
         return new GoogleVeoVideoGenerationOperation(opName, _apiKey, _httpClient, model);
@@ -466,16 +478,22 @@ internal sealed class GoogleVeoVideoGenerationOperation : VideoGenerationOperati
     {
         using var resp = await _httpClient.GetAsync($"{BaseUrl}/{OperationId}?key={_apiKey}", cancellationToken);
         string body = await resp.Content.ReadAsStringAsync(cancellationToken);
-        resp.EnsureSuccessStatusCode();
+        if (!resp.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Google Veo poll error {(int)resp.StatusCode} ({resp.StatusCode}): {body}");
+        }
         using var doc = JsonDocument.Parse(body);
         var root = doc.RootElement;
         _done = root.TryGetProperty("done", out var d) && d.GetBoolean();
         if (_done) _status = "COMPLETED";
         if (root.TryGetProperty("error", out var err)) { _failureReason = err.ToString(); _status = "FAILED"; _done = true; }
         _videoUris.Clear();
-        if (root.TryGetProperty("response", out var response) && response.TryGetProperty("generatedVideos", out var vids))
-            foreach (var v in vids.EnumerateArray())
-                if (v.TryGetProperty("video", out var video) && video.TryGetProperty("uri", out var uri))
+        // predictLongRunning response: response.generateVideoResponse.generatedSamples[].video.uri
+        if (root.TryGetProperty("response", out var response) &&
+            response.TryGetProperty("generateVideoResponse", out var videoResponse) &&
+            videoResponse.TryGetProperty("generatedSamples", out var samples))
+            foreach (var s in samples.EnumerateArray())
+                if (s.TryGetProperty("video", out var video) && video.TryGetProperty("uri", out var uri))
                     _videoUris.Add(uri.GetString()!);
     }
 
@@ -498,8 +516,10 @@ internal sealed class GoogleVeoVideoGenerationOperation : VideoGenerationOperati
         var results = new List<AIContent>();
         foreach (var uri in _videoUris)
         {
+            // Append API key to download URI
+            string downloadUri = uri.Contains('?') ? $"{uri}&key={_apiKey}" : $"{uri}?key={_apiKey}";
             if (options?.ResponseFormat == VideoGenerationResponseFormat.Uri) { results.Add(new UriContent(new Uri(uri), "video/mp4")); continue; }
-            using var r = await _httpClient.GetAsync(uri, cancellationToken); r.EnsureSuccessStatusCode();
+            using var r = await _httpClient.GetAsync(downloadUri, cancellationToken); r.EnsureSuccessStatusCode();
             results.Add(new DataContent(await r.Content.ReadAsByteArrayAsync(cancellationToken), "video/mp4"));
         }
 

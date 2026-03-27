@@ -65,14 +65,16 @@ internal sealed class GoogleVeoVideoGenerationOperation : VideoGenerationOperati
         {
             _status = "SUCCEEDED";
 
-            // Parse generated videos
+            // Parse generated videos — predictLongRunning response format:
+            // response.generateVideoResponse.generatedSamples[].video.uri
             if (root.TryGetProperty("response", out var resp) &&
-                resp.TryGetProperty("generatedVideos", out var videos))
+                resp.TryGetProperty("generateVideoResponse", out var videoResponse) &&
+                videoResponse.TryGetProperty("generatedSamples", out var samples))
             {
                 _videoUris.Clear();
-                foreach (var video in videos.EnumerateArray())
+                foreach (var sample in samples.EnumerateArray())
                 {
-                    if (video.TryGetProperty("video", out var videoObj) &&
+                    if (sample.TryGetProperty("video", out var videoObj) &&
                         videoObj.TryGetProperty("uri", out var uri))
                     {
                         _videoUris.Add(uri.GetString()!);
@@ -126,13 +128,16 @@ internal sealed class GoogleVeoVideoGenerationOperation : VideoGenerationOperati
         var results = new List<AIContent>();
         foreach (string videoUri in _videoUris)
         {
+            // Append API key to download URI
+            string downloadUri = videoUri.Contains('?') ? $"{videoUri}&key={_apiKey}" : $"{videoUri}?key={_apiKey}";
+
             if (options?.ResponseFormat == VideoGenerationResponseFormat.Uri)
             {
                 results.Add(new UriContent(new Uri(videoUri), "video/mp4"));
             }
             else
             {
-                using var response = await _httpClient.GetAsync(videoUri, cancellationToken);
+                using var response = await _httpClient.GetAsync(downloadUri, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 byte[] data = await response.Content.ReadAsByteArrayAsync(cancellationToken);
                 results.Add(new DataContent(data, "video/mp4"));

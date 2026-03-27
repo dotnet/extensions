@@ -15,7 +15,7 @@ namespace GoogleVeo;
 /// </summary>
 /// <remarks>
 /// API Reference: https://ai.google.dev/gemini-api/docs/video
-/// Endpoint: POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateVideos
+/// Endpoint: POST https://generativelanguage.googleapis.com/v1beta/models/{model}:predictLongRunning
 /// Polling:  GET  https://generativelanguage.googleapis.com/v1beta/{operation.name}
 /// </remarks>
 internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
@@ -41,12 +41,14 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
         ArgumentNullException.ThrowIfNull(request);
 
         string model = options?.ModelId ?? _modelId;
-        var body = new JsonObject();
+
+        // Build instance object (prompt, image, reference images, last frame, extension)
+        var instance = new JsonObject();
 
         // Text prompt (required for most operations)
         if (request.Prompt is not null)
         {
-            body["prompt"] = request.Prompt;
+            instance["prompt"] = request.Prompt;
         }
 
         // Image for image-to-video
@@ -55,59 +57,65 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
             var image = GetFirstImageContent(request.OriginalMedia);
             if (image is not null)
             {
-                body["image"] = image;
+                instance["image"] = image;
             }
         }
 
         // Reference images (provider-specific via AdditionalProperties)
         if (options?.AdditionalProperties?.TryGetValue("referenceImages", out object? refImgs) == true && refImgs is JsonArray refArray)
         {
-            body["referenceImages"] = JsonNode.Parse(refArray.ToJsonString())!;
+            instance["referenceImages"] = JsonNode.Parse(refArray.ToJsonString())!;
         }
 
         // Last frame for first+last frame interpolation
         if (options?.AdditionalProperties?.TryGetValue("lastFrameImage", out object? lastFrame) == true)
         {
-            body["lastFrame"] = new JsonObject
+            instance["lastFrame"] = new JsonObject
             {
                 ["image"] = BuildImageNode(lastFrame),
             };
         }
 
-        // Generation config
-        var config = new JsonObject();
+        // Video extension
+        if (request.OperationKind == VideoOperationKind.Extend && request.SourceVideoId is not null)
+        {
+            instance["extensionSourceVideoId"] = request.SourceVideoId;
+        }
+
+        // Build the parameters object (generation config)
+        var parameters = new JsonObject();
 
         if (options?.AdditionalProperties?.TryGetValue("personGeneration", out object? personGen) == true && personGen is string personGenStr)
         {
-            config["personGeneration"] = personGenStr;
+            parameters["personGeneration"] = personGenStr;
         }
 
         if (options?.Duration is { } duration)
         {
-            config["durationSeconds"] = ((int)duration.TotalSeconds).ToString();
+            parameters["durationSeconds"] = (int)duration.TotalSeconds;
         }
 
         if (options?.VideoSize is { } size)
         {
-            config["resolution"] = MapResolution(size);
+            parameters["resolution"] = MapResolution(size);
         }
 
         if (options?.AspectRatio is { } aspectRatio)
         {
-            config["aspectRatio"] = aspectRatio;
+            parameters["aspectRatio"] = aspectRatio;
         }
         else if (options?.AdditionalProperties?.TryGetValue("aspectRatio", out object? ar) == true && ar is string arStr)
         {
-            config["aspectRatio"] = arStr;
+            parameters["aspectRatio"] = arStr;
         }
 
         if (options?.AdditionalProperties?.TryGetValue("numberOfVideos", out object? numVids) == true && numVids is int numVidsInt)
         {
-            config["numberOfVideos"] = numVidsInt;
+            parameters["numberOfVideos"] = numVidsInt;
         }
         else if (options?.Count is { } count)
         {
-            config["numberOfVideos"] = count;
+            parameters["numberOfVideos"] = count;
         }
 
         // Negative prompt — prefer first-class property on request, fall back to AdditionalProperties
@@ -119,48 +127,47 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
 
         if (negativePrompt is not null)
         {
-            config["negativePrompt"] = negativePrompt;
+            parameters["negativePrompt"] = negativePrompt;
         }
 
         if (options?.GenerateAudio is bool genAudio)
         {
-            config["generateAudio"] = genAudio;
+            parameters["generateAudio"] = genAudio;
         }
         else if (options?.AdditionalProperties?.TryGetValue("generateAudio", out object? genAudioObj) == true && genAudioObj is bool genAudioBool)
         {
-            config["generateAudio"] = genAudioBool;
+            parameters["generateAudio"] = genAudioBool;
         }
 
         if (options?.Seed is int seed)
         {
-            config["seed"] = seed;
+            parameters["seed"] = seed;
         }
         else if (options?.AdditionalProperties?.TryGetValue("seed", out object? seedObj) == true && seedObj is int seedInt)
         {
-            config["seed"] = seedInt;
+            parameters["seed"] = seedInt;
         }
 
-        if (config.Count > 0)
+        // Wrap in instances/parameters envelope for predictLongRunning
+        var body = new JsonObject
         {
-            body["generationConfig"] = config;
-        }
-
-        // Video extension uses a different field structure
-        if (request.OperationKind == VideoOperationKind.Extend && request.SourceVideoId is not null)
+            ["instances"] = new JsonArray { instance },
+        };
+        if (parameters.Count > 0)
         {
-            // For extend, the sourceVideoId should be a video file URI or inline data
-            // The Veo API uses the image field for the last frame of the source video
-            // This is a simplification - real extension requires the Gemini Files API
-            body["extensionSourceVideoId"] = request.SourceVideoId;
+            body["parameters"] = parameters;
         }
 
-        string url = $"{BaseUrl}/models/{model}:generateVideos?key={_apiKey}";
+        string url = $"{BaseUrl}/models/{model}:predictLongRunning?key={_apiKey}";
         string json = body.ToJsonString();
         using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         using var response = await _httpClient.PostAsync(url, content, cancellationToken);
 
         string responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Google Veo API error {(int)response.StatusCode} ({response.StatusCode}): {responseBody}");
+        }
 
         var result = JsonDocument.Parse(responseBody);
         string operationName = result.RootElement.GetProperty("name").GetString()!;
@@ -188,7 +195,7 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
             {
                 return new JsonObject
                 {
-                    ["imageBytes"] = Convert.ToBase64String(dc.Data.ToArray()),
+                    ["bytesBase64Encoded"] = Convert.ToBase64String(dc.Data.ToArray()),
                     ["mimeType"] = dc.MediaType,
                 };
             }
@@ -197,7 +204,7 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
             {
                 return new JsonObject
                 {
-                    ["imageUri"] = uc.Uri.ToString(),
+                    ["gcsUri"] = uc.Uri.ToString(),
                 };
             }
         }
@@ -212,7 +219,7 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
             byte[] bytes = File.ReadAllBytes(path);
             return new JsonObject
             {
-                ["imageBytes"] = Convert.ToBase64String(bytes),
+                ["bytesBase64Encoded"] = Convert.ToBase64String(bytes),
                 ["mimeType"] = "image/png",
             };
         }
@@ -222,7 +229,7 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
             return node;
         }
 
-        return new JsonObject { ["imageUri"] = imageData.ToString() };
+        return new JsonObject { ["gcsUri"] = imageData.ToString() };
     }
 
     private static string MapResolution(Size size)
