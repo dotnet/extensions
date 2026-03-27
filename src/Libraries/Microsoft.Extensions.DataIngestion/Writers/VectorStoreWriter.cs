@@ -66,7 +66,6 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
 
             TRecord record = new()
             {
-                Key = Guid.NewGuid(),
                 Content = chunk.Content,
                 Context = chunk.Context,
                 DocumentId = chunk.Document.Identifier,
