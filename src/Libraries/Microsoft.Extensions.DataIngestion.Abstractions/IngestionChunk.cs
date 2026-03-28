@@ -21,11 +21,10 @@ public sealed class IngestionChunk<T>
     /// Initializes a new instance of the <see cref="IngestionChunk{T}"/> class.
     /// </summary>
     /// <param name="content">The content of the chunk.</param>
-    /// <param name="document">The document from which this chunk was extracted.</param>
     /// <param name="tokenCount">The number of tokens used to represent the chunk.</param>
     /// <param name="context">Additional context for the chunk.</param>
     /// <exception cref="ArgumentNullException">
-    /// <paramref name="content"/> or <paramref name="document"/> is <see langword="null"/>.
+    /// <paramref name="content"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// <paramref name="content"/> is a string that is empty or contains only white-space characters.
@@ -33,7 +32,7 @@ public sealed class IngestionChunk<T>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="tokenCount"/> is negative.
     /// </exception>
-    public IngestionChunk(T content, IngestionDocument document, int tokenCount, string? context = null)
+    public IngestionChunk(T content, int tokenCount, string? context = null)
     {
         if (typeof(T) == typeof(string))
         {
@@ -44,7 +43,6 @@ public sealed class IngestionChunk<T>
             Content = Throw.IfNull(content);
         }
 
-        Document = Throw.IfNull(document);
         Context = context;
         TokenCount = Throw.IfLessThanOrEqual(tokenCount, 0);
     }
@@ -53,11 +51,6 @@ public sealed class IngestionChunk<T>
     /// Gets the content of the chunk.
     /// </summary>
     public T Content { get; }
-
-    /// <summary>
-    /// Gets the document from which this chunk was extracted.
-    /// </summary>
-    public IngestionDocument Document { get; }
 
     /// <summary>
     /// Gets additional context for the chunk.

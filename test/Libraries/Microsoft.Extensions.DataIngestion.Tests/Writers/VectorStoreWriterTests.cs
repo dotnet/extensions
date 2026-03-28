@@ -47,11 +47,11 @@ public abstract class VectorStoreWriterTests
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
 
         IngestionDocument document = new(documentId);
-        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("custom schema content", document);
+        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("custom schema content");
 
         List<IngestionChunk<string>> chunks = [chunk];
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(chunks.ToAsyncEnumerable(), document);
 
         IngestionChunkVectorRecord<string> record = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
@@ -77,12 +77,12 @@ public abstract class VectorStoreWriterTests
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
 
         IngestionDocument document = new(documentId);
-        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("some content", document);
+        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("some content");
 
         List<IngestionChunk<string>> chunks = [chunk];
 
         Assert.False(testEmbeddingGenerator.WasCalled);
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(chunks.ToAsyncEnumerable(), document);
 
         IngestionChunkVectorRecord<string> record = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
@@ -107,12 +107,12 @@ public abstract class VectorStoreWriterTests
         using TestVectorStoreWriterWithMetadata writer = new(collection);
 
         IngestionDocument document = new(documentId);
-        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("some content", document);
+        IngestionChunk<string> chunk = TestChunkFactory.CreateChunk("some content");
         chunk.Metadata["Classification"] = "important";
 
         List<IngestionChunk<string>> chunks = [chunk];
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(chunks.ToAsyncEnumerable(), document);
 
         TestChunkRecordWithMetadata record = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
@@ -143,12 +143,12 @@ public abstract class VectorStoreWriterTests
             });
 
         IngestionDocument document = new(documentId);
-        IngestionChunk<string> chunk1 = TestChunkFactory.CreateChunk("first chunk", document);
-        IngestionChunk<string> chunk2 = TestChunkFactory.CreateChunk("second chunk", document);
+        IngestionChunk<string> chunk1 = TestChunkFactory.CreateChunk("first chunk");
+        IngestionChunk<string> chunk2 = TestChunkFactory.CreateChunk("second chunk");
 
         List<IngestionChunk<string>> chunks = [chunk1, chunk2];
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(chunks.ToAsyncEnumerable(), document);
 
         int recordCount = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 100)
@@ -156,11 +156,11 @@ public abstract class VectorStoreWriterTests
         Assert.Equal(chunks.Count, recordCount);
 
         // Now we will do an incremental ingestion that updates the chunk(s).
-        IngestionChunk<string> updatedChunk = TestChunkFactory.CreateChunk("different content", document);
+        IngestionChunk<string> updatedChunk = TestChunkFactory.CreateChunk("different content");
 
         List<IngestionChunk<string>> updatedChunks = [updatedChunk];
 
-        await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
+        await writer.WriteAsync(updatedChunks.ToAsyncEnumerable(), document);
 
         // We ask for 100 records, but we expect only 1 as the previous 2 should have been deleted.
         IngestionChunkVectorRecord<string> record = await writer.VectorStoreCollection
@@ -213,10 +213,10 @@ public abstract class VectorStoreWriterTests
         List<IngestionChunk<string>> chunks = [];
         for (int i = 0; i < chunkTokenCounts.Length; i++)
         {
-            chunks.Add(new($"chunk {i + 1}", document, context: null, tokenCount: chunkTokenCounts[i]));
+            chunks.Add(new($"chunk {i + 1}", tokenCount: chunkTokenCounts[i]));
         }
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(chunks.ToAsyncEnumerable(), document);
 
         int recordCount = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 100)
@@ -249,10 +249,10 @@ public abstract class VectorStoreWriterTests
         List<IngestionChunk<string>> chunks = [];
         for (int i = 0; i < 50; i++)
         {
-            chunks.Add(TestChunkFactory.CreateChunk($"chunk {i}", document));
+            chunks.Add(TestChunkFactory.CreateChunk($"chunk {i}"));
         }
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(chunks.ToAsyncEnumerable(), document);
 
         int recordCount = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 10000)
@@ -262,11 +262,11 @@ public abstract class VectorStoreWriterTests
         // Now we will do an incremental ingestion that should delete all pre-existing chunks
         List<IngestionChunk<string>> updatedChunks =
         [
-            TestChunkFactory.CreateChunk("updated chunk 1", document),
-            TestChunkFactory.CreateChunk("updated chunk 2", document)
+            TestChunkFactory.CreateChunk("updated chunk 1"),
+            TestChunkFactory.CreateChunk("updated chunk 2")
         ];
 
-        await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
+        await writer.WriteAsync(updatedChunks.ToAsyncEnumerable(), document);
 
         // Verify that all old records were deleted and only the new ones remain
         List<IngestionChunkVectorRecord<string>> records = await writer.VectorStoreCollection

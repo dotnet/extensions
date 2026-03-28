@@ -187,7 +187,7 @@ public sealed class IngestionPipeline<T> : IDisposable
         }
 
         _logger?.WritingChunks(GetShortName(_writer));
-        await _writer.WriteAsync(chunks, cancellationToken).ConfigureAwait(false);
+        await _writer.WriteAsync(chunks, document, cancellationToken).ConfigureAwait(false);
         _logger?.WroteChunks(document.Identifier);
 
         return document;

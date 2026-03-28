@@ -35,7 +35,7 @@ public sealed class SectionChunker : IngestionChunker<string>
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Process(document, section, chunks);
+            Process(section, chunks);
             foreach (var chunk in chunks)
             {
                 yield return chunk;
@@ -44,7 +44,7 @@ public sealed class SectionChunker : IngestionChunker<string>
         }
     }
 
-    private void Process(IngestionDocument document, IngestionDocumentSection section, List<IngestionChunk<string>> chunks, string? parentContext = null)
+    private void Process(IngestionDocumentSection section, List<IngestionChunk<string>> chunks, string? parentContext = null)
     {
         List<IngestionDocumentElement> elements = new(section.Elements.Count);
         string context = parentContext ?? string.Empty;
@@ -62,7 +62,7 @@ public sealed class SectionChunker : IngestionChunker<string>
                     break;
                 case IngestionDocumentSection nestedSection:
                     Commit();
-                    Process(document, nestedSection, chunks, context);
+                    Process(nestedSection, chunks, context);
                     break;
                 default:
                     elements.Add(section.Elements[i]);
@@ -76,7 +76,7 @@ public sealed class SectionChunker : IngestionChunker<string>
         {
             if (elements.Count > 0)
             {
-                foreach (var chunk in _elementsChunker.Process(document, context, elements))
+                foreach (var chunk in _elementsChunker.Process(context, elements))
                 {
                     chunks.Add(chunk);
                 }

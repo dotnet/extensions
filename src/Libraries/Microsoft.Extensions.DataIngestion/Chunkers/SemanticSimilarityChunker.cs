@@ -50,7 +50,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
         _ = Throw.IfNull(document);
 
         List<(IngestionDocumentElement, float)> distances = await CalculateDistancesAsync(document, cancellationToken).ConfigureAwait(false);
-        foreach (var chunk in MakeChunks(document, distances))
+        foreach (var chunk in MakeChunks(distances))
         {
             yield return chunk;
         }
@@ -93,7 +93,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
         return elementDistances;
     }
 
-    private IEnumerable<IngestionChunk<string>> MakeChunks(IngestionDocument document, List<(IngestionDocumentElement element, float distance)> elementDistances)
+    private IEnumerable<IngestionChunk<string>> MakeChunks(List<(IngestionDocumentElement element, float distance)> elementDistances)
     {
         float distanceThreshold = Percentile(elementDistances);
 
@@ -106,7 +106,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
             elementAccumulator.Add(element);
             if (distance > distanceThreshold || i == elementDistances.Count - 1)
             {
-                foreach (var chunk in _elementsChunker.Process(document, context, elementAccumulator))
+                foreach (var chunk in _elementsChunker.Process(context, elementAccumulator))
                 {
                     yield return chunk;
                 }
