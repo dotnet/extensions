@@ -16,8 +16,6 @@ namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
 
 public class SentimentEnricherTests
 {
-    private static readonly IngestionDocument _document = new("test");
-
     [Fact]
     public void ThrowsOnNullOptions()
     {
@@ -107,9 +105,9 @@ public class SentimentEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
-        TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document),
-        TestChunkFactory.CreateChunk("The weather is okay, not too bad but not great either.", _document),
-        TestChunkFactory.CreateChunk("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.", _document)
+        TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding."),
+        TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming."),
+        TestChunkFactory.CreateChunk("The weather is okay, not too bad but not great either."),
+        TestChunkFactory.CreateChunk("I hate you. I am sorry, I actually don't. I am not sure myself what my feelings are.")
     ];
 }
