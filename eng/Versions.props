@@ -36,7 +36,6 @@
     <MicrosoftBclAsyncInterfacesVersion>9.0.14</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclMemoryVersion>9.0.14</MicrosoftBclMemoryVersion>
     <MicrosoftBclTimeProviderVersion>9.0.14</MicrosoftBclTimeProviderVersion>
-    <MicrosoftExtensionsAIAbstractionsVersion>9.10.2</MicrosoftExtensionsAIAbstractionsVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.14</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>9.0.14</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.14</MicrosoftExtensionsConfigurationAbstractionsVersion>
@@ -94,7 +93,6 @@
     <MicrosoftBclAsyncInterfacesNet10Version>10.0.4</MicrosoftBclAsyncInterfacesNet10Version>
     <MicrosoftBclMemoryNet10Version>10.0.4</MicrosoftBclMemoryNet10Version>
     <MicrosoftBclTimeProviderNet10Version>10.0.4</MicrosoftBclTimeProviderNet10Version>
-    <MicrosoftExtensionsAIAbstractionsNet10Version>10.4.1</MicrosoftExtensionsAIAbstractionsNet10Version>
     <MicrosoftExtensionsCachingAbstractionsNet10Version>10.0.4</MicrosoftExtensionsCachingAbstractionsNet10Version>
     <MicrosoftExtensionsCachingMemoryNet10Version>10.0.4</MicrosoftExtensionsCachingMemoryNet10Version>
     <MicrosoftExtensionsConfigurationAbstractionsNet10Version>10.0.4</MicrosoftExtensionsConfigurationAbstractionsNet10Version>
@@ -151,7 +149,6 @@
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclAsyncInterfacesLTSVersion>8.0.0</MicrosoftBclAsyncInterfacesLTSVersion>
     <MicrosoftBclTimeProviderLTSVersion>8.0.1</MicrosoftBclTimeProviderLTSVersion>
-    <MicrosoftExtensionsAIAbstractionsLTSVersion>9.10.2</MicrosoftExtensionsAIAbstractionsLTSVersion>
     <MicrosoftExtensionsCachingAbstractionsLTSVersion>8.0.0</MicrosoftExtensionsCachingAbstractionsLTSVersion>
     <MicrosoftExtensionsCachingMemoryLTSVersion>8.0.1</MicrosoftExtensionsCachingMemoryLTSVersion>
     <MicrosoftExtensionsConfigurationAbstractionsLTSVersion>8.0.0</MicrosoftExtensionsConfigurationAbstractionsLTSVersion>
