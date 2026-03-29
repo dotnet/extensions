@@ -57,7 +57,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
         /// <summary>
         /// Gets the expressions to sort by.
         /// </summary>
-        /// <remarks>This property is intended to be consumed by the connectors to retrieve the configuration.</remarks>
+        /// <remarks>This property is intended to be consumed by the providers to retrieve the configuration.</remarks>
         public IReadOnlyList<SortInfo> Values => _values;
 
         /// <summary>
@@ -93,7 +93,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
         /// <summary>
         /// Provides a way to define property ordering.
         /// </summary>
-        /// <remarks>This class is intended to be consumed by the connectors to retrieve the configuration.</remarks>
+        /// <remarks>This class is intended to be consumed by the providers to retrieve the configuration.</remarks>
         public sealed class SortInfo
         {
             internal SortInfo(Expression<Func<TRecord, object?>> propertySelector, bool isAscending)

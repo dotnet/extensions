@@ -44,7 +44,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
     /// Gets the kind of index to use.
     /// </summary>
     /// <value>
-    /// The default value varies by database type. See the documentation of your chosen database connector for more information.
+    /// The default value varies by database type. See the documentation of your chosen database provider for more information.
     /// </value>
     /// <seealso cref="IndexKind"/>
 #pragma warning disable CA1019 // Define accessors for attribute arguments: The constructor overload that contains this property is obsolete.
@@ -55,7 +55,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
     /// Gets the distance function to use when comparing vectors.
     /// </summary>
     /// <value>
-    /// The default value varies by database type. See the documentation of your chosen database connector for more information.
+    /// The default value varies by database type. See the documentation of your chosen database provider for more information.
     /// </value>
     /// <seealso cref="DistanceFunction"/>
 #pragma warning disable CA1019 // Define accessors for attribute arguments: The constructor overload that contains this property is obsolete.

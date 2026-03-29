@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a supported embedding type for a vector store provider.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 /// <remarks>
 /// Each instance encapsulates both build-time embedding type resolution and runtime embedding generation

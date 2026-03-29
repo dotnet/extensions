@@ -25,7 +25,7 @@ public static class VectorDataStrings
         => $"Vector property '{vectorProperty.ModelName}' has embedding type '{TypeName(userRequestedEmbeddingType)}' configured, but that type isn't supported by your provider. Supported types are {supportedVectorTypes}.";
 
     public static string EmbeddingGeneratorWithInvalidEmbeddingType(VectorPropertyModel vectorProperty)
-        => $"An embedding generator was configured on property '{vectorProperty.ModelName}', but output embedding type '{vectorProperty.EmbeddingType.Name}' isn't supported by the connector.";
+        => $"An embedding generator was configured on property '{vectorProperty.ModelName}', but output embedding type '{vectorProperty.EmbeddingType.Name}' isn't supported by the provider.";
 
     public static string EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(VectorPropertyModel vectorProperty)
         => $"Property '{vectorProperty.ModelName}' has embedding type '{TypeName(vectorProperty.Type)}', but an embedding generator is configured on the property. Remove the embedding generator or change the property's .NET type to a non-embedding input type to the generator (e.g. string).";

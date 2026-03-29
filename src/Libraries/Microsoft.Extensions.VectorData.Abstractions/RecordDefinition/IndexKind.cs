@@ -7,9 +7,9 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines a list of well-known index types that can be used to index vectors.
 /// </summary>
 /// <remarks>
-/// Not all Vector Store connectors support all index types, and some connectors might
+/// Not all Vector Store providers support all index types, and some providers might
 /// support additional index types that aren't defined here. For more information on what's
-/// supported, see the documentation for each connector.
+/// supported, see the documentation for each provider.
 /// </remarks>
 public static class IndexKind
 {

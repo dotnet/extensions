@@ -12,9 +12,9 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 /// <summary>
-/// Base class for filter translators used by vector data connectors.
+/// Base class for filter translators used by vector data providers.
 /// Provides common functionality for preprocessing filter expressions and matching common patterns.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public abstract class FilterTranslatorBase
@@ -271,7 +271,7 @@ public abstract class FilterTranslatorBase
             //
             // Some databases - mostly relational ones - support out-of-band parameters which can be referenced via placeholders
             // from the query itself. For those databases, we transform the member access to QueryParameterExpression (this simplifies things for those
-            // connectors, and centralizes the pattern matching in a single centralized place).
+            // providers, and centralizes the pattern matching in a single centralized place).
             // For databases which don't support parameters, we simply inline the evaluated member access as a constant in the tree, so that translators don't
             // even need to be aware of it.
 
@@ -322,13 +322,13 @@ public abstract class FilterTranslatorBase
                     return visited;
             }
 
-            // Inline the evaluated value (if the connector doesn't support parameterization, or if the field is readonly),
+            // Inline the evaluated value (if the provider doesn't support parameterization, or if the field is readonly),
             if (!_supportsParameterization)
             {
                 return Expression.Constant(evaluatedValue, visited.Type);
             }
 
-            // Otherwise, transform the node to a QueryParameterExpression which the connector will then translate to a parameter (e.g. SqlParameter).
+            // Otherwise, transform the node to a QueryParameterExpression which the provider will then translate to a parameter (e.g. SqlParameter).
 
             // TODO: Share the same parameter when it references the same captured value
 

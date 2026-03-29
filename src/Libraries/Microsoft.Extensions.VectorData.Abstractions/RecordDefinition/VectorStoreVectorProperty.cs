@@ -44,7 +44,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// Gets or sets the default embedding generator to use for this property.
     /// </summary>
     /// <remarks>
-    /// If not set, embedding generation will be performed in the database, if supported by your connector.
+    /// If not set, embedding generation will be performed in the database, if supported by your provider.
     /// Otherwise, if your database does not support embedding generation, only pregenerated embeddings can be used (for example, <c>ReadOnlyMemory&lt;float&gt;</c>).
     /// </remarks>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
@@ -75,7 +75,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// Gets or sets the kind of index to use.
     /// </summary>
     /// <value>
-    /// The default varies by database type. See the documentation of your chosen database connector for more information.
+    /// The default varies by database type. See the documentation of your chosen database provider for more information.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.IndexKind"/>
     public string? IndexKind { get; set; }
@@ -84,7 +84,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// Gets or sets the distance function to use when comparing vectors.
     /// </summary>
     /// <value>
-    /// The default varies by database type. See the documentation of your chosen database connector for more information.
+    /// The default varies by database type. See the documentation of your chosen database provider for more information.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
     public string? DistanceFunction { get; set; }

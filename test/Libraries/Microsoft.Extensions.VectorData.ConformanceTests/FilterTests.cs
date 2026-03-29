@@ -128,7 +128,7 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
     {
         int? i = null;
 
-        // TODO: Some connectors wrap filter translation exceptions in a VectorStoreException (#11766)
+        // TODO: Some providers wrap filter translation exceptions in a VectorStoreException (#11766)
         var exception = await Assert.ThrowsAnyAsync<Exception>(() => TestFilterAsync(
             r => r.Int == i.Value,
             r => (int)r["Int"] == i.Value,

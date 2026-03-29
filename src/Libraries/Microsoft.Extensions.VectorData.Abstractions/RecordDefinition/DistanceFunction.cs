@@ -7,9 +7,9 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines a list of well-known distance functions that can be used to compare vectors.
 /// </summary>
 /// <remarks>
-/// Not all Vector Store connectors support all distance functions, and some connectors might
+/// Not all Vector Store providers support all distance functions, and some providers might
 /// support additional distance functions that aren't defined here.
-/// For more information on what's supported, see the documentation for each connector.
+/// For more information on what's supported, see the documentation for each provider.
 /// </remarks>
 public static class DistanceFunction
 {

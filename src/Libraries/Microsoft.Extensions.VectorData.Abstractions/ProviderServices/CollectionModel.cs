@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a record in a vector store collection.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public sealed class CollectionModel
@@ -83,13 +83,13 @@ public sealed class CollectionModel
 
     /// <summary>
     /// Gets the single vector property in the model, and throws if there are multiple vector properties.
-    /// Suitable for connectors where validation is in place for single vectors only (<see cref="CollectionModelBuildingOptions.SupportsMultipleVectors"/>).
+    /// Suitable for providers where validation is in place for single vectors only (<see cref="CollectionModelBuildingOptions.SupportsMultipleVectors"/>).
     /// </summary>
     public VectorPropertyModel VectorProperty => _singleVectorProperty ??= VectorProperties.Single();
 
     // TODO: the pattern of first instantiating via parameterless constructor and then populating the properties isn't compatible
     // with read-only types, where properties have no setters. Supporting those would be problematic given the that different
-    // connectors have completely different representations of the data coming back from the database, and which needs to be
+    // providers have completely different representations of the data coming back from the database, and which needs to be
     // populated.
 
     /// <summary>

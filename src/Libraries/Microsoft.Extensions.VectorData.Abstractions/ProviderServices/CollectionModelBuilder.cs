@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a builder for a <see cref="CollectionModel"/>.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 /// <remarks>This class is single-use only, and not thread-safe.</remarks>
 [Experimental("MEVD9001")]
@@ -369,7 +369,7 @@ public abstract class CollectionModelBuilder
     /// The first type whose embedding generator is compatible with the input type will be used.
     /// </summary>
     /// <remarks>
-    /// Override this property in connectors that support additional embedding types beyond <see cref="Embedding{T}"/> of <see langword="float"/>.
+    /// Override this property in providers that support additional embedding types beyond <see cref="Embedding{T}"/> of <see langword="float"/>.
     /// </remarks>
     protected virtual IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; }
         = [EmbeddingGenerationDispatcher.Create<Embedding<float>>()];
@@ -461,7 +461,7 @@ public abstract class CollectionModelBuilder
     }
 
     /// <summary>
-    /// Extension hook for connectors to be able to customize the model.
+    /// Extension hook for providers to be able to customize the model.
     /// </summary>
     protected virtual void Customize()
     {

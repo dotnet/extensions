@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// A <see cref="EmbeddingGenerationDispatcher"/> implementation for a specific <typeparamref name="TEmbedding"/> type.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 /// <typeparam name="TEmbedding">The embedding type.</typeparam>
 [Experimental("MEVD9001")]

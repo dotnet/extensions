@@ -45,7 +45,7 @@ public class CollectionModelBuilderTests
                 new VectorStoreDataProperty(nameof(RecordWithEmbeddingVectorProperty.Name), typeof(string)),
                 new VectorStoreVectorProperty(nameof(RecordWithEmbeddingVectorProperty.Embedding), typeof(string), dimensions: 3)
                 {
-                    // The following configures the property to be Embedding<Half> (non-default embedding type for this connector)
+                    // The following configures the property to be Embedding<Half> (non-default embedding type for this provider)
                     EmbeddingType = typeof(Embedding<Half>)
                 }
             ]
@@ -216,7 +216,7 @@ public class CollectionModelBuilderTests
     [Fact]
     public void Incompatible_embedding_on_embedding_generator_throws()
     {
-        // Embedding<long> is not a supported embedding type by the connector
+        // Embedding<long> is not a supported embedding type by the provider
         using var embeddingGenerator = new FakeEmbeddingGenerator<string, Embedding<long>>();
 
         var exception = Assert.Throws<InvalidOperationException>(() =>

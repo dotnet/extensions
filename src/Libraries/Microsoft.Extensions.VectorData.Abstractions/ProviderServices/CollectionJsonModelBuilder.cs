@@ -11,8 +11,8 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
-/// Represents a model builder that performs logic specific to connectors that use System.Text.Json for serialization.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// Represents a model builder that performs logic specific to providers that use System.Text.Json for serialization.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
@@ -76,7 +76,7 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
             {
                 if (keyPropertyWithReservedName && jsonPropertyNameAttribute.Name != Options.ReservedKeyStorageName)
                 {
-                    throw new InvalidOperationException($"The key property for your connector must always have the reserved name '{Options.ReservedKeyStorageName}' and cannot be changed.");
+                    throw new InvalidOperationException($"The key property for your provider must always have the reserved name '{Options.ReservedKeyStorageName}' and cannot be changed.");
                 }
 
                 storageName = jsonPropertyNameAttribute.Name;
@@ -94,7 +94,7 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
             {
                 // Some providers (Weaviate, Cosmos NoSQL) have a fixed, reserved storage name for keys (id), and at the same time use an external
                 // JSON serializer to serialize the entire user POCO. Since the serializer is unaware of the reserved storage name, it will produce
-                // a storage name as usual, based on the .NET property's name, possibly with a naming policy applied to it. The connector then needs
+                // a storage name as usual, based on the .NET property's name, possibly with a naming policy applied to it. The provider then needs
                 // to look that up and replace with the reserved name.
                 ((KeyPropertyModel)property).SerializedKeyName = storageName;
             }

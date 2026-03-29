@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a property on a vector store record.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public abstract class PropertyModel(string modelName, Type type)
@@ -151,7 +151,7 @@ public abstract class PropertyModel(string modelName, Type type)
     /// </summary>
     /// <typeparam name="T">The type of the property value.</typeparam>
     /// <returns>The property value.</returns>
-    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
+    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in providers
     public T GetValue<T>(object record)
         => (T)GetValueAsObject(record)!;
 
@@ -159,7 +159,7 @@ public abstract class PropertyModel(string modelName, Type type)
     /// Writes the property from the given <paramref name="record"/>.
     /// </summary>
     /// <typeparam name="T">The type of the property value.</typeparam>
-    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
+    // TODO: actually implement the generic accessors to avoid boxing, and make use of them in providers
     public void SetValue<T>(object record, T value)
         => SetValueAsObject(record, value);
 }

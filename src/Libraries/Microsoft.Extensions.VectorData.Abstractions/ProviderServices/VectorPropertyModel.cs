@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a vector property on a vector store record.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public class VectorPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
@@ -46,7 +46,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// Gets or sets the kind of index to use.
     /// </summary>
     /// <value>
-    /// The default varies by database type. For more information, see the documentation of your chosen database connector.
+    /// The default varies by database type. For more information, see the documentation of your chosen database provider.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.IndexKind"/>
     public string? IndexKind { get; set; }
@@ -55,7 +55,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// Gets or sets the distance function to use when comparing vectors.
     /// </summary>
     /// <value>
-    /// The default varies by database type. For more information, see the documentation of your chosen database connector.
+    /// The default varies by database type. For more information, see the documentation of your chosen database provider.
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
     public string? DistanceFunction { get; set; }
@@ -113,7 +113,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
         {
             // On the TInput side, this out-of-the-box/simple implementation supports string and DataContent only
             // (users who want arbitrary TInput types need to use the generic subclass of this type).
-            // The TEmbedding side is provided by the connector via the generic type parameter to this method, as the connector controls/knows which embedding types are supported.
+            // The TEmbedding side is provided by the provider via the generic type parameter to this method, as the provider controls/knows which embedding types are supported.
             // Note that if the user has manually specified an embedding type (e.g. to choose Embedding<Half> rather than the default Embedding<float>),
             // that's provided via the userRequestedEmbeddingType argument; we use that as a filter.
             IEmbeddingGenerator<string, TEmbedding> when Type == typeof(string) && (userRequestedEmbeddingType is null || userRequestedEmbeddingType == typeof(TEmbedding))

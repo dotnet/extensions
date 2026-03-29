@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Represents a key property on a vector store record.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public class KeyPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
@@ -20,9 +20,9 @@ public class KeyPropertyModel(string modelName, Type type) : PropertyModel(model
 
     /// <summary>
     /// Gets or sets the name that the JSON serializer will produce for this key property.
-    /// This is needed for connectors that use an external JSON serializer combined with a reserved key storage name
+    /// This is needed for providers that use an external JSON serializer combined with a reserved key storage name
     /// (e.g. CosmosDB NoSQL uses "id"): the serializer produces a JSON object with the policy-transformed name, and
-    /// the connector needs to find and replace it with the reserved storage name.
+    /// the provider needs to find and replace it with the reserved storage name.
     /// </summary>
     public string? SerializedKeyName { get; set; }
 

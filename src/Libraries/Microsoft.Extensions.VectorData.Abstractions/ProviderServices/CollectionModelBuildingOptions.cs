@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <summary>
 /// Contains options affecting model building; passed to <see cref="CollectionModelBuilder"/>.
-/// This is an internal support type meant for use by connectors only and not by applications.
+/// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 [Experimental("MEVD9001")]
 public sealed class CollectionModelBuildingOptions
