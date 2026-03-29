@@ -88,8 +88,8 @@ public abstract class PropertyModel(string modelName, Type type)
     /// <summary>
     /// Configures the property accessors using a CLR <see cref="System.Reflection.PropertyInfo"/> for POCO mapping.
     /// </summary>
-    // TODO: Implement compiled delegates for better performance, #11122
-    // TODO: Implement source-generated accessors for NativeAOT, #10256
+    // TODO: Implement compiled delegates for better performance, https://github.com/microsoft/semantic-kernel/issues/11122
+    // TODO: Implement source-generated accessors for NativeAOT, https://github.com/microsoft/semantic-kernel/issues/10256
     internal void ConfigurePocoAccessors(PropertyInfo propertyInfo)
     {
         PropertyInfo = propertyInfo;
@@ -114,7 +114,7 @@ public abstract class PropertyModel(string modelName, Type type)
         _getter = record =>
         {
             var dictionary = (Dictionary<string, object?>)record;
-            var value = dictionary.TryGetValue(ModelName, out var tempValue) ? tempValue : null;
+            _ = dictionary.TryGetValue(ModelName, out var value);
 
             if (value is not null && value.GetType() != (Nullable.GetUnderlyingType(propertyType) ?? propertyType))
             {

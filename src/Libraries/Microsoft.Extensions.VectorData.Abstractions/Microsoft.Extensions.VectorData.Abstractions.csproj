@@ -31,8 +31,4 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
-    <PackageReference Include="System.ValueTuple" />
-  </ItemGroup>
-
 </Project>

@@ -38,7 +38,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
     /// This property is required when creating collections, but can be omitted if not using that functionality.
     /// If not provided when trying to create a collection, create will fail.
     /// </remarks>
-    public int Dimensions { get; private set; }
+    public int Dimensions { get; }
 
     /// <summary>
     /// Gets the kind of index to use.

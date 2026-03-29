@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 public interface IVectorSearchable<TRecord>
+    where TRecord : class
 {
     /// <summary>
     /// Searches the vector store for records that are similar to the given value.

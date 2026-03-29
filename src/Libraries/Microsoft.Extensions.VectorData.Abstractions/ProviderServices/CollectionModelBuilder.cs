@@ -108,7 +108,7 @@ public abstract class CollectionModelBuilder
         // Process CLR properties, matching to definition properties where available.
         // TODO: This traverses the CLR type's properties, making it incompatible with trimming (and NativeAOT).
         // TODO: We could put [DynamicallyAccessedMembers] to preserve all properties, but that approach wouldn't
-        // TODO: work with hierarchical data models (#10957).
+        // TODO: work with hierarchical data models (https://github.com/microsoft/semantic-kernel/issues/10957).
         foreach (var clrProperty in recordType.GetProperties())
         {
             VectorStoreProperty? definitionProperty = null;

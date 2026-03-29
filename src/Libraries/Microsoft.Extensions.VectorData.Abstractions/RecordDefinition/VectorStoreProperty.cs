@@ -24,7 +24,7 @@ public abstract class VectorStoreProperty
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            Throw.ArgumentException(nameof(name), "Value cannot be null or whitespace.");
+            _ = Throw.IfNullOrEmpty(name, nameof(name));
         }
 
         Name = name;

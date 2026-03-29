@@ -193,7 +193,7 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions.CollectionModelBuildingOptions();",
-          "Stage": "Obsolete"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
@@ -1262,7 +1262,7 @@
       ],
       "Properties": [
         {
-          "Member": "int Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.Dimensions { get; private set; }",
+          "Member": "int Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.Dimensions { get; }",
           "Stage": "Stable"
         },
         {

@@ -1,10 +1,6 @@
-## About
+# Microsoft.Extensions.VectorData.Abstractions
 
-Abstractions for accessing vector database and similarity search.
-
-## Key Features
-
-This package contains abstract classes and utilities for accessing vector databases. Actual implementations are provided separately in other packages; see https://learn.microsoft.com/dotnet/ai/vector-stores/overview for more information.
+This package contains abstract classes and utilities for accessing vector databases. Actual implementations are provided separately in other packages; see <https://learn.microsoft.com/dotnet/ai/vector-stores/overview> for more information.
 
 The abstractions in this package expose functionality for:
 
@@ -18,7 +14,7 @@ The abstractions in this package expose functionality for:
 
 ## How to Use
 
-This package typically isn't referenced directly; it's a transitive dependency of a provider.
+This package typically isn't referenced directly by application; it's usually a transitive dependency of a provider.
 
 ## Main Types
 

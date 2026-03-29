@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
 public interface IKeywordHybridSearchable<TRecord>
+    where TRecord : class
 {
     /// <summary>
     /// Performs a hybrid search for records that match the given embedding and keywords, after applying the provided filters.
