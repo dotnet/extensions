@@ -4,6 +4,10 @@
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <Description>Abstractions for vector database access.</Description>
     <TargetFrameworks>net10.0;net8.0;netstandard2.0;net462</TargetFrameworks>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
+    <EnablePackageValidation>false</EnablePackageValidation>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
     <Workstream>AI</Workstream>
     <NoWarn>$(NoWarn);S125;S1135;S2302</NoWarn>

@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.VectorData.Abstractions, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.VectorData.Abstractions, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.VectorData.AnyTagEqualToFilterClause : Microsoft.Extensions.VectorData.FilterClause",
