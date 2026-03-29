@@ -19,6 +19,7 @@
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
+    <InjectUnreachableExceptionOnLegacy>true</InjectUnreachableExceptionOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>

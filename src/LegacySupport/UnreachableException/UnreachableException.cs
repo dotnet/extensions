@@ -1,18 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !NET8_0_OR_GREATER
+#if !NET7_0_OR_GREATER
 
-// Polyfill for using UnreachableException with .NET Standard 2.0
-
-namespace System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable CA1064 // Exceptions should be public
 #pragma warning disable CA1812 // Internal class that is (sometimes) never instantiated.
 
+namespace System.Diagnostics;
+
 /// <summary>
 /// Exception thrown when the program executes an instruction that was thought to be unreachable.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal sealed class UnreachableException : Exception
 {
     private const string MessageText = "The program executed an instruction that was thought to be unreachable.";
