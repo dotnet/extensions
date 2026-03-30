@@ -145,7 +145,7 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     settings:
-      networkIsolationPolicy: Permissive,CFSClean2
+      networkIsolationPolicy: Permissive, CFSClean, CFSClean2
     featureFlags:
       binskimScanAllExtensions: true
     sdl:
@@ -243,7 +243,7 @@ extends:
             testResultsFormat: VSTest
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             variables:
@@ -295,7 +295,7 @@ extends:
 
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             preSteps:
@@ -336,7 +336,7 @@ extends:
             pool:
               ${{ if eq(variables['runAsPublic'], 'true') }}:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             variables:

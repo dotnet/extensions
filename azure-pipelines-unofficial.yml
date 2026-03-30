@@ -141,7 +141,7 @@ extends:
             testResultsFormat: VSTest
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             variables:
@@ -192,7 +192,7 @@ extends:
 
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             preSteps:
@@ -232,7 +232,7 @@ extends:
 
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             variables:
