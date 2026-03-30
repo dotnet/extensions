@@ -83,7 +83,7 @@ var openAIResult = (ClientResult)conversation.RawRepresentation; // Access any O
 `HostedConversationCreationOptions.RawRepresentationFactory` allows passing provider-specific creation options:
 
 ```csharp
-var options = new HostedConversationCreationOptions
+var options = new HostedConversationClientOptions
 {
     RawRepresentationFactory = client => new ConversationCreationOptions
     {
@@ -94,7 +94,7 @@ var options = new HostedConversationCreationOptions
 
 ### AdditionalProperties
 
-`HostedConversation.AdditionalProperties` and `HostedConversationCreationOptions.AdditionalProperties` carry provider-specific data that doesn't fit the common abstraction.
+`HostedConversation.AdditionalProperties` and `HostedConversationClientOptions.AdditionalProperties` carry provider-specific data that doesn't fit the common abstraction.
 
 ## Feature Coverage Matrix
 

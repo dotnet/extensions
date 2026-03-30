@@ -241,6 +241,7 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
             string role = message.Role == ChatRole.Assistant ? "assistant" :
                           message.Role == ChatRole.System ? "system" :
                           message.Role == OpenAIClientExtensions.ChatRoleDeveloper ? "developer" :
+                          message.Role == ChatRole.Tool ? "tool" :
                           "user";
 
             writer.WriteStartObject();
@@ -412,10 +413,17 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
                         {
                             message.Contents.Add(new UriContent(imageUri, OpenAIClientExtensions.ImageUriToMediaType(imageUri)));
                         }
-                        else if (part.TryGetProperty("file_id", out JsonElement fileIdElement) &&
-                                 fileIdElement.GetString() is { } fileId)
+                        else
                         {
-                            message.Contents.Add(new HostedFileContent(fileId) { MediaType = "image/*" });
+                            // Support both top-level "file_id" and nested "image_file": { "file_id": ... } shapes.
+                            if ((part.TryGetProperty("file_id", out JsonElement fileIdElement) ||
+                                 (part.TryGetProperty("image_file", out JsonElement imageFileElement) &&
+                                  imageFileElement.ValueKind == JsonValueKind.Object &&
+                                  imageFileElement.TryGetProperty("file_id", out fileIdElement))) &&
+                                fileIdElement.GetString() is { } fileId)
+                            {
+                                message.Contents.Add(new HostedFileContent(fileId) { MediaType = "image/*" });
+                            }
                         }
 
                         break;
