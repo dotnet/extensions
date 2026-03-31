@@ -264,7 +264,10 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
                 trackedUpdates.Add(update);
                 yield return update;
-                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                if (activity is not null)
+                {
+                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                }
             }
         }
         finally
