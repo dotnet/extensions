@@ -1060,5 +1060,53 @@ public class OpenTelemetryChatClientTests
         Assert.Equal(LogLevel.Warning, logEntry.Level);
         Assert.Same(expectedException, logEntry.Exception);
     }
+
+    [Fact]
+    public async Task Streaming_NoListeners_PreservesActivityCurrent()
+    {
+        // When no listener is registered for the ActivitySource, the activity will be null.
+        // Activity.Current should NOT be set to null during streaming in that case.
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = CallbackAsync,
+        };
+
+        // Deliberately do NOT register any listener for the source name.
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry()
+            .Build();
+
+        // Create an existing activity that should be preserved.
+        using var parentSource = new ActivitySource(Guid.NewGuid().ToString());
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source == parentSource,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using var parentActivity = parentSource.StartActivity("parent");
+        Assert.NotNull(parentActivity);
+        Assert.Same(parentActivity, Activity.Current);
+
+        await foreach (var update in chatClient.GetStreamingResponseAsync([new(ChatRole.User, "Hello")]))
+        {
+            // Activity.Current should still be the parent activity after each yield return.
+            Assert.Same(parentActivity, Activity.Current);
+        }
+
+        // Activity.Current should still be preserved after the stream completes.
+        Assert.Same(parentActivity, Activity.Current);
+
+        async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "chunk1");
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "chunk2");
+        }
+    }
 }
 
