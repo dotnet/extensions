@@ -5448,6 +5448,8 @@ public class OpenAIResponseClientTests
                             {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo="},
                             {"type":"input_image","image_url":"data:image/png;base64,iVBORw0KGgo=","detail":"low"},
                             {"type":"input_file","file_data":"data:application/pdf;base64,cGRmZGF0YQ==","filename":"doc.pdf"},
+                            {"type":"input_image","file_id":"file-img-456"},
+                            {"type":"input_image","file_id":"file-img-789","detail":"high"},
                             {"type":"input_file","file_id":"file-123"},
                             {"type":"refusal","refusal":"I cannot process this"}
                         ]
@@ -5482,6 +5484,8 @@ public class OpenAIResponseClientTests
                 new DataContent(imageData, "image/png"),
                 new DataContent(imageData, "image/png") { AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = ResponseImageDetailLevel.Low }},
                 new DataContent(pdfData, "application/pdf") { Name = "doc.pdf" },
+                new HostedFileContent("file-img-456") { MediaType = "image/png" },
+                new HostedFileContent("file-img-789") { MediaType = "image/jpeg", AdditionalProperties = new AdditionalPropertiesDictionary { ["detail"] = "high" }},
                 new HostedFileContent("file-123"),
                 new ErrorContent("I cannot process this") { ErrorCode = "Refusal" }
             ])

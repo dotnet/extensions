@@ -1096,6 +1096,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
                             break;
 
+                        case HostedFileContent fileContent when fileContent.HasTopLevelMediaType("image"):
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(fileContent.FileId, GetImageDetail(item)));
+                            break;
+
                         case HostedFileContent fileContent:
                             (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(fileContent.FileId));
                             break;
