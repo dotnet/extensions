@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" />
-    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
