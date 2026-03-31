@@ -5,12 +5,16 @@
     <Description>Conformance tests for Microsoft.Extensions.VectorData providers.</Description>
     <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <InjectSharedThrow>false</InjectSharedThrow>
+    <IsTrimmable>false</IsTrimmable>
+    <IsAotCompatible>false</IsAotCompatible>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);S1135;S125;LA0003</NoWarn>
+    <NoWarn>$(NoWarn);S1135;S125;LA0003;RT0000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit" VersionOverride="$(XUnitVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
