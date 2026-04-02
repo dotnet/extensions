@@ -105,9 +105,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Equal(wsCall.CallId, wsResult.CallId);
 
         // Verify that sources are populated when opted in.
-        Assert.NotNull(wsResult.Results);
-        Assert.NotEmpty(wsResult.Results);
-        Assert.All(wsResult.Results, r =>
+        Assert.NotNull(wsResult.Outputs);
+        Assert.NotEmpty(wsResult.Outputs);
+        Assert.All(wsResult.Outputs, r =>
         {
             var uriContent = Assert.IsType<UriContent>(r);
             Assert.NotNull(uriContent.Uri);

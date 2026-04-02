@@ -6952,14 +6952,14 @@ public class OpenAIResponseClientTests
         var wsResult = Assert.IsType<WebSearchToolResultContent>(message.Contents[1]);
         Assert.Equal("ws_0ed9cd9f8606486b0069888072b3d08190818b61da9cf032a7", wsResult.CallId);
         Assert.NotNull(wsResult.RawRepresentation);
-        Assert.NotNull(wsResult.Results);
-        Assert.Equal(2, wsResult.Results.Count);
+        Assert.NotNull(wsResult.Outputs);
+        Assert.Equal(2, wsResult.Outputs.Count);
 
-        var source0 = Assert.IsType<UriContent>(wsResult.Results[0]);
+        var source0 = Assert.IsType<UriContent>(wsResult.Outputs[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), source0.Uri);
         Assert.Equal("Announcing .NET 10 - .NET Blog", source0.AdditionalProperties?["title"]);
 
-        var source1 = Assert.IsType<UriContent>(wsResult.Results[1]);
+        var source1 = Assert.IsType<UriContent>(wsResult.Outputs[1]);
         Assert.Equal(new Uri("https://dotnet.microsoft.com/en-us/download/dotnet/10.0"), source1.Uri);
         Assert.Equal("Download .NET 10", source1.AdditionalProperties?["title"]);
 
@@ -7078,9 +7078,9 @@ public class OpenAIResponseClientTests
         var wsResult = wsResultUpdate.Contents.OfType<WebSearchToolResultContent>().First();
         Assert.Equal("ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3", wsResult.CallId);
         Assert.NotNull(wsResult.RawRepresentation);
-        Assert.NotNull(wsResult.Results);
-        Assert.Single(wsResult.Results);
-        var streamSource = Assert.IsType<UriContent>(wsResult.Results[0]);
+        Assert.NotNull(wsResult.Outputs);
+        Assert.Single(wsResult.Outputs);
+        var streamSource = Assert.IsType<UriContent>(wsResult.Outputs[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), streamSource.Uri);
         Assert.Equal("Announcing .NET 10 - .NET Blog", streamSource.AdditionalProperties?["title"]);
 

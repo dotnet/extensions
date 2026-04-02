@@ -272,16 +272,19 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                     message.Contents.Add(new WebSearchToolResultContent(wscri.Id)
                     {
-                        Results = GetWebSearchSources(wscri),
+                        Outputs = GetWebSearchSources(wscri),
                         RawRepresentation = wscri,
                     });
                     break;
 
                 // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
                 // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
-                case FileSearchCallResponseItem:
+                case FileSearchCallResponseItem fileSearch:
                     message.Contents.Add(new ToolCallContent(outputItem.Id));
-                    message.Contents.Add(new ToolResultContent(outputItem.Id) { RawRepresentation = outputItem });
+                    message.Contents.Add(new ToolResultContent(outputItem.Id)
+                    {
+                        RawRepresentation = outputItem,
+                    });
                     break;
 
                 case ComputerCallResponseItem computerCall:
@@ -558,7 +561,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             // Also yield the WebSearchToolResultContent.
                             yield return CreateUpdate(new WebSearchToolResultContent(wscri.Id)
                             {
-                                Results = GetWebSearchSources(wscri),
+                                Outputs = GetWebSearchSources(wscri),
                                 RawRepresentation = wscri,
                             });
                             break;
@@ -594,9 +597,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         // FileSearch items contain both the call and results inline, so we emit a call+result pair.
                         // ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
-                        case FileSearchCallResponseItem:
+                        case FileSearchCallResponseItem fileSearch:
                             var toolCallUpdate = CreateUpdate(new ToolCallContent(outputItemDoneUpdate.Item.Id));
-                            toolCallUpdate.Contents.Add(new ToolResultContent(outputItemDoneUpdate.Item.Id) { RawRepresentation = outputItemDoneUpdate.Item });
+                            toolCallUpdate.Contents.Add(new ToolResultContent(outputItemDoneUpdate.Item.Id)
+                            {
+                                RawRepresentation = outputItemDoneUpdate.Item,
+                            });
                             yield return toolCallUpdate;
                             break;
 

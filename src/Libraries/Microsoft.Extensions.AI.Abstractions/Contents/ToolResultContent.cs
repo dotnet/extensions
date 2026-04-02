@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -42,4 +43,15 @@ public class ToolResultContent : AIContent
     /// <see cref="ToolCallContent.CallId"/> value.
     /// </remarks>
     public string CallId { get; }
+
+    /// <summary>
+    /// Gets or sets the output contents of the tool call.
+    /// </summary>
+    /// <remarks>
+    /// Outputs can include various types of content such as <see cref="TextContent"/> for text output,
+    /// <see cref="DataContent"/> for binary data, <see cref="UriContent"/> for URL references,
+    /// <see cref="HostedFileContent"/> for provider-hosted files, <see cref="ErrorContent"/> for errors,
+    /// or other <see cref="AIContent"/> types as supported by the service.
+    /// </remarks>
+    public IList<AIContent>? Outputs { get; set; }
 }

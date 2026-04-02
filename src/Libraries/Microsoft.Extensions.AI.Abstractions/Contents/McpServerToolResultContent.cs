@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -26,9 +25,4 @@ public sealed class McpServerToolResultContent : ToolResultContent
         : base(Throw.IfNullOrWhitespace(callId))
     {
     }
-
-    /// <summary>
-    /// Gets or sets the output contents of the tool call.
-    /// </summary>
-    public IList<AIContent>? Outputs { get; set; }
 }
