@@ -284,8 +284,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     message.Contents.Add(new ToolResultContent(outputItem.Id) { RawRepresentation = outputItem });
                     break;
 
-                case ComputerCallResponseItem:
-                    message.Contents.Add(new ToolCallContent(outputItem.Id) { RawRepresentation = outputItem });
+                case ComputerCallResponseItem computerCall:
+                    message.Contents.Add(new ToolCallContent(computerCall.CallId) { RawRepresentation = computerCall });
                     break;
 
                 case ComputerCallOutputResponseItem computerCallOutput:
@@ -600,8 +600,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             yield return toolCallUpdate;
                             break;
 
-                        case ComputerCallResponseItem:
-                            yield return CreateUpdate(new ToolCallContent(outputItemDoneUpdate.Item.Id) { RawRepresentation = outputItemDoneUpdate.Item });
+                        case ComputerCallResponseItem computerCall:
+                            yield return CreateUpdate(new ToolCallContent(computerCall.CallId) { RawRepresentation = outputItemDoneUpdate.Item });
                             break;
 
                         case ComputerCallOutputResponseItem computerCallOutput:

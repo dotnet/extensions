@@ -1000,7 +1000,7 @@ public class OpenAIConversionTests
         // Eighth update: ComputerCallResponseItem -> ToolCallContent
         ToolCallContent? cuToolCall = updates[7].Contents.OfType<ToolCallContent>().FirstOrDefault();
         Assert.NotNull(cuToolCall);
-        Assert.Equal("cu_123", cuToolCall.CallId);
+        Assert.Equal("call_456", cuToolCall.CallId);
         Assert.Same(computerItem, cuToolCall.RawRepresentation);
 
         // Ninth update: ComputerCallOutputResponseItem -> ToolResultContent
@@ -1288,7 +1288,7 @@ public class OpenAIConversionTests
         Assert.Same(fileSearchItem, fileSearchToolResult.RawRepresentation);
 
         // 10. ComputerCallResponseItem -> ToolCallContent (result comes separately)
-        ToolCallContent? computerToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "cu_123");
+        ToolCallContent? computerToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "call_456");
         Assert.NotNull(computerToolCall);
         Assert.Same(computerItem, computerToolCall.RawRepresentation);
 
