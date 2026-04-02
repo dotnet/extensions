@@ -824,7 +824,7 @@ public class OpenAIResponseClientTests
         Assert.IsType<ComputerCallResponseItem>(computerUserItem.RawRepresentation);
 #pragma warning restore OPENAICUA001
         ToolCallContent computerToolCall = Assert.IsType<ToolCallContent>(computerUserItem);
-        Assert.NotNull(computerToolCall.CallId);
+        Assert.Equal("call_zw3...", computerToolCall.CallId);
         Assert.NotNull(response.Usage);
         Assert.Equal(18, response.Usage.InputTokenCount);
         Assert.Equal(53, response.Usage.OutputTokenCount);
@@ -922,7 +922,7 @@ public class OpenAIResponseClientTests
         }
 
         ToolCallContent content = Assert.IsType<ToolCallContent>(Assert.Single(updates[3].Contents));
-        Assert.NotNull(content.CallId);
+        Assert.Equal("call_p7K8YjFwNjqMgkKhSiExgFH6", content.CallId);
 #pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
         var ccri = Assert.IsType<ComputerCallResponseItem>(content.RawRepresentation);
 #pragma warning restore OPENAICUA001
