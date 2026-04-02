@@ -8,7 +8,6 @@
     <Stage>normal</Stage>
     <MinCodeCoverage>75</MinCodeCoverage>
     <MinMutationScore>75</MinMutationScore>
-    <EnablePackageValidation>false</EnablePackageValidation>
     <Workstream>AI</Workstream>
     <NoWarn>$(NoWarn);S125;S1135;S2302</NoWarn>
     <PackageProjectUrl>https://learn.microsoft.com/dotnet/ai/vector-stores/overview</PackageProjectUrl>
