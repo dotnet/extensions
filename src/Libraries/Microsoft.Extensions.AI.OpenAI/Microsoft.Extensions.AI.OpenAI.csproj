@@ -28,6 +28,7 @@
     <InjectMediaTypeMapOnLegacy>true</InjectMediaTypeMapOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
 
