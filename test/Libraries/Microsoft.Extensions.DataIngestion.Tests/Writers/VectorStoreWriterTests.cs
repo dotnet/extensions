@@ -51,7 +51,7 @@ public abstract class VectorStoreWriterTests
 
         List<IngestionChunk<string>> chunks = [chunk];
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, chunks.ToAsyncEnumerable());
 
         IngestionChunkVectorRecord<string> record = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
@@ -82,7 +82,7 @@ public abstract class VectorStoreWriterTests
         List<IngestionChunk<string>> chunks = [chunk];
 
         Assert.False(testEmbeddingGenerator.WasCalled);
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, chunks.ToAsyncEnumerable());
 
         IngestionChunkVectorRecord<string> record = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
@@ -112,7 +112,7 @@ public abstract class VectorStoreWriterTests
 
         List<IngestionChunk<string>> chunks = [chunk];
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, chunks.ToAsyncEnumerable());
 
         TestChunkRecordWithMetadata record = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 1)
@@ -148,7 +148,7 @@ public abstract class VectorStoreWriterTests
 
         List<IngestionChunk<string>> chunks = [chunk1, chunk2];
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, chunks.ToAsyncEnumerable());
 
         int recordCount = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 100)
@@ -160,7 +160,7 @@ public abstract class VectorStoreWriterTests
 
         List<IngestionChunk<string>> updatedChunks = [updatedChunk];
 
-        await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, updatedChunks.ToAsyncEnumerable());
 
         // We ask for 100 records, but we expect only 1 as the previous 2 should have been deleted.
         IngestionChunkVectorRecord<string> record = await writer.VectorStoreCollection
@@ -216,7 +216,7 @@ public abstract class VectorStoreWriterTests
             chunks.Add(new($"chunk {i + 1}", document, context: null, tokenCount: chunkTokenCounts[i]));
         }
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, chunks.ToAsyncEnumerable());
 
         int recordCount = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 100)
@@ -252,7 +252,7 @@ public abstract class VectorStoreWriterTests
             chunks.Add(TestChunkFactory.CreateChunk($"chunk {i}", document));
         }
 
-        await writer.WriteAsync(chunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, chunks.ToAsyncEnumerable());
 
         int recordCount = await writer.VectorStoreCollection
             .GetAsync(filter: record => record.DocumentId == documentId, top: 10000)
@@ -266,7 +266,7 @@ public abstract class VectorStoreWriterTests
             TestChunkFactory.CreateChunk("updated chunk 2", document)
         ];
 
-        await writer.WriteAsync(updatedChunks.ToAsyncEnumerable());
+        await writer.WriteAsync(document, updatedChunks.ToAsyncEnumerable());
 
         // Verify that all old records were deleted and only the new ones remain
         List<IngestionChunkVectorRecord<string>> records = await writer.VectorStoreCollection

@@ -43,8 +43,9 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
     public VectorStoreCollection<Guid, TRecord> VectorStoreCollection { get; }
 
     /// <inheritdoc/>
-    public override async Task WriteAsync(IAsyncEnumerable<IngestionChunk<TChunk>> chunks, CancellationToken cancellationToken = default)
+    public override async Task WriteAsync(IngestionDocument document, IAsyncEnumerable<IngestionChunk<TChunk>> chunks, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(document);
         _ = Throw.IfNull(chunks);
 
         IReadOnlyList<Guid>? preExistingKeys = null;
@@ -62,13 +63,13 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
             // We obtain the IDs of the pre-existing chunks for given document,
             // and delete them after we finish inserting the new chunks,
             // to avoid a situation where we delete the chunks and then fail to insert the new ones.
-            preExistingKeys ??= await GetPreExistingChunksIdsAsync(chunk.Document, cancellationToken).ConfigureAwait(false);
+            preExistingKeys ??= await GetPreExistingChunksIdsAsync(document, cancellationToken).ConfigureAwait(false);
 
             TRecord record = new()
             {
                 Content = chunk.Content,
                 Context = chunk.Context,
-                DocumentId = chunk.Document.Identifier,
+                DocumentId = document.Identifier,
             };
 
             if (chunk.HasMetadata)
