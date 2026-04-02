@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
 
 public class KeywordEnricherTests
 {
+    private static readonly IngestionDocument _document = new("test");
+
     [Fact]
     public void ThrowsOnNullOptions()
     {
@@ -118,7 +120,7 @@ public class KeywordEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        TestChunkFactory.CreateChunk("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components"),
-        TestChunkFactory.CreateChunk("Rabbits are great pets. They are friendly and make excellent companions.")
+        TestChunkFactory.CreateChunk("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document),
+        TestChunkFactory.CreateChunk("Rabbits are great pets. They are friendly and make excellent companions.", _document)
     ];
 }

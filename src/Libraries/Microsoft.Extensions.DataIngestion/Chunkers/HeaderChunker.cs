@@ -43,7 +43,7 @@ public sealed class HeaderChunker : IngestionChunker<string>
 
             if (element is IngestionDocumentHeader header)
             {
-                foreach (var chunk in SplitIntoChunks(headers, elements))
+                foreach (var chunk in SplitIntoChunks(document, headers, elements))
                 {
                     yield return chunk;
                 }
@@ -59,19 +59,19 @@ public sealed class HeaderChunker : IngestionChunker<string>
         }
 
         // take care of any remaining paragraphs
-        foreach (var chunk in SplitIntoChunks(headers, elements))
+        foreach (var chunk in SplitIntoChunks(document, headers, elements))
         {
             yield return chunk;
         }
     }
 
-    private IEnumerable<IngestionChunk<string>> SplitIntoChunks(string?[] headers, List<IngestionDocumentElement> elements)
+    private IEnumerable<IngestionChunk<string>> SplitIntoChunks(IngestionDocument document, string?[] headers, List<IngestionDocumentElement> elements)
     {
         if (elements.Count > 0)
         {
             string chunkHeader = string.Join(" ", headers.Where(h => !string.IsNullOrEmpty(h)));
 
-            foreach (var chunk in _elementsChunker.Process(chunkHeader, elements))
+            foreach (var chunk in _elementsChunker.Process(document, chunkHeader, elements))
             {
                 yield return chunk;
             }

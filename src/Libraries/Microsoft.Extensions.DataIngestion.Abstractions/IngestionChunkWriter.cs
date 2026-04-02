@@ -17,11 +17,11 @@ public abstract class IngestionChunkWriter<T> : IDisposable
     /// <summary>
     /// Writes the chunks of a single document asynchronously.
     /// </summary>
-    /// <param name="chunks">The chunks to write.</param>
     /// <param name="document">The document from which the chunks were extracted.</param>
+    /// <param name="chunks">The chunks to write.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous write operation.</returns>
-    public abstract Task WriteAsync(IAsyncEnumerable<IngestionChunk<T>> chunks, IngestionDocument document, CancellationToken cancellationToken = default);
+    public abstract Task WriteAsync(IngestionDocument document, IAsyncEnumerable<IngestionChunk<T>> chunks, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Disposes the writer and releases all associated resources.

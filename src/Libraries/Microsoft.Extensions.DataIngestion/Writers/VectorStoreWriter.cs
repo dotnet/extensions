@@ -43,10 +43,10 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
     public VectorStoreCollection<Guid, TRecord> VectorStoreCollection { get; }
 
     /// <inheritdoc/>
-    public override async Task WriteAsync(IAsyncEnumerable<IngestionChunk<TChunk>> chunks, IngestionDocument document, CancellationToken cancellationToken = default)
+    public override async Task WriteAsync(IngestionDocument document, IAsyncEnumerable<IngestionChunk<TChunk>> chunks, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfNull(chunks);
         _ = Throw.IfNull(document);
+        _ = Throw.IfNull(chunks);
 
         IReadOnlyList<Guid>? preExistingKeys = null;
         List<TRecord>? batch = null;
