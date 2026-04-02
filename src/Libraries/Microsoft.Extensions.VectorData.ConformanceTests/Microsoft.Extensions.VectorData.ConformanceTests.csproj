@@ -5,12 +5,11 @@
     <Description>Conformance tests for Microsoft.Extensions.VectorData providers.</Description>
     <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <InjectSharedThrow>false</InjectSharedThrow>
     <IsTrimmable>false</IsTrimmable>
     <IsAotCompatible>false</IsAotCompatible>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>$(NoWarn);S1135;S125;LA0003;RT0000</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;SA1614;SA1616;SA1618;SA1623;S1135;S125;LA0003;RT0000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
