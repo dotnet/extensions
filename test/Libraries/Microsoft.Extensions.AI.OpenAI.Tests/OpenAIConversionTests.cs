@@ -703,6 +703,68 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContent_ResultOnly()
+    {
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.Tool, [new FunctionResultContent("call_r", "string result")]),
+        ];
+
+        var converted = messages.AsOpenAIChatMessages().ToArray();
+        ToolChatMessage tcm = Assert.IsType<ToolChatMessage>(Assert.Single(converted), exactMatch: false);
+        Assert.Equal("call_r", tcm.ToolCallId);
+        Assert.Equal("string result", Assert.Single(tcm.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContent_OutputsOnly_SerializesAsJson()
+    {
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.Tool, [new FunctionResultContent("call_o", null) { Outputs = [new TextContent("typed output")] }]),
+        ];
+
+        // Completions API is string-only, so Outputs are serialized to JSON
+        var converted = messages.AsOpenAIChatMessages().ToArray();
+        ToolChatMessage tcm = Assert.IsType<ToolChatMessage>(Assert.Single(converted), exactMatch: false);
+        Assert.Equal("call_o", tcm.ToolCallId);
+
+        string text = Assert.Single(tcm.Content).Text;
+        using var doc = JsonDocument.Parse(text);
+        Assert.Equal(JsonValueKind.Array, doc.RootElement.ValueKind);
+        Assert.Equal(1, doc.RootElement.GetArrayLength());
+        Assert.Equal("typed output", doc.RootElement[0].GetProperty("text").GetString());
+    }
+
+    [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContent_BothResultAndOutputs_UsesResult()
+    {
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.Tool, [new FunctionResultContent("call_b", "legacy result") { Outputs = [new TextContent("typed")] }]),
+        ];
+
+        var converted = messages.AsOpenAIChatMessages().ToArray();
+        ToolChatMessage tcm = Assert.IsType<ToolChatMessage>(Assert.Single(converted), exactMatch: false);
+        Assert.Equal("call_b", tcm.ToolCallId);
+        Assert.Equal("legacy result", Assert.Single(tcm.Content).Text);
+    }
+
+    [Fact]
+    public void AsOpenAIChatMessages_FunctionResultContent_NeitherResultNorOutputs()
+    {
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.Tool, [new FunctionResultContent("call_n", null)]),
+        ];
+
+        var converted = messages.AsOpenAIChatMessages().ToArray();
+        ToolChatMessage tcm = Assert.IsType<ToolChatMessage>(Assert.Single(converted), exactMatch: false);
+        Assert.Equal("call_n", tcm.ToolCallId);
+        Assert.Equal(string.Empty, Assert.Single(tcm.Content).Text);
+    }
+
+    [Fact]
     public void AsOpenAIResponseItems_ProducesExpectedOutput()
     {
         Assert.Throws<ArgumentNullException>("messages", () => ((IEnumerable<ChatMessage>)null!).AsOpenAIResponseItems());

@@ -192,6 +192,19 @@ internal sealed partial class OpenAIChatClient : IChatClient
                             }
                         }
 
+                        // Fall back to serializing Outputs when Result is null
+                        if (result is null && resultContent.Outputs is { Count: > 0 } outputs)
+                        {
+                            try
+                            {
+                                result = JsonSerializer.Serialize(outputs, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IList<AIContent>)));
+                            }
+                            catch (NotSupportedException)
+                            {
+                                // If the outputs can't be serialized, skip them.
+                            }
+                        }
+
                         yield return new ToolChatMessage(resultContent.CallId, result ?? string.Empty);
                     }
                 }
