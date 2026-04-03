@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle;
 
@@ -11,6 +10,7 @@ internal static class Utils
 {
     private static readonly char[] _colon = { ':' };
     private static readonly char[] _comma = { ',' };
+    private static readonly string[] _whereSeparator = { " where " };
 
     public static string[] GetConstraints(string typeSignature)
     {
@@ -21,13 +21,26 @@ internal static class Utils
             return Array.Empty<string>();
         }
 
-        var substrings = typeSignature.Split(_colon);
+        // Extract everything from the first "where" onwards, then split into
+        // individual "where T : ..." clauses and collect the constraint values.
+        var constraintsPart = typeSignature.Substring(whereClauseIndex);
+        var clauses = constraintsPart.Split(_whereSeparator, StringSplitOptions.RemoveEmptyEntries);
+        var result = new List<string>();
 
-#pragma warning disable S109 // Magic numbers should not be used
-        return substrings.Length == 2
-            ? substrings[1].Split(_comma).Select(x => x.Trim()).ToArray()
-            : substrings[2].Split(_comma).Select(x => x.Trim()).ToArray();
-#pragma warning restore S109 // Magic numbers should not be used
+        foreach (var clause in clauses)
+        {
+            var colonIndex = clause.IndexOf(':');
+            if (colonIndex >= 0)
+            {
+                var constraintValues = clause.Substring(colonIndex + 1);
+                foreach (var c in constraintValues.Split(_comma))
+                {
+                    result.Add(c.Trim());
+                }
+            }
+        }
+
+        return result.ToArray();
     }
 
     public static string StripBaseAndConstraints(string typeSignature)

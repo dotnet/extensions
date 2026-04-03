@@ -37,6 +37,8 @@
     <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/overview -->
     <EnablePackageValidation>true</EnablePackageValidation>
 
+    <!-- Temporarily use a different version for MEVD, delete after it's on the same train -->
+    <PackageValidationBaselineVersion Condition="'$(Stage)' == 'normal' and '$(MSBuildProjectName)' == 'Microsoft.Extensions.VectorData.Abstractions' and '$(PackageValidationBaselineVersion)' == ''">10.1.0</PackageValidationBaselineVersion>
     <PackageValidationBaselineVersion Condition="'$(Stage)' == 'normal' and '$(PackageValidationBaselineVersion)' == ''">10.4.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 

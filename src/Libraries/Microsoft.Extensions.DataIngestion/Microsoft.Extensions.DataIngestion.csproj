@@ -24,6 +24,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.Memory" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!-- TODO: We temporarily reference MEVD via a <PackageReference>, because the DataIngestion test project references
+         the MEVD InMemory and SQLite providers via <PackageReferences>, and they bring in the MEVD as a package as well. -->
     <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />

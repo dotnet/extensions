@@ -6,6 +6,7 @@
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesVersion)" />
     <PackageVersion Include="Microsoft.Bcl.Memory" Version="$(MicrosoftBclMemoryVersion)" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServerVersion)" />

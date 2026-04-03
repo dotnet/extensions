@@ -83,6 +83,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\NullabilityInfoContext\*.cs" LinkBase="LegacySupport\NullabilityInfoContext" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(InjectUnreachableExceptionOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\UnreachableException\*.cs" LinkBase="LegacySupport\UnreachableException" />
+  </ItemGroup>
+
   <!-- FilePolyfills: Adds C# 14 extension members for File methods not available on legacy frameworks -->
   <ItemGroup Condition="'$(InjectFilePolyfillsOnLegacy)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\FilePolyfills\*.cs" LinkBase="LegacySupport\FilePolyfills" />
