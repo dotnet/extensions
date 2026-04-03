@@ -68,18 +68,51 @@ internal sealed class GoogleVeoVideoGenerationOperation : VideoGenerationOperati
             // Parse generated videos — predictLongRunning response format:
             // response.generateVideoResponse.generatedSamples[].video.uri
             if (root.TryGetProperty("response", out var resp) &&
-                resp.TryGetProperty("generateVideoResponse", out var videoResponse) &&
-                videoResponse.TryGetProperty("generatedSamples", out var samples))
+                resp.TryGetProperty("generateVideoResponse", out var videoResponse))
             {
-                _videoUris.Clear();
-                foreach (var sample in samples.EnumerateArray())
+                if (videoResponse.TryGetProperty("generatedSamples", out var samples))
                 {
-                    if (sample.TryGetProperty("video", out var videoObj) &&
-                        videoObj.TryGetProperty("uri", out var uri))
+                    _videoUris.Clear();
+                    foreach (var sample in samples.EnumerateArray())
                     {
-                        _videoUris.Add(uri.GetString()!);
+                        if (sample.TryGetProperty("video", out var videoObj) &&
+                            videoObj.TryGetProperty("uri", out var uri))
+                        {
+                            _videoUris.Add(uri.GetString()!);
+                        }
                     }
                 }
+
+                // Check if the response was filtered by safety (RAI) filters
+                if (_videoUris.Count == 0)
+                {
+                    string? filterReason = null;
+                    if (videoResponse.TryGetProperty("raiMediaFilteredCount", out var filteredCount) && filteredCount.GetInt32() > 0)
+                    {
+                        filterReason = $"Video was filtered by safety filters ({filteredCount.GetInt32()} filtered).";
+                        if (videoResponse.TryGetProperty("raiMediaFilteredReasons", out var reasons))
+                        {
+                            filterReason += $" Reasons: {reasons}";
+                        }
+                    }
+                    else
+                    {
+                        filterReason = $"No videos in response. Full response: {resp}";
+                    }
+
+                    _status = "FAILED";
+                    _failureReason = filterReason;
+                }
+            }
+            else if (root.TryGetProperty("response", out var rawResp))
+            {
+                _status = "FAILED";
+                _failureReason = $"Unexpected response format: {rawResp}";
+            }
+            else
+            {
+                _status = "FAILED";
+                _failureReason = $"No response payload in completed operation. Raw: {root}";
             }
         }
         else

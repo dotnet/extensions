@@ -485,16 +485,43 @@ internal sealed class GoogleVeoVideoGenerationOperation : VideoGenerationOperati
         using var doc = JsonDocument.Parse(body);
         var root = doc.RootElement;
         _done = root.TryGetProperty("done", out var d) && d.GetBoolean();
-        if (_done) _status = "COMPLETED";
         if (root.TryGetProperty("error", out var err)) { _failureReason = err.ToString(); _status = "FAILED"; _done = true; }
-        _videoUris.Clear();
-        // predictLongRunning response: response.generateVideoResponse.generatedSamples[].video.uri
-        if (root.TryGetProperty("response", out var response) &&
-            response.TryGetProperty("generateVideoResponse", out var videoResponse) &&
-            videoResponse.TryGetProperty("generatedSamples", out var samples))
-            foreach (var s in samples.EnumerateArray())
-                if (s.TryGetProperty("video", out var video) && video.TryGetProperty("uri", out var uri))
-                    _videoUris.Add(uri.GetString()!);
+        else if (_done)
+        {
+            _status = "COMPLETED";
+            _videoUris.Clear();
+            // predictLongRunning response: response.generateVideoResponse.generatedSamples[].video.uri
+            if (root.TryGetProperty("response", out var response) &&
+                response.TryGetProperty("generateVideoResponse", out var videoResponse))
+            {
+                if (videoResponse.TryGetProperty("generatedSamples", out var samples))
+                    foreach (var s in samples.EnumerateArray())
+                        if (s.TryGetProperty("video", out var video) && video.TryGetProperty("uri", out var uri))
+                            _videoUris.Add(uri.GetString()!);
+
+                if (_videoUris.Count == 0)
+                {
+                    string? reason = null;
+                    if (videoResponse.TryGetProperty("raiMediaFilteredCount", out var fc) && fc.GetInt32() > 0)
+                    {
+                        reason = $"Video filtered by safety filters ({fc.GetInt32()} filtered).";
+                        if (videoResponse.TryGetProperty("raiMediaFilteredReasons", out var reasons)) reason += $" Reasons: {reasons}";
+                    }
+                    else
+                    {
+                        reason = $"No videos in response. Full response: {response}";
+                    }
+
+                    _status = "FAILED";
+                    _failureReason = reason;
+                }
+            }
+            else
+            {
+                _status = "FAILED";
+                _failureReason = $"Unexpected response format: {root}";
+            }
+        }
     }
 
     public override async Task WaitForCompletionAsync(IProgress<VideoGenerationProgress>? progress = null, CancellationToken cancellationToken = default)

@@ -23,7 +23,7 @@ var durationOption = new Option<int?>("--duration", "Duration in seconds (4, 6, 
 var resolutionOption = new Option<string>("--resolution", () => "720p", "Resolution: 720p, 1080p, 4k.");
 var aspectRatioOption = new Option<string?>("--aspect-ratio", "Aspect ratio (e.g. 16:9, 9:16).");
 var formatOption = new Option<string>("--format", () => "data", "Response format: data or uri.");
-var countOption = new Option<int>("--count", () => 1, "Number of videos to generate.");
+var countOption = new Option<int?>("--count", "Number of videos to generate.");
 var negativePromptOption = new Option<string?>("--negative-prompt", "What to avoid in the video.");
 var audioOption = new Option<bool>("--audio", () => false, "Generate audio (Veo 3+ only).");
 var seedOption = new Option<int?>("--seed", "Seed for reproducibility.");
@@ -56,7 +56,7 @@ generateCommand.SetHandler(async (context) =>
     int? duration = context.ParseResult.GetValueForOption(durationOption);
     string resolution = context.ParseResult.GetValueForOption(resolutionOption)!;
     string? aspectRatio = context.ParseResult.GetValueForOption(aspectRatioOption);
-    int count = context.ParseResult.GetValueForOption(countOption);
+    int? count = context.ParseResult.GetValueForOption(countOption);
     string? negativePrompt = context.ParseResult.GetValueForOption(negativePromptOption);
     bool audio = context.ParseResult.GetValueForOption(audioOption);
     int? seed = context.ParseResult.GetValueForOption(seedOption);
@@ -134,9 +134,9 @@ generateCommand.SetHandler(async (context) =>
             byte[] refBytes = await File.ReadAllBytesAsync(refImg);
             refs.Add(new JsonObject
             {
-                ["referenceImage"] = new JsonObject
+                ["image"] = new JsonObject
                 {
-                    ["imageBytes"] = Convert.ToBase64String(refBytes),
+                    ["bytesBase64Encoded"] = Convert.ToBase64String(refBytes),
                     ["mimeType"] = "image/png",
                 },
                 ["referenceType"] = refType.ToUpperInvariant(),
