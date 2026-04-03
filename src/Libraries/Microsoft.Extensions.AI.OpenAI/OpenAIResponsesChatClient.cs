@@ -279,12 +279,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 // These tool types don't have dedicated AIContent-derived types. We use the base ToolCallContent/ToolResultContent
                 // to represent them, with the original ResponseItem accessible via RawRepresentation for type-specific data.
-                case FileSearchCallResponseItem fileSearch:
+                case FileSearchCallResponseItem:
                     message.Contents.Add(new ToolCallContent(outputItem.Id));
-                    message.Contents.Add(new ToolResultContent(outputItem.Id)
-                    {
-                        RawRepresentation = outputItem,
-                    });
+                    message.Contents.Add(new ToolResultContent(outputItem.Id) { RawRepresentation = outputItem });
                     break;
 
                 case ComputerCallResponseItem computerCall:
@@ -597,12 +594,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         // FileSearch items contain both the call and results inline, so we emit a call+result pair.
                         // ComputerCall results arrive as a separate ComputerCallOutputResponseItem.
-                        case FileSearchCallResponseItem fileSearch:
+                        case FileSearchCallResponseItem:
                             var toolCallUpdate = CreateUpdate(new ToolCallContent(outputItemDoneUpdate.Item.Id));
-                            toolCallUpdate.Contents.Add(new ToolResultContent(outputItemDoneUpdate.Item.Id)
-                            {
-                                RawRepresentation = outputItemDoneUpdate.Item,
-                            });
+                            toolCallUpdate.Contents.Add(new ToolResultContent(outputItemDoneUpdate.Item.Id) { RawRepresentation = outputItemDoneUpdate.Item });
                             yield return toolCallUpdate;
                             break;
 
