@@ -5373,7 +5373,7 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
-    public async Task ToolCallResult_BothResultAndOutputs_OutputsTakePrecedence()
+    public async Task ToolCallResult_BothResultAndOutputs_ResultTakesPrecedence()
     {
         const string Input = """
             {
@@ -5387,7 +5387,7 @@ public class OpenAIResponseClientTests
                     {
                         "type":"function_call_output",
                         "call_id":"call_both",
-                        "output":[{"type":"input_text","text":"outputs wins"}]
+                        "output":"legacy string"
                     }
                 ]
             }
@@ -5416,10 +5416,10 @@ public class OpenAIResponseClientTests
         using HttpClient httpClient = new(handler);
         using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
 
-        // Both Result and Outputs set — Outputs should take precedence
+        // Both Result and Outputs set — Result takes precedence for compatibility
         var frc = new FunctionResultContent("call_both", "legacy string")
         {
-            Outputs = [new TextContent("outputs wins")]
+            Outputs = [new TextContent("typed content")]
         };
         var response = await client.GetResponseAsync([
             new ChatMessage(ChatRole.User, "test"),

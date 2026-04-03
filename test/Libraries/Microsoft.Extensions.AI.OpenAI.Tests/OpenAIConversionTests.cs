@@ -784,11 +784,11 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseItems_FunctionResultContent_BothResultAndOutputs_PrefersOutputs()
+    public void AsOpenAIResponseItems_FunctionResultContent_BothResultAndOutputs_PrefersResult()
     {
         var frc = new FunctionResultContent("call_both", "legacy string result")
         {
-            Outputs = [new TextContent("typed wins")]
+            Outputs = [new TextContent("typed content")]
         };
         List<ChatMessage> messages =
         [
@@ -801,12 +801,8 @@ public class OpenAIConversionTests
         FunctionCallOutputResponseItem outputItem = Assert.IsAssignableFrom<FunctionCallOutputResponseItem>(items[1]);
         Assert.Equal("call_both", outputItem.CallId);
 
-        // Outputs should win over Result
-        var json = ModelReaderWriter.Write(outputItem, ModelReaderWriterOptions.Json);
-        using var doc = JsonDocument.Parse(json);
-        var outputProp = doc.RootElement.GetProperty("output");
-        Assert.Equal(JsonValueKind.Array, outputProp.ValueKind);
-        Assert.Equal("typed wins", outputProp[0].GetProperty("text").GetString());
+        // Result should take precedence for backward compatibility
+        Assert.Equal("legacy string result", outputItem.FunctionOutput);
     }
 
     [Fact]

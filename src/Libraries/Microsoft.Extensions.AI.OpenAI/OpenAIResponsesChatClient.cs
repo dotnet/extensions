@@ -1229,39 +1229,45 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 return outputItem;
                             }
 
-                            if (resultContent.Outputs is { Count: > 0 } outputs)
+                            switch (resultContent.Result)
                             {
-                                yield return SerializeAIContent(resultContent.CallId, outputs);
-                            }
-                            else
-                            {
-                                switch (resultContent.Result)
-                                {
-                                    case AIContent ac:
-                                        yield return SerializeAIContent(resultContent.CallId, [ac]);
-                                        break;
+                                case AIContent ac:
+                                    yield return SerializeAIContent(resultContent.CallId, [ac]);
+                                    break;
 
-                                    case IEnumerable<AIContent> items:
-                                        yield return SerializeAIContent(resultContent.CallId, items);
-                                        break;
+                                case IEnumerable<AIContent> items:
+                                    yield return SerializeAIContent(resultContent.CallId, items);
+                                    break;
 
-                                    default:
-                                        string? result = resultContent.Result as string;
-                                        if (result is null && resultContent.Result is { } resultObj)
+                                case not null:
+                                    string? result = resultContent.Result as string;
+                                    if (result is null)
+                                    {
+                                        try
                                         {
-                                            try
-                                            {
-                                                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
-                                            }
-                                            catch (NotSupportedException)
-                                            {
-                                                // If the type can't be serialized, skip it.
-                                            }
+                                            result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
                                         }
+                                        catch (NotSupportedException)
+                                        {
+                                            // If the type can't be serialized, skip it.
+                                        }
+                                    }
 
-                                        yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, result ?? string.Empty);
-                                        break;
-                                }
+                                    yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, result ?? string.Empty);
+                                    break;
+
+                                default:
+                                    // Result is null — fall back to Outputs if available
+                                    if (resultContent.Outputs is { Count: > 0 } outputs)
+                                    {
+                                        yield return SerializeAIContent(resultContent.CallId, outputs);
+                                    }
+                                    else
+                                    {
+                                        yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, string.Empty);
+                                    }
+
+                                    break;
                             }
                             break;
                     }
