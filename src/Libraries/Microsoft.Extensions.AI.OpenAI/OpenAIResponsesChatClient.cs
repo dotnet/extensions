@@ -716,6 +716,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return functionTool;
 
             case HostedToolSearchTool:
+                // Workaround: The OpenAI .NET SDK doesn't yet expose a ToolSearchTool type.
+                // See https://github.com/openai/openai-dotnet/issues/1053
                 return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
 
             case HostedWebSearchTool webSearchTool:
@@ -826,6 +828,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         }
 
                         break;
+                }
+
+                if (mcpTool.DeferLoadingTools)
+                {
+                    responsesMcpTool.Patch.Set("$.defer_loading"u8, "true"u8);
                 }
 
                 return responsesMcpTool;

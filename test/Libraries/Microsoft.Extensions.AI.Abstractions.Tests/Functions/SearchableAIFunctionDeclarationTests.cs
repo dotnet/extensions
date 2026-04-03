@@ -42,7 +42,7 @@ public class SearchableAIFunctionDeclarationTests
     public void Namespace_Roundtrips()
     {
         var inner = AIFunctionFactory.Create(() => 42);
-        var wrapper = new SearchableAIFunctionDeclaration(inner, namespaceName: "myNamespace");
+        var wrapper = new SearchableAIFunctionDeclaration(inner, @namespace: "myNamespace");
 
         Assert.Equal("myNamespace", wrapper.Namespace);
     }
@@ -88,7 +88,7 @@ public class SearchableAIFunctionDeclarationTests
     {
         var f1 = AIFunctionFactory.Create(() => 1, "F1");
 
-        var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1], namespaceName: "ns");
+        var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1], @namespace: "ns");
 
         var s1 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[1]);
         Assert.Equal("ns", s1.Namespace);

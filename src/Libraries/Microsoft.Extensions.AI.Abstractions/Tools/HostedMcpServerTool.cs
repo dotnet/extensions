@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -143,4 +145,20 @@ public class HostedMcpServerTool : AITool
     /// </para>
     /// </remarks>
     public IDictionary<string, string>? Headers { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether tools from this MCP server should use deferred loading when tool search is enabled.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When set to <see langword="true"/> and a <see cref="HostedToolSearchTool"/> is present in <see cref="ChatOptions.Tools"/>,
+    /// the provider will signal to the AI service that tools from this MCP server should be deferred — only their names and
+    /// descriptions are sent initially, and full schemas are loaded on demand when the model selects them.
+    /// </para>
+    /// <para>
+    /// The default value is <see langword="false"/>.
+    /// </para>
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIToolSearch, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool DeferLoadingTools { get; set; }
 }
