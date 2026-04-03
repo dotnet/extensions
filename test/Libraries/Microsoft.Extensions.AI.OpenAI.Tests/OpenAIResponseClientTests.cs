@@ -6178,6 +6178,193 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task StreamingToolCallResult_OutputsProperty_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]},
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_stream_out",
+                        "output":[{"type":"input_text","text":"from outputs"}]
+                    }
+                ],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_s1","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_s1","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_s1","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_s1","output_index":0,"content_index":0,"delta":"Done"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_s1","output_index":0,"content_index":0,"text":"Done"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_s1","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Done","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_s1","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_s1","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_s1","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],"usage":{"input_tokens":5,"output_tokens":1,"total_tokens":6}}}
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var frc = new FunctionResultContent("call_stream_out", null) { Outputs = [new TextContent("from outputs")] };
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [frc])]))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Done", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Fact]
+    public async Task StreamingToolCallResult_BothResultAndOutputs_ResultTakesPrecedence()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]},
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_stream_both",
+                        "output":"legacy string"
+                    }
+                ],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_s2","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_s2","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_s2","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_s2","output_index":0,"content_index":0,"delta":"Done"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_s2","output_index":0,"content_index":0,"text":"Done"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_s2","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Done","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_s2","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_s2","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_s2","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],"usage":{"input_tokens":5,"output_tokens":1,"total_tokens":6}}}
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Both Result and Outputs set — Result takes precedence for compatibility
+        var frc = new FunctionResultContent("call_stream_both", "legacy string")
+        {
+            Outputs = [new TextContent("typed content")]
+        };
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [frc])]))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Done", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Fact]
+    public async Task StreamingToolCallResult_NeitherResultNorOutputs_SerializesEmpty()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]},
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_stream_empty",
+                        "output":""
+                    }
+                ],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_s3","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"message","id":"msg_s3","status":"in_progress","role":"assistant","content":[]}}
+
+            event: response.content_part.added
+            data: {"type":"response.content_part.added","item_id":"msg_s3","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_s3","output_index":0,"content_index":0,"delta":"Done"}
+
+            event: response.output_text.done
+            data: {"type":"response.output_text.done","item_id":"msg_s3","output_index":0,"content_index":0,"text":"Done"}
+
+            event: response.content_part.done
+            data: {"type":"response.content_part.done","item_id":"msg_s3","output_index":0,"content_index":0,"part":{"type":"output_text","text":"Done","annotations":[]}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"message","id":"msg_s3","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_s3","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_s3","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}],"usage":{"input_tokens":5,"output_tokens":1,"total_tokens":6}}}
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var frc = new FunctionResultContent("call_stream_empty", null);
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [frc])]))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Done", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Fact]
     public async Task UserMessageWithEmptyText_CreatesEmptyInputPart()
     {
         const string Input = """
