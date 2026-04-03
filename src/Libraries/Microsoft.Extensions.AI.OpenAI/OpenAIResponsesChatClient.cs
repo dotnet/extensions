@@ -1229,32 +1229,39 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 return outputItem;
                             }
 
-                            switch (resultContent.Result)
+                            if (resultContent.Outputs is { Count: > 0 } outputs)
                             {
-                                case AIContent ac:
-                                    yield return SerializeAIContent(resultContent.CallId, [ac]);
-                                    break;
+                                yield return SerializeAIContent(resultContent.CallId, outputs);
+                            }
+                            else
+                            {
+                                switch (resultContent.Result)
+                                {
+                                    case AIContent ac:
+                                        yield return SerializeAIContent(resultContent.CallId, [ac]);
+                                        break;
 
-                                case IEnumerable<AIContent> items:
-                                    yield return SerializeAIContent(resultContent.CallId, items);
-                                    break;
+                                    case IEnumerable<AIContent> items:
+                                        yield return SerializeAIContent(resultContent.CallId, items);
+                                        break;
 
-                                default:
-                                    string? result = resultContent.Result as string;
-                                    if (result is null && resultContent.Result is { } resultObj)
-                                    {
-                                        try
+                                    default:
+                                        string? result = resultContent.Result as string;
+                                        if (result is null && resultContent.Result is { } resultObj)
                                         {
-                                            result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                                            try
+                                            {
+                                                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                                            }
+                                            catch (NotSupportedException)
+                                            {
+                                                // If the type can't be serialized, skip it.
+                                            }
                                         }
-                                        catch (NotSupportedException)
-                                        {
-                                            // If the type can't be serialized, skip it.
-                                        }
-                                    }
 
-                                    yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, result ?? string.Empty);
-                                    break;
+                                        yield return ResponseItem.CreateFunctionCallOutputItem(resultContent.CallId, result ?? string.Empty);
+                                        break;
+                                }
                             }
                             break;
                     }

@@ -758,6 +758,75 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseItems_FunctionResultContent_OutputsOnly()
+    {
+        var frc = new FunctionResultContent("call_out1", null) { Outputs = [new TextContent("typed output")] };
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "test"),
+            new(ChatRole.Tool, [frc]),
+        ];
+
+        var items = messages.AsOpenAIResponseItems().ToArray();
+
+        Assert.Equal(2, items.Length);
+        FunctionCallOutputResponseItem outputItem = Assert.IsAssignableFrom<FunctionCallOutputResponseItem>(items[1]);
+        Assert.Equal("call_out1", outputItem.CallId);
+
+        // Structured output: verify wire JSON contains the typed content
+        var json = ModelReaderWriter.Write(outputItem, ModelReaderWriterOptions.Json);
+        using var doc = JsonDocument.Parse(json);
+        var outputProp = doc.RootElement.GetProperty("output");
+        Assert.Equal(JsonValueKind.Array, outputProp.ValueKind);
+        Assert.Equal(1, outputProp.GetArrayLength());
+        Assert.Equal("input_text", outputProp[0].GetProperty("type").GetString());
+        Assert.Equal("typed output", outputProp[0].GetProperty("text").GetString());
+    }
+
+    [Fact]
+    public void AsOpenAIResponseItems_FunctionResultContent_BothResultAndOutputs_PrefersOutputs()
+    {
+        var frc = new FunctionResultContent("call_both", "legacy string result")
+        {
+            Outputs = [new TextContent("typed wins")]
+        };
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "test"),
+            new(ChatRole.Tool, [frc]),
+        ];
+
+        var items = messages.AsOpenAIResponseItems().ToArray();
+
+        FunctionCallOutputResponseItem outputItem = Assert.IsAssignableFrom<FunctionCallOutputResponseItem>(items[1]);
+        Assert.Equal("call_both", outputItem.CallId);
+
+        // Outputs should win over Result
+        var json = ModelReaderWriter.Write(outputItem, ModelReaderWriterOptions.Json);
+        using var doc = JsonDocument.Parse(json);
+        var outputProp = doc.RootElement.GetProperty("output");
+        Assert.Equal(JsonValueKind.Array, outputProp.ValueKind);
+        Assert.Equal("typed wins", outputProp[0].GetProperty("text").GetString());
+    }
+
+    [Fact]
+    public void AsOpenAIResponseItems_FunctionResultContent_NeitherResultNorOutputs()
+    {
+        var frc = new FunctionResultContent("call_empty", null);
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "test"),
+            new(ChatRole.Tool, [frc]),
+        ];
+
+        var items = messages.AsOpenAIResponseItems().ToArray();
+
+        FunctionCallOutputResponseItem outputItem = Assert.IsAssignableFrom<FunctionCallOutputResponseItem>(items[1]);
+        Assert.Equal("call_empty", outputItem.CallId);
+        Assert.Equal(string.Empty, outputItem.FunctionOutput);
+    }
+
+    [Fact]
     public void AsOpenAIResponseItems_RoundtripsRawRepresentation()
     {
         List<ChatMessage> messages =

@@ -5319,6 +5319,172 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task ToolCallResult_OutputsProperty_SerializesCorrectly()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_outputs",
+                        "output":[{"type":"input_text","text":"from outputs"}]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_out",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_out",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Done","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var frc = new FunctionResultContent("call_outputs", null) { Outputs = [new TextContent("from outputs")] };
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [frc])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Done", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_BothResultAndOutputs_OutputsTakePrecedence()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_both",
+                        "output":[{"type":"input_text","text":"outputs wins"}]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_both",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_both",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Done","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        // Both Result and Outputs set — Outputs should take precedence
+        var frc = new FunctionResultContent("call_both", "legacy string")
+        {
+            Outputs = [new TextContent("outputs wins")]
+        };
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [frc])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Done", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolCallResult_NeitherResultNorOutputs_SerializesEmpty()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[{"type":"input_text","text":"test"}]
+                    },
+                    {
+                        "type":"function_call_output",
+                        "call_id":"call_empty",
+                        "output":""
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_empty",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[
+                {
+                  "type":"message",
+                  "id":"msg_empty",
+                  "status":"completed",
+                  "role":"assistant",
+                  "content":[{"type":"output_text","text":"Done","annotations":[]}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var frc = new FunctionResultContent("call_empty", null);
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, "test"),
+            new ChatMessage(ChatRole.Tool, [frc])
+        ]);
+
+        Assert.NotNull(response);
+        Assert.Equal("Done", response.Text);
+    }
+
+    [Fact]
     public async Task ResponseWithEndUserId_IncludesInAdditionalProperties()
     {
         const string Input = """
