@@ -27,7 +27,7 @@ public class OpenAITextToSpeechClientIntegrationTests : TextToSpeechClientIntegr
         }
 
         using ITextToSpeechClient client = openAIClient
-            .GetAudioClient("gpt-4o-mini-tts")
+            .GetAudioClient(TestRunnerConfiguration.Instance["OpenAI:TextToSpeechStreamingModel"] ?? "gpt-4o-mini-tts")
             .AsITextToSpeechClient();
 
         int audioUpdatingCount = 0;

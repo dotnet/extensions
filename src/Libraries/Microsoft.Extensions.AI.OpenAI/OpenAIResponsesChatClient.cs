@@ -1437,7 +1437,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         }
                         else if (Uri.TryCreate(inputImageUrl, UriKind.Absolute, out Uri? imageUri))
                         {
-                            content = new UriContent(imageUri, "image/*");
+                            content = new UriContent(imageUri, OpenAIClientExtensions.ImageUriToMediaType(imageUri));
                         }
                         else
                         {
