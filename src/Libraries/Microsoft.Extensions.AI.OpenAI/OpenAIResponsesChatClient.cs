@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -290,6 +289,14 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                 case ComputerCallOutputResponseItem computerCallOutput:
                     message.Contents.Add(new ToolResultContent(computerCallOutput.CallId) { RawRepresentation = computerCallOutput });
+                    break;
+
+                case ApplyPatchCallItem patchCall:
+                    message.Contents.Add(new ToolCallContent(patchCall.CallId) { RawRepresentation = patchCall });
+                    break;
+
+                case ApplyPatchCallOutputItem patchCallOutput:
+                    message.Contents.Add(new ToolResultContent(patchCallOutput.CallId) { RawRepresentation = patchCallOutput });
                     break;
 
                 default:
@@ -1088,12 +1095,16 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri, GetImageDetail(item)));
                             break;
 
+                        case UriContent uriContent when uriContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(uriContent.Uri));
+                            break;
+
                         case DataContent dataContent when dataContent.HasTopLevelMediaType("image"):
-                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(new Uri(dataContent.Uri), GetImageDetail(item)));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(BinaryData.FromBytes(dataContent.Data, dataContent.MediaType), GetImageDetail(item)));
                             break;
 
                         case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
-                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
+                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data, dataContent.MediaType), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
                             break;
 
                         case HostedFileContent fileContent when fileContent.HasTopLevelMediaType("image"):
@@ -1420,9 +1431,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     }
                     else if (part.InputImageUri is { } inputImageUrl)
                     {
-                        content = inputImageUrl.Scheme.Equals("data", StringComparison.OrdinalIgnoreCase) ?
-                            new DataContent(inputImageUrl) :
-                            new UriContent(inputImageUrl, MediaTypeMap.GetMediaType(inputImageUrl.AbsoluteUri) ?? "image/*");
+                        if (inputImageUrl.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            content = new DataContent(inputImageUrl);
+                        }
+                        else if (Uri.TryCreate(inputImageUrl, UriKind.Absolute, out Uri? imageUri))
+                        {
+                            content = new UriContent(imageUri, "image/*");
+                        }
+                        else
+                        {
+                            content = null;
+                        }
                     }
                     else
                     {
@@ -1496,36 +1516,25 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
     /// <summary>
     /// Extracts web search queries from a <see cref="WebSearchCallResponseItem"/>.
-    /// OpenAI exposes both a deprecated <c>action.query</c> (singular string) and <c>action.queries</c> (string array).
-    /// This helper reads whichever is present, preferring the array form.
     /// </summary>
     private static List<string>? GetWebSearchQueries(WebSearchCallResponseItem wscri)
     {
-        List<string>? queries = null;
-
-        // Try the newer array field first.
-        if (wscri.Patch.TryGetJson("$.action.queries"u8, out ReadOnlyMemory<byte> queriesJson))
+        if (wscri.Action is WebSearchSearchAction searchAction)
         {
-            Utf8JsonReader reader = new(queriesJson.Span);
-            if (reader.Read() && reader.TokenType is JsonTokenType.StartArray)
+            if (searchAction.Queries is { Count: > 0 } queries)
             {
-                while (reader.Read() && reader.TokenType is JsonTokenType.String)
-                {
-                    if (reader.GetString() is string q)
-                    {
-                        (queries ??= []).Add(q);
-                    }
-                }
+                return [.. queries];
             }
+
+#pragma warning disable CS0618 // Query is deprecated in favor of Queries; used here as a fallback
+            if (searchAction.Query is not null)
+            {
+                return [searchAction.Query];
+            }
+#pragma warning restore CS0618
         }
 
-        // Fall back to the deprecated singular field.
-        if (queries is null && wscri.Patch.TryGetValue("$.action.query"u8, out string? wsQuery) && wsQuery is not null)
-        {
-            queries = [wsQuery];
-        }
-
-        return queries;
+        return null;
     }
 
     /// <summary>
@@ -1534,54 +1543,20 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     /// </summary>
     private static List<AIContent>? GetWebSearchSources(WebSearchCallResponseItem wscri)
     {
-        if (!wscri.Patch.TryGetJson("$.action.sources"u8, out ReadOnlyMemory<byte> sourcesJson))
+        if (wscri.Action is not WebSearchSearchAction { Sources.Count: > 0 } searchAction)
         {
             return null;
         }
 
         List<AIContent>? results = null;
-        var reader = new Utf8JsonReader(sourcesJson.Span);
-        if (!reader.Read() || reader.TokenType is not JsonTokenType.StartArray)
+        foreach (var source in searchAction.Sources)
         {
-            return null;
-        }
-
-        while (reader.Read() && reader.TokenType is JsonTokenType.StartObject)
-        {
-            string? url = null;
-            string? title = null;
-
-            while (reader.Read() && reader.TokenType is not JsonTokenType.EndObject)
+            if (source is WebSearchActionUriSource { Uri: not null } uriSource)
             {
-                if (reader.TokenType == JsonTokenType.PropertyName)
+                (results ??= []).Add(new UriContent(uriSource.Uri, "text/html")
                 {
-                    if (reader.ValueTextEquals("url"u8))
-                    {
-                        _ = reader.Read();
-                        url = reader.GetString();
-                    }
-                    else if (reader.ValueTextEquals("title"u8))
-                    {
-                        _ = reader.Read();
-                        title = reader.GetString();
-                    }
-                    else
-                    {
-                        _ = reader.Read();
-                        _ = reader.TrySkip();
-                    }
-                }
-            }
-
-            if (url is not null && Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
-            {
-                UriContent uriContent = new(uri, "text/html");
-                if (title is not null)
-                {
-                    uriContent.AdditionalProperties = new() { ["title"] = title };
-                }
-
-                (results ??= []).Add(uriContent);
+                    RawRepresentation = uriSource,
+                });
             }
         }
 

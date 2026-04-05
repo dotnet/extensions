@@ -6689,6 +6689,78 @@ public class OpenAIResponseClientTests
         Assert.Equal("responses", activity.GetTagItem("openai.api.type"));
     }
 
+    [Fact]
+    public async Task ApplyPatchTool_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-2024-08-06",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"Create a hello world file"}]
+                }],
+                "tools":[{"type":"apply_patch"}]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_patch_001",
+              "object": "response",
+              "created_at": 1770553457,
+              "status": "completed",
+              "model": "gpt-4o-2024-08-06",
+              "output": [
+                {
+                  "type": "apply_patch_call",
+                  "id": "ap_001",
+                  "call_id": "call_patch_001",
+                  "status": "completed",
+                  "patch": "*** hello.txt\n+++ hello.txt\n@@ -0,0 +1 @@\n+Hello World"
+                },
+                {
+                  "type": "apply_patch_call_output",
+                  "id": "apo_001",
+                  "call_id": "call_patch_001",
+                  "status": "completed",
+                  "output": "Applied patch successfully."
+                }
+              ],
+              "usage": {
+                "input_tokens": 100,
+                "input_tokens_details": { "cached_tokens": 0 },
+                "output_tokens": 50,
+                "output_tokens_details": { "reasoning_tokens": 0 },
+                "total_tokens": 150
+              },
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-2024-08-06");
+
+        var response = await client.GetResponseAsync("Create a hello world file", new()
+        {
+            Tools = [new ApplyPatchTool().AsAITool()],
+        });
+
+        Assert.NotNull(response);
+        var message = Assert.Single(response.Messages);
+
+        // ApplyPatchCallItem should produce a ToolCallContent
+        var toolCall = Assert.Single(message.Contents.OfType<ToolCallContent>());
+        Assert.Equal("call_patch_001", toolCall.CallId);
+        Assert.IsType<ApplyPatchCallItem>(toolCall.RawRepresentation);
+
+        // ApplyPatchCallOutputItem should produce a ToolResultContent
+        var toolResult = Assert.Single(message.Contents.OfType<ToolResultContent>());
+        Assert.Equal("call_patch_001", toolResult.CallId);
+        Assert.IsType<ApplyPatchCallOutputItem>(toolResult.RawRepresentation);
+    }
+
     private static IChatClient CreateResponseClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(
             new ApiKeyCredential("apikey"),
@@ -6836,10 +6908,12 @@ public class OpenAIResponseClientTests
                     "query": ".NET latest news 2023",
                     "sources": [
                       {
+                        "type": "url",
                         "url": "https://devblogs.microsoft.com/dotnet/announcing-dotnet-10",
                         "title": "Announcing .NET 10 - .NET Blog"
                       },
                       {
+                        "type": "url",
                         "url": "https://dotnet.microsoft.com/en-us/download/dotnet/10.0",
                         "title": "Download .NET 10"
                       }
@@ -6957,11 +7031,11 @@ public class OpenAIResponseClientTests
 
         var source0 = Assert.IsType<UriContent>(wsResult.Results[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), source0.Uri);
-        Assert.Equal("Announcing .NET 10 - .NET Blog", source0.AdditionalProperties?["title"]);
+        Assert.IsType<WebSearchActionUriSource>(source0.RawRepresentation);
 
         var source1 = Assert.IsType<UriContent>(wsResult.Results[1]);
         Assert.Equal(new Uri("https://dotnet.microsoft.com/en-us/download/dotnet/10.0"), source1.Uri);
-        Assert.Equal("Download .NET 10", source1.AdditionalProperties?["title"]);
+        Assert.IsType<WebSearchActionUriSource>(source1.RawRepresentation);
 
         var textContent = Assert.IsType<TextContent>(message.Contents[2]);
         Assert.Equal(".NET 10 was officially released in November 2025 as an LTS release.", textContent.Text);
@@ -7010,7 +7084,7 @@ public class OpenAIResponseClientTests
             data: {"type":"response.web_search_call.completed","item_id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","output_index":0,"sequence_number":5}
 
             event: response.output_item.done
-            data: {"type":"response.output_item.done","item":{"id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","type":"web_search_call","status":"completed","action":{"type":"search","queries":[".NET latest news October 2023"],"query":".NET latest news October 2023","sources":[{"url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10","title":"Announcing .NET 10 - .NET Blog"}]}},"output_index":0,"sequence_number":6}
+            data: {"type":"response.output_item.done","item":{"id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","type":"web_search_call","status":"completed","action":{"type":"search","queries":[".NET latest news October 2023"],"query":".NET latest news October 2023","sources":[{"type":"url","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10","title":"Announcing .NET 10 - .NET Blog"}]}},"output_index":0,"sequence_number":6}
 
             event: response.output_item.added
             data: {"type":"response.output_item.added","item":{"id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","type":"message","status":"in_progress","content":[],"role":"assistant"},"output_index":1,"sequence_number":7}
@@ -7037,7 +7111,7 @@ public class OpenAIResponseClientTests
             data: {"type":"response.output_item.done","item":{"id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","type":"message","status":"completed","content":[{"type":"output_text","annotations":[{"type":"url_citation","end_index":538,"start_index":434,"title":"Announcing .NET 10 - .NET Blog","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"}],"logprobs":[],"text":".NET 10 was officially released."}],"role":"assistant"},"output_index":1,"sequence_number":14}
 
             event: response.completed
-            data: {"type":"response.completed","response":{"id":"resp_02441a08b3f3bf4b006988809034f4819e8525bfe16c85a287","object":"response","created_at":1770553488,"status":"completed","background":false,"completed_at":1770553497,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","type":"web_search_call","status":"completed","action":{"type":"search","queries":[".NET latest news October 2023"],"query":".NET latest news October 2023","sources":[{"url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10","title":"Announcing .NET 10 - .NET Blog"}]}},{"id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","type":"message","status":"completed","content":[{"type":"output_text","annotations":[{"type":"url_citation","end_index":538,"start_index":434,"title":"Announcing .NET 10 - .NET Blog","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"}],"logprobs":[],"text":".NET 10 was officially released."}],"role":"assistant"}],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"web_search","filters":null,"search_context_size":"medium","user_location":{"type":"approximate","city":null,"country":"US","region":null,"timezone":null}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":17013,"input_tokens_details":{"cached_tokens":0},"output_tokens":1138,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":18151},"user":null,"metadata":{}},"sequence_number":15}
+            data: {"type":"response.completed","response":{"id":"resp_02441a08b3f3bf4b006988809034f4819e8525bfe16c85a287","object":"response","created_at":1770553488,"status":"completed","background":false,"completed_at":1770553497,"error":null,"frequency_penalty":0.0,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3","type":"web_search_call","status":"completed","action":{"type":"search","queries":[".NET latest news October 2023"],"query":".NET latest news October 2023","sources":[{"type":"url","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10","title":"Announcing .NET 10 - .NET Blog"}]}},{"id":"msg_02441a08b3f3bf4b0069888093b5d4819e8c89ede1d425e487","type":"message","status":"completed","content":[{"type":"output_text","annotations":[{"type":"url_citation","end_index":538,"start_index":434,"title":"Announcing .NET 10 - .NET Blog","url":"https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"}],"logprobs":[],"text":".NET 10 was officially released."}],"role":"assistant"}],"parallel_tool_calls":true,"presence_penalty":0.0,"previous_response_id":null,"prompt_cache_key":null,"prompt_cache_retention":null,"reasoning":{"effort":null,"summary":null},"safety_identifier":null,"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"},"verbosity":"medium"},"tool_choice":"auto","tools":[{"type":"web_search","filters":null,"search_context_size":"medium","user_location":{"type":"approximate","city":null,"country":"US","region":null,"timezone":null}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":17013,"input_tokens_details":{"cached_tokens":0},"output_tokens":1138,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":18151},"user":null,"metadata":{}},"sequence_number":15}
 
             """;
 
@@ -7082,7 +7156,7 @@ public class OpenAIResponseClientTests
         Assert.Single(wsResult.Results);
         var streamSource = Assert.IsType<UriContent>(wsResult.Results[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), streamSource.Uri);
-        Assert.Equal("Announcing .NET 10 - .NET Blog", streamSource.AdditionalProperties?["title"]);
+        Assert.IsType<WebSearchActionUriSource>(streamSource.RawRepresentation);
 
         // Find text content
         var textUpdates = updates.Where(u => u.Contents.OfType<TextContent>().Any()).ToList();
