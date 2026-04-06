@@ -664,7 +664,7 @@ public class OpenAIConversionTests
     public void AsOpenAIResponseTool_WithSearchableAIFunctionDeclarationWithNamespace_PatchesNamespace()
     {
         var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
-        var searchable = new SearchableAIFunctionDeclaration(inner, @namespace: "myNamespace");
+        var searchable = new SearchableAIFunctionDeclaration(inner, namespaceName: "myNamespace");
 
         var result = ((AITool)searchable).AsOpenAIResponseTool();
 
