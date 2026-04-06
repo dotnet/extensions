@@ -29,9 +29,9 @@ export RUNWAY_API_KEY="rw_xxxx"
 
 | Operation | MEAI Mapping | Endpoint |
 |---|---|---|
-| Text-to-video | `VideoOperationKind.Create`, no `OriginalMedia` | `POST /v1/text_to_video` |
-| Image-to-video | `VideoOperationKind.Create` + `OriginalMedia` (image) | `POST /v1/image_to_video` |
-| Video-to-video | `VideoOperationKind.Edit` + `OriginalMedia` (video) | `POST /v1/video_to_video` |
+| Text-to-video | `VideoOperationKind.Create`, no `StartFrame` | `POST /v1/text_to_video` |
+| Image-to-video | `VideoOperationKind.Create` + `StartFrame` (image) | `POST /v1/image_to_video` |
+| Video-to-video | `VideoOperationKind.Edit` + `SourceVideo` (video) | `POST /v1/video_to_video` |
 
 ## Usage
 
@@ -56,8 +56,8 @@ dotnet run -- text-to-video "A sunset over mountains" --seed 42 --output sunset.
 - **Ratio vs Size**: Runway uses fixed ratio strings (`"1280:720"`, `"720:1280"`, etc.) rather than arbitrary pixel dimensions. The `VideoSize` → ratio mapping loses information.
 - **Character performance** (`act_two`): Runway has a unique `character_performance` endpoint for driving a character with a reference video. This is fundamentally different from OpenAI's character system and has no MEAI equivalent.
 - **Seed**: Available via `AdditionalProperties` — consider promoting to a first-class option.
-- **Image position**: Runway's `image_to_video` accepts an array of `PromptImages` with `position` (currently only `"first"`). MEAI only models a single image via `OriginalMedia` without position metadata.
+- **Image position**: Runway's `image_to_video` accepts an array of `PromptImages` with `position` (currently only `"first"`). MEAI models this via `StartFrame` for the first frame.
 - **Duration as integer**: Runway passes duration as an integer (2-10), while OpenAI requires a string enum. The MEAI `TimeSpan Duration` maps cleanly to both.
-- **Video-to-video references**: `gen4_aleph` supports `references` (array of image references for style). This is modeled via `AdditionalProperties` but could benefit from a first-class reference images concept.
+- **Video-to-video references**: `gen4_aleph` supports `references` (array of image references for style). These could be modeled via `ReferenceImages` on the request.
 - **Content moderation**: Runway has `contentModeration.publicFigureThreshold` — provider-specific safety control.
 - **No resolution control for v2v**: For video-to-video, the output resolution is determined by the input video.

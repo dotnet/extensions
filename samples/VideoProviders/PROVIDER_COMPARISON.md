@@ -103,20 +103,9 @@ public string? NegativePrompt { get; set; }
 
 ### Gap 4: Reference Images with Purpose (MEDIUM PRIORITY)
 
-**Problem**: Google Veo supports up to 3 reference images, each with a `referenceType` ("STYLE" or "SUBJECT"). Runway's video-to-video supports reference images for style transfer. The current `OriginalMedia` collection doesn't distinguish between "this is the source image for image-to-video" vs "this is a style reference".
+**Problem**: Google Veo supports up to 3 reference images, each with a `referenceType` ("STYLE" or "SUBJECT"). Runway's video-to-video supports reference images for style transfer.
 
-**Recommendation**: Consider a typed reference media collection, or a new property:
-
-```csharp
-/// <summary>Reference images for guiding style, subject, or other attributes of the generation.</summary>
-public IList<ReferenceMedia>? ReferenceMedia { get; set; }
-
-public class ReferenceMedia
-{
-    public AIContent Content { get; set; }
-    public string? ReferenceType { get; set; } // "style", "subject", etc.
-}
-```
+**Status**: ✅ ADDRESSED — `VideoGenerationRequest.ReferenceImages` (IList<AIContent>?) provides a first-class collection for reference images. The `referenceType` metadata can be provided via provider-specific `AdditionalProperties` on the individual `AIContent` items.
 
 **Providers**: Google Veo ✅ (3 refs, typed), Runway ✅ (1 ref for v2v)
 
@@ -141,11 +130,9 @@ Alternatively, this could be modeled as part of `MediaType` (e.g., `"video/mp4; 
 
 ### Gap 6: Keyframe / Interpolation (LOW PRIORITY)
 
-**Problem**: Both Luma and Google Veo support first+last frame interpolation — providing a start and end image and generating the video in between. The current API only models "input media" without positional semantics.
+**Problem**: Both Luma and Google Veo support first+last frame interpolation — providing a start and end image and generating the video in between.
 
-**Current workaround**: Send two images in `OriginalMedia` and the provider implementation knows first = frame0, second = frame1.
-
-**Recommendation**: No immediate API change needed. The `OriginalMedia` collection with provider convention (first item = first frame, second = last frame) is workable. Could add `string? FramePosition` to a future `ReferenceMedia` type.
+**Status**: ✅ ADDRESSED — `VideoGenerationRequest.StartFrame` and `VideoGenerationRequest.EndFrame` provide first-class properties for first/last frame interpolation.
 
 ---
 
@@ -177,7 +164,7 @@ Alternatively, this could be modeled as part of `MediaType` (e.g., `"video/mp4; 
 
 ### 1. Runway's Separate Endpoints
 
-Runway uses three separate endpoints (`text_to_video`, `image_to_video`, `video_to_video`) rather than a single unified endpoint. The `IVideoGenerator.GenerateAsync` single-method approach requires the implementation to inspect `OriginalMedia` content types to determine which endpoint to call. This works but adds complexity.
+Runway uses three separate endpoints (`text_to_video`, `image_to_video`, `video_to_video`) rather than a single unified endpoint. The `IVideoGenerator.GenerateAsync` single-method approach requires the implementation to inspect `StartFrame`/`SourceVideo` properties to determine which endpoint to call. This works cleanly with the new typed properties.
 
 ### 2. Luma's URL-Only Image Input
 
@@ -222,7 +209,7 @@ All providers handle duration differently:
 
 - **`VideoGenerationOperation` pattern**: The submit → poll → download lifecycle maps perfectly to all four providers.
 - **`VideoOperationKind` enum**: Create/Edit/Extend covers the core operations well.
-- **`OriginalMedia` collection**: Handles image-to-video input for all providers.
+- **`StartFrame`/`EndFrame`/`ReferenceImages` properties**: Handles image-to-video, interpolation, and reference images with clear semantics for all providers.
 - **`AdditionalProperties` escape hatch**: Provider-specific features (concepts, camera motion, content moderation) flow through cleanly.
 - **`GetService<T>()` pattern**: Enables provider-specific extensions (like OpenAI's `UploadVideoCharacterAsync`) without polluting the interface.
 - **`VideoGenerationResponseFormat`**: Uri vs Data choice is useful for all providers.

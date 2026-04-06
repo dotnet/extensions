@@ -111,8 +111,8 @@ public class VideoGeneratorTests
     [Fact]
     public async Task GenerateVideosAsync_WithEditRequest_PassesThroughCorrectly()
     {
-        var originalVideos = new AIContent[] { new DataContent("dGVzdA=="u8.ToArray(), "video/mp4") };
-        var request = new VideoGenerationRequest("Edit this", originalVideos);
+        var sourceVideo = new DataContent("dGVzdA=="u8.ToArray(), "video/mp4");
+        var request = new VideoGenerationRequest("Edit this") { SourceVideo = sourceVideo };
 
         VideoGenerationRequest? capturedRequest = null;
 
@@ -129,6 +129,6 @@ public class VideoGeneratorTests
 
         Assert.NotNull(capturedRequest);
         Assert.Equal("Edit this", capturedRequest!.Prompt);
-        Assert.NotNull(capturedRequest.OriginalMedia);
+        Assert.NotNull(capturedRequest.SourceVideo);
     }
 }

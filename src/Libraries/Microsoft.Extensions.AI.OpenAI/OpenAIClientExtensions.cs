@@ -206,7 +206,7 @@ public static class OpenAIClientExtensions
     /// </description></item>
     /// <item><description>
     /// <b>Image-to-video</b> (<see cref="VideoOperationKind.Create"/>): When
-    /// <see cref="VideoGenerationRequest.OriginalMedia"/> contains image content, uses it as an
+    /// <see cref="VideoGenerationRequest.StartFrame"/> contains image content, uses it as an
     /// <c>input_reference</c> via <c>POST /videos</c>.
     /// </description></item>
     /// <item><description>
@@ -216,7 +216,7 @@ public static class OpenAIClientExtensions
     /// </description></item>
     /// <item><description>
     /// <b>Edit by upload</b> (<see cref="VideoOperationKind.Edit"/>): When
-    /// <see cref="VideoGenerationRequest.OriginalMedia"/> contains video content and no
+    /// <see cref="VideoGenerationRequest.SourceVideo"/> contains video content and no
     /// <see cref="VideoGenerationRequest.SourceVideoId"/> is set, uploads the video for editing.
     /// </description></item>
     /// <item><description>

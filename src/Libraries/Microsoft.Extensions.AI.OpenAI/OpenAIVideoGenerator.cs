@@ -32,12 +32,12 @@ namespace Microsoft.Extensions.AI;
 /// <list type="bullet">
 /// <item><description>
 /// <b>Text-to-video</b> (<see cref="VideoOperationKind.Create"/>): When
-/// <see cref="VideoGenerationRequest.OriginalMedia"/> is <see langword="null"/>,
+/// <see cref="VideoGenerationRequest.StartFrame"/> is <see langword="null"/>,
 /// creates a new video from the text prompt via <c>POST /videos</c>.
 /// </description></item>
 /// <item><description>
 /// <b>Image-to-video</b> (<see cref="VideoOperationKind.Create"/>): When
-/// <see cref="VideoGenerationRequest.OriginalMedia"/> contains image content
+/// <see cref="VideoGenerationRequest.StartFrame"/> contains image content
 /// (e.g., <c>image/png</c>), uses the image as an <c>input_reference</c> to guide
 /// new video creation via <c>POST /videos</c>. A <see cref="UriContent"/> sends the
 /// image URL in JSON; a <see cref="DataContent"/> uploads the image bytes via
@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.AI;
 /// </description></item>
 /// <item><description>
 /// <b>Edit by upload</b> (<see cref="VideoOperationKind.Edit"/>): When
-/// <see cref="VideoGenerationRequest.OriginalMedia"/> contains video content
+/// <see cref="VideoGenerationRequest.SourceVideo"/> contains video content
 /// (e.g., <c>video/mp4</c>) and no <see cref="VideoGenerationRequest.SourceVideoId"/>
 /// is set, uploads the video for editing via <c>POST /videos/edits</c> with multipart/form-data.
 /// </description></item>
@@ -104,45 +104,28 @@ internal sealed class OpenAIVideoGenerator : IVideoGenerator
 
         string modelId = options?.ModelId ?? _defaultModelId ?? "sora-2";
 
-        // Determine OriginalMedia type based on the operation kind
+        // Determine input media based on the operation kind
         DataContent? videoEditContent = null;
         DataContent? imageReferenceData = null;
         UriContent? imageReferenceUri = null;
 
         if (request.OperationKind == VideoOperationKind.Create &&
-            request.OriginalMedia is { } createMedia)
+            request.StartFrame is { } startFrame)
         {
-            foreach (AIContent media in createMedia)
+            if (startFrame is DataContent dc && dc.Data.Length > 0 && IsImageMediaType(dc.MediaType))
             {
-                if (media is DataContent dc && dc.Data.Length > 0)
-                {
-                    if (IsImageMediaType(dc.MediaType))
-                    {
-                        imageReferenceData = dc;
-                    }
-
-                    break;
-                }
-
-                if (media is UriContent uc && IsImageMediaType(uc.MediaType))
-                {
-                    imageReferenceUri = uc;
-                    break;
-                }
+                imageReferenceData = dc;
+            }
+            else if (startFrame is UriContent uc && IsImageMediaType(uc.MediaType))
+            {
+                imageReferenceUri = uc;
             }
         }
         else if (request.OperationKind == VideoOperationKind.Edit &&
                  request.SourceVideoId is null &&
-                 request.OriginalMedia is { } editMedia)
+                 request.SourceVideo is DataContent editDc && editDc.Data.Length > 0 && IsVideoMediaType(editDc.MediaType))
         {
-            foreach (AIContent media in editMedia)
-            {
-                if (media is DataContent dc && dc.Data.Length > 0 && IsVideoMediaType(dc.MediaType))
-                {
-                    videoEditContent = dc;
-                    break;
-                }
-            }
+            videoEditContent = editDc;
         }
 
         // Route to the appropriate endpoint and submit the video generation job

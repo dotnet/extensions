@@ -13,14 +13,14 @@ namespace Microsoft.Extensions.AI;
 public enum VideoOperationKind
 {
     /// <summary>
-    /// Create a new video from a text prompt, optionally guided by a reference image
-    /// supplied via <see cref="VideoGenerationRequest.OriginalMedia"/>.
+    /// Create a new video from a text prompt, optionally guided by a starting frame image
+    /// supplied via <see cref="VideoGenerationRequest.StartFrame"/>.
     /// </summary>
     Create,
 
     /// <summary>
     /// Edit an existing video identified by <see cref="VideoGenerationRequest.SourceVideoId"/>
-    /// or uploaded via <see cref="VideoGenerationRequest.OriginalMedia"/>.
+    /// or provided via <see cref="VideoGenerationRequest.SourceVideo"/>.
     /// </summary>
     Edit,
 

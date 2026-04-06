@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -83,22 +82,22 @@ public class VideoGeneratorExtensionsTests
 
         Assert.NotNull(capturedRequest);
         Assert.Equal("A cat video", capturedRequest!.Prompt);
-        Assert.Null(capturedRequest.OriginalMedia);
+        Assert.Null(capturedRequest.StartFrame);
     }
 
     [Fact]
     public async Task EditVideosAsync_NullGenerator_Throws()
     {
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () =>
-            ((IVideoGenerator)null!).EditVideoAsync(Array.Empty<AIContent>(), "prompt"));
+            ((IVideoGenerator)null!).EditVideoAsync(new DataContent("dGVzdA=="u8.ToArray(), "video/mp4"), "prompt"));
     }
 
     [Fact]
-    public async Task EditVideosAsync_NullOriginalMedia_Throws()
+    public async Task EditVideosAsync_NullSourceVideo_Throws()
     {
         using var generator = new TestVideoGenerator();
-        await Assert.ThrowsAsync<ArgumentNullException>("originalMedia", () =>
-            generator.EditVideoAsync((IEnumerable<AIContent>)null!, "prompt"));
+        await Assert.ThrowsAsync<ArgumentNullException>("sourceVideo", () =>
+            generator.EditVideoAsync((AIContent)null!, "prompt"));
     }
 
     [Fact]
@@ -106,7 +105,7 @@ public class VideoGeneratorExtensionsTests
     {
         using var generator = new TestVideoGenerator();
         await Assert.ThrowsAsync<ArgumentNullException>("prompt", () =>
-            generator.EditVideoAsync(Array.Empty<AIContent>(), null!));
+            generator.EditVideoAsync(new DataContent("dGVzdA=="u8.ToArray(), "video/mp4"), null!));
     }
 
     [Fact]
@@ -127,7 +126,7 @@ public class VideoGeneratorExtensionsTests
 
         Assert.NotNull(capturedRequest);
         Assert.Equal("Make it faster", capturedRequest!.Prompt);
-        Assert.NotNull(capturedRequest.OriginalMedia);
+        Assert.NotNull(capturedRequest.SourceVideo);
     }
 
     [Fact]
@@ -147,7 +146,7 @@ public class VideoGeneratorExtensionsTests
 
         Assert.NotNull(capturedRequest);
         Assert.Equal("Add effects", capturedRequest!.Prompt);
-        Assert.NotNull(capturedRequest.OriginalMedia);
+        Assert.NotNull(capturedRequest.SourceVideo);
     }
 
     [Fact]

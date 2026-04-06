@@ -200,9 +200,24 @@ public sealed class OpenTelemetryVideoGenerator : DelegatingVideoGenerator
                         content.Add(new TextContent(request.Prompt));
                     }
 
-                    if (request.OriginalMedia is not null)
+                    if (request.StartFrame is not null)
                     {
-                        content.AddRange(request.OriginalMedia);
+                        content.Add(request.StartFrame);
+                    }
+
+                    if (request.EndFrame is not null)
+                    {
+                        content.Add(request.EndFrame);
+                    }
+
+                    if (request.ReferenceImages is not null)
+                    {
+                        content.AddRange(request.ReferenceImages);
+                    }
+
+                    if (request.SourceVideo is not null)
+                    {
+                        content.Add(request.SourceVideo);
                     }
 
                     _ = activity.AddTag(

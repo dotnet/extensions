@@ -67,7 +67,7 @@ public class OpenTelemetryVideoGeneratorTests
         VideoGenerationRequest request = new()
         {
             Prompt = "This is the input prompt.",
-            OriginalMedia = [new UriContent("http://example/input.mp4", "video/mp4")],
+            SourceVideo = new UriContent("http://example/input.mp4", "video/mp4"),
         };
 
         VideoGenerationOptions options = new()

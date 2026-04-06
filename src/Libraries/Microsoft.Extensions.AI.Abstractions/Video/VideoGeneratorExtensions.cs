@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using System.Threading;
@@ -106,28 +105,28 @@ public static class VideoGeneratorExtensions
     }
 
     /// <summary>
-    /// Submits an edit request for original media using the specified prompt.
+    /// Submits an edit request for existing video content using the specified prompt.
     /// </summary>
     /// <param name="generator">The video generator.</param>
-    /// <param name="originalMedia">The original media (images or videos) to use as input.</param>
-    /// <param name="prompt">The prompt to guide the video generation or editing.</param>
+    /// <param name="sourceVideo">The source video content to edit.</param>
+    /// <param name="prompt">The prompt to guide the video editing.</param>
     /// <param name="options">The video generation options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="generator"/>, <paramref name="originalMedia"/>, or <paramref name="prompt"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/>, <paramref name="sourceVideo"/>, or <paramref name="prompt"/> is <see langword="null"/>.</exception>
     /// <returns>A <see cref="VideoGenerationOperation"/> representing the submitted video generation job.</returns>
     public static Task<VideoGenerationOperation> EditVideoAsync(
         this IVideoGenerator generator,
-        IEnumerable<AIContent> originalMedia,
+        AIContent sourceVideo,
         string prompt,
         VideoGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(generator);
-        _ = Throw.IfNull(originalMedia);
+        _ = Throw.IfNull(sourceVideo);
         _ = Throw.IfNull(prompt);
 
         return generator.GenerateAsync(
-            new VideoGenerationRequest { Prompt = prompt, OriginalMedia = originalMedia, OperationKind = VideoOperationKind.Edit },
+            new VideoGenerationRequest { Prompt = prompt, SourceVideo = sourceVideo, OperationKind = VideoOperationKind.Edit },
             options, cancellationToken);
     }
 
@@ -135,25 +134,25 @@ public static class VideoGeneratorExtensions
     /// Submits an edit request for a single video using the specified prompt.
     /// </summary>
     /// <param name="generator">The video generator.</param>
-    /// <param name="originalVideo">The single video to use as input.</param>
+    /// <param name="sourceVideo">The single video to use as input.</param>
     /// <param name="prompt">The prompt to guide the video editing.</param>
     /// <param name="options">The video generation options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="generator"/>, <paramref name="originalVideo"/>, or <paramref name="prompt"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="generator"/>, <paramref name="sourceVideo"/>, or <paramref name="prompt"/> is <see langword="null"/>.</exception>
     /// <returns>A <see cref="VideoGenerationOperation"/> representing the submitted video generation job.</returns>
     public static Task<VideoGenerationOperation> EditVideoAsync(
         this IVideoGenerator generator,
-        DataContent originalVideo,
+        DataContent sourceVideo,
         string prompt,
         VideoGenerationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(generator);
-        _ = Throw.IfNull(originalVideo);
+        _ = Throw.IfNull(sourceVideo);
         _ = Throw.IfNull(prompt);
 
         return generator.GenerateAsync(
-            new VideoGenerationRequest { Prompt = prompt, OriginalMedia = [originalVideo], OperationKind = VideoOperationKind.Edit },
+            new VideoGenerationRequest { Prompt = prompt, SourceVideo = sourceVideo, OperationKind = VideoOperationKind.Edit },
             options, cancellationToken);
     }
 
@@ -161,7 +160,7 @@ public static class VideoGeneratorExtensions
     /// Submits an edit request for video data provided as a byte array.
     /// </summary>
     /// <param name="generator">The video generator.</param>
-    /// <param name="originalVideoData">The byte array containing the video data to use as input.</param>
+    /// <param name="sourceVideoData">The byte array containing the video data to use as input.</param>
     /// <param name="fileName">The filename for the video data.</param>
     /// <param name="prompt">The prompt to guide the video generation.</param>
     /// <param name="options">The video generation options to configure the request.</param>
@@ -172,7 +171,7 @@ public static class VideoGeneratorExtensions
     /// <returns>A <see cref="VideoGenerationOperation"/> representing the submitted video generation job.</returns>
     public static Task<VideoGenerationOperation> EditVideoAsync(
         this IVideoGenerator generator,
-        ReadOnlyMemory<byte> originalVideoData,
+        ReadOnlyMemory<byte> sourceVideoData,
         string fileName,
         string prompt,
         VideoGenerationOptions? options = null,
@@ -183,10 +182,10 @@ public static class VideoGeneratorExtensions
         _ = Throw.IfNull(prompt);
 
         string mediaType = GetMediaTypeFromFileName(fileName);
-        var dataContent = new DataContent(originalVideoData, mediaType) { Name = fileName };
+        var dataContent = new DataContent(sourceVideoData, mediaType) { Name = fileName };
 
         return generator.GenerateAsync(
-            new VideoGenerationRequest { Prompt = prompt, OriginalMedia = [dataContent], OperationKind = VideoOperationKind.Edit },
+            new VideoGenerationRequest { Prompt = prompt, SourceVideo = dataContent, OperationKind = VideoOperationKind.Edit },
             options, cancellationToken);
     }
 

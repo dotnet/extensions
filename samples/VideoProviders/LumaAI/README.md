@@ -26,9 +26,9 @@ export LUMA_API_KEY="luma-xxxx"
 
 | Operation | MEAI Mapping | Notes |
 |---|---|---|
-| Text-to-video | `VideoOperationKind.Create`, no `OriginalMedia` | Basic prompt → video |
-| Image-to-video (start frame) | `VideoOperationKind.Create` + `OriginalMedia` (1 image) | Image as first frame (`keyframes.frame0`) |
-| Image-to-video (start+end frames) | `VideoOperationKind.Create` + `OriginalMedia` (2 images) | Two images as keyframes (`frame0`+`frame1`) for interpolation |
+| Text-to-video | `VideoOperationKind.Create`, no `StartFrame` | Basic prompt → video |
+| Image-to-video (start frame) | `VideoOperationKind.Create` + `StartFrame` (image) | Image as first frame (`keyframes.frame0`) |
+| Image-to-video (start+end frames) | `VideoOperationKind.Create` + `StartFrame` + `EndFrame` | Two images as keyframes (`frame0`+`frame1`) for interpolation |
 | Extend video | `VideoOperationKind.Extend` + `SourceVideoId` | Extend using the generation ID of a completed video |
 | Reverse extend | `AdditionalProperties` | Extend backwards — requires provider-specific keyframe manipulation |
 | Video interpolation | `AdditionalProperties` | Interpolate between two generation IDs |

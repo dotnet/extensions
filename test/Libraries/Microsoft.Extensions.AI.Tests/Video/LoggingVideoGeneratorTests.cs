@@ -95,7 +95,7 @@ public class LoggingVideoGeneratorTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task GenerateVideosAsync_WithOriginalMedia_LogsInvocationAndCompletion(LogLevel level)
+    public async Task GenerateVideosAsync_WithSourceVideo_LogsInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
         using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
@@ -113,9 +113,9 @@ public class LoggingVideoGeneratorTests
             .UseLogging(loggerFactory)
             .Build();
 
-        AIContent[] originalMedia = [new DataContent((byte[])[1, 2, 3, 4], "video/mp4")];
+        AIContent sourceVideo = new DataContent((byte[])[1, 2, 3, 4], "video/mp4");
         await generator.GenerateAsync(
-            new VideoGenerationRequest("Make it more colorful", originalMedia),
+            new VideoGenerationRequest("Make it more colorful") { SourceVideo = sourceVideo },
             new VideoGenerationOptions { ModelId = "sora" });
 
         var logs = collector.GetSnapshot();

@@ -49,13 +49,13 @@ internal sealed class RunwayVideoGenerator : IVideoGenerator
         JsonObject body;
 
         // Determine which endpoint to use based on operation kind and media
-        if (request.OperationKind == VideoOperationKind.Edit && HasVideoMedia(request.OriginalMedia))
+        if (request.OperationKind == VideoOperationKind.Edit && request.SourceVideo is not null)
         {
             // Video-to-video (gen4_aleph only)
             endpoint = "/v1/video_to_video";
             body = BuildVideoToVideoBody(request, model, options);
         }
-        else if (HasImageMedia(request.OriginalMedia))
+        else if (request.StartFrame is not null)
         {
             // Image-to-video
             endpoint = "/v1/image_to_video";
@@ -113,7 +113,7 @@ internal sealed class RunwayVideoGenerator : IVideoGenerator
 
     private static JsonObject BuildImageToVideoBody(VideoGenerationRequest request, string model, VideoGenerationOptions? options)
     {
-        string? imageUri = GetFirstImageUri(request.OriginalMedia);
+        string? imageUri = GetContentUri(request.StartFrame);
 
         var body = new JsonObject
         {
@@ -134,7 +134,7 @@ internal sealed class RunwayVideoGenerator : IVideoGenerator
 
     private static JsonObject BuildVideoToVideoBody(VideoGenerationRequest request, string model, VideoGenerationOptions? options)
     {
-        string? videoUri = GetFirstVideoUri(request.OriginalMedia);
+        string? videoUri = GetContentUri(request.SourceVideo);
 
         var body = new JsonObject
         {
@@ -166,87 +166,24 @@ internal sealed class RunwayVideoGenerator : IVideoGenerator
         }
     }
 
-    private static string? GetFirstImageUri(IEnumerable<AIContent>? media)
+    private static string? GetContentUri(AIContent? content)
     {
-        if (media is null)
+        if (content is null)
         {
             return null;
         }
 
-        foreach (var item in media)
+        if (content is UriContent uc && uc.Uri is not null)
         {
-            if (item is UriContent uc && uc.Uri is not null && (uc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ?? true))
-            {
-                return uc.Uri.ToString();
-            }
+            return uc.Uri.ToString();
+        }
 
-            if (item is DataContent dc && dc.Data.Length > 0 && (dc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ?? true))
-            {
-                // Runway accepts data URIs for images
-                return dc.Uri ?? $"data:{dc.MediaType ?? "image/png"};base64,{Convert.ToBase64String(dc.Data.ToArray())}";
-            }
+        if (content is DataContent dc && dc.Data.Length > 0)
+        {
+            return dc.Uri ?? $"data:{dc.MediaType ?? "application/octet-stream"};base64,{Convert.ToBase64String(dc.Data.ToArray())}";
         }
 
         return null;
-    }
-
-    private static string? GetFirstVideoUri(IEnumerable<AIContent>? media)
-    {
-        if (media is null)
-        {
-            return null;
-        }
-
-        foreach (var item in media)
-        {
-            if (item is UriContent uc && uc.Uri is not null && (uc.MediaType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) ?? true))
-            {
-                return uc.Uri.ToString();
-            }
-
-            if (item is DataContent dc && dc.Data.Length > 0 && (dc.MediaType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) ?? false))
-            {
-                return dc.Uri ?? $"data:{dc.MediaType};base64,{Convert.ToBase64String(dc.Data.ToArray())}";
-            }
-        }
-
-        return null;
-    }
-
-    private static bool HasImageMedia(IEnumerable<AIContent>? media)
-    {
-        if (media is null)
-        {
-            return false;
-        }
-
-        foreach (var item in media)
-        {
-            if (item is DataContent dc && (dc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ?? false))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool HasVideoMedia(IEnumerable<AIContent>? media)
-    {
-        if (media is null)
-        {
-            return false;
-        }
-
-        foreach (var item in media)
-        {
-            if (item is DataContent dc && (dc.MediaType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) ?? false))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private static string MapRatio(Size? size)

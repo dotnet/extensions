@@ -28,10 +28,10 @@ export GOOGLE_API_KEY="AIza..."
 
 | Operation | MEAI Mapping | Notes |
 |---|---|---|
-| Text-to-video | `VideoOperationKind.Create`, no `OriginalMedia` | Prompt-only generation |
-| Image-to-video | `VideoOperationKind.Create` + `OriginalMedia` (image) | Image as starting reference |
-| First+last frame interpolation | `OriginalMedia` + `AdditionalProperties["lastFrameImage"]` | Generate video between two frames |
-| Reference images (up to 3) | `AdditionalProperties["referenceImages"]` | Style/subject transfer with `reference_type` |
+| Text-to-video | `VideoOperationKind.Create`, no `StartFrame` | Prompt-only generation |
+| Image-to-video | `VideoOperationKind.Create` + `StartFrame` (image) | Image as starting reference |
+| First+last frame interpolation | `StartFrame` + `EndFrame` | Generate video between two frames |
+| Reference images (up to 3) | `ReferenceImages` | Style/subject transfer with `reference_type` |
 | Video extension | `VideoOperationKind.Extend` | Extend up to 20 times (7s each, 720p only) |
 | Multiple outputs | `VideoGenerationOptions.Count` | Generate 1-4 videos from one request |
 
@@ -65,8 +65,8 @@ dotnet run -- generate "A sunset" --count 4 --output sunset.mp4
 
 ## API Gaps / Limitations
 
-- **Reference images with typed purpose**: Veo supports `referenceImages` with `referenceType` ("REFERENCE_TYPE_STYLE" or "REFERENCE_TYPE_SUBJECT"), allowing up to 3 images for style/subject transfer. MEAI's `OriginalMedia` doesn't distinguish between "input image for image-to-video" and "reference image for style transfer".
-- **First/last frame interpolation**: Veo generates a video between two keyframe images. MEAI has no concept of a "last frame" — this requires `AdditionalProperties`.
+- **Reference images with typed purpose**: Veo supports `referenceImages` with `referenceType` ("REFERENCE_TYPE_STYLE" or "REFERENCE_TYPE_SUBJECT"), allowing up to 3 images for style/subject transfer. MEAI's `ReferenceImages` collection maps well to this but doesn't include the `referenceType` metadata — provider-specific `AdditionalProperties` can be used for that.
+- **First/last frame interpolation**: Veo generates a video between two keyframe images. MEAI's `StartFrame` and `EndFrame` properties map directly to this.
 - **Native audio generation**: Veo 3+ can generate synchronized audio with video. MEAI has no audio-related option.
 - **Negative prompts**: Veo supports `negativePrompt` to exclude unwanted elements. Not part of the core MEAI options.
 - **Resolution as named tier**: Veo uses `"720p"`, `"1080p"`, `"4k"` — not pixel dimensions. The `VideoSize` abstraction works but the mapping is lossy.

@@ -23,15 +23,6 @@ public class VideoGenerationRequest
         Prompt = prompt;
     }
 
-    /// <summary>Initializes a new instance of the <see cref="VideoGenerationRequest"/> class.</summary>
-    /// <param name="prompt">The prompt to guide the video generation.</param>
-    /// <param name="originalMedia">The original media (images or videos) to base edits on.</param>
-    public VideoGenerationRequest(string prompt, IEnumerable<AIContent>? originalMedia)
-    {
-        Prompt = prompt;
-        OriginalMedia = originalMedia;
-    }
-
     /// <summary>Gets or sets the prompt to guide the video generation.</summary>
     public string? Prompt { get; set; }
 
@@ -42,7 +33,7 @@ public class VideoGenerationRequest
     /// <remarks>
     /// Defaults to <see cref="VideoOperationKind.Create"/>. Set to <see cref="VideoOperationKind.Edit"/> or
     /// <see cref="VideoOperationKind.Extend"/> when working with an existing video referenced by
-    /// <see cref="SourceVideoId"/> or uploaded via <see cref="OriginalMedia"/>.
+    /// <see cref="SourceVideoId"/> or <see cref="SourceVideo"/>.
     /// </remarks>
     public VideoOperationKind OperationKind { get; set; }
 
@@ -54,30 +45,36 @@ public class VideoGenerationRequest
     /// </remarks>
     public string? SourceVideoId { get; set; }
 
-    /// <summary>
-    /// Gets or sets the original media (images or videos) to use as input for the video generation.
-    /// </summary>
+    /// <summary>Gets or sets the starting frame image for image-to-video generation.</summary>
     /// <remarks>
-    /// <para>
-    /// The interpretation of this property depends on the content type of the media, the <see cref="OperationKind"/>,
-    /// and the capabilities of the underlying provider. Common behaviors include:
-    /// </para>
-    /// <list type="bullet">
-    /// <item><description>
-    /// <b>Image content</b> (e.g., <c>image/png</c>, <c>image/jpeg</c>): Used as a reference image to guide new video
-    /// generation. The provider creates a video inspired by or based on the image. Supported by most providers.
-    /// </description></item>
-    /// <item><description>
-    /// <b>Video content</b> (e.g., <c>video/mp4</c>): Used as a source video for editing when
-    /// <see cref="OperationKind"/> is <see cref="VideoOperationKind.Edit"/>. The provider modifies the
-    /// existing video according to the <see cref="Prompt"/>.
-    /// </description></item>
-    /// </list>
-    /// <para>
-    /// If this property is <see langword="null"/> or empty, the request is treated as a text-to-video generation
-    /// using only the <see cref="Prompt"/>. To edit or extend a previously generated video by ID rather than by
-    /// uploading media, set <see cref="SourceVideoId"/> and the appropriate <see cref="OperationKind"/>.
-    /// </para>
+    /// When provided with <see cref="VideoOperationKind.Create"/>, the provider uses this image as the
+    /// initial frame from which the video is generated. Typically an image content such as
+    /// <see cref="DataContent"/> or <see cref="UriContent"/> with an image media type.
     /// </remarks>
-    public IEnumerable<AIContent>? OriginalMedia { get; set; }
+    public AIContent? StartFrame { get; set; }
+
+    /// <summary>Gets or sets the ending frame image for video interpolation.</summary>
+    /// <remarks>
+    /// When provided alongside <see cref="StartFrame"/>, providers that support frame interpolation
+    /// generate a video that transitions from <see cref="StartFrame"/> to this ending frame.
+    /// Not all providers support this feature.
+    /// </remarks>
+    public AIContent? EndFrame { get; set; }
+
+    /// <summary>Gets or sets reference images for style or subject guidance.</summary>
+    /// <remarks>
+    /// Reference images influence the visual style or subject matter of the generated video without
+    /// being used as literal frames. For example, a provider may use these for style transfer or
+    /// subject consistency. Not all providers support this feature.
+    /// </remarks>
+    public IList<AIContent>? ReferenceImages { get; set; }
+
+    /// <summary>Gets or sets the source video content for editing.</summary>
+    /// <remarks>
+    /// Used when <see cref="OperationKind"/> is <see cref="VideoOperationKind.Edit"/> and the source
+    /// video is provided as content rather than by ID. Typically a <see cref="DataContent"/> or
+    /// <see cref="UriContent"/> with a video media type. To reference a previously generated video
+    /// by its ID, use <see cref="SourceVideoId"/> instead.
+    /// </remarks>
+    public AIContent? SourceVideo { get; set; }
 }

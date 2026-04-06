@@ -125,7 +125,7 @@ public class OpenAIVideoGeneratorTests
             new VideoGenerationRequest
             {
                 Prompt = "animate this image",
-                OriginalMedia = [new DataContent(imageBytes, "image/png")],
+                StartFrame = new DataContent(imageBytes, "image/png"),
             });
 
         // Should be JSON, not multipart

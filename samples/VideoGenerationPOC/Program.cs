@@ -52,15 +52,19 @@ generateCommand.SetHandler(async (context) =>
 
     using var generator = CreateGenerator(model);
 
-    List<AIContent>? originalMedia = await LoadInputFilesAsync(inputPaths);
-    if (originalMedia is null && inputPaths.Length > 0)
+    List<AIContent>? inputMedia = await LoadInputFilesAsync(inputPaths);
+    if (inputMedia is null && inputPaths.Length > 0)
     {
         context.ExitCode = 1;
         return;
     }
 
     var options = BuildOptions(duration, width, height, format, characterIds);
-    var request = new VideoGenerationRequest(prompt, originalMedia);
+    var request = new VideoGenerationRequest(prompt);
+    if (inputMedia is { Count: > 0 })
+    {
+        request.StartFrame = inputMedia[0];
+    }
 
     var operation = await generator.GenerateAsync(request, options);
     await CompleteAndSaveAsync(operation, options, outputPath);

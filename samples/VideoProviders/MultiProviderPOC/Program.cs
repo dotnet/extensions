@@ -399,21 +399,15 @@ internal sealed class GoogleVeoVideoGenerator : IVideoGenerator
         var instance = new JsonObject();
         if (request.Prompt is not null) instance["prompt"] = request.Prompt;
 
-        if (request.OperationKind == VideoOperationKind.Create && request.OriginalMedia is not null)
+        if (request.OperationKind == VideoOperationKind.Create && request.StartFrame is not null)
         {
-            foreach (var item in request.OriginalMedia)
+            if (request.StartFrame is DataContent dc && (dc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ?? false) && dc.Data.Length > 0)
             {
-                if (item is DataContent dc && (dc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) ?? false) && dc.Data.Length > 0)
-                {
-                    instance["image"] = new JsonObject { ["bytesBase64Encoded"] = Convert.ToBase64String(dc.Data.ToArray()), ["mimeType"] = dc.MediaType };
-                    break;
-                }
-
-                if (item is UriContent uc)
-                {
-                    instance["image"] = new JsonObject { ["gcsUri"] = uc.Uri.ToString() };
-                    break;
-                }
+                instance["image"] = new JsonObject { ["bytesBase64Encoded"] = Convert.ToBase64String(dc.Data.ToArray()), ["mimeType"] = dc.MediaType };
+            }
+            else if (request.StartFrame is UriContent uc)
+            {
+                instance["image"] = new JsonObject { ["gcsUri"] = uc.Uri.ToString() };
             }
         }
 
@@ -577,20 +571,20 @@ internal sealed class RunwayVideoGenerator : IVideoGenerator
         string endpoint;
         JsonObject body;
 
-        bool hasVideo = request.OriginalMedia?.Any(m => m is DataContent dc && dc.MediaType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) == true) == true;
-        bool hasImage = request.OriginalMedia?.Any(m => m is DataContent dc && dc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true) == true;
+        bool hasVideo = request.SourceVideo is DataContent svDc && svDc.MediaType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) == true;
+        bool hasImage = request.StartFrame is DataContent sfDc && sfDc.MediaType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true;
 
         if (request.OperationKind == VideoOperationKind.Edit && hasVideo)
         {
             endpoint = "/v1/video_to_video";
             body = new JsonObject { ["model"] = "gen4_aleph", ["promptText"] = request.Prompt ?? "" };
-            string? vidUri = GetMediaUri(request.OriginalMedia, "video/");
+            string? vidUri = GetMediaUri(request.SourceVideo);
             if (vidUri is not null) body["videoUri"] = vidUri;
         }
         else if (hasImage)
         {
             endpoint = "/v1/image_to_video";
-            string? imgUri = GetMediaUri(request.OriginalMedia, "image/");
+            string? imgUri = GetMediaUri(request.StartFrame);
             string ratio = options?.AspectRatio is { } ar ? MapAspectRatio(ar) : "1280:720";
             body = new JsonObject { ["model"] = model, ["promptText"] = request.Prompt ?? "", ["promptImage"] = imgUri ?? "", ["ratio"] = ratio };
         }
@@ -616,16 +610,12 @@ internal sealed class RunwayVideoGenerator : IVideoGenerator
         => serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
     public void Dispose() => _httpClient.Dispose();
 
-    private static string? GetMediaUri(IEnumerable<AIContent>? media, string prefix)
+    private static string? GetMediaUri(AIContent? content)
     {
-        if (media is null) return null;
-        foreach (var item in media)
-        {
-            if (item is UriContent uc) return uc.Uri.ToString();
-            if (item is DataContent dc && dc.Data.Length > 0)
-                return dc.Uri ?? $"data:{dc.MediaType ?? "application/octet-stream"};base64,{Convert.ToBase64String(dc.Data.ToArray())}";
-        }
-
+        if (content is null) return null;
+        if (content is UriContent uc) return uc.Uri.ToString();
+        if (content is DataContent dc && dc.Data.Length > 0)
+            return dc.Uri ?? $"data:{dc.MediaType ?? "application/octet-stream"};base64,{Convert.ToBase64String(dc.Data.ToArray())}";
         return null;
     }
 
@@ -715,16 +705,17 @@ internal sealed class LumaVideoGenerator : IVideoGenerator
         if (options?.AspectRatio is { } ar) body["aspect_ratio"] = ar;
 
         var keyframes = new JsonObject();
-        if (request.OperationKind == VideoOperationKind.Create && request.OriginalMedia is not null)
+        if (request.OperationKind == VideoOperationKind.Create && request.StartFrame is not null)
         {
-            int idx = 0;
-            foreach (var item in request.OriginalMedia)
+            if (request.StartFrame is UriContent uc) keyframes["frame0"] = new JsonObject { ["type"] = "image", ["url"] = uc.Uri.ToString() };
+            else if (request.StartFrame is DataContent dc && dc.Data.Length > 0)
+                keyframes["frame0"] = new JsonObject { ["type"] = "image", ["url"] = dc.Uri ?? $"data:{dc.MediaType ?? "image/png"};base64,{Convert.ToBase64String(dc.Data.ToArray())}" };
+
+            if (request.EndFrame is not null)
             {
-                string key = idx == 0 ? "frame0" : "frame1";
-                if (item is UriContent uc) keyframes[key] = new JsonObject { ["type"] = "image", ["url"] = uc.Uri.ToString() };
-                else if (item is DataContent dc && dc.Data.Length > 0)
-                    keyframes[key] = new JsonObject { ["type"] = "image", ["url"] = dc.Uri ?? $"data:{dc.MediaType ?? "image/png"};base64,{Convert.ToBase64String(dc.Data.ToArray())}" };
-                if (++idx >= 2) break;
+                if (request.EndFrame is UriContent euc) keyframes["frame1"] = new JsonObject { ["type"] = "image", ["url"] = euc.Uri.ToString() };
+                else if (request.EndFrame is DataContent edc && edc.Data.Length > 0)
+                    keyframes["frame1"] = new JsonObject { ["type"] = "image", ["url"] = edc.Uri ?? $"data:{edc.MediaType ?? "image/png"};base64,{Convert.ToBase64String(edc.Data.ToArray())}" };
             }
         }
         else if (request.OperationKind == VideoOperationKind.Extend && request.SourceVideoId is not null)

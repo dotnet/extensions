@@ -89,10 +89,15 @@ internal sealed class LumaVideoGenerator : IVideoGenerator
         switch (request.OperationKind)
         {
             case VideoOperationKind.Create:
-                // Image-to-video: use original media as first frame (frame0)
-                if (request.OriginalMedia is not null)
+                // Image-to-video: use StartFrame as first frame (frame0) and EndFrame as last frame (frame1)
+                if (request.StartFrame is not null)
                 {
-                    await AddImageKeyframesAsync(keyframes, request.OriginalMedia, options);
+                    AddImageKeyframe(keyframes, "frame0", request.StartFrame);
+                }
+
+                if (request.EndFrame is not null)
+                {
+                    AddImageKeyframe(keyframes, "frame1", request.EndFrame);
                 }
 
                 break;
@@ -154,47 +159,25 @@ internal sealed class LumaVideoGenerator : IVideoGenerator
 
     public void Dispose() => _httpClient.Dispose();
 
-    private static async Task AddImageKeyframesAsync(JsonObject keyframes, IEnumerable<AIContent> media, VideoGenerationOptions? options)
+    private static void AddImageKeyframe(JsonObject keyframes, string frameKey, AIContent content)
     {
-        int index = 0;
-        foreach (var item in media)
+        if (content is UriContent uc && uc.Uri is not null)
         {
-            if (item is not DataContent dc)
+            keyframes[frameKey] = new JsonObject
             {
-                continue;
-            }
-
-            string frameKey = index == 0 ? "frame0" : "frame1";
-
-            if (item is UriContent uc && uc.Uri is not null)
-            {
-                // If it's a URL-based image, Luma requires HTTPS URLs
-                keyframes[frameKey] = new JsonObject
-                {
-                    ["type"] = "image",
-                    ["url"] = uc.Uri.ToString(),
-                };
-            }
-            else if (dc.Data.Length > 0)
-            {
-                // Luma only accepts HTTPS URLs for images, not data URIs.
-                // (Limitation: callers must upload images to a CDN first.)
-                string dataUri = dc.Uri ?? $"data:{dc.MediaType ?? "image/png"};base64,{Convert.ToBase64String(dc.Data.ToArray())}";
-                keyframes[frameKey] = new JsonObject
-                {
-                    ["type"] = "image",
-                    ["url"] = dataUri,
-                };
-            }
-
-            index++;
-            if (index >= 2)
-            {
-                break; // Luma supports max 2 keyframes (frame0 + frame1)
-            }
+                ["type"] = "image",
+                ["url"] = uc.Uri.ToString(),
+            };
         }
-
-        await Task.CompletedTask;
+        else if (content is DataContent dc && dc.Data.Length > 0)
+        {
+            string dataUri = dc.Uri ?? $"data:{dc.MediaType ?? "image/png"};base64,{Convert.ToBase64String(dc.Data.ToArray())}";
+            keyframes[frameKey] = new JsonObject
+            {
+                ["type"] = "image",
+                ["url"] = dataUri,
+            };
+        }
     }
 
     private static string MapResolution(Size size)
