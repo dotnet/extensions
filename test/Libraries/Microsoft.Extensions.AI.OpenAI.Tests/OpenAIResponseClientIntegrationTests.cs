@@ -257,6 +257,39 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     }
 
     [ConditionalFact]
+    public async Task RemoteMCP_DeferLoadingTools()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        ChatOptions chatOptions = new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool(),
+                new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
+                {
+                    ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+                    DeferLoadingTools = true,
+                },
+            ],
+        };
+
+        ChatResponse response = await ChatClient.GetResponseAsync(
+            "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository",
+            chatOptions);
+
+        Assert.NotNull(response);
+        Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
+        Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
+        Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
+    }
+
+    [ConditionalFact]
     public async Task GetResponseAsync_BackgroundResponses()
     {
         SkipIfNotEnabled();
@@ -759,6 +792,11 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     public async Task UseToolSearch_WithDeferredFunctions()
     {
         SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
 
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
         AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
