@@ -29,9 +29,59 @@ Or directly in the C# project file:
 </ItemGroup>
 ```
 
-## Writing chunks to a vector store
+## Creating and using an ingestion pipeline
 
-### Basic usage
+### Basic usage for reading from directory
+
+Use `IngestionDocumentReader.ReadAsync` to read documents from files or a directory, and pass the result to `IngestionPipeline.ProcessAsync`:
+
+```csharp
+VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
+    vectorStore.GetIngestionRecordCollection("chunks", dimensionCount: 1536);
+
+using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
+using IngestionPipeline<string> pipeline = new(chunker, writer);
+
+// Read from a directory and ingest all matching files
+MarkdownReader reader = new();
+await foreach (var result in pipeline.ProcessAsync(reader.ReadAsync(directory, "*.md")))
+{
+    Console.WriteLine($"Processed '{result.DocumentId}': {(result.Succeeded ? "success" : "failed")}");
+}
+```
+
+### Reading from a list of files
+
+```csharp
+IEnumerable<FileInfo> files = [ new FileInfo("doc1.md"), new FileInfo("doc2.md") ];
+await foreach (var result in pipeline.ProcessAsync(reader.ReadAsync(files)))
+{
+    Console.WriteLine($"Processed '{result.DocumentId}': {(result.Succeeded ? "success" : "failed")}");
+}
+```
+
+### Using the pipeline without a reader
+
+You can also create documents directly and pass them to the pipeline without using a reader:
+
+```csharp
+async IAsyncEnumerable<IngestionDocument> GetDocumentsAsync()
+{
+    var document = new IngestionDocument("my-document-id");
+    document.Sections.Add(new IngestionDocumentSection
+    {
+        Elements = { new IngestionDocumentParagraph("Document content goes here.") }
+    });
+    yield return document;
+}
+
+await foreach (var result in pipeline.ProcessAsync(GetDocumentsAsync()))
+{
+    Console.WriteLine($"Processed '{result.DocumentId}': {(result.Succeeded ? "success" : "failed")}");
+}
+```
+
+### Basic usage for writing to a vector store
 
 The simplest way to store ingestion chunks in a vector store is to use the `GetIngestionRecordCollection` extension method to create a collection, and then pass it to a `VectorStoreWriter`:
 
