@@ -90,8 +90,8 @@ public sealed class IngestionPipelineTests : IDisposable
             "chunks", TestEmbeddingGenerator<string>.DimensionCount);
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
 
-        using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
-        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
+        using IngestionPipeline<string> pipeline = new(CreateChunker(), vectorStoreWriter);
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(CreateReader(), _sampleFiles).ToListAsync();
 
         Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
         AssertAllIngestionsSucceeded(ingestionResults);
@@ -126,10 +126,10 @@ public sealed class IngestionPipelineTests : IDisposable
             "chunks-dir", TestEmbeddingGenerator<string>.DimensionCount);
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
 
-        using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
+        using IngestionPipeline<string> pipeline = new(CreateChunker(), vectorStoreWriter);
 
         DirectoryInfo directory = new("TestFiles");
-        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(directory, "*.md").ToListAsync();
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(CreateReader(), directory, "*.md").ToListAsync();
         Assert.Equal(directory.EnumerateFiles("*.md").Count(), ingestionResults.Count);
         AssertAllIngestionsSucceeded(ingestionResults);
 
@@ -162,10 +162,10 @@ public sealed class IngestionPipelineTests : IDisposable
         var collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<DataContent>, DataContent>(
             "chunks-img", TestEmbeddingGenerator<DataContent>.DimensionCount);
         using VectorStoreWriter<DataContent, IngestionChunkVectorRecord<DataContent>> vectorStoreWriter = new(collection);
-        using IngestionPipeline<DataContent> pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
+        using IngestionPipeline<DataContent> pipeline = new(new ImageChunker(), vectorStoreWriter);
 
         Assert.False(embeddingGenerator.WasCalled);
-        var ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(CreateReader(), _sampleFiles).ToListAsync();
         AssertAllIngestionsSucceeded(ingestionResults);
 
         var retrieved = await vectorStoreWriter.VectorStoreCollection
@@ -215,10 +215,10 @@ public sealed class IngestionPipelineTests : IDisposable
             "chunks-fail", TestEmbeddingGenerator<string>.DimensionCount);
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
 
-        using IngestionPipeline<string> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);
+        using IngestionPipeline<string> pipeline = new(CreateChunker(), vectorStoreWriter);
 
-        await Verify(pipeline.ProcessAsync(_sampleFiles));
-        await Verify(pipeline.ProcessAsync(_sampleDirectory));
+        await Verify(pipeline.ProcessAsync(failingForFirstReader, _sampleFiles));
+        await Verify(pipeline.ProcessAsync(failingForFirstReader, _sampleDirectory));
 
         async Task Verify(IAsyncEnumerable<IngestionResult> results)
         {
@@ -233,6 +233,35 @@ public sealed class IngestionPipelineTests : IDisposable
             activities.Clear();
             failed = 0;
         }
+    }
+
+    [Fact]
+    public async Task CanProcessDocumentsWithoutReader()
+    {
+        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
+
+        VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
+            testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
+                "chunks-direct", TestEmbeddingGenerator<string>.DimensionCount);
+        using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
+
+        using IngestionPipeline<string> pipeline = new(CreateChunker(), vectorStoreWriter);
+
+        IngestionDocument document = new("doc-1");
+        IngestionDocumentSection section = new();
+        section.Elements.Add(new IngestionDocumentHeader("# Hello"));
+        section.Elements.Add(new IngestionDocumentParagraph("This is a test document created without a reader."));
+        document.Sections.Add(section);
+
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(new[] { document }.ToAsyncEnumerable()).ToListAsync();
+
+        Assert.Single(ingestionResults);
+        IngestionResult result = ingestionResults[0];
+        Assert.Equal("doc-1", result.DocumentId);
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Document);
+        Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
     }
 
     private static IngestionDocumentReader CreateReader() => new MarkdownReader();
