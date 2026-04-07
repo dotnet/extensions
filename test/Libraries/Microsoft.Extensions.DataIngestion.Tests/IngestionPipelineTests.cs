@@ -203,6 +203,12 @@ public sealed class IngestionPipelineTests : IDisposable
     public async Task SingleFailureDoesNotTearDownEntirePipeline()
     {
         int failed = 0;
+        MarkdownReader workingReader = new();
+        TestReader failingForFirstReader = new(
+            (source, identifier, mediaType, cancellationToken) => failed++ == 1
+                    ? Task.FromException<IngestionDocument>(new ExpectedException())
+                    : workingReader.ReadAsync(source, identifier, mediaType, cancellationToken));
+
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
@@ -213,16 +219,10 @@ public sealed class IngestionPipelineTests : IDisposable
             "chunks-fail", TestEmbeddingGenerator<string>.DimensionCount);
         using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
 
-        IngestionDocumentReader reader = CreateReader();
         using IngestionPipeline<string> pipeline = new(CreateChunker(), vectorStoreWriter);
 
-        // A document processor that fails for the first document it sees.
-        pipeline.DocumentProcessors.Add(new FailingDocumentProcessor(() => failed++ == 0
-            ? throw new ExpectedException()
-            : Task.CompletedTask));
-
-        await Verify(pipeline.ProcessAsync(reader.ReadAsync(_sampleFiles)));
-        await Verify(pipeline.ProcessAsync(reader.ReadAsync(_sampleDirectory)));
+        await Verify(pipeline.ProcessAsync(failingForFirstReader.ReadAsync(_sampleFiles)));
+        await Verify(pipeline.ProcessAsync(failingForFirstReader.ReadAsync(_sampleDirectory)));
 
         async Task Verify(IAsyncEnumerable<IngestionResult> results)
         {
@@ -249,6 +249,36 @@ public sealed class IngestionPipelineTests : IDisposable
     }
 
     [Fact]
+    public async Task SingleIngestionFailureDoesNotTearDownEntirePipeline()
+    {
+        int failed = 0;
+        IngestionDocumentReader reader = CreateReader();
+
+        List<Activity> activities = [];
+        using TracerProvider tracerProvider = CreateTraceProvider(activities);
+
+        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
+
+        var collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(
+            "chunks-ingest-fail", TestEmbeddingGenerator<string>.DimensionCount);
+        using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> vectorStoreWriter = new(collection);
+
+        using IngestionPipeline<string> pipeline = new(CreateChunker(), vectorStoreWriter);
+        pipeline.DocumentProcessors.Add(new FailingDocumentProcessor(() => failed++ == 0
+            ? throw new ExpectedException()
+            : Task.CompletedTask));
+
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(reader.ReadAsync(_sampleFiles)).ToListAsync();
+
+        Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
+        Assert.All(ingestionResults, result => Assert.NotEmpty(result.DocumentId));
+        IngestionResult ingestionResult = Assert.Single(ingestionResults.Where(result => !result.Succeeded));
+        Assert.IsType<ExpectedException>(ingestionResult.Exception);
+        AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
+    }
+
+    [Fact]
     public async Task CanProcessDocumentsWithoutReader()
     {
         TestEmbeddingGenerator<string> embeddingGenerator = new();
@@ -261,23 +291,18 @@ public sealed class IngestionPipelineTests : IDisposable
         using IngestionPipeline<string> pipeline = new(CreateChunker(), vectorStoreWriter);
 
         // Create a document directly without using a reader.
-        var document = new IngestionDocument("my-document-id");
+        IngestionDocument document = new("my-document-id");
         document.Sections.Add(new IngestionDocumentSection
         {
             Elements = { new IngestionDocumentParagraph("This is a test paragraph for direct ingestion.") }
         });
 
-        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(EnumerateSingleDocument(document)).ToListAsync();
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(new[] { document }.ToAsyncEnumerable()).ToListAsync();
 
         Assert.Single(ingestionResults);
         Assert.True(ingestionResults[0].Succeeded);
         Assert.Equal("my-document-id", ingestionResults[0].DocumentId);
         Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
-    }
-
-    private static async IAsyncEnumerable<IngestionDocument> EnumerateSingleDocument(IngestionDocument document)
-    {
-        yield return document;
     }
 
     private static IngestionDocumentReader CreateReader() => new MarkdownReader();
