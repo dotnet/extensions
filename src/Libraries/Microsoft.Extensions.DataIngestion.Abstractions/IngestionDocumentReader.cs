@@ -91,7 +91,18 @@ public abstract class IngestionDocumentReader
         foreach (FileInfo file in files)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            yield return await ReadAsync(file, cancellationToken).ConfigureAwait(false);
+
+            IngestionDocument document;
+            try
+            {
+                document = await ReadAsync(file, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                document = new IngestionDocument(file.FullName) { ReadException = ex };
+            }
+
+            yield return document;
         }
     }
 

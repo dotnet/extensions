@@ -16,7 +16,6 @@ namespace Microsoft.Extensions.DataIngestion;
 #pragma warning disable IDE0058 // Expression value is never used
 #pragma warning disable IDE0063 // Use simple 'using' statement
 #pragma warning disable CA1031 // Do not catch general exception types
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
 
 /// <summary>
 /// Represents a pipeline for ingesting data from documents and processing it into chunks.
@@ -77,56 +76,35 @@ public sealed class IngestionPipeline<T> : IDisposable
     {
         Throw.IfNull(documents);
 
-        await using IAsyncEnumerator<IngestionDocument> enumerator = documents.GetAsyncEnumerator(cancellationToken);
-        while (true)
+        await foreach (IngestionDocument document in documents.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            IngestionDocument? document = null;
-            Exception? fetchException = null;
-
-            try
-            {
-                if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
-                {
-                    break;
-                }
-
-                document = enumerator.Current;
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                fetchException = ex;
-            }
-
             using (Activity? processDocumentActivity = _activitySource.StartActivity(ProcessDocument.ActivityName))
             {
-                if (fetchException is not null)
+                processDocumentActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
+
+                if (document.ReadException is not null)
                 {
-                    TraceException(processDocumentActivity, fetchException);
-                    _logger?.IngestingFailed(fetchException, "unknown");
-                    yield return new IngestionResult("unknown", null, fetchException);
-                    yield break; // Enumerator is in a faulted state and cannot produce more items
+                    TraceException(processDocumentActivity, document.ReadException);
+                    _logger?.IngestingFailed(document.ReadException, document.Identifier);
+                    yield return new IngestionResult(document.Identifier, null, document.ReadException);
+                    continue;
                 }
 
-                processDocumentActivity?.SetTag(ProcessSource.DocumentIdTagName, document!.Identifier);
-
                 IngestionDocument? processedDocument = null;
-                Exception? ingestException = null;
+                Exception? failure = null;
                 try
                 {
-                    processedDocument = await IngestAsync(document!, processDocumentActivity, cancellationToken).ConfigureAwait(false);
+                    processedDocument = await IngestAsync(document, processDocumentActivity, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     TraceException(processDocumentActivity, ex);
-                    _logger?.IngestingFailed(ex, document!.Identifier);
-                    ingestException = ex;
+                    _logger?.IngestingFailed(ex, document.Identifier);
+
+                    failure = ex;
                 }
 
-                yield return new IngestionResult(document!.Identifier, processedDocument, ingestException);
+                yield return new IngestionResult(document.Identifier, processedDocument, failure);
             }
         }
     }

@@ -205,7 +205,7 @@ public sealed class IngestionPipelineTests : IDisposable
         int failed = 0;
         MarkdownReader workingReader = new();
         TestReader failingForFirstReader = new(
-            (source, identifier, mediaType, cancellationToken) => failed++ == 1
+            (source, identifier, mediaType, cancellationToken) => failed++ == 0
                     ? Task.FromException<IngestionDocument>(new ExpectedException())
                     : workingReader.ReadAsync(source, identifier, mediaType, cancellationToken));
 
