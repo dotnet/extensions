@@ -104,6 +104,43 @@ VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
 using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
 ```
 
+## Using the ingestion pipeline
+
+The `IngestionPipeline<T>` orchestrates document reading, chunking, optional processing, and writing. It can accept documents directly or read them from the file system using an `IngestionDocumentReader`.
+
+### Processing documents from the file system
+
+Create a pipeline, then call `ProcessAsync` with an `IngestionDocumentReader` and a directory or list of files:
+
+```csharp
+IngestionDocumentReader reader = new MarkdownReader();
+
+using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+
+await foreach (IngestionResult result in pipeline.ProcessAsync(reader, new DirectoryInfo("docs"), "*.md"))
+{
+    Console.WriteLine($"Processed '{result.DocumentId}'. Succeeded: {result.Succeeded}");
+}
+```
+
+### Processing documents without a reader
+
+You can also supply `IngestionDocument` instances directly, without any file-system dependency:
+
+```csharp
+using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+
+IngestionDocument document = new("my-doc-id");
+document.Sections.Add(new IngestionDocumentSection());
+document.Sections[0].Elements.Add(new IngestionDocumentHeader("# Hello"));
+document.Sections[0].Elements.Add(new IngestionDocumentParagraph("This content was created in memory."));
+
+await foreach (IngestionResult result in pipeline.ProcessAsync(new[] { document }.ToAsyncEnumerable()))
+{
+    Console.WriteLine($"Processed '{result.DocumentId}'. Succeeded: {result.Succeeded}");
+}
+```
+
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).

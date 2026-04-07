@@ -27,7 +27,12 @@ using Microsoft.Extensions.DataIngestion;
 
 IngestionDocumentReader reader = new MarkdownReader();
 
-using IngestionPipeline<string> pipeline = new(reader, CreateChunker(), CreateWriter());
+using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+
+await foreach (IngestionResult result in pipeline.ProcessAsync(reader, directory, "*.md"))
+{
+    Console.WriteLine($"Processed '{result.DocumentId}'. Succeeded: {result.Succeeded}");
+}
 ```
 
 ## Feedback & Contributing
