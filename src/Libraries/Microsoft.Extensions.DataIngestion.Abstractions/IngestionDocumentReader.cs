@@ -67,7 +67,7 @@ public abstract class IngestionDocumentReader
     {
         _ = Throw.IfNull(directory);
         _ = Throw.IfNullOrEmpty(searchPattern);
-        Throw.IfOutOfRange((int)searchOption, (int)SearchOption.TopDirectoryOnly, (int)SearchOption.AllDirectories);
+        _ = Throw.IfOutOfRange((int)searchOption, (int)SearchOption.TopDirectoryOnly, (int)SearchOption.AllDirectories);
 
         await foreach (var document in ReadAsync(directory.EnumerateFiles(searchPattern, searchOption), cancellationToken).ConfigureAwait(false))
         {
