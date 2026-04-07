@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -44,6 +46,53 @@ public abstract class IngestionDocumentReader
 
         using FileStream stream = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 1, FileOptions.Asynchronous);
         return await ReadAsync(stream, identifier, string.IsNullOrEmpty(mediaType) ? GetMediaType(source) : mediaType!, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Reads all files in the specified directory that match the given search pattern and option,
+    /// and converts each to an <see cref="IngestionDocument"/>.
+    /// </summary>
+    /// <param name="directory">The directory to read.</param>
+    /// <param name="searchPattern">The search pattern for file selection.</param>
+    /// <param name="searchOption">The search option for directory traversal.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>An asynchronous sequence of <see cref="IngestionDocument"/> instances.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="directory"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="searchPattern"/> is <see langword="null"/> or empty.</exception>
+    public async IAsyncEnumerable<IngestionDocument> ReadAsync(
+        DirectoryInfo directory,
+        string searchPattern = "*.*",
+        SearchOption searchOption = SearchOption.TopDirectoryOnly,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(directory);
+        _ = Throw.IfNullOrEmpty(searchPattern);
+        Throw.IfOutOfRange((int)searchOption, (int)SearchOption.TopDirectoryOnly, (int)SearchOption.AllDirectories);
+
+        await foreach (var document in ReadAsync(directory.EnumerateFiles(searchPattern, searchOption), cancellationToken).ConfigureAwait(false))
+        {
+            yield return document;
+        }
+    }
+
+    /// <summary>
+    /// Reads the specified files and converts each to an <see cref="IngestionDocument"/>.
+    /// </summary>
+    /// <param name="files">The files to read.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>An asynchronous sequence of <see cref="IngestionDocument"/> instances.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="files"/> is <see langword="null"/>.</exception>
+    public async IAsyncEnumerable<IngestionDocument> ReadAsync(
+        IEnumerable<FileInfo> files,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(files);
+
+        foreach (FileInfo file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return await ReadAsync(file, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
