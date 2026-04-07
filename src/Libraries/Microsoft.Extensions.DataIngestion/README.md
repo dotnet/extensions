@@ -31,7 +31,7 @@ Or directly in the C# project file:
 
 ## Creating and using an ingestion pipeline
 
-### Basic usage
+### Basic usage for reading from directory
 
 Use `IngestionDocumentReader.ReadAsync` to read documents from files or a directory, and pass the result to `IngestionPipeline.ProcessAsync`:
 
@@ -81,7 +81,7 @@ await foreach (var result in pipeline.ProcessAsync(GetDocumentsAsync()))
 }
 ```
 
-### Basic usage
+### Basic usage for writing to a vector store
 
 The simplest way to store ingestion chunks in a vector store is to use the `GetIngestionRecordCollection` extension method to create a collection, and then pass it to a `VectorStoreWriter`:
 

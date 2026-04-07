@@ -277,7 +277,6 @@ public sealed class IngestionPipelineTests : IDisposable
 
     private static async IAsyncEnumerable<IngestionDocument> EnumerateSingleDocument(IngestionDocument document)
     {
-        await Task.CompletedTask;
         yield return document;
     }
 
