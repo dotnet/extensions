@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -12,6 +13,7 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Audio;
 
+#pragma warning disable OPENAI001 // Streaming speech generation is experimental
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
@@ -78,11 +80,71 @@ internal sealed class OpenAITextToSpeechClient : ITextToSpeechClient
     public async IAsyncEnumerable<TextToSpeechResponseUpdate> GetStreamingAudioAsync(
         string text, TextToSpeechOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // OpenAI's standard TTS API doesn't have a dedicated streaming endpoint in the SDK,
-        // so we fall back to the non-streaming approach and yield the result as a single update.
-        foreach (var update in (await GetAudioAsync(text, options, cancellationToken).ConfigureAwait(false)).ToTextToSpeechResponseUpdates())
+        _ = Throw.IfNull(text);
+
+        SpeechGenerationOptions openAIOptions = ToOpenAISpeechOptions(options);
+        string mediaType = GetMediaType(openAIOptions.ResponseFormat);
+
+        AsyncCollectionResult<StreamingSpeechUpdate>? streamingResult = null;
+        try
         {
-            yield return update;
+            streamingResult = _audioClient.GenerateSpeechStreamingAsync(
+                text,
+                new GeneratedSpeechVoice(options?.VoiceId ?? DefaultVoice),
+                openAIOptions,
+                cancellationToken);
+        }
+        catch (NotSupportedException)
+        {
+            // Model doesn't support SSE streaming (e.g. tts-1, tts-1-hd).
+        }
+
+        if (streamingResult is null)
+        {
+            // Fall back to non-streaming for models that don't support SSE streaming.
+            foreach (var update in (await GetAudioAsync(text, options, cancellationToken).ConfigureAwait(false)).ToTextToSpeechResponseUpdates())
+            {
+                yield return update;
+            }
+
+            yield break;
+        }
+
+        await foreach (var update in streamingResult.ConfigureAwait(false))
+        {
+            switch (update)
+            {
+                case StreamingSpeechAudioDeltaUpdate deltaUpdate:
+                    yield return new TextToSpeechResponseUpdate
+                    {
+                        Kind = TextToSpeechResponseUpdateKind.AudioUpdating,
+                        Contents = [new DataContent(deltaUpdate.AudioBytes.ToMemory(), mediaType)],
+                        ModelId = options?.ModelId ?? _metadata.DefaultModelId,
+                        RawRepresentation = deltaUpdate,
+                    };
+                    break;
+
+                case StreamingSpeechAudioDoneUpdate doneUpdate:
+                    var sessionClose = new TextToSpeechResponseUpdate
+                    {
+                        Kind = TextToSpeechResponseUpdateKind.SessionClose,
+                        ModelId = options?.ModelId ?? _metadata.DefaultModelId,
+                        RawRepresentation = doneUpdate,
+                    };
+
+                    if (doneUpdate.Usage is { } usage)
+                    {
+                        sessionClose.Contents = [new UsageContent(new()
+                        {
+                            InputTokenCount = usage.InputTokenCount,
+                            OutputTokenCount = usage.OutputTokenCount,
+                            TotalTokenCount = usage.TotalTokenCount,
+                        })];
+                    }
+
+                    yield return sessionClose;
+                    break;
+            }
         }
     }
 
