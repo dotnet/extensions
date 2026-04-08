@@ -102,13 +102,16 @@ public sealed class RetrievalPipeline : IDisposable
 
             rootActivity?.SetTag("rag.query.variants", retrievalQuery.Variants.Count);
 
-            // Phase 2: Vector search (one search per variant, merge with RRF)
+            // Phase 2: Vector search (paradigm-aware)
             var allChunks = new List<RetrievalChunk>();
+            bool isTreeTraversal = retrievalQuery.Metadata.TryGetValue("search_paradigm", out var paradigm)
+                && "TreeTraversal".Equals(paradigm?.ToString(), StringComparison.OrdinalIgnoreCase);
+            int searchTopK = isTreeTraversal ? topK * 3 : topK;
 
             foreach (string variant in retrievalQuery.Variants)
             {
                 _logger?.SearchingVariant(variant.Length > 80 ? variant[..80] : variant);
-                var searchResults = collection.SearchAsync(variant, top: topK, cancellationToken: cancellationToken);
+                var searchResults = collection.SearchAsync(variant, top: searchTopK, cancellationToken: cancellationToken);
 
                 await foreach (var result in searchResults.ConfigureAwait(false))
                 {
@@ -135,6 +138,14 @@ public sealed class RetrievalPipeline : IDisposable
             if (retrievalQuery.Variants.Count > 1)
             {
                 allChunks = DeduplicateWithRrf(allChunks);
+            }
+
+            // Tree traversal: group by level and apply top-down selection
+            if (isTreeTraversal)
+            {
+                int resultsPerLevel = retrievalQuery.Metadata.TryGetValue("results_per_level", out var rpl) && rpl is int r ? r : 3;
+                allChunks = ApplyTreeTraversal(allChunks, resultsPerLevel, topK);
+                rootActivity?.SetTag("rag.search_paradigm", "TreeTraversal");
             }
 
             var results = new RetrievalResults { Chunks = allChunks };
@@ -179,5 +190,58 @@ public sealed class RetrievalPipeline : IDisposable
         }
 
         return grouped.Select(x => x.Chunk).ToList();
+    }
+
+    /// <summary>
+    /// Applies top-down tree traversal: groups chunks by level and returns a
+    /// prioritized mix of leaf chunks with branch/root summaries for context.
+    /// </summary>
+    /// <remarks>
+    /// Expects chunks to have a "Level" or "level" entry in <see cref="RetrievalChunk.Record"/>
+    /// (set by TreeIndexProcessor during ingestion). Chunks without level metadata are treated as leaves.
+    /// </remarks>
+    private static List<RetrievalChunk> ApplyTreeTraversal(
+        List<RetrievalChunk> chunks, int resultsPerLevel, int topK)
+    {
+        static int GetLevel(RetrievalChunk chunk)
+        {
+            if (chunk.Record.TryGetValue("Level", out var lvl) || chunk.Record.TryGetValue("level", out lvl))
+            {
+                return lvl switch
+                {
+                    int i => i,
+                    long l => (int)l,
+                    string s when int.TryParse(s, out var parsed) => parsed,
+                    _ => 0
+                };
+            }
+
+            return 0; // Default to leaf
+        }
+
+        var byLevel = chunks.GroupBy(GetLevel).ToDictionary(g => g.Key, g => g.OrderByDescending(c => c.Score).ToList());
+
+        var result = new List<RetrievalChunk>();
+
+        // Leaves (level 0) — primary results
+        if (byLevel.TryGetValue(0, out var leaves))
+        {
+            result.AddRange(leaves.Take(topK));
+        }
+
+        // Branch summaries (level 1) — document-level context
+        if (byLevel.TryGetValue(1, out var branches))
+        {
+            result.AddRange(branches.Take(resultsPerLevel));
+        }
+
+        // Root summaries (level 2) — corpus-level context
+        if (byLevel.TryGetValue(2, out var roots))
+        {
+            result.AddRange(roots.Take(resultsPerLevel));
+        }
+
+        // Score: keep original scores but ensure leaves rank first
+        return result.OrderByDescending(c => c.Score).Take(topK).ToList();
     }
 }
