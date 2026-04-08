@@ -7,6 +7,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Shared.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Generators.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\ProjectStaging.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\StrongName.targets" />
 
   <PropertyGroup>
     <!-- Workaround https://github.com/dotnet/sdk/issues/51265 - can be removed when updating to .NET 10.0.100 (GA) SDK -->

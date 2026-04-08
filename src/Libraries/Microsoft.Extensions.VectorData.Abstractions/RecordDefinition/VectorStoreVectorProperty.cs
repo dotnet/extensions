@@ -1,0 +1,107 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Shared.Diagnostics;
+
+namespace Microsoft.Extensions.VectorData;
+
+/// <summary>
+/// Defines a vector property on a vector store record.
+/// </summary>
+/// <remarks>
+/// The characteristics defined here influence how the property is treated by the vector store.
+/// </remarks>
+public class VectorStoreVectorProperty : VectorStoreProperty
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
+    /// </summary>
+    /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
+    /// <param name="dimensions">The number of dimensions that the vector has.</param>
+    public VectorStoreVectorProperty(string name, int dimensions)
+        : base(name, type: null)
+    {
+        Dimensions = dimensions;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
+    /// </summary>
+    /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
+    /// <param name="type">The type of the property.</param>
+    /// <param name="dimensions">The number of dimensions that the vector has.</param>
+    public VectorStoreVectorProperty(string name, Type type, int dimensions)
+        : base(name, type)
+    {
+        Dimensions = dimensions;
+    }
+
+    /// <summary>
+    /// Gets or sets the default embedding generator to use for this property.
+    /// </summary>
+    /// <remarks>
+    /// If not set, embedding generation will be performed in the database, if supported by your provider.
+    /// Otherwise, if your database does not support embedding generation, only pregenerated embeddings can be used (for example, <c>ReadOnlyMemory&lt;float&gt;</c>).
+    /// </remarks>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of dimensions that the vector has.
+    /// </summary>
+    /// <remarks>
+    /// This property is required when creating collections, but can be omitted if not using that functionality.
+    /// If not provided when trying to create a collection, create will fail.
+    /// </remarks>
+    public int Dimensions
+    {
+        get;
+
+        set
+        {
+            if (value <= 0)
+            {
+                Throw.ArgumentOutOfRangeException(nameof(value), "Dimensions must be greater than zero.");
+            }
+
+            field = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the kind of index to use.
+    /// </summary>
+    /// <value>
+    /// The default varies by database type. See the documentation of your chosen database provider for more information.
+    /// </value>
+    /// <seealso cref="Microsoft.Extensions.VectorData.IndexKind"/>
+    public string? IndexKind { get; set; }
+
+    /// <summary>
+    /// Gets or sets the distance function to use when comparing vectors.
+    /// </summary>
+    /// <value>
+    /// The default varies by database type. See the documentation of your chosen database provider for more information.
+    /// </value>
+    /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
+    public string? DistanceFunction { get; set; }
+
+    /// <summary>
+    /// Gets or sets the desired embedding type (for example, <c>Embedding&lt;Half&gt;</c>) for cases where the default (typically <c>Embedding&lt;float&gt;</c>) isn't suitable.
+    /// </summary>
+    public Type? EmbeddingType { get; set; }
+
+    [Experimental("MEVD9001")]
+    internal virtual VectorPropertyModel CreatePropertyModel()
+        => new(Name, Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
+        {
+            Dimensions = Dimensions,
+            IndexKind = IndexKind,
+            DistanceFunction = DistanceFunction,
+            EmbeddingGenerator = EmbeddingGenerator,
+            EmbeddingType = EmbeddingType!
+        };
+}

@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
+    <Description>Abstractions for vector database access.</Description>
+    <TargetFrameworks>net10.0;net8.0;netstandard2.0;net462</TargetFrameworks>
+    <StrongNameKeyId>MicrosoftSharedLib</StrongNameKeyId>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
+    <Workstream>AI</Workstream>
+    <NoWarn>$(NoWarn);S125;S1135;S2302</NoWarn>
+    <PackageProjectUrl>https://learn.microsoft.com/dotnet/ai/vector-stores/overview</PackageProjectUrl>
+    <PackageTags>vector, database, similarity, ai, query</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
+    <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
+    <InjectUnreachableExceptionOnLegacy>true</InjectUnreachableExceptionOnLegacy>
+    <InjectUnreachableExceptionOnLegacy>true</InjectUnreachableExceptionOnLegacy>
+    <InjectSystemIndexOnLegacy>true</InjectSystemIndexOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>
