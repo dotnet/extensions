@@ -918,6 +918,11 @@ public class OpenAIConversionTests
             """{"type":"computer_call_output","id":"co_123","call_id":"call_456","output":{"type":"computer_screenshot","image_url":"https://example.com/screenshot.png"}}"""))!;
 #pragma warning restore OPENAICUA001
 
+        ApplyPatchCallItem applyPatchItem = ModelReaderWriter.Read<ApplyPatchCallItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call","id":"ap_123","call_id":"call_patch_789","status":"completed","patch":"*** hello.txt\n+++ hello.txt\n@@ -0,0 +1 @@\n+Hello World"}"""))!;
+        ApplyPatchCallOutputItem applyPatchOutputItem = ModelReaderWriter.Read<ApplyPatchCallOutputItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call_output","id":"apo_123","call_id":"call_patch_789","status":"completed","output":"Applied patch successfully."}"""))!;
+
         List<ChatResponseUpdate> updates = [];
         await foreach (ChatResponseUpdate update in CreateStreamingUpdates().AsChatResponseUpdatesAsync())
         {
@@ -925,7 +930,7 @@ public class OpenAIConversionTests
         }
 
         // Verify we got the expected updates
-        Assert.Equal(9, updates.Count);
+        Assert.Equal(11, updates.Count);
 
         // First update should be FunctionCallContent
         FunctionCallContent? fcc = updates[0].Contents.OfType<FunctionCallContent>().FirstOrDefault();
@@ -1009,6 +1014,16 @@ public class OpenAIConversionTests
         Assert.Equal("call_456", cuToolResult.CallId);
         Assert.Same(computerOutput, cuToolResult.RawRepresentation);
 
+        // Tenth update: ApplyPatchCallItem -> AIContent (streaming falls through to default)
+        AIContent? apCallContent = updates[9].Contents.FirstOrDefault(c => c.RawRepresentation == applyPatchItem);
+        Assert.NotNull(apCallContent);
+        Assert.Same(applyPatchItem, apCallContent.RawRepresentation);
+
+        // Eleventh update: ApplyPatchCallOutputItem -> AIContent (streaming falls through to default)
+        AIContent? apOutputContent = updates[10].Contents.FirstOrDefault(c => c.RawRepresentation == applyPatchOutputItem);
+        Assert.NotNull(apOutputContent);
+        Assert.Same(applyPatchOutputItem, apOutputContent.RawRepresentation);
+
         async IAsyncEnumerable<StreamingResponseUpdate> CreateStreamingUpdates()
         {
             await Task.Yield();
@@ -1021,6 +1036,8 @@ public class OpenAIConversionTests
             yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = fileSearchItem };
             yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = computerItem };
             yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = computerOutput };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = applyPatchItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = applyPatchOutputItem };
         }
     }
 
@@ -1173,11 +1190,17 @@ public class OpenAIConversionTests
             """{"type":"computer_call_output","id":"co_123","call_id":"call_456","output":{"type":"computer_screenshot","image_url":"https://example.com/screenshot.png"}}"""))!;
 #pragma warning restore OPENAICUA001
 
+        ApplyPatchCallItem applyPatchItem = ModelReaderWriter.Read<ApplyPatchCallItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call","id":"ap_123","call_id":"call_patch_789","status":"completed","patch":"*** hello.txt\n+++ hello.txt\n@@ -0,0 +1 @@\n+Hello World"}"""))!;
+        ApplyPatchCallOutputItem applyPatchOutputItem = ModelReaderWriter.Read<ApplyPatchCallOutputItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call_output","id":"apo_123","call_id":"call_patch_789","status":"completed","output":"Applied patch successfully."}"""))!;
+
         ResponseItem[] items =
         [
             assistantItem, reasoningItem, functionCallItem, functionOutputItem,
             mcpToolCallItem, mcpApprovalRequestItem, mcpApprovalResponseItem,
             webSearchItem, fileSearchItem, computerItem, computerOutput,
+            applyPatchItem, applyPatchOutputItem,
         ];
 
         // Convert to ChatMessages
@@ -1296,6 +1319,16 @@ public class OpenAIConversionTests
         ToolResultContent? computerToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "call_456");
         Assert.NotNull(computerToolResult);
         Assert.Same(computerOutput, computerToolResult.RawRepresentation);
+
+        // 12. ApplyPatchCallItem -> ToolCallContent
+        ToolCallContent? applyPatchToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "call_patch_789");
+        Assert.NotNull(applyPatchToolCall);
+        Assert.Same(applyPatchItem, applyPatchToolCall.RawRepresentation);
+
+        // 13. ApplyPatchCallOutputItem -> ToolResultContent
+        ToolResultContent? applyPatchToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "call_patch_789");
+        Assert.NotNull(applyPatchToolResult);
+        Assert.Same(applyPatchOutputItem, applyPatchToolResult.RawRepresentation);
     }
 
     [Fact]
@@ -1322,6 +1355,47 @@ public class OpenAIConversionTests
         Assert.NotNull(genericContent);
         Assert.IsNotType<ToolApprovalResponseContent>(genericContent);
         Assert.Same(mcpApprovalResponseItem, genericContent.RawRepresentation);
+    }
+
+    [Fact]
+    public void AsChatMessages_InputImageWithRelativeUri_ProducesAIContentWithRawRepresentation()
+    {
+        // Create a MessageResponseItem containing an input_image with a relative URI,
+        // which fails Uri.TryCreate with UriKind.Absolute.
+        MessageResponseItem messageItem = ModelReaderWriter.Read<MessageResponseItem>(BinaryData.FromString(
+            """{"type":"message","id":"msg_001","status":"completed","role":"user","content":[{"type":"input_image","image_url":"/images/photo.png"}]}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { messageItem }.AsChatMessages().ToArray();
+
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+        Assert.Equal(ChatRole.User, message.Role);
+
+        // Invalid URI should still produce an AIContent with RawRepresentation set
+        AIContent content = Assert.Single(message.Contents);
+        Assert.IsType<AIContent>(content, exactMatch: true);
+        Assert.NotNull(content.RawRepresentation);
+        Assert.IsAssignableFrom<ResponseContentPart>(content.RawRepresentation);
+    }
+
+    [Fact]
+    public void AsChatMessages_InputImageWithNoProperties_ProducesAIContentWithRawRepresentation()
+    {
+        // Create a MessageResponseItem containing an input_image with no image_url or file_id.
+        MessageResponseItem messageItem = ModelReaderWriter.Read<MessageResponseItem>(BinaryData.FromString(
+            """{"type":"message","id":"msg_001","status":"completed","role":"user","content":[{"type":"input_image"}]}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { messageItem }.AsChatMessages().ToArray();
+
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+        Assert.Equal(ChatRole.User, message.Role);
+
+        // Empty input_image should still produce an AIContent with RawRepresentation set
+        AIContent content = Assert.Single(message.Contents);
+        Assert.IsType<AIContent>(content, exactMatch: true);
+        Assert.NotNull(content.RawRepresentation);
+        Assert.IsAssignableFrom<ResponseContentPart>(content.RawRepresentation);
     }
 
     [Theory]

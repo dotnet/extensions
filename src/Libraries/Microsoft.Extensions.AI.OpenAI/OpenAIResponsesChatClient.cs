@@ -1407,7 +1407,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         foreach (ResponseContentPart part in contents)
         {
-            AIContent? content;
+            AIContent content;
             switch (part.Kind)
             {
                 case ResponseContentPartKind.InputText or ResponseContentPartKind.OutputText:
@@ -1441,12 +1441,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         }
                         else
                         {
-                            content = null;
+                            goto default;
                         }
                     }
                     else
                     {
-                        content = null;
+                        goto default;
                     }
 
                     break;
@@ -1463,11 +1463,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
             }
 
-            if (content is not null)
-            {
-                content.RawRepresentation = part;
-                results.Add(content);
-            }
+            content.RawRepresentation = part;
+            results.Add(content);
         }
 
         return results;

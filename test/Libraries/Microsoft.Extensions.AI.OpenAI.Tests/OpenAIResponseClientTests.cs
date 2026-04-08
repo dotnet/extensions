@@ -7031,11 +7031,13 @@ public class OpenAIResponseClientTests
 
         var source0 = Assert.IsType<UriContent>(wsResult.Results[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), source0.Uri);
-        Assert.IsType<WebSearchActionUriSource>(source0.RawRepresentation);
+        var source0Raw = Assert.IsType<WebSearchActionUriSource>(source0.RawRepresentation);
+        Assert.Equal("\"Announcing .NET 10 - .NET Blog\"", ReadPatchValue(source0Raw, "$.title"u8));
 
         var source1 = Assert.IsType<UriContent>(wsResult.Results[1]);
         Assert.Equal(new Uri("https://dotnet.microsoft.com/en-us/download/dotnet/10.0"), source1.Uri);
-        Assert.IsType<WebSearchActionUriSource>(source1.RawRepresentation);
+        var source1Raw = Assert.IsType<WebSearchActionUriSource>(source1.RawRepresentation);
+        Assert.Equal("\"Download .NET 10\"", ReadPatchValue(source1Raw, "$.title"u8));
 
         var textContent = Assert.IsType<TextContent>(message.Contents[2]);
         Assert.Equal(".NET 10 was officially released in November 2025 as an LTS release.", textContent.Text);
@@ -7044,6 +7046,19 @@ public class OpenAIResponseClientTests
         var citation = Assert.IsType<CitationAnnotation>(textContent.Annotations[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10?utm_source=openai"), citation.Url);
         Assert.Equal("Announcing .NET 10 - .NET Blog", citation.Title);
+
+        static string ReadPatchValue(WebSearchActionUriSource source, ReadOnlySpan<byte> path)
+        {
+            using var ms = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(ms))
+            {
+#pragma warning disable SCME0001 // JsonPatch is experimental
+                source.Patch.WriteTo(writer, path);
+#pragma warning restore SCME0001
+            }
+
+            return Encoding.UTF8.GetString(ms.ToArray());
+        }
     }
 
     [Fact]
