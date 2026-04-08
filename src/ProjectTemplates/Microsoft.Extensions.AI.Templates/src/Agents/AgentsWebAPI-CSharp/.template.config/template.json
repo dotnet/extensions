@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Common",
+    "AI",
+    "Agents"
+  ],
+  "identity": "Microsoft.Extensions.AI.Templates.AgentsWebAPI.CSharp",
+  "name": "Local Agents Web API",
+  "description": "A project template for creating an Agents Web API using C#.",
+  "shortName": "agentswebapi",
+  "defaultName": "AgentsWebAPI",
+  "sourceName": "AgentsWebAPI-CSharp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "symbols": {
+    "hostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "ai-service-provider": {
+      "type": "parameter",
+      "displayName": "_AI service provider",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "azureopenai",
+          "displayName": "Azure OpenAI",
+          "description": "Uses Azure OpenAI service"
+        },
+        {
+          "choice": "githubmodels",
+          "displayName": "GitHub Models",
+          "description": "Uses GitHub Models"
+        },
+        {
+          "choice": "ollama",
+          "displayName": "Ollama (for local development)",
+          "description": "Uses Ollama models"
+        },
+        {
+          "choice": "openai",
+          "displayName": "OpenAI Platform",
+          "description": "Uses the OpenAI Platform"
+        }
+      ]
+    },
+    "managed-identity": {
+      "type": "parameter",
+      "displayName": "Use keyless authentication for Azure services",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "isEnabled": "(AiServiceProvider == \"azureopenai\")",
+      "description": "Use managed identity to access Azure services"
+    },
+    "IsAzureOpenAI": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"azureopenai\")"
+    },
+    "IsOpenAI": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"openai\")"
+    },
+    "IsGHModels": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"githubmodels\")"
+    },
+    "IsOllama": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"ollama\")"
+    },
+    "ChatModel": {
+      "type": "parameter",
+      "displayName": "Model/deployment for chat completions. Example: gpt-4o-mini",
+      "description": "Model/deployment for chat completions. Example: gpt-4o-mini"
+    },
+    "OpenAiChatModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "gpt-4o-mini"
+      }
+    },
+    "OpenAiChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OpenAiChatModelDefault"
+      },
+      "replaces": "gpt-4o-mini"
+    },
+    "OllamaChatModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "llama3.2"
+      }
+    },
+    "OllamaChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "OllamaChatModelDefault"
+      },
+      "replaces": "llama3.2"
+    }                        
+  },
+  "primaryOutputs": [
+    {
+      "path": "./README.md"
+    },
+    {
+      "path": "./AgentsWebAPI-CSharp.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens README file in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

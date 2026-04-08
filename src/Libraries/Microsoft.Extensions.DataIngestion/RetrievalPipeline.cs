@@ -97,7 +97,7 @@ public sealed class RetrievalPipeline : IDisposable
             foreach (var processor in QueryProcessors)
             {
                 _logger?.RunningQueryProcessor(processor.GetType().Name);
-                retrievalQuery = await processor.ProcessQueryAsync(retrievalQuery, cancellationToken).ConfigureAwait(false);
+                retrievalQuery = await processor.ProcessAsync(retrievalQuery, cancellationToken).ConfigureAwait(false);
             }
 
             rootActivity?.SetTag("rag.query.variants", retrievalQuery.Variants.Count);
@@ -144,7 +144,7 @@ public sealed class RetrievalPipeline : IDisposable
             foreach (var processor in ResultProcessors)
             {
                 _logger?.RunningResultProcessor(processor.GetType().Name);
-                results = await processor.ProcessResultsAsync(results, retrievalQuery, cancellationToken).ConfigureAwait(false);
+                results = await processor.ProcessAsync(results, retrievalQuery, cancellationToken).ConfigureAwait(false);
             }
 
             rootActivity?.SetTag("rag.results.final_count", results.Chunks.Count);

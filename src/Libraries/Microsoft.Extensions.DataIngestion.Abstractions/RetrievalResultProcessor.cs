@@ -23,5 +23,5 @@ public abstract class RetrievalResultProcessor
     /// <param name="query">The original query (for context during processing).</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The processed results.</returns>
-    public abstract Task<RetrievalResults> ProcessResultsAsync(RetrievalResults results, RetrievalQuery query, CancellationToken cancellationToken = default);
+    public abstract Task<RetrievalResults> ProcessAsync(RetrievalResults results, RetrievalQuery query, CancellationToken cancellationToken = default);
 }

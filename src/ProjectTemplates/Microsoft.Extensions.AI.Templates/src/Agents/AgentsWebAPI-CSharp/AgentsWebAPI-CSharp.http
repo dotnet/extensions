@@ -1,0 +1,6 @@
+@AgentsWebAPI_CSharp_HostAddress = http://localhost:5003
+
+GET {{AgentsWebAPI_CSharp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
