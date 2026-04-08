@@ -1363,7 +1363,7 @@ public class OpenAIConversionTests
         // Create a MessageResponseItem containing an input_image with a relative URI,
         // which fails Uri.TryCreate with UriKind.Absolute.
         MessageResponseItem messageItem = ModelReaderWriter.Read<MessageResponseItem>(BinaryData.FromString(
-            """{"type":"message","id":"msg_001","status":"completed","role":"user","content":[{"type":"input_image","image_url":"/images/photo.png"}]}"""))!;
+            """{"type":"message","id":"msg_001","status":"completed","role":"user","content":[{"type":"input_image","image_url":"images/photo.png"}]}"""))!;
 
         ChatMessage[] messages = new ResponseItem[] { messageItem }.AsChatMessages().ToArray();
 
