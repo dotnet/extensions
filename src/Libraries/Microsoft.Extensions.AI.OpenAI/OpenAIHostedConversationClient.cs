@@ -155,6 +155,16 @@ internal sealed class OpenAIHostedConversationClient : IHostedConversationClient
     }
 
     /// <inheritdoc />
+    public IAsyncEnumerable<HostedConversation> ListConversationsAsync(
+        HostedConversationClientOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotSupportedException(
+            "The OpenAI Conversations API does not currently support listing conversations. " +
+            "Track conversation IDs in your application or use a provider that supports this operation.");
+    }
+
+    /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
     {
         _ = Throw.IfNull(serviceType);

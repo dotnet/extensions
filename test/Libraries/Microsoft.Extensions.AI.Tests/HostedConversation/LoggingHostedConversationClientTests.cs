@@ -155,6 +155,47 @@ public class LoggingHostedConversationClientTests
         }
     }
 
+    [Theory]
+    [InlineData(LogLevel.Trace)]
+    [InlineData(LogLevel.Debug)]
+    [InlineData(LogLevel.Information)]
+    public async Task ListConversationsAsync_LogsInvocationAndCompletion(LogLevel level)
+    {
+        // Arrange
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(level));
+        var services = c.BuildServiceProvider();
+
+        using var innerClient = new TestHostedConversationClient
+        {
+            ListConversationsAsyncCallback = (_, _) => YieldConversationsAsync(new HostedConversation { ConversationId = "conv-1" })
+        };
+
+        var builder = new HostedConversationClientBuilder(innerClient);
+        builder.UseLogging(services.GetRequiredService<ILoggerFactory>());
+        using var client = builder.Build(services);
+
+        // Act
+        await foreach (var conv in client.ListConversationsAsync())
+        {
+            // consume the enumerable
+        }
+
+        // Assert
+        var logs = collector.GetSnapshot();
+        if (level <= LogLevel.Debug)
+        {
+            Assert.True(logs.Count >= 2);
+            Assert.Contains(logs, e => e.Message.Contains("ListConversationsAsync") && e.Message.Contains("invoked"));
+            Assert.Contains(logs, e => e.Message.Contains("ListConversationsAsync") && e.Message.Contains("completed"));
+        }
+        else
+        {
+            Assert.Empty(logs);
+        }
+    }
+
     [Fact]
     public void UseLogging_AvoidsInjectingNopClient()
     {
@@ -173,6 +214,7 @@ public class LoggingHostedConversationClientTests
         public Func<HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
         public Func<string, HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? GetAsyncCallback { get; set; }
         public Func<string, HostedConversationClientOptions?, CancellationToken, Task>? DeleteAsyncCallback { get; set; }
+        public Func<HostedConversationClientOptions?, CancellationToken, IAsyncEnumerable<HostedConversation>>? ListConversationsAsyncCallback { get; set; }
 
         public Task<HostedConversation> CreateAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => CreateAsyncCallback?.Invoke(options, cancellationToken) ?? Task.FromResult(new HostedConversation { ConversationId = "test" });
@@ -189,7 +231,16 @@ public class LoggingHostedConversationClientTests
         public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => EmptyAsync();
 
+        public IAsyncEnumerable<HostedConversation> ListConversationsAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => ListConversationsAsyncCallback?.Invoke(options, cancellationToken) ?? EmptyConversationsAsync();
+
         private static async IAsyncEnumerable<ChatMessage> EmptyAsync()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+
+        private static async IAsyncEnumerable<HostedConversation> EmptyConversationsAsync()
         {
             await Task.CompletedTask;
             yield break;
@@ -200,6 +251,15 @@ public class LoggingHostedConversationClientTests
 
         public void Dispose()
         {
+        }
+    }
+
+    private static async IAsyncEnumerable<HostedConversation> YieldConversationsAsync(params HostedConversation[] conversations)
+    {
+        await Task.Yield();
+        foreach (var conv in conversations)
+        {
+            yield return conv;
         }
     }
 }

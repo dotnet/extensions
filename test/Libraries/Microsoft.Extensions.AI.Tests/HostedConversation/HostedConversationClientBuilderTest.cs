@@ -136,7 +136,16 @@ public class HostedConversationClientBuilderTest
         public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => EmptyAsync();
 
+        public IAsyncEnumerable<HostedConversation> ListConversationsAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => EmptyConversationsAsync();
+
         private static async IAsyncEnumerable<ChatMessage> EmptyAsync()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+
+        private static async IAsyncEnumerable<HostedConversation> EmptyConversationsAsync()
         {
             await Task.CompletedTask;
             yield break;

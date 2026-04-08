@@ -270,6 +270,86 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
         }
     }
 
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<HostedConversation> ListConversationsAsync(
+        HostedConversationClientOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogInvokedSensitive(nameof(ListConversationsAsync), AsJson(options), AsJson(this.GetService<HostedConversationClientMetadata>()));
+            }
+            else
+            {
+                LogInvoked(nameof(ListConversationsAsync));
+            }
+        }
+
+        IAsyncEnumerator<HostedConversation> e;
+        try
+        {
+            e = base.ListConversationsAsync(options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            LogInvocationCanceled(nameof(ListConversationsAsync));
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogInvocationFailed(nameof(ListConversationsAsync), ex);
+            throw;
+        }
+
+        try
+        {
+            HostedConversation? conversation = null;
+            while (true)
+            {
+                try
+                {
+                    if (!await e.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+
+                    conversation = e.Current;
+                }
+                catch (OperationCanceledException)
+                {
+                    LogInvocationCanceled(nameof(ListConversationsAsync));
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    LogInvocationFailed(nameof(ListConversationsAsync), ex);
+                    throw;
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    if (_logger.IsEnabled(LogLevel.Trace))
+                    {
+                        LogListItemSensitive(AsJson(conversation));
+                    }
+                    else
+                    {
+                        LogListItemReceived();
+                    }
+                }
+
+                yield return conversation;
+            }
+
+            LogCompleted(nameof(ListConversationsAsync));
+        }
+        finally
+        {
+            await e.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
     private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
@@ -295,6 +375,12 @@ public partial class LoggingHostedConversationClient : DelegatingHostedConversat
 
     [LoggerMessage(LogLevel.Trace, "GetMessagesAsync received message: {ChatMessage}")]
     private partial void LogMessageReceivedSensitive(string chatMessage);
+
+    [LoggerMessage(LogLevel.Debug, "ListConversationsAsync received item.")]
+    private partial void LogListItemReceived();
+
+    [LoggerMessage(LogLevel.Trace, "ListConversationsAsync received item: {HostedConversation}")]
+    private partial void LogListItemSensitive(string hostedConversation);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

@@ -77,6 +77,12 @@ public class DelegatingHostedConversationClient : IHostedConversationClient
         InnerClient.GetMessagesAsync(conversationId, options, cancellationToken);
 
     /// <inheritdoc />
+    public virtual IAsyncEnumerable<HostedConversation> ListConversationsAsync(
+        HostedConversationClientOptions? options = null,
+        CancellationToken cancellationToken = default) =>
+        InnerClient.ListConversationsAsync(options, cancellationToken);
+
+    /// <inheritdoc />
     public virtual object? GetService(Type serviceType, object? serviceKey = null)
     {
         _ = Throw.IfNull(serviceType);

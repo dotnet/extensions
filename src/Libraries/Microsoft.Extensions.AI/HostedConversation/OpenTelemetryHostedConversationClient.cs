@@ -35,6 +35,7 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
     private const string GetOperationName = "conversations.get";
     private const string DeleteOperationName = "conversations.delete";
     private const string AddMessagesOperationName = "conversations.add_messages";
+    private const string ListOperationName = "conversations.list";
     private const string GetMessagesOperationName = "conversations.get_messages";
 
     private const string OperationDurationMetricName = "conversations.client.operation.duration";
@@ -44,6 +45,7 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
     private const string ConversationsProviderNameAttribute = "conversations.provider.name";
     private const string ConversationsIdAttribute = "conversations.id";
     private const string ConversationsMessagesCountAttribute = "conversations.messages.count";
+    private const string ConversationsListCountAttribute = "conversations.list.count";
 
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
@@ -226,6 +228,64 @@ public sealed class OpenTelemetryHostedConversationClient : DelegatingHostedConv
         {
             RecordDuration(stopwatch, AddMessagesOperationName, error);
             SetErrorStatus(activity, error);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<HostedConversation> ListConversationsAsync(
+        HostedConversationClientOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        using Activity? activity = StartActivity(ListOperationName);
+        Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
+
+        IAsyncEnumerator<HostedConversation> e;
+        Exception? error = null;
+        try
+        {
+            e = base.ListConversationsAsync(options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            error = ex;
+            RecordDuration(stopwatch, ListOperationName, error);
+            SetErrorStatus(activity, error);
+            throw;
+        }
+
+        int count = 0;
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!await e.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    error = ex;
+                    throw;
+                }
+
+                count++;
+                yield return e.Current;
+                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+            }
+        }
+        finally
+        {
+            if (activity is { IsAllDataRequested: true })
+            {
+                _ = activity.AddTag(ConversationsListCountAttribute, count);
+            }
+
+            RecordDuration(stopwatch, ListOperationName, error);
+            SetErrorStatus(activity, error);
+
+            await e.DisposeAsync().ConfigureAwait(false);
         }
     }
 

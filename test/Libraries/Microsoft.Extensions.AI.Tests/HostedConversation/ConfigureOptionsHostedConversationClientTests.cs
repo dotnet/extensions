@@ -110,6 +110,46 @@ public class ConfigureOptionsHostedConversationClientTests
     }
 
     [Fact]
+    public async Task ConfigureOptions_ListConversationsAsync_OptionsAreClonedAndCallbackApplied()
+    {
+        // Arrange
+        var callbackInvoked = false;
+        HostedConversationClientOptions? receivedByInner = null;
+        var originalOptions = new HostedConversationClientOptions
+        {
+            AdditionalProperties = new() { ["key"] = "original" }
+        };
+
+        using var innerClient = new TestHostedConversationClient
+        {
+            ListConversationsAsyncCallback = (options, _) =>
+            {
+                receivedByInner = options;
+                return YieldConversationsAsync(new HostedConversation { ConversationId = "conv-1" });
+            }
+        };
+
+        using var client = new ConfigureOptionsHostedConversationClient(innerClient, options =>
+        {
+            callbackInvoked = true;
+            options.AdditionalProperties!["key"] = "modified";
+        });
+
+        // Act
+        await foreach (var conv in client.ListConversationsAsync(originalOptions))
+        {
+            // consume the enumerable
+        }
+
+        // Assert
+        Assert.True(callbackInvoked);
+        Assert.Equal("original", originalOptions.AdditionalProperties["key"]);
+        Assert.NotNull(receivedByInner);
+        Assert.NotSame(originalOptions, receivedByInner);
+        Assert.Equal("modified", receivedByInner!.AdditionalProperties!["key"]);
+    }
+
+    [Fact]
     public void Constructor_NullCallback_Throws()
     {
         using var innerClient = new TestHostedConversationClient();
@@ -125,6 +165,7 @@ public class ConfigureOptionsHostedConversationClientTests
     private sealed class TestHostedConversationClient : IHostedConversationClient
     {
         public Func<HostedConversationClientOptions?, CancellationToken, Task<HostedConversation>>? CreateAsyncCallback { get; set; }
+        public Func<HostedConversationClientOptions?, CancellationToken, IAsyncEnumerable<HostedConversation>>? ListConversationsAsyncCallback { get; set; }
 
         public Task<HostedConversation> CreateAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => CreateAsyncCallback?.Invoke(options, cancellationToken) ?? Task.FromResult(new HostedConversation { ConversationId = "test" });
@@ -141,7 +182,16 @@ public class ConfigureOptionsHostedConversationClientTests
         public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => EmptyAsync();
 
+        public IAsyncEnumerable<HostedConversation> ListConversationsAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => ListConversationsAsyncCallback?.Invoke(options, cancellationToken) ?? EmptyConversationsAsync();
+
         private static async IAsyncEnumerable<ChatMessage> EmptyAsync()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+
+        private static async IAsyncEnumerable<HostedConversation> EmptyConversationsAsync()
         {
             await Task.CompletedTask;
             yield break;
@@ -152,6 +202,15 @@ public class ConfigureOptionsHostedConversationClientTests
 
         public void Dispose()
         {
+        }
+    }
+
+    private static async IAsyncEnumerable<HostedConversation> YieldConversationsAsync(params HostedConversation[] conversations)
+    {
+        await Task.Yield();
+        foreach (var conv in conversations)
+        {
+            yield return conv;
         }
     }
 }

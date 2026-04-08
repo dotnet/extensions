@@ -65,14 +65,13 @@ public class OpenAIHostedConversationClientTests
     }
 
     [Fact]
-    public void GetService_ReturnsNull_ForServiceKey()
+    public void ListConversationsAsync_ThrowsNotSupportedException()
     {
         ConversationClient conversationClient = new(new ApiKeyCredential("key"));
 
         IHostedConversationClient client = conversationClient.AsIHostedConversationClient();
 
-        Assert.Null(client.GetService(typeof(IHostedConversationClient), "someKey"));
-        Assert.Null(client.GetService(typeof(HostedConversationClientMetadata), "someKey"));
-        Assert.Null(client.GetService(typeof(ConversationClient), "someKey"));
+        var ex = Assert.Throws<NotSupportedException>(() => client.ListConversationsAsync());
+        Assert.Contains("does not currently support listing conversations", ex.Message);
     }
 }

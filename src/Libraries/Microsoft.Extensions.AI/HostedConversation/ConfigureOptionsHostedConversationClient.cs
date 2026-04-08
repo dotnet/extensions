@@ -70,6 +70,13 @@ public sealed class ConfigureOptionsHostedConversationClient : DelegatingHostedC
         return base.GetMessagesAsync(conversationId, Configure(options), cancellationToken);
     }
 
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<HostedConversation> ListConversationsAsync(
+        HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return base.ListConversationsAsync(Configure(options), cancellationToken);
+    }
+
     /// <summary>Creates and configures the <see cref="HostedConversationClientOptions"/> to pass along to the inner client.</summary>
     private HostedConversationClientOptions Configure(HostedConversationClientOptions? options)
     {

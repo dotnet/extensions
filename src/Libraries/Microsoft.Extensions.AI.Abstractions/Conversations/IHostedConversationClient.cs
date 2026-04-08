@@ -82,6 +82,14 @@ public interface IHostedConversationClient : IDisposable
         HostedConversationClientOptions? options = null,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Lists hosted conversations accessible by this client.</summary>
+    /// <param name="options">The options for the request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An asynchronous sequence of <see cref="HostedConversation"/> instances.</returns>
+    IAsyncEnumerable<HostedConversation> ListConversationsAsync(
+        HostedConversationClientOptions? options = null,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Asks the <see cref="IHostedConversationClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
     /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>

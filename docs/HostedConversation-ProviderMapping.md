@@ -13,6 +13,7 @@
 | `DeleteAsync` | Deletes a conversation | `void` (Task) |
 | `AddMessagesAsync` | Adds messages to a conversation | `void` (Task) |
 | `GetMessagesAsync` | Lists messages in a conversation | `IAsyncEnumerable<ChatMessage>` |
+| `ListConversationsAsync` | Lists all conversations | `IAsyncEnumerable<HostedConversation>` |
 
 ## Provider Mapping
 
@@ -105,6 +106,7 @@ var options = new HostedConversationClientOptions
 | Delete | ✅ Native | ✅ Native | ✅ Native | ✅ Native | ⚠️ Local | ⚠️ Local |
 | AddMessages | ✅ Native | ✅ Native | ⚠️ Translated | ⚠️ Chained | ⚠️ Local | ⚠️ Local |
 | GetMessages | ✅ Native | ✅ Native | ⚠️ Translated | ⚠️ Partial | ⚠️ Local | ⚠️ Local |
+| ListConversations | ❌ Not supported | ✅ Native | ✅ Native | ✅ Native | ⚠️ Local | ⚠️ Local |
 | Metadata | ✅ 16 KV | ✅ | ✅ | ✅ | ⚠️ Local | ⚠️ Local |
 | RawRepresentation | ✅ ClientResult | ✅ AgentThread | ✅ Session | ✅ Interaction | N/A | N/A |
 

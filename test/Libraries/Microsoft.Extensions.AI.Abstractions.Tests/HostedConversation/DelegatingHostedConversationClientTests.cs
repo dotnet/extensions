@@ -176,6 +176,40 @@ public class DelegatingHostedConversationClientTests
     }
 
     [Fact]
+    public async Task ListConversationsAsyncDefaultsToInnerClientAsync()
+    {
+        // Arrange
+        var expectedCancellationToken = CancellationToken.None;
+        HostedConversation[] expectedConversations =
+        [
+            new() { ConversationId = "conv-1" },
+            new() { ConversationId = "conv-2" },
+        ];
+
+        using var inner = new TestHostedConversationClient
+        {
+            ListConversationsAsyncCallback = (options, cancellationToken) =>
+            {
+                Assert.Equal(expectedCancellationToken, cancellationToken);
+                return YieldAsync(expectedConversations);
+            }
+        };
+
+        using var delegating = new NoOpDelegatingHostedConversationClient(inner);
+
+        // Act
+        var resultAsyncEnumerable = delegating.ListConversationsAsync(cancellationToken: expectedCancellationToken);
+
+        // Assert
+        var enumerator = resultAsyncEnumerable.GetAsyncEnumerator();
+        Assert.True(await enumerator.MoveNextAsync());
+        Assert.Same(expectedConversations[0], enumerator.Current);
+        Assert.True(await enumerator.MoveNextAsync());
+        Assert.Same(expectedConversations[1], enumerator.Current);
+        Assert.False(await enumerator.MoveNextAsync());
+    }
+
+    [Fact]
     public void GetServiceThrowsForNullType()
     {
         using var inner = new TestHostedConversationClient();
@@ -284,6 +318,8 @@ public class DelegatingHostedConversationClientTests
 
         public Func<string, HostedConversationClientOptions?, CancellationToken, IAsyncEnumerable<ChatMessage>>? GetMessagesAsyncCallback { get; set; }
 
+        public Func<HostedConversationClientOptions?, CancellationToken, IAsyncEnumerable<HostedConversation>>? ListConversationsAsyncCallback { get; set; }
+
         public Func<Type, object?, object?> GetServiceCallback { get; set; }
 
         private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey) =>
@@ -303,6 +339,9 @@ public class DelegatingHostedConversationClientTests
 
         public IAsyncEnumerable<ChatMessage> GetMessagesAsync(string conversationId, HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
             => GetMessagesAsyncCallback!.Invoke(conversationId, options, cancellationToken);
+
+        public IAsyncEnumerable<HostedConversation> ListConversationsAsync(HostedConversationClientOptions? options = null, CancellationToken cancellationToken = default)
+            => ListConversationsAsyncCallback!.Invoke(options, cancellationToken);
 
         public object? GetService(Type serviceType, object? serviceKey = null)
             => GetServiceCallback(serviceType, serviceKey);
