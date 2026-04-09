@@ -1256,7 +1256,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.VectorStoreVectorAttribute(int Dimensions);",
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.VectorStoreVectorAttribute(int dimensions);",
           "Stage": "Stable"
         }
       ],

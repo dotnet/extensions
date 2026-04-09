@@ -15,21 +15,19 @@ namespace Microsoft.Extensions.VectorData;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public sealed class VectorStoreVectorAttribute : Attribute
 {
-#pragma warning disable IDE1006 // Naming Styles
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreVectorAttribute"/> class.
     /// </summary>
-    /// <param name="Dimensions">The number of dimensions that the vector has.</param>
-    public VectorStoreVectorAttribute(int Dimensions)
+    /// <param name="dimensions">The number of dimensions that the vector has.</param>
+    public VectorStoreVectorAttribute(int dimensions)
     {
-        if (Dimensions <= 0)
+        if (dimensions <= 0)
         {
-            Throw.ArgumentOutOfRangeException(nameof(Dimensions), "Dimensions must be greater than zero.");
+            Throw.ArgumentOutOfRangeException(nameof(dimensions), "Dimensions must be greater than zero.");
         }
 
-        this.Dimensions = Dimensions;
+        Dimensions = dimensions;
     }
-#pragma warning restore IDE1006 // Naming Styles
 
     /// <summary>
     /// Gets the number of dimensions that the vector has.
@@ -47,9 +45,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
     /// The default value varies by database type. See the documentation of your chosen database provider for more information.
     /// </value>
     /// <seealso cref="IndexKind"/>
-#pragma warning disable CA1019 // Define accessors for attribute arguments: The constructor overload that contains this property is obsolete.
     public string? IndexKind { get; init; }
-#pragma warning restore CA1019
 
     /// <summary>
     /// Gets the distance function to use when comparing vectors.
@@ -58,9 +54,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
     /// The default value varies by database type. See the documentation of your chosen database provider for more information.
     /// </value>
     /// <seealso cref="DistanceFunction"/>
-#pragma warning disable CA1019 // Define accessors for attribute arguments: The constructor overload that contains this property is obsolete.
     public string? DistanceFunction { get; init; }
-#pragma warning restore CA1019
 
     /// <summary>
     /// Gets an optional name to use for the property in storage, if different from the property name.
