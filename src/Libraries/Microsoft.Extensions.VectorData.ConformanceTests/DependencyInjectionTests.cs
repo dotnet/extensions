@@ -320,7 +320,7 @@ public abstract class DependencyInjectionTests<TKey>
         [VectorStoreData(StorageName = "number")]
         public int Number { get; set; }
 
-        [VectorStoreVector(Dimensions: 3, StorageName = "embedding")]
+        [VectorStoreVector(dimensions: 3, StorageName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 }
