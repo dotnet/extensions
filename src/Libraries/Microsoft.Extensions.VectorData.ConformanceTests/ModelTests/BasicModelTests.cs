@@ -517,7 +517,7 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
         [VectorStoreData(StorageName = "number")]
         public int Number { get; set; }
 
-        [VectorStoreVector(Dimensions: 3, StorageName = "vector")]
+        [VectorStoreVector(dimensions: 3, StorageName = "vector")]
         public ReadOnlyMemory<float> Vector { get; set; }
 
         public void AssertEqual(Record? other, bool includeVectors, bool compareVectors)
