@@ -1,0 +1,2597 @@
+{
+  "Name": "Microsoft.Extensions.VectorData.ConformanceTests, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey> : Xunit.IAsyncLifetime where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.BasicModelTests(VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Delete_multiple_records();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Delete_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.DeleteAsync_does_nothing_for_empty_batch();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.DeleteAsync_does_nothing_for_non_existing_key();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.DeleteAsync_throws_for_null_keys();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_multiple_records(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_multiple_records_with_missing_keys_returns_only_existing();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_returns_empty_for_empty_keys();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_returns_null_for_missing_key();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_single_record(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_throws_for_null_key();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_throws_for_null_keys();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_with_filter(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_with_filter_and_multiple_OrderBys();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_with_filter_and_OrderBy();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_with_filter_and_OrderBy_and_Skip();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.GetAsync_with_filter_by_true();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Insert_and_update_in_same_batch();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Insert_multiple_records();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Insert_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.SearchAsync(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.SearchAsync_with_Filter();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.SearchAsync_with_Skip();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Update_multiple_records();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Update_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.UpsertAsync_does_nothing_for_empty_batch();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.UpsertAsync_throws_for_null_batch();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "static readonly Xunit.TheoryData<bool> VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.IncludeVectorsData",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record> VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Collection { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record> VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Fixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Fixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record.Record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record.AssertEqual(VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record? other, bool includeVectors, bool compareVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record.ToString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record.Number { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record.Text { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.ModelTests.BasicModelTests<TKey>.Record.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.CollectionManagementTests<TKey> : Xunit.IAsyncLifetime where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.CollectionManagementTests<TKey>.CollectionManagementTests(VectorData.ConformanceTests.Support.VectorStoreFixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.CollectionManagementTests<TKey>.Collection_Ensure_Exists_Delete();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.CollectionManagementTests<TKey>.Collection_metadata();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.CollectionManagementTests<TKey>.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.CollectionManagementTests<TKey>.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.CollectionManagementTests<TKey>.EnsureCollectionExists_twice_does_not_throw();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.CollectionManagementTests<TKey>.Record> VectorData.ConformanceTests.CollectionManagementTests<TKey>.GetCollection();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.CollectionManagementTests<TKey>.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.CollectionManagementTests<TKey>.Store_CollectionExists();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.CollectionManagementTests<TKey>.Store_DeleteCollection();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.CollectionManagementTests<TKey>.Store_ListCollections();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual string VectorData.ConformanceTests.CollectionManagementTests<TKey>.CollectionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.CollectionManagementTests<TKey>.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.CollectionManagementTests<TKey>.Record",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.CollectionManagementTests<TKey>.Record.Record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.CollectionManagementTests<TKey>.Record.Floats { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int VectorData.ConformanceTests.CollectionManagementTests<TKey>.Record.Number { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.CollectionManagementTests<TKey>.Record.Text { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord> : VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey> where TKey : notnull where TRecord : VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.RecordBase, new()",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.DataTypeTests(VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Bool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Byte();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.DateOnly();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.DateTime();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.DateTimeOffset();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Decimal();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Double();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Float();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual object? VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.GenerateEmptyProperty(Microsoft.Extensions.VectorData.VectorStoreProperty property);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Guid();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Long();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Nullable_value_type();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Short();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.String();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.String_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Test<TTestType>(string propertyName, TTestType mainValue, TTestType otherValue, bool isFilterable = true, System.Action<TTestType, TTestType>? comparisonAction = null, System.Linq.Expressions.Expression<System.Func<TTestType>>? instantiationExpression = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.TimeOnly();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IList<Microsoft.Extensions.VectorData.VectorStoreDataProperty> VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.GetDataProperties();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.InitializeAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.IsNullFilteringSupported { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.IsNullSupported { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual TKey VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.MainRecordKey { get; protected set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual TKey VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.NullRecordKey { get; protected set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual TKey VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.OtherRecordKey { get; protected set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.RecreateCollection { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Type[] VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.UnsupportedDefaultTypes { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual float[] VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey, TRecord>.Fixture.Vector { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DataTypeTests();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.DefaultRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Bool { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "byte VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Byte { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateOnly VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.DateOnly { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateTime VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.DateTime { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateTimeOffset VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.DateTimeOffset { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "decimal VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Decimal { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Double { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "float VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Float { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Guid VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Guid { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Int { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Long { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int? VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.NullableInt { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "short VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.Short { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.String { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string[] VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.StringArray { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeOnly VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.DefaultRecord.TimeOnly { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.RecordBase",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.RecordBase.RecordBase();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "float[] VectorData.ConformanceTests.TypeTests.DataTypeTests<TKey>.RecordBase.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord> : VectorData.ConformanceTests.DependencyInjectionTests<TKey> where TVectorStore : Microsoft.Extensions.VectorData.VectorStore where TCollection : Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> where TKey : notnull where TRecord : class",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.DependencyInjectionTests();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CanRegisterCollections(Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime, object? serviceKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CanRegisterConcreteTypeCollectionsAfterSomeAbstractionHasBeenRegistered(Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime, object? serviceKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CanRegisterConcreteTypeVectorStoreAfterSomeAbstractionHasBeenRegistered(Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime, object? serviceKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CanRegisterVectorStore(Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime, object? serviceKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CollectionNameCantBeNullOrEmpty();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CreateConfigKey(string prefix, object? serviceKey, string suffix);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.DependencyInjection.IServiceCollection VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CreateServices(object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.EmbeddingGeneratorIsResolved(Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime, object? serviceKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.PopulateConfiguration(Microsoft.Extensions.Configuration.ConfigurationManager configuration, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.ServiceCollectionCantBeNull();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "abstract System.Collections.Generic.IEnumerable<System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, object?, string, Microsoft.Extensions.DependencyInjection.ServiceLifetime, Microsoft.Extensions.DependencyInjection.IServiceCollection>> VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CollectionDelegates { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.CollectionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Xunit.TheoryData<Microsoft.Extensions.DependencyInjection.ServiceLifetime, object?> VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.LifetimesAndServiceKeys { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Collections.Generic.IEnumerable<System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, object?, Microsoft.Extensions.DependencyInjection.ServiceLifetime, Microsoft.Extensions.DependencyInjection.IServiceCollection>> VectorData.ConformanceTests.DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>.StoreDelegates { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.DependencyInjectionTests<TKey>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.DependencyInjectionTests<TKey>.DependencyInjectionTests();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.DependencyInjectionTests<TKey>.Record",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.DependencyInjectionTests<TKey>.Record.Record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.DependencyInjectionTests<TKey>.Record.Floats { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int VectorData.ConformanceTests.DependencyInjectionTests<TKey>.Record.Number { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.DistanceFunctionTests<TKey> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.DistanceFunctionTests<TKey>.DistanceFunctionTests(VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.CosineDistance();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.CosineSimilarity();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.DotProductSimilarity();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.EuclideanDistance();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.EuclideanSquaredDistance();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.HammingDistance();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.ManhattanDistance();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.NegativeDotProductSimilarity();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Test(string distanceFunction, double expectedExactMatchScore, double expectedOppositeScore, double expectedOrthogonalScore, int[] resultOrder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.DistanceFunctionTests<TKey>.TestScoreThreshold(Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.DistanceFunctionTests<TKey>.SearchRecord> collection);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.DistanceFunctionTests<TKey>.SearchRecord> VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture.CreateCollection(string distanceFunction);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture.AssertScores { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture.CollectionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string? VectorData.ConformanceTests.DistanceFunctionTests<TKey>.Fixture.IndexKind { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.DistanceFunctionTests<TKey>.SearchRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.DistanceFunctionTests<TKey>.SearchRecord.SearchRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.DistanceFunctionTests<TKey>.SearchRecord.Int { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.DistanceFunctionTests<TKey>.SearchRecord.Key { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.DistanceFunctionTests<TKey>.SearchRecord.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey> : Xunit.IAsyncLifetime where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.DynamicModelTests(VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.AssertEquivalent(System.Collections.Generic.Dictionary<string, object?> expected, System.Collections.Generic.Dictionary<string, object?>? actual, bool includeVectors, bool compareVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Delete_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.DeleteAsync_does_nothing_for_non_existing_key();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_multiple_records(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_returns_empty_for_empty_keys();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_returns_null_for_missing_key();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_single_record(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_throws_for_null_key();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_throws_for_null_keys();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_with_filter(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_with_filter_and_multiple_OrderBys();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_with_filter_and_OrderBy();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_with_filter_and_OrderBy_and_Skip();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.GetAsync_with_filter_by_true();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Insert_multiple_records();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Insert_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.SearchAsync(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.SearchAsync_with_Filter();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.SearchAsync_with_Skip();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Update_single_record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "static readonly Xunit.TheoryData<bool> VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.IncludeVectorsData",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const string VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.IntegerPropertyName",
+          "Stage": "Stable",
+          "Value": "integer"
+        },
+        {
+          "Member": "const string VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.KeyPropertyName",
+          "Stage": "Stable",
+          "Value": "key"
+        },
+        {
+          "Member": "const string VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.StringPropertyName",
+          "Stage": "Stable",
+          "Value": "text"
+        },
+        {
+          "Member": "const string VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.VectorPropertyName",
+          "Stage": "Stable",
+          "Value": "vector"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Collection { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture.GetCollection();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string VectorData.ConformanceTests.ModelTests.DynamicModelTests<TKey>.Fixture.KeyPropertyName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.Support.DynamicVectorStoreCollectionFixture<TKey> : VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<object, System.Collections.Generic.Dictionary<string, object?>> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.Support.DynamicVectorStoreCollectionFixture<TKey>.DynamicVectorStoreCollectionFixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.DynamicVectorStoreCollectionFixture<TKey>.ReseedAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "abstract string VectorData.ConformanceTests.Support.DynamicVectorStoreCollectionFixture<TKey>.KeyPropertyName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.EmbeddingGenerationTests(VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture stringVectorFixture, VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture romOfFloatVectorFixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.GetAsync_enumerable_with_IncludeVectors_throws();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.GetAsync_with_IncludeVectors_throws();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_string_without_generator_throws();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_collection_dependency_injection();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_collection_generator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_custom_input_type();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_IncludeVectors_throws();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_incompatible_generator_throws();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_property_generator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_property_generator_dynamic();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_search_only_embedding_generation();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_store_dependency_injection();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.SearchAsync_with_store_generator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.UpsertAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.UpsertAsync_batch();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.UpsertAsync_batch_dynamic();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.UpsertAsync_dynamic();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Customer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Customer.Customer();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Customer.FirstName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Customer.LastName { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.FakeEmbeddingGenerator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.FakeEmbeddingGenerator.FakeEmbeddingGenerator(int? replaceLast = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.FakeEmbeddingGenerator.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>>> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.FakeEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.FakeEmbeddingGenerator.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RawRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RawRecord.RawRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RawRecord.Embedding { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RawRecord.Key { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Record",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Record.Record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Record.Counter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Record.Embedding { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Record.Text { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithAttributes",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithAttributes.RecordWithAttributes();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithAttributes.Counter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithAttributes.Embedding { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithAttributes.Key { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithAttributes.Text { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithCustomerVectorProperty",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithCustomerVectorProperty.RecordWithCustomerVectorProperty();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithCustomerVectorProperty.Counter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Customer? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithCustomerVectorProperty.Embedding { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithCustomerVectorProperty.Key { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithCustomerVectorProperty.Text { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithRomOfFloatVectorProperty",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithRomOfFloatVectorProperty.RecordWithRomOfFloatVectorProperty();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithRomOfFloatVectorProperty.Counter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithRomOfFloatVectorProperty.Embedding { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithRomOfFloatVectorProperty.Text { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.RomOfFloatVectorFixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RecordWithRomOfFloatVectorProperty> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract Microsoft.Extensions.VectorData.VectorStore VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.CreateVectorStore(Microsoft.Extensions.AI.IEmbeddingGenerator? embeddingGenerator = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual int VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.GenerateNextCounter();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.GetCollection<TRecord>(Microsoft.Extensions.VectorData.VectorStore vectorStore, string collectionName, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? recordDefinition = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.GetDynamicCollection(Microsoft.Extensions.VectorData.VectorStore vectorStore, string collectionName, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition recordDefinition);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, Microsoft.Extensions.DependencyInjection.IServiceCollection>[] VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.DependencyInjectionCollectionRegistrationDelegates { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, Microsoft.Extensions.DependencyInjection.IServiceCollection>[] VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.RomOfFloatVectorFixture.DependencyInjectionStoreRegistrationDelegates { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.StringVectorFixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.Record> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract Microsoft.Extensions.VectorData.VectorStore VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.CreateVectorStore(Microsoft.Extensions.AI.IEmbeddingGenerator? embeddingGenerator = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual int VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.GenerateNextCounter();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.GetCollection<TRecord>(Microsoft.Extensions.VectorData.VectorStore vectorStore, string collectionName, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? recordDefinition = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.GetDynamicCollection(Microsoft.Extensions.VectorData.VectorStore vectorStore, string collectionName, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition recordDefinition);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, Microsoft.Extensions.DependencyInjection.IServiceCollection>[] VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.DependencyInjectionCollectionRegistrationDelegates { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, Microsoft.Extensions.DependencyInjection.IServiceCollection>[] VectorData.ConformanceTests.EmbeddingGenerationTests<TKey>.StringVectorFixture.DependencyInjectionStoreRegistrationDelegates { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.EmbeddingTypeTests(VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Array_of_float();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Embedding_of_float();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.ReadOnlyMemory_of_float();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Test<TVector>(TVector value, Microsoft.Extensions.AI.IEmbeddingGenerator? embeddingGenerator = null, System.Action<TVector, TVector>? vectorEqualityAsserter = null, string? distanceFunction = null, int dimensions = 3);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.BinaryEmbeddingGenerator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.BinaryEmbeddingGenerator.BinaryEmbeddingGenerator(System.Collections.BitArray data);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.BinaryEmbeddingGenerator.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.BinaryEmbedding>> VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.BinaryEmbeddingGenerator.GenerateAsync(System.Collections.Generic.IEnumerable<string> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.BinaryEmbeddingGenerator.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture.CreateRecordDefinition<TVectorProperty>(Microsoft.Extensions.AI.IEmbeddingGenerator? embeddingGenerator, string? distanceFunction, int dimensions);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture.AssertNoVectorsLoadedWithEmbeddingGeneration { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture.CollectionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Fixture.RecreateCollection { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.ReadOnlyMemoryEmbeddingGenerator<T>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.ReadOnlyMemoryEmbeddingGenerator<T>.ReadOnlyMemoryEmbeddingGenerator(T[] data);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.ReadOnlyMemoryEmbeddingGenerator<T>.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<T>>> VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.ReadOnlyMemoryEmbeddingGenerator<T>.GenerateAsync(System.Collections.Generic.IEnumerable<string> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.ReadOnlyMemoryEmbeddingGenerator<T>.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Record<TVector>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Record<TVector>.Record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Record<TVector>.Int { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Record<TVector>.Key { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TVector VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.Record<TVector>.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.RecordWithString",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.RecordWithString.RecordWithString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.RecordWithString.Int { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.RecordWithString.Key { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string VectorData.ConformanceTests.TypeTests.EmbeddingTypeTests<TKey>.RecordWithString.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.FilterTests<TKey> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.FilterTests<TKey>.FilterTests(VectorData.ConformanceTests.FilterTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.And();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.And_within_And();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.And_within_Or();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Any_over_List_with_Contains_over_captured_string_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Any_with_Contains_over_captured_string_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Any_with_Contains_over_captured_string_list();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Any_with_Contains_over_inline_string_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Bool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Bool_And_Bool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Bool_Or_Not_Bool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Captured_local_variable();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_over_captured_string_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_over_field_string_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_over_field_string_List();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_over_inline_int_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_over_inline_string_array();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_over_inline_string_array_with_weird_chars();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_with_Enumerable_Contains();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_with_MemoryExtensions_Contains();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Contains_with_MemoryExtensions_Contains_with_null_comparer();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_int_property_with_nonnull_nullable_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_int_property_with_nonnull_nullable_int_Value();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_int_property_with_null_nullable_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_int_property_with_null_nullable_int_Value();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_reversed();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_null_captured();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_null_reference_type();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_string();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_string_containing_special_characters();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_string_is_not_Contains();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_string_sql_injection_in_name();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Equal_with_string_sql_injection_in_value();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.GreaterThan_with_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.GreaterThanOrEqual_with_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.LessThan_with_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.LessThanOrEqual_with_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Member_field();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Member_nested_access();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Member_readonly_field();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Member_static_field();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Member_static_readonly_field();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Not_over_And();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Not_over_bool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Not_over_bool_And_Comparison();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Not_over_Equal();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Not_over_NotEqual();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Not_over_Or();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.NotEqual_reversed();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.NotEqual_with_int();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.NotEqual_with_null_captured();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.NotEqual_with_null_reference_type();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.NotEqual_with_string();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Or();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Or_within_And();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.TestFilterAsync(System.Linq.Expressions.Expression<System.Func<VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord, bool>> filter, System.Linq.Expressions.Expression<System.Func<System.Collections.Generic.Dictionary<string, object?>, bool>> dynamicFilter, bool expectZeroResults = false, bool expectAllResults = false);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.True();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.FilterRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.Bool { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.Int { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.Int2 { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.String { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string[] VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.StringArray { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.List<string> VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.StringList { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float>? VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.FilterTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.FilterTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void VectorData.ConformanceTests.FilterTests<TKey>.Fixture.AssertEqualDynamic(VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord x, System.Collections.Generic.Dictionary<string, object?> y);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void VectorData.ConformanceTests.FilterTests<TKey>.Fixture.AssertEqualFilterRecord(VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord x, VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord y);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.FilterTests<TKey>.FilterRecord> VectorData.ConformanceTests.FilterTests<TKey>.Fixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.FilterTests<TKey>.Fixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Fixture.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.FilterTests<TKey>.Fixture.WaitForDataAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.FilterTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.FilterTests<TKey>.Fixture.DynamicCollection { get; protected set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.FilterTests<TKey>.Fixture.SpecialCharactersText { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.FilterTests<TKey>.Fixture.TestDynamic { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.HybridSearchTests<TKey> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchTests(VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture vectorAndStringFixture, VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture multiTextFixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchAsync_with_filter();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchAsync_with_multiple_keywords_ranks_matched_keywords_higher();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchAsync_with_multiple_text_properties();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchAsync_with_Skip();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchAsync_with_top();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.HybridSearchAsync_without_explicitly_specified_property_fails();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture.MultiTextFixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TKey>> VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture.WaitForDataAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.IKeywordHybridSearchable<VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TKey>> VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextFixture.HybridSearchable { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TRecordKey>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TRecordKey>.MultiTextStringRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TRecordKey>.Code { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TRecordKey>.Text1 { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TRecordKey>.Text2 { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.HybridSearchTests<TKey>.MultiTextStringRecord<TRecordKey>.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture.VectorAndStringFixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringRecord<TKey>> VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture.WaitForDataAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.IKeywordHybridSearchable<VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringRecord<TKey>> VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringFixture.HybridSearchable { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringRecord<TRecordKey>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringRecord<TRecordKey>.VectorAndStringRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringRecord<TRecordKey>.Code { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringRecord<TRecordKey>.Text { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.HybridSearchTests<TKey>.VectorAndStringRecord<TRecordKey>.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.IndexKindTests<TKey> where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.IndexKindTests<TKey>.IndexKindTests(VectorData.ConformanceTests.IndexKindTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.IndexKindTests<TKey>.Flat();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.IndexKindTests<TKey>.Test(string indexKind);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.IndexKindTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.IndexKindTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.IndexKindTests<TKey>.SearchRecord> VectorData.ConformanceTests.IndexKindTests<TKey>.Fixture.CreateCollection(string indexKind);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual string VectorData.ConformanceTests.IndexKindTests<TKey>.Fixture.CollectionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.IndexKindTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string? VectorData.ConformanceTests.IndexKindTests<TKey>.Fixture.DistanceFunction { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.IndexKindTests<TKey>.SearchRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.IndexKindTests<TKey>.SearchRecord.SearchRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.IndexKindTests<TKey>.SearchRecord.Int { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.IndexKindTests<TKey>.SearchRecord.Key { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.IndexKindTests<TKey>.SearchRecord.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.TypeTests.KeyTypeTests",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.KeyTypeTests.KeyTypeTests(VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.KeyTypeTests.Guid();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void VectorData.ConformanceTests.TypeTests.KeyTypeTests.MismatchedKeyTypeThrows();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.KeyTypeTests.Test<TKey>(TKey key, bool supportsAutoGeneration = false);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.KeyTypeTests.Test<TKey>(TKey key1, TKey key2);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.TypeTests.KeyTypeTests.Test<TKey>(TKey key1, TKey key2, bool supportsAutoGeneration);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.TypeTests.KeyTypeTests.Record<TKey>> VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture.CreateCollection<TKey>(bool? withAutoGeneration);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture.CreateDynamicCollection<TKey>(bool withAutoGeneration);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture.CreateRecordDefinition<TKey>(bool? withAutoGeneration);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual string VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture.CollectionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.TypeTests.KeyTypeTests.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class VectorData.ConformanceTests.TypeTests.KeyTypeTests.Record<TKey>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TypeTests.KeyTypeTests.Record<TKey>.Record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.TypeTests.KeyTypeTests.Record<TKey>.Int { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TKey VectorData.ConformanceTests.TypeTests.KeyTypeTests.Record<TKey>.Key { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.TypeTests.KeyTypeTests.Record<TKey>.Vector { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey> : Xunit.IAsyncLifetime where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorModelTests(VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Delete_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.GetAsync_single_record(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Insert_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Search_without_explicitly_specified_vector_property_fails();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.SearchAsync_with_multiple_vector_properties();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "static readonly Xunit.TheoryData<bool> VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.IncludeVectorsData",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord> VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Collection { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord> VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Fixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Fixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Fixture.WaitForDataAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord.MultiVectorRecord();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord.AssertEqual(VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord? other, bool includeVectors, bool compareVectors);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord.Number { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord.Vector1 { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.ModelTests.MultiVectorModelTests<TKey>.MultiVectorRecord.Vector2 { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey> : Xunit.IAsyncLifetime where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataModelTests(VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Delete_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.GetAsync_single_record(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Insert_single_record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "static readonly Xunit.TheoryData<bool> VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.IncludeVectorsData",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataRecord> VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Collection { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataRecord> VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Fixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Fixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataRecord.NoDataRecord();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataRecord.AssertEqual(VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataRecord? other, bool includeVectors, bool compareVectors);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.ReadOnlyMemory<float> VectorData.ConformanceTests.ModelTests.NoDataModelTests<TKey>.NoDataRecord.Floats { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey> : Xunit.IAsyncLifetime where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorModelTests(VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Fixture fixture);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Delete_single_record();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.GetAsync_single_record(bool includeVectors);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Insert_single_record();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "static readonly Xunit.TheoryData<bool> VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.IncludeVectorsData",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorRecord> VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Collection { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Fixture",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Fixture.Fixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Collections.Generic.List<VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorRecord> VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Fixture.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Fixture.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Fixture.WaitForDataAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override string VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.Fixture.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorRecord.NoVectorRecord();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorRecord.AssertEqual(VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorRecord? other);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? VectorData.ConformanceTests.ModelTests.NoVectorModelTests<TKey>.NoVectorRecord.Text { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.Support.TestRecord<TKey>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.Support.TestRecord<TKey>.TestRecord();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "TKey VectorData.ConformanceTests.Support.TestRecord<TKey>.Key { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.Support.TestStore",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.Support.TestStore.TestStore();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.TestStore.AdjustCollectionName(string baseName);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> VectorData.ConformanceTests.Support.TestStore.CreateCollection<TKey, TRecord>(string name, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition definition);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.Support.TestStore.CreateDynamicCollection(string name, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition definition);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual TKey VectorData.ConformanceTests.Support.TestStore.GenerateKey<TKey>(int value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.TestStore.ReferenceCountingStartAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.TestStore.ReferenceCountingStopAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task VectorData.ConformanceTests.Support.TestStore.StartAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.TestStore.StopAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.TestStore.WaitForDataAsync<TKey, TRecord>(Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> collection, int recordCount, System.Linq.Expressions.Expression<System.Func<TRecord, bool>>? filter = null, System.Linq.Expressions.Expression<System.Func<TRecord, object?>>? vectorProperty = null, int? vectorSize = null, object? dummyVector = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.TestStore.DefaultDistanceFunction { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.TestStore.DefaultIndexKind { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStore VectorData.ConformanceTests.Support.TestStore.DefaultVectorStore { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.Support.TestStore.SupportsScoreThreshold { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual bool VectorData.ConformanceTests.Support.TestStore.VectorsComparable { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.TestSuiteImplementationTests",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.TestSuiteImplementationTests.TestSuiteImplementationTests();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void VectorData.ConformanceTests.TestSuiteImplementationTests.All_test_bases_must_be_implemented();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IEnumerable<System.Type> VectorData.ConformanceTests.TestSuiteImplementationTests.GetBaseTestClasses();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual System.Collections.Generic.ICollection<System.Type> VectorData.ConformanceTests.TestSuiteImplementationTests.IgnoredTestBases { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.Support.VectorStoreCollectionFixture<TKey, TRecord> : VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord> where TKey : notnull where TRecord : VectorData.ConformanceTests.Support.TestRecord<TKey>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.Support.VectorStoreCollectionFixture<TKey, TRecord>.VectorStoreCollectionFixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.VectorStoreCollectionFixture<TKey, TRecord>.ReseedAsync();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord> : VectorData.ConformanceTests.Support.VectorStoreFixture where TKey : notnull where TRecord : class",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.VectorStoreCollectionFixtureBase();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.List<TRecord> VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.BuildTestData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.CreateRecordDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.GetCollection();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.InitializeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.SeedAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.WaitForDataAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.Collection { get; private set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.CollectionName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract string VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.CollectionNameBase { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.DistanceFunction { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.IndexKind { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.List<TRecord> VectorData.ConformanceTests.Support.VectorStoreCollectionFixtureBase<TKey, TRecord>.TestData { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class VectorData.ConformanceTests.Support.VectorStoreFixture : Xunit.IAsyncLifetime",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "VectorData.ConformanceTests.Support.VectorStoreFixture.VectorStoreFixture();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> VectorData.ConformanceTests.Support.VectorStoreFixture.CreateCollection<TKey, TRecord>(string name, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition definition);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> VectorData.ConformanceTests.Support.VectorStoreFixture.CreateDynamicCollection(string name, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition definition);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.VectorStoreFixture.DisposeAsync();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual TKey VectorData.ConformanceTests.Support.VectorStoreFixture.GenerateNextKey<TKey>();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task VectorData.ConformanceTests.Support.VectorStoreFixture.InitializeAsync();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.VectorStoreFixture.DefaultDistanceFunction { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual string VectorData.ConformanceTests.Support.VectorStoreFixture.DefaultIndexKind { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract VectorData.ConformanceTests.Support.TestStore VectorData.ConformanceTests.Support.VectorStoreFixture.TestStore { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.VectorStore VectorData.ConformanceTests.Support.VectorStoreFixture.VectorStore { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}
