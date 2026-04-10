@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -94,7 +95,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     public Type? EmbeddingType { get; set; }
 
-    [Experimental("MEVD9001")]
+    [Experimental(DiagnosticIds.Experiments.VectorDataPropertyModel, UrlFormat = DiagnosticIds.UrlFormat)]
     internal virtual VectorPropertyModel CreatePropertyModel()
         => new(Name, Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
         {

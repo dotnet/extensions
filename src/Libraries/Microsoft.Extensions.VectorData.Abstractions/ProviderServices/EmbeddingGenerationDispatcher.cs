@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Each instance encapsulates both build-time embedding type resolution and runtime embedding generation
 /// for a specific <see cref="Embedding"/> subtype.
 /// </remarks>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataEmbeddingGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class EmbeddingGenerationDispatcher
 {
     /// <summary>

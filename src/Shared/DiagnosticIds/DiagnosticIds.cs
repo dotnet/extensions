@@ -72,7 +72,15 @@ internal static class DiagnosticIds
         internal const string AIOpenAIRealtime = "OPENAI002";
         internal const string AIOpenAIJsonPatch = "SCME0001";
 
+        // All Vector Data experiments share a diagnostic ID but have different
+        // constants to manage which experiment each API belongs to.
+        internal const string VectorDataCollectionModel = VectorDataExperiments;
+        internal const string VectorDataPropertyModel = VectorDataExperiments;
+        internal const string VectorDataFilterTranslation = VectorDataExperiments;
+        internal const string VectorDataEmbeddingGeneration = VectorDataExperiments;
+
         private const string AIExperiments = "MEAI001";
+        private const string VectorDataExperiments = "MEVD9001";
     }
 
     internal static class LoggerMessage

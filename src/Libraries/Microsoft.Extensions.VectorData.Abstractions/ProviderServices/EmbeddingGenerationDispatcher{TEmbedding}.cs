@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 /// <typeparam name="TEmbedding">The embedding type.</typeparam>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataEmbeddingGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class EmbeddingGenerationDispatcher<TEmbedding> : EmbeddingGenerationDispatcher
     where TEmbedding : Embedding
 {

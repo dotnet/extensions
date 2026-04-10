@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 /// <remarks>This class is single-use only, and not thread-safe.</remarks>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataCollectionModel, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class CollectionModelBuilder
 {
     /// <summary>

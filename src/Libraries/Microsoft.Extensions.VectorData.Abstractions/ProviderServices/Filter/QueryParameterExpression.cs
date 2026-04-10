@@ -4,13 +4,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 /// <summary>
 /// An expression representation a query parameter (captured variable) in the filter expression.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataFilterTranslation, UrlFormat = DiagnosticIds.UrlFormat)]
 public class QueryParameterExpression(string name, object? value, Type type) : Expression
 {
     /// <summary>

@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a record in a vector store collection.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataCollectionModel, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class CollectionModel
 {
     private readonly Type _recordType;

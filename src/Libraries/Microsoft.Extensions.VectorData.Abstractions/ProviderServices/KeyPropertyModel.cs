@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a key property on a vector store record.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataPropertyModel, UrlFormat = DiagnosticIds.UrlFormat)]
 public class KeyPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     /// <summary>
