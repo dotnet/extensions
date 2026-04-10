@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a vector property on a vector store record.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataPropertyModel, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public class VectorPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     /// <summary>

@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 /// Options for filter expression preprocessing.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataFilterTranslation, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public class FilterPreprocessingOptions
 {
     /// <summary>

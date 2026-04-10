@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
 /// <typeparam name="TEmbedding">The embedding type.</typeparam>
-[Experimental(DiagnosticIds.Experiments.VectorDataEmbeddingGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class EmbeddingGenerationDispatcher<TEmbedding> : EmbeddingGenerationDispatcher
     where TEmbedding : Embedding
 {

@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 /// Provides common functionality for preprocessing filter expressions and matching common patterns.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataFilterTranslation, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class FilterTranslatorBase
 {
     /// <summary>

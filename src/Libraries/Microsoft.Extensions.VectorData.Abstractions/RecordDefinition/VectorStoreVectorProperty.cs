@@ -95,7 +95,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     public Type? EmbeddingType { get; set; }
 
-    [Experimental(DiagnosticIds.Experiments.VectorDataPropertyModel, UrlFormat = DiagnosticIds.UrlFormat)]
+    [Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
     internal virtual VectorPropertyModel CreatePropertyModel()
         => new(Name, Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
         {

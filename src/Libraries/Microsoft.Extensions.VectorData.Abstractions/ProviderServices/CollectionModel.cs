@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a record in a vector store collection.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataCollectionModel, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class CollectionModel
 {
     private readonly Type _recordType;

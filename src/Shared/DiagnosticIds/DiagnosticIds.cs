@@ -74,10 +74,7 @@ internal static class DiagnosticIds
 
         // All Vector Data experiments share a diagnostic ID but have different
         // constants to manage which experiment each API belongs to.
-        internal const string VectorDataCollectionModel = VectorDataExperiments;
-        internal const string VectorDataPropertyModel = VectorDataExperiments;
-        internal const string VectorDataFilterTranslation = VectorDataExperiments;
-        internal const string VectorDataEmbeddingGeneration = VectorDataExperiments;
+        internal const string VectorDataProviderServices = VectorDataExperiments;
 
         private const string AIExperiments = "MEAI001";
         private const string VectorDataExperiments = "MEVD9001";

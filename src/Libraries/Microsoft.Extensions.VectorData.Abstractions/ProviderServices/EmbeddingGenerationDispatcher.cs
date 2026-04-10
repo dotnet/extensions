@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Each instance encapsulates both build-time embedding type resolution and runtime embedding generation
 /// for a specific <see cref="Embedding"/> subtype.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.VectorDataEmbeddingGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class EmbeddingGenerationDispatcher
 {
     /// <summary>

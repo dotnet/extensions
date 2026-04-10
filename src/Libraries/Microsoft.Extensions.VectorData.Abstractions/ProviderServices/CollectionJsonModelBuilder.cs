@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a model builder that performs logic specific to providers that use System.Text.Json for serialization.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataCollectionModel, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
 {
     private JsonSerializerOptions? _jsonSerializerOptions;

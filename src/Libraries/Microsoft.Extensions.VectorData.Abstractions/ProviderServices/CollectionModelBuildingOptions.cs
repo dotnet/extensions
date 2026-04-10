@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Contains options affecting model building; passed to <see cref="CollectionModelBuilder"/>.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataCollectionModel, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class CollectionModelBuildingOptions
 {
     /// <summary>

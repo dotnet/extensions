@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// <summary>
 /// Exposes methods for constructing strings that should be used by providers when throwing exceptions.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataPropertyModel, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class VectorDataStrings
 {
     public static string ConfiguredEmbeddingTypeIsUnsupportedByTheGenerator(VectorPropertyModel vectorProperty, Type userRequestedEmbeddingType)

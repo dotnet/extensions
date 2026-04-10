@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 /// <summary>
 /// An expression representation a query parameter (captured variable) in the filter expression.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.VectorDataFilterTranslation, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public class QueryParameterExpression(string name, object? value, Type type) : Expression
 {
     /// <summary>

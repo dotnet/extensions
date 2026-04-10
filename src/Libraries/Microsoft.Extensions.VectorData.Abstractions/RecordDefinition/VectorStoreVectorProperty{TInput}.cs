@@ -29,7 +29,7 @@ public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
     {
     }
 
-    [Experimental(DiagnosticIds.Experiments.VectorDataPropertyModel, UrlFormat = DiagnosticIds.UrlFormat)]
+    [Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
     internal override VectorPropertyModel CreatePropertyModel()
         => new VectorPropertyModel<TInput>(Name)
         {

@@ -14,7 +14,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <inheritdoc />
-[Experimental(DiagnosticIds.Experiments.VectorDataPropertyModel, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class VectorPropertyModel<TInput>(string modelName) : VectorPropertyModel(modelName, typeof(TInput))
 {
     /// <inheritdoc />
