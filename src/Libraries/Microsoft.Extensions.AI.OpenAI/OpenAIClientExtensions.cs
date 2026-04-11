@@ -12,11 +12,13 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Containers;
+using OpenAI.Conversations;
 using OpenAI.Embeddings;
 using OpenAI.Files;
 using OpenAI.Images;
@@ -229,6 +231,14 @@ public static class OpenAIClientExtensions
     [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHostedFileClient AsIHostedFileClient(this ContainerClient containerClient, string? defaultScope = null) =>
         new OpenAIHostedFileClient(containerClient, defaultScope);
+
+    /// <summary>Gets an <see cref="IHostedConversationClient"/> for use with this <see cref="ConversationClient"/>.</summary>
+    /// <param name="conversationClient">The client.</param>
+    /// <returns>An <see cref="IHostedConversationClient"/> that can be used to manage hosted conversations via the <see cref="ConversationClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="conversationClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIHostedConversation, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHostedConversationClient AsIHostedConversationClient(this ConversationClient conversationClient) =>
+        new OpenAIHostedConversationClient(Throw.IfNull(conversationClient));
 
     /// <summary>Gets whether the properties specify that strict schema handling is desired.</summary>
     internal static bool? HasStrict(IReadOnlyDictionary<string, object?>? additionalProperties) =>
