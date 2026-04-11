@@ -9,11 +9,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
 /// <inheritdoc />
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class VectorPropertyModel<TInput>(string modelName) : VectorPropertyModel(modelName, typeof(TInput))
 {
     /// <inheritdoc />

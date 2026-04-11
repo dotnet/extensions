@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
@@ -16,7 +17,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 /// Provides common functionality for preprocessing filter expressions and matching common patterns.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class FilterTranslatorBase
 {
     /// <summary>

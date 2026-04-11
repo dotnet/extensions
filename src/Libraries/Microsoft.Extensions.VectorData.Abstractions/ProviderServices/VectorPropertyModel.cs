@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a vector property on a vector store record.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public class VectorPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
 {
     /// <summary>

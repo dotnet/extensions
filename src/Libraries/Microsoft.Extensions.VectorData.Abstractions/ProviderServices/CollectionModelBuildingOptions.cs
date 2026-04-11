@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -9,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Contains options affecting model building; passed to <see cref="CollectionModelBuilder"/>.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class CollectionModelBuildingOptions
 {
     /// <summary>

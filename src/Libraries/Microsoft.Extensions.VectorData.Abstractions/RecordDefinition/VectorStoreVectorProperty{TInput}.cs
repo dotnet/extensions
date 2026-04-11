@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -28,7 +29,7 @@ public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
     {
     }
 
-    [Experimental("MEVD9001")]
+    [Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
     internal override VectorPropertyModel CreatePropertyModel()
         => new VectorPropertyModel<TInput>(Name)
         {
