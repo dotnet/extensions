@@ -193,7 +193,7 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions.CollectionModelBuildingOptions();",
-          "Stage": "Obsolete"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
