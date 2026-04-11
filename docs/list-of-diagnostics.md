@@ -42,6 +42,7 @@ if desired.
 | `EXTEXP0017`      | Contextual options experiments |
 | `EXTEXP0018`      | HybridCache experiments |
 | `MEAI001`         | AI experiments |
+| `MEVD9001`        | Vector Data experiments |
 
 # Obsoletions
 

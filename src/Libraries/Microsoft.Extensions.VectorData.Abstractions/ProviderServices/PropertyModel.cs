@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -13,7 +14,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a property on a vector store record.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class PropertyModel(string modelName, Type type)
 {
     private Func<object, object?>? _getter;

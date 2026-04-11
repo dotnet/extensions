@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// <summary>
 /// Exposes methods for constructing strings that should be used by providers when throwing exceptions.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class VectorDataStrings
 {
     public static string ConfiguredEmbeddingTypeIsUnsupportedByTheGenerator(VectorPropertyModel vectorProperty, Type userRequestedEmbeddingType)

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
@@ -9,7 +10,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
 /// Options for filter expression preprocessing.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public class FilterPreprocessingOptions
 {
     /// <summary>
