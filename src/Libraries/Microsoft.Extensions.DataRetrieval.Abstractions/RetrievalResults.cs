@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.DataIngestion;
+namespace Microsoft.Extensions.DataRetrieval;
 
 /// <summary>
 /// Represents the results of a retrieval operation.

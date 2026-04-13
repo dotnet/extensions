@@ -4,7 +4,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.DataIngestion;
+namespace Microsoft.Extensions.DataRetrieval;
 
 /// <summary>
 /// Processes retrieval results after vector search is performed.

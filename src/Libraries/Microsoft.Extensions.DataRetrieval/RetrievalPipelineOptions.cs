@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.DataIngestion;
+namespace Microsoft.Extensions.DataRetrieval;
 
 /// <summary>
 /// Options for configuring the retrieval pipeline.

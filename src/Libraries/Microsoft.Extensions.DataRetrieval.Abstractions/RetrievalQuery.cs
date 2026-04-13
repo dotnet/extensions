@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.DataIngestion;
+namespace Microsoft.Extensions.DataRetrieval;
 
 /// <summary>
 /// Represents a retrieval query with optional expanded variants and metadata.

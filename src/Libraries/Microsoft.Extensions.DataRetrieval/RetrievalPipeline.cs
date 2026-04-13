@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.DataIngestion.DiagnosticsConstants;
+using static Microsoft.Extensions.DataRetrieval.DiagnosticsConstants;
 
-namespace Microsoft.Extensions.DataIngestion;
+namespace Microsoft.Extensions.DataRetrieval;
 
 #pragma warning disable IDE0058 // Expression value is never used
 #pragma warning disable IDE0063 // Use simple 'using' statement
@@ -22,7 +22,6 @@ namespace Microsoft.Extensions.DataIngestion;
 /// Represents a pipeline for retrieving data from a vector store with pre- and post-processing.
 /// </summary>
 /// <remarks>
-/// Mirrors <see cref="IngestionPipeline{T}"/> design.
 /// Flow: query → <see cref="QueryProcessors"/> → vector search → <see cref="ResultProcessors"/> → results.
 /// With an empty processor list, this behaves identically to a raw
 /// <see cref="VectorStoreCollection{TKey, TRecord}.SearchAsync"/> call.

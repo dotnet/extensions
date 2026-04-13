@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.DataIngestion;
+namespace Microsoft.Extensions.DataRetrieval;
 
 /// <summary>
 /// Defines a re-ranking strategy for retrieval results.
@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// Implementations may use LLM-based scoring, cross-encoder models (e.g., ONNX),
 /// or other ranking strategies.
 /// </remarks>
-public interface ISearchReranker
+public interface IReranker
 {
     /// <summary>
     /// Re-ranks the provided chunks based on their relevance to the query.

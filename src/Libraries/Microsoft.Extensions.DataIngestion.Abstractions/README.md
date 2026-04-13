@@ -4,28 +4,11 @@
 
 ## The packages
 
-The [Microsoft.Extensions.DataIngestion.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.DataIngestion.Abstractions) package provides the core exchange types for both ingestion and retrieval.
+The [Microsoft.Extensions.DataIngestion.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.DataIngestion.Abstractions) package provides the core exchange types, including [`IngestionDocument`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestiondocument), [`IngestionChunker<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunker-1), [`IngestionChunkProcessor<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkprocessor-1), and [`IngestionChunkWriter<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkwriter-1). Any .NET library that provides document processing capabilities can implement these abstractions to enable seamless integration with consuming code.
 
-### Ingestion types
+The [Microsoft.Extensions.DataIngestion](https://www.nuget.org/packages/Microsoft.Extensions.DataIngestion) package has an implicit dependency on the `Microsoft.Extensions.DataIngestion.Abstractions` package. This package enables you to easily integrate components such as enrichment processors, vector storage writers, and telemetry into your applications using familiar dependency injection and pipeline patterns.
 
-[`IngestionDocument`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestiondocument), [`IngestionChunker<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunker-1), [`IngestionChunkProcessor<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkprocessor-1), and [`IngestionChunkWriter<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkwriter-1). Any .NET library that provides document processing capabilities can implement these abstractions to enable seamless integration with consuming code.
-
-### Retrieval types
-
-The retrieval abstractions are the symmetric counterpart to ingestion — they define how applications query, process, and rank results from vector stores:
-
-| Type | Description |
-|------|-------------|
-| `RetrievalQuery` | Query text with support for variants (multi-query expansion) and metadata for inter-processor communication. |
-| `RetrievalChunk` | A single retrieved chunk with content, relevance score, and record metadata. |
-| `RetrievalResults` | Collection of retrieved chunks with pipeline-level metadata (e.g., CRAG scores, reranking info). |
-| `RetrievalQueryProcessor` | Abstract base class for pre-search processors (query expansion, HyDE, adaptive routing). |
-| `RetrievalResultProcessor` | Abstract base class for post-search processors (re-ranking, CRAG quality gating). |
-| `ISearchReranker` | Interface for re-ranking strategies (LLM-based, cross-encoder, ONNX models). |
-
-### Implementation package
-
-The [Microsoft.Extensions.DataIngestion](https://www.nuget.org/packages/Microsoft.Extensions.DataIngestion) package has an implicit dependency on the `Microsoft.Extensions.DataIngestion.Abstractions` package. This package provides pipeline orchestrators for both ingestion (`IngestionPipeline<T>`) and retrieval (`RetrievalPipeline`), along with dependency injection, telemetry, and processor chaining. The `RetrievalPipeline` supports query variant deduplication via Reciprocal Rank Fusion (RRF) and tree-aware hierarchical search.
+> **Note:** Retrieval abstractions (`RetrievalPipeline`, `RetrievalQuery`, `RetrievalQueryProcessor`, etc.) live in the separate [`Microsoft.Extensions.DataRetrieval`](../Microsoft.Extensions.DataRetrieval/) package family.
 
 ## Which package to reference
 

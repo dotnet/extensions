@@ -37,14 +37,5 @@ namespace Microsoft.Extensions.DataIngestion
 
         [LoggerMessage(8, LogLevel.Error, "Unexpected enricher failure.")]
         internal static partial void UnexpectedEnricherFailure(this ILogger logger, Exception exception);
-
-        [LoggerMessage(9, LogLevel.Debug, "Running query processor: {processor}.")]
-        internal static partial void RunningQueryProcessor(this ILogger logger, string processor);
-
-        [LoggerMessage(10, LogLevel.Debug, "Searching variant: {variant}.")]
-        internal static partial void SearchingVariant(this ILogger logger, string variant);
-
-        [LoggerMessage(11, LogLevel.Debug, "Running result processor: {processor}.")]
-        internal static partial void RunningResultProcessor(this ILogger logger, string processor);
     }
 }
