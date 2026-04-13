@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 /// Represents a model builder that performs logic specific to providers that use System.Text.Json for serialization.
 /// This is an internal support type meant for use by providers only and not by applications.
 /// </summary>
-[Experimental("MEVD9001")]
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
 {
     private JsonSerializerOptions? _jsonSerializerOptions;

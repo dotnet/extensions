@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.VectorData.Abstractions, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.VectorData.Abstractions, Version=10.5.0.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.VectorData.AnyTagEqualToFilterClause : Microsoft.Extensions.VectorData.FilterClause",
@@ -530,7 +530,7 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.VectorData.IKeywordHybridSearchable<TRecord>",
+      "Type": "interface Microsoft.Extensions.VectorData.IKeywordHybridSearchable<TRecord> where TRecord : class",
       "Stage": "Stable",
       "Methods": [
         {
@@ -580,7 +580,7 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.VectorData.IVectorSearchable<TRecord>",
+      "Type": "interface Microsoft.Extensions.VectorData.IVectorSearchable<TRecord> where TRecord : class",
       "Stage": "Stable",
       "Methods": [
         {
@@ -618,7 +618,10 @@
       ]
     },
     {
-      "Type": "abstract class Microsoft.Extensions.VectorData.ProviderServices.PropertyModel(string modelName, System.Type type)",
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class Microsoft.Extensions.VectorData.ProviderServices.PropertyModel",
       "Stage": "Experimental",
       "Methods": [
         {
@@ -892,7 +895,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.VectorData.VectorSearchResult<TRecord>",
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorSearchResult<TRecord> where TRecord : class",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1256,7 +1259,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.VectorStoreVectorAttribute(int Dimensions);",
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.VectorStoreVectorAttribute(int dimensions);",
           "Stage": "Stable"
         }
       ],

@@ -161,7 +161,7 @@ public abstract class EmbeddingGenerationTests<TKey>(
     {
         [VectorStoreKey]
         public TKey Key { get; set; } = default!;
-        [VectorStoreVector(Dimensions: 3)]
+        [VectorStoreVector(dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
@@ -355,7 +355,7 @@ public abstract class EmbeddingGenerationTests<TKey>(
         [VectorStoreKey]
         public TKey Key { get; set; } = default!;
 
-        [VectorStoreVector(Dimensions: 3)]
+        [VectorStoreVector(dimensions: 3)]
         public string? Embedding { get; set; }
 
         [VectorStoreData(IsIndexed = true)]

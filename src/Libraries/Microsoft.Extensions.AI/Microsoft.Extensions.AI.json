@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "abstract class Microsoft.Extensions.AI.CachingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
@@ -10,14 +10,14 @@
           "Stage": "Stable"
         },
         {
+          "Member": "virtual bool Microsoft.Extensions.AI.CachingChatClient.EnableCaching(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options);",
+          "Stage": "Stable"
+        },
+        {
           // After generating the baseline, manually edit this file to have 'params' instead of 'scoped'
           // This is needed until ICSharpCode.Decompiler adds params collection support
           // See: https://github.com/icsharpcode/ILSpy/issues/829
           "Member": "abstract string Microsoft.Extensions.AI.CachingChatClient.GetCacheKey(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, params System.ReadOnlySpan<object?> additionalValues);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "virtual bool Microsoft.Extensions.AI.CachingChatClient.EnableCaching(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options);",
           "Stage": "Stable"
         },
         {
@@ -297,6 +297,34 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClientBuilderExtensions.ConfigureOptions(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, System.Action<Microsoft.Extensions.AI.SpeechToTextOptions> configure);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ConfigureOptionsTextToSpeechClient : Microsoft.Extensions.AI.DelegatingTextToSpeechClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ConfigureOptionsTextToSpeechClient.ConfigureOptionsTextToSpeechClient(Microsoft.Extensions.AI.ITextToSpeechClient innerClient, System.Action<Microsoft.Extensions.AI.TextToSpeechOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.TextToSpeechResponse> Microsoft.Extensions.AI.ConfigureOptionsTextToSpeechClient.GetAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.TextToSpeechResponseUpdate> Microsoft.Extensions.AI.ConfigureOptionsTextToSpeechClient.GetStreamingAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ConfigureOptionsTextToSpeechClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.AI.ConfigureOptionsTextToSpeechClientBuilderExtensions.ConfigureOptions(this Microsoft.Extensions.AI.TextToSpeechClientBuilder builder, System.Action<Microsoft.Extensions.AI.TextToSpeechOptions> configure);",
           "Stage": "Experimental"
         }
       ]
@@ -641,6 +669,100 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.FunctionInvokingRealtimeClient : Microsoft.Extensions.AI.DelegatingRealtimeClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.FunctionInvokingRealtimeClient(Microsoft.Extensions.AI.IRealtimeClient innerClient, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.IServiceProvider? functionInvocationServices = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.IRealtimeClientSession> Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.CreateSessionAsync(Microsoft.Extensions.AI.RealtimeSessionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool>? Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.AdditionalTools { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.AllowConcurrentInvocation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.FunctionInvocationContext? Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.CurrentContext { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.FunctionInvocationContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<object?>>? Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.FunctionInvoker { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.IncludeDetailedErrors { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.MaximumConsecutiveErrorsPerRequest { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.MaximumIterationsPerRequest { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.FunctionInvokingRealtimeClient.TerminateOnUnknownCalls { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.FunctionInvokingRealtimeClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeClientBuilder Microsoft.Extensions.AI.FunctionInvokingRealtimeClientBuilderExtensions.UseFunctionInvocation(this Microsoft.Extensions.AI.RealtimeClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.FunctionInvokingRealtimeClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.HostedFileClientBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileClientBuilder.HostedFileClientBuilder(Microsoft.Extensions.AI.IHostedFileClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileClientBuilder.HostedFileClientBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IHostedFileClient> innerClientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IHostedFileClient Microsoft.Extensions.AI.HostedFileClientBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileClientBuilder Microsoft.Extensions.AI.HostedFileClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IHostedFileClient, Microsoft.Extensions.AI.IHostedFileClient> clientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileClientBuilder Microsoft.Extensions.AI.HostedFileClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IHostedFileClient, System.IServiceProvider, Microsoft.Extensions.AI.IHostedFileClient> clientFactory);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.HostedFileClientBuilderHostedFileClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.HostedFileClientBuilder Microsoft.Extensions.AI.HostedFileClientBuilderHostedFileClientExtensions.AsBuilder(this Microsoft.Extensions.AI.IHostedFileClient innerClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.ImageGeneratingChatClient : Microsoft.Extensions.AI.DelegatingChatClient",
       "Stage": "Experimental",
       "Methods": [
@@ -822,6 +944,52 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.LoggingHostedFileClient : Microsoft.Extensions.AI.DelegatingHostedFileClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingHostedFileClient.LoggingHostedFileClient(Microsoft.Extensions.AI.IHostedFileClient innerClient, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<bool> Microsoft.Extensions.AI.LoggingHostedFileClient.DeleteAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileDownloadStream> Microsoft.Extensions.AI.LoggingHostedFileClient.DownloadAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent?> Microsoft.Extensions.AI.LoggingHostedFileClient.GetFileInfoAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.LoggingHostedFileClient.ListFilesAsync(Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.LoggingHostedFileClient.UploadAsync(System.IO.Stream content, string? mediaType = null, string? fileName = null, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingHostedFileClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingHostedFileClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.HostedFileClientBuilder Microsoft.Extensions.AI.LoggingHostedFileClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.HostedFileClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingHostedFileClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.LoggingImageGenerator : Microsoft.Extensions.AI.DelegatingImageGenerator",
       "Stage": "Experimental",
       "Methods": [
@@ -847,6 +1015,36 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.LoggingImageGeneratorBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.ImageGeneratorBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingImageGenerator>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.LoggingRealtimeClient : Microsoft.Extensions.AI.DelegatingRealtimeClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingRealtimeClient.LoggingRealtimeClient(Microsoft.Extensions.AI.IRealtimeClient innerClient, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.IRealtimeClientSession> Microsoft.Extensions.AI.LoggingRealtimeClient.CreateSessionAsync(Microsoft.Extensions.AI.RealtimeSessionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingRealtimeClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingRealtimeClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeClientBuilder Microsoft.Extensions.AI.LoggingRealtimeClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.RealtimeClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingRealtimeClient>? configure = null);",
           "Stage": "Experimental"
         }
       ]
@@ -881,6 +1079,40 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.LoggingSpeechToTextClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingSpeechToTextClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.LoggingTextToSpeechClient : Microsoft.Extensions.AI.DelegatingTextToSpeechClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingTextToSpeechClient.LoggingTextToSpeechClient(Microsoft.Extensions.AI.ITextToSpeechClient innerClient, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.TextToSpeechResponse> Microsoft.Extensions.AI.LoggingTextToSpeechClient.GetAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.TextToSpeechResponseUpdate> Microsoft.Extensions.AI.LoggingTextToSpeechClient.GetStreamingAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingTextToSpeechClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingTextToSpeechClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.AI.LoggingTextToSpeechClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.TextToSpeechClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingTextToSpeechClient>? configure = null);",
           "Stage": "Experimental"
         }
       ]
@@ -984,6 +1216,60 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryHostedFileClient : Microsoft.Extensions.AI.DelegatingHostedFileClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.OpenTelemetryHostedFileClient(Microsoft.Extensions.AI.IHostedFileClient innerClient, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<bool> Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.DeleteAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileDownloadStream> Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.DownloadAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent?> Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.GetFileInfoAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.ListFilesAsync(Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.UploadAsync(System.IO.Stream content, string? mediaType = null, string? fileName = null, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryHostedFileClient.EnableSensitiveData { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryHostedFileClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.HostedFileClientBuilder Microsoft.Extensions.AI.OpenTelemetryHostedFileClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.HostedFileClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryHostedFileClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryImageGenerator : Microsoft.Extensions.AI.DelegatingImageGenerator",
       "Stage": "Experimental",
       "Methods": [
@@ -1017,6 +1303,40 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.OpenTelemetryImageGeneratorBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.ImageGeneratorBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryImageGenerator>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryRealtimeClient : Microsoft.Extensions.AI.DelegatingRealtimeClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryRealtimeClient.OpenTelemetryRealtimeClient(Microsoft.Extensions.AI.IRealtimeClient innerClient, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.IRealtimeClientSession> Microsoft.Extensions.AI.OpenTelemetryRealtimeClient.CreateSessionAsync(Microsoft.Extensions.AI.RealtimeSessionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryRealtimeClient.EnableSensitiveData { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.OpenTelemetryRealtimeClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryRealtimeClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeClientBuilder Microsoft.Extensions.AI.OpenTelemetryRealtimeClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.RealtimeClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryRealtimeClient>? configure = null);",
           "Stage": "Experimental"
         }
       ]
@@ -1059,6 +1379,120 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.SpeechToTextClientBuilder Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.SpeechToTextClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetrySpeechToTextClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient : Microsoft.Extensions.AI.DelegatingTextToSpeechClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient.OpenTelemetryTextToSpeechClient(Microsoft.Extensions.AI.ITextToSpeechClient innerClient, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.TextToSpeechResponse> Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient.GetAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.TextToSpeechResponseUpdate> Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient.GetStreamingAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient.EnableSensitiveData { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.TextToSpeechClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryTextToSpeechClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.RealtimeClientBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeClientBuilder.RealtimeClientBuilder(Microsoft.Extensions.AI.IRealtimeClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeClientBuilder.RealtimeClientBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IRealtimeClient> innerClientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IRealtimeClient Microsoft.Extensions.AI.RealtimeClientBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeClientBuilder Microsoft.Extensions.AI.RealtimeClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IRealtimeClient, Microsoft.Extensions.AI.IRealtimeClient> clientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeClientBuilder Microsoft.Extensions.AI.RealtimeClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IRealtimeClient, System.IServiceProvider, Microsoft.Extensions.AI.IRealtimeClient> clientFactory);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.RealtimeClientBuilderRealtimeClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeClientBuilder Microsoft.Extensions.AI.RealtimeClientBuilderRealtimeClientExtensions.AsBuilder(this Microsoft.Extensions.AI.IRealtimeClient innerClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.RealtimeClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static object Microsoft.Extensions.AI.RealtimeClientExtensions.GetRequiredService(this Microsoft.Extensions.AI.IRealtimeClient client, System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService Microsoft.Extensions.AI.RealtimeClientExtensions.GetRequiredService<TService>(this Microsoft.Extensions.AI.IRealtimeClient client, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService? Microsoft.Extensions.AI.RealtimeClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.IRealtimeClient client, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.RealtimeClientSessionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static object Microsoft.Extensions.AI.RealtimeClientSessionExtensions.GetRequiredService(this Microsoft.Extensions.AI.IRealtimeClientSession session, System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService Microsoft.Extensions.AI.RealtimeClientSessionExtensions.GetRequiredService<TService>(this Microsoft.Extensions.AI.IRealtimeClientSession session, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService? Microsoft.Extensions.AI.RealtimeClientSessionExtensions.GetService<TService>(this Microsoft.Extensions.AI.IRealtimeClientSession session, object? serviceKey = null);",
           "Stage": "Experimental"
         }
       ]
@@ -1165,6 +1599,64 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.AI.SummarizingChatReducer.SummarizationPrompt { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.TextToSpeechClientBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechClientBuilder.TextToSpeechClientBuilder(Microsoft.Extensions.AI.ITextToSpeechClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechClientBuilder.TextToSpeechClientBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ITextToSpeechClient> innerClientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ITextToSpeechClient Microsoft.Extensions.AI.TextToSpeechClientBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.AI.TextToSpeechClientBuilder.Use(System.Func<Microsoft.Extensions.AI.ITextToSpeechClient, Microsoft.Extensions.AI.ITextToSpeechClient> clientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.AI.TextToSpeechClientBuilder.Use(System.Func<Microsoft.Extensions.AI.ITextToSpeechClient, System.IServiceProvider, Microsoft.Extensions.AI.ITextToSpeechClient> clientFactory);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.TextToSpeechClientBuilderServiceCollectionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.DependencyInjection.TextToSpeechClientBuilderServiceCollectionExtensions.AddKeyedTextToSpeechClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, Microsoft.Extensions.AI.ITextToSpeechClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.DependencyInjection.TextToSpeechClientBuilderServiceCollectionExtensions.AddKeyedTextToSpeechClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ITextToSpeechClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.DependencyInjection.TextToSpeechClientBuilderServiceCollectionExtensions.AddTextToSpeechClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, Microsoft.Extensions.AI.ITextToSpeechClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.DependencyInjection.TextToSpeechClientBuilderServiceCollectionExtensions.AddTextToSpeechClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.ITextToSpeechClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.TextToSpeechClientBuilderTextToSpeechClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechClientBuilder Microsoft.Extensions.AI.TextToSpeechClientBuilderTextToSpeechClientExtensions.AsBuilder(this Microsoft.Extensions.AI.ITextToSpeechClient innerClient);",
           "Stage": "Experimental"
         }
       ]

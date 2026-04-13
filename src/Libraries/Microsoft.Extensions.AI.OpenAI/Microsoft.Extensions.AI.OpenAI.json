@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class OpenAI.Assistants.MicrosoftExtensionsAIAssistantsExtensions",
@@ -54,7 +54,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static OpenAI.Realtime.ConversationFunctionTool OpenAI.Realtime.MicrosoftExtensionsAIRealtimeExtensions.AsOpenAIConversationFunctionTool(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
+          "Member": "static OpenAI.Realtime.RealtimeFunctionTool OpenAI.Realtime.MicrosoftExtensionsAIRealtimeExtensions.AsOpenAIRealtimeFunctionTool(this Microsoft.Extensions.AI.AIFunctionDeclaration function);",
           "Stage": "Experimental"
         }
       ]
@@ -114,7 +114,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Responses.ResponsesClient responseClient);",
+          "Member": "static Microsoft.Extensions.AI.IChatClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIChatClient(this OpenAI.Responses.ResponsesClient responseClient, string? defaultModelId = null);",
           "Stage": "Experimental"
         },
         {
@@ -130,11 +130,81 @@
           "Stage": "Stable"
         },
         {
+          "Member": "static Microsoft.Extensions.AI.IHostedFileClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIHostedFileClient(this OpenAI.OpenAIClient openAIClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IHostedFileClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIHostedFileClient(this OpenAI.Files.OpenAIFileClient fileClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.IHostedFileClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIHostedFileClient(this OpenAI.Containers.ContainerClient containerClient, string? defaultScope = null);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "static Microsoft.Extensions.AI.IImageGenerator Microsoft.Extensions.AI.OpenAIClientExtensions.AsIImageGenerator(this OpenAI.Images.ImageClient imageClient);",
           "Stage": "Experimental"
         },
         {
           "Member": "static Microsoft.Extensions.AI.ISpeechToTextClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsISpeechToTextClient(this OpenAI.Audio.AudioClient audioClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.ITextToSpeechClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsITextToSpeechClient(this OpenAI.Audio.AudioClient audioClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenAIRealtimeClient : Microsoft.Extensions.AI.IRealtimeClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenAIRealtimeClient.OpenAIRealtimeClient(string apiKey, string model);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OpenAIRealtimeClient.OpenAIRealtimeClient(OpenAI.Realtime.RealtimeClient realtimeClient, string model);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.IRealtimeClientSession> Microsoft.Extensions.AI.OpenAIRealtimeClient.CreateSessionAsync(Microsoft.Extensions.AI.RealtimeSessionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OpenAIRealtimeClient.Dispose();",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenAIRealtimeClientSession : Microsoft.Extensions.AI.IRealtimeClientSession, System.IAsyncDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenAIRealtimeClientSession.OpenAIRealtimeClientSession(string apiKey, string model);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.AI.OpenAIRealtimeClientSession.ConnectAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.OpenAIRealtimeClientSession.DisposeAsync();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeServerMessage> Microsoft.Extensions.AI.OpenAIRealtimeClientSession.GetStreamingResponseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.AI.OpenAIRealtimeClientSession.SendAsync(Microsoft.Extensions.AI.RealtimeClientMessage message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionOptions? Microsoft.Extensions.AI.OpenAIRealtimeClientSession.Options { get; private set; }",
           "Stage": "Experimental"
         }
       ]

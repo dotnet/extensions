@@ -333,7 +333,7 @@ public class CollectionModelBuilderTests
         [VectorStoreData]
         public required string Name { get; set; }
 
-        [VectorStoreVector(Dimensions: 3)]
+        [VectorStoreVector(dimensions: 3)]
         public required string Embedding { get; set; }
     }
 
@@ -345,7 +345,7 @@ public class CollectionModelBuilderTests
         [VectorStoreData]
         public required string Name { get; set; }
 
-        [VectorStoreVector(Dimensions: 3)]
+        [VectorStoreVector(dimensions: 3)]
         public ReadOnlyMemory<float> Embedding { get; set; }
     }
 
@@ -357,7 +357,7 @@ public class CollectionModelBuilderTests
         [VectorStoreData]
         public required string Name { get; set; }
 
-        [VectorStoreVector(Dimensions: 3)]
+        [VectorStoreVector(dimensions: 3)]
         public required Customer Embedding { get; set; }
     }
 

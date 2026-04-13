@@ -86,7 +86,7 @@ public abstract class NoDataModelTests<TKey>(NoDataModelTests<TKey>.Fixture fixt
 
     public sealed class NoDataRecord : TestRecord<TKey>
     {
-        [VectorStoreVector(Dimensions: 3, StorageName = "embedding")]
+        [VectorStoreVector(dimensions: 3, StorageName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
 
         public void AssertEqual(NoDataRecord? other, bool includeVectors, bool compareVectors)

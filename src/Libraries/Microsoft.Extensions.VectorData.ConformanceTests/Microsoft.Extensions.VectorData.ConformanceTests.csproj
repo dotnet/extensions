@@ -6,6 +6,13 @@
     <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <InjectSharedThrow>false</InjectSharedThrow>
+    <Stage>normal</Stage>
+    <Api>false</Api>
+    <IsShipping>true</IsShipping>
+    <Workstream>AI</Workstream>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
     <IsTrimmable>false</IsTrimmable>
     <IsAotCompatible>false</IsAotCompatible>
     <ImplicitUsings>enable</ImplicitUsings>
