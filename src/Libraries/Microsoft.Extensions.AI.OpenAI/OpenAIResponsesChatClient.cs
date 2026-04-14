@@ -704,13 +704,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             case AIFunctionDeclaration aiFunction:
                 var functionTool = ToResponseTool(aiFunction, options);
-                if (tool.GetService<SearchableAIFunctionDeclaration>() is { } searchable)
+                if (tool.GetService<SearchableAIFunctionDeclaration>() is not null)
                 {
                     functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
-                    if (searchable.Namespace is { } ns)
-                    {
-                        functionTool.Patch.Set("$.namespace"u8, JsonSerializer.SerializeToUtf8Bytes(ns, OpenAIJsonContext.Default.String).AsSpan());
-                    }
                 }
 
                 return functionTool;
@@ -828,11 +824,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         }
 
                         break;
-                }
-
-                if (mcpTool.DeferLoadingTools)
-                {
-                    responsesMcpTool.Patch.Set("$.defer_loading"u8, "true"u8);
                 }
 
                 return responsesMcpTool;

@@ -30,24 +30,6 @@ public class SearchableAIFunctionDeclarationTests
     }
 
     [Fact]
-    public void Namespace_DefaultIsNull()
-    {
-        var inner = AIFunctionFactory.Create(() => 42);
-        var wrapper = new SearchableAIFunctionDeclaration(inner);
-
-        Assert.Null(wrapper.Namespace);
-    }
-
-    [Fact]
-    public void Namespace_Roundtrips()
-    {
-        var inner = AIFunctionFactory.Create(() => 42);
-        var wrapper = new SearchableAIFunctionDeclaration(inner, namespaceName: "myNamespace");
-
-        Assert.Equal("myNamespace", wrapper.Namespace);
-    }
-
-    [Fact]
     public void GetService_ReturnsSelf()
     {
         var inner = AIFunctionFactory.Create(() => 42);
@@ -76,22 +58,9 @@ public class SearchableAIFunctionDeclarationTests
 
         var s1 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[1]);
         Assert.Equal("F1", s1.Name);
-        Assert.Null(s1.Namespace);
 
         var s2 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[2]);
         Assert.Equal("F2", s2.Name);
-        Assert.Null(s2.Namespace);
-    }
-
-    [Fact]
-    public void CreateToolSet_WithNamespace_AppliesNamespaceToAll()
-    {
-        var f1 = AIFunctionFactory.Create(() => 1, "F1");
-
-        var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1], namespaceName: "ns");
-
-        var s1 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[1]);
-        Assert.Equal("ns", s1.Namespace);
     }
 
     [Fact]
@@ -104,5 +73,50 @@ public class SearchableAIFunctionDeclarationTests
 
         var toolSearch = Assert.IsType<HostedToolSearchTool>(tools[0]);
         Assert.Same(props, toolSearch.AdditionalProperties);
+    }
+
+    [Fact]
+    public void WrappingApprovalRequired_GetService_ResolvesBothMarkerTypes()
+    {
+        var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var approval = new ApprovalRequiredAIFunction(inner);
+        var searchable = new SearchableAIFunctionDeclaration(approval);
+
+        Assert.Same(searchable, searchable.GetService<SearchableAIFunctionDeclaration>());
+        Assert.Same(approval, searchable.GetService<ApprovalRequiredAIFunction>());
+    }
+
+    [Fact]
+    public void WrappingApprovalRequired_PropertiesDelegateThroughBothLayers()
+    {
+        var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
+        var approval = new ApprovalRequiredAIFunction(inner);
+        var searchable = new SearchableAIFunctionDeclaration(approval);
+
+        Assert.Equal("MyFunc", searchable.Name);
+        Assert.Equal("My description", searchable.Description);
+        Assert.Equal(inner.JsonSchema, searchable.JsonSchema);
+        Assert.Equal(inner.ReturnJsonSchema, searchable.ReturnJsonSchema);
+        Assert.Same(inner.AdditionalProperties, searchable.AdditionalProperties);
+    }
+
+    [Fact]
+    public void CreateToolSet_WithApprovalRequiredFunctions_PreservesBothMarkers()
+    {
+        var f1 = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => 1, "F1"));
+        var f2 = new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => 2, "F2"));
+
+        var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1, f2]);
+
+        Assert.Equal(3, tools.Count);
+        Assert.IsType<HostedToolSearchTool>(tools[0]);
+
+        var s1 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[1]);
+        Assert.Equal("F1", s1.Name);
+        Assert.NotNull(s1.GetService<ApprovalRequiredAIFunction>());
+
+        var s2 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[2]);
+        Assert.Equal("F2", s2.Name);
+        Assert.NotNull(s2.GetService<ApprovalRequiredAIFunction>());
     }
 }

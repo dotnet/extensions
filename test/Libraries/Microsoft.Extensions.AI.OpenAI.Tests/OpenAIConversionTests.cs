@@ -579,39 +579,6 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_WithHostedMcpServerToolDeferLoadingTrue_PatchesDeferLoading()
-    {
-        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
-        {
-            DeferLoadingTools = true
-        };
-
-        var result = mcpTool.AsOpenAIResponseTool();
-
-        Assert.NotNull(result);
-        var tool = Assert.IsType<McpTool>(result);
-        var json = ModelReaderWriter.Write(tool, ModelReaderWriterOptions.Json).ToString();
-        Assert.Contains("defer_loading", json);
-        Assert.Contains("true", json);
-    }
-
-    [Fact]
-    public void AsOpenAIResponseTool_WithHostedMcpServerToolDeferLoadingFalse_NoDeferLoading()
-    {
-        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
-        {
-            DeferLoadingTools = false
-        };
-
-        var result = mcpTool.AsOpenAIResponseTool();
-
-        Assert.NotNull(result);
-        var tool = Assert.IsType<McpTool>(result);
-        var json = ModelReaderWriter.Write(tool, ModelReaderWriterOptions.Json).ToString();
-        Assert.DoesNotContain("defer_loading", json);
-    }
-
-    [Fact]
     public void AsOpenAIResponseTool_WithUnknownToolType_ReturnsNull()
     {
         var unknownTool = new UnknownAITool();
@@ -661,18 +628,19 @@ public class OpenAIConversionTests
     }
 
     [Fact]
-    public void AsOpenAIResponseTool_WithSearchableAIFunctionDeclarationWithNamespace_PatchesNamespace()
+    public void AsOpenAIResponseTool_WithSearchableWrappingApprovalRequired_PatchesDeferLoading()
     {
         var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "My description");
-        var searchable = new SearchableAIFunctionDeclaration(inner, namespaceName: "myNamespace");
+        var approval = new ApprovalRequiredAIFunction(inner);
+        var searchable = new SearchableAIFunctionDeclaration(approval);
 
         var result = ((AITool)searchable).AsOpenAIResponseTool();
 
         Assert.NotNull(result);
         var functionTool = Assert.IsType<FunctionTool>(result);
         var json = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json).ToString();
-        Assert.Contains("namespace", json);
-        Assert.Contains("myNamespace", json);
+        Assert.Contains("defer_loading", json);
+        Assert.Contains("true", json);
     }
 
     [Fact]

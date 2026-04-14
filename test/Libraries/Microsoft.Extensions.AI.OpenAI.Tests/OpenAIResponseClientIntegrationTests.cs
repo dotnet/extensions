@@ -3,6 +3,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -266,16 +267,22 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             throw new SkipTestException("Tool search requires gpt-5.4 or later.");
         }
 
+        var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+        };
+
+        var mcpResponseTool = mcpTool.AsOpenAIResponseTool()!;
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        mcpResponseTool.Patch.Set("$.defer_loading"u8, "true"u8);
+#pragma warning restore SCME0001
+
         ChatOptions chatOptions = new()
         {
             Tools =
             [
                 new HostedToolSearchTool(),
-                new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
-                {
-                    ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
-                    DeferLoadingTools = true,
-                },
+                mcpResponseTool.AsAITool(),
             ],
         };
 
@@ -287,6 +294,16 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
         Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
         Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
+
+        // Verify tool_search response items are present via RawRepresentation,
+        // since the OpenAI SDK doesn't expose dedicated types for them yet.
+        var allContents = response.Messages.SelectMany(m => m.Contents).ToList();
+        var rawJsons = allContents
+            .Where(c => c.RawRepresentation is ResponseItem)
+            .Select(c => ModelReaderWriter.Write((ResponseItem)c.RawRepresentation!, ModelReaderWriterOptions.Json).ToString())
+            .ToList();
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_call\"") || json.Contains("\"type\": \"tool_search_call\""));
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
     }
 
     [ConditionalFact]

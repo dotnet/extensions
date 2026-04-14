@@ -24,7 +24,6 @@ public class HostedMcpServerToolTests
         Assert.Null(tool.AllowedTools);
         Assert.Null(tool.ApprovalMode);
         Assert.Null(tool.Headers);
-        Assert.False(tool.DeferLoadingTools);
     }
 
     [Fact]
@@ -97,12 +96,6 @@ public class HostedMcpServerToolTests
         Assert.NotNull(tool.Headers);
         Assert.Single(tool.Headers);
         Assert.Equal("value1", tool.Headers["X-Custom-Header"]);
-
-        Assert.False(tool.DeferLoadingTools);
-        tool.DeferLoadingTools = true;
-        Assert.True(tool.DeferLoadingTools);
-        tool.DeferLoadingTools = false;
-        Assert.False(tool.DeferLoadingTools);
     }
 
     [Fact]
