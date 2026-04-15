@@ -121,13 +121,43 @@ public class SearchableAIFunctionDeclarationTests
     }
 
     [Fact]
-    public void CreateToolSet_WithoutNamespace_LeavesNoNamespaceProperty()
+    public void Namespace_ReturnsValueWhenSet()
+    {
+        var inner = AIFunctionFactory.Create(() => 42, "MyFunc", "desc");
+
+        var withNs = new SearchableAIFunctionDeclaration(inner, "crm");
+        Assert.Equal("crm", withNs.Namespace);
+
+        var withoutNs = new SearchableAIFunctionDeclaration(inner);
+        Assert.Null(withoutNs.Namespace);
+    }
+
+    [Fact]
+    public void CreateToolSet_WithNamespace_SetsNamespaceOnAllFunctions()
+    {
+        var f1 = AIFunctionFactory.Create(() => 1, "F1");
+        var f2 = AIFunctionFactory.Create(() => 2, "F2");
+
+        var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1, f2], namespaceName: "crm");
+
+        Assert.Equal(3, tools.Count);
+        Assert.IsType<HostedToolSearchTool>(tools[0]);
+
+        var s1 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[1]);
+        Assert.Equal("crm", s1.Namespace);
+
+        var s2 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[2]);
+        Assert.Equal("crm", s2.Namespace);
+    }
+
+    [Fact]
+    public void CreateToolSet_WithoutNamespace_LeavesNamespaceNull()
     {
         var f1 = AIFunctionFactory.Create(() => 1, "F1");
 
         var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1]);
 
         var s1 = Assert.IsType<SearchableAIFunctionDeclaration>(tools[1]);
-        Assert.Equal("F1", s1.Name);
+        Assert.Null(s1.Namespace);
     }
 }
