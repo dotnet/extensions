@@ -143,5 +143,4 @@ public class HostedMcpServerTool : AITool
     /// </para>
     /// </remarks>
     public IDictionary<string, string>? Headers { get; set; }
-
 }

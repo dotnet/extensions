@@ -971,7 +971,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             Dictionary<string, List<FunctionTool>>? namespaces = null;
             foreach (AITool tool in tools)
             {
-                if (tool.GetService<SearchableAIFunctionDeclaration>() is { Namespace: string ns } searchable)
+                if (tool.GetService<SearchableAIFunctionDeclaration>() is { Namespace: string ns })
                 {
                     namespaces ??= new(StringComparer.Ordinal);
                     if (!namespaces.TryGetValue(ns, out var entry))
