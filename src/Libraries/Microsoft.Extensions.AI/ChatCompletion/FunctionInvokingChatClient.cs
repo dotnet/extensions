@@ -1349,7 +1349,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     private (List<ApprovalResultWithRequestMessage>? approvals, List<ApprovalResultWithRequestMessage>? rejections) ExtractAndRemoveApprovalRequestsAndResponses(
         List<ChatMessage> messages)
     {
-        Dictionary<string, ChatMessage>? allApprovalRequestsMessages = null;
+        Dictionary<string, (ChatMessage Message, ToolApprovalRequestContent RequestContent)>? allApprovalRequestsMessages = null;
         List<ToolApprovalResponseContent>? allApprovalResponses = null;
         HashSet<string>? approvalRequestCallIds = null;
         HashSet<string>? functionResultCallIds = null;
@@ -1376,7 +1376,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                     case ToolApprovalRequestContent tarc when tarc.ToolCall is FunctionCallContent { InformationalOnly: false }:
                         // Validation: Capture each call id for each approval request to ensure later we have a matching response.
                         _ = (approvalRequestCallIds ??= []).Add(tarc.ToolCall.CallId);
-                        (allApprovalRequestsMessages ??= []).Add(tarc.RequestId, message);
+                        (allApprovalRequestsMessages ??= []).Add(tarc.RequestId, (message, tarc));
                         break;
 
                     case ToolApprovalResponseContent tarc when tarc.ToolCall is FunctionCallContent { InformationalOnly: false }:
@@ -1451,9 +1451,14 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                 ref List<ApprovalResultWithRequestMessage>? targetList = ref approvalResponse.Approved ? ref approvedFunctionCalls : ref rejectedFunctionCalls;
 
                 ChatMessage? requestMessage = null;
-                _ = allApprovalRequestsMessages?.TryGetValue(approvalResponse.RequestId, out requestMessage);
+                ToolApprovalRequestContent? requestContent = null;
+                if (allApprovalRequestsMessages?.TryGetValue(approvalResponse.RequestId, out var requestInfo) is true)
+                {
+                    requestMessage = requestInfo.Message;
+                    requestContent = requestInfo.RequestContent;
+                }
 
-                (targetList ??= []).Add(new() { Response = approvalResponse, RequestMessage = requestMessage });
+                (targetList ??= []).Add(new() { Response = approvalResponse, Request = requestContent, RequestMessage = requestMessage });
             }
         }
 
@@ -1469,7 +1474,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         rejections is { Count: > 0 } ?
             rejections.ConvertAll(m =>
             {
-                LogFunctionRejected(m.FunctionCallContent.Name, m.Response.Reason);
+                LogFunctionRejected(m.ResponseFunctionCallContent.Name, m.Response.Reason);
 
                 string result = "Tool call invocation rejected.";
                 if (!string.IsNullOrWhiteSpace(m.Response.Reason))
@@ -1477,9 +1482,13 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                     result = $"{result} {m.Response.Reason}";
                 }
 
-                // Mark the function call as purely informational since we're handling it (by rejecting it)
-                m.FunctionCallContent.InformationalOnly = true;
-                return (AIContent)new FunctionResultContent(m.FunctionCallContent.CallId, result);
+                // Mark the function call as purely informational since we're handling it (by rejecting it).
+                // We mark both the response and request FunctionCallContent to ensure consistency
+                // across serialization boundaries where they may be separate object instances.
+                m.ResponseFunctionCallContent.InformationalOnly = true;
+                _ = m.RequestFunctionCallContent?.InformationalOnly = true;
+
+                return (AIContent)new FunctionResultContent(m.ResponseFunctionCallContent.CallId, result);
             }) :
             null;
 
@@ -1708,6 +1717,13 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                 originalMessages, options, notInvokedApprovals.Select(x => x.Response.ToolCall).OfType<FunctionCallContent>().ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
+            // Also mark the request's FCC as InformationalOnly to ensure consistency
+            // across serialization boundaries where they may be separate object instances.
+            foreach (var approval in notInvokedApprovals)
+            {
+                _ = approval.RequestFunctionCallContent?.InformationalOnly = true;
+            }
+
             return (modeAndMessages.MessagesAdded, modeAndMessages.ShouldTerminate, consecutiveErrorCount);
         }
 
@@ -1788,7 +1804,9 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     private readonly struct ApprovalResultWithRequestMessage
     {
         public ToolApprovalResponseContent Response { get; init; }
+        public ToolApprovalRequestContent? Request { get; init; }
         public ChatMessage? RequestMessage { get; init; }
-        public FunctionCallContent FunctionCallContent => (FunctionCallContent)Response.ToolCall;
+        public FunctionCallContent ResponseFunctionCallContent => (FunctionCallContent)Response.ToolCall;
+        public FunctionCallContent? RequestFunctionCallContent => Request?.ToolCall as FunctionCallContent;
     }
 }
