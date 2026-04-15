@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -18,7 +16,6 @@ namespace Microsoft.Extensions.AI;
 /// sent with deferred loading (only name and description upfront). Use <see cref="CreateToolSet"/> to create
 /// a complete tool list including a <see cref="HostedToolSearchTool"/> and wrapped functions.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIToolSearch, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class SearchableAIFunctionDeclaration : DelegatingAIFunctionDeclaration
 {
     /// <summary>

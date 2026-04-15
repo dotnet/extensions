@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -13,7 +11,6 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// Provides an optional base class for an <see cref="AIFunctionDeclaration"/> that passes through calls to another instance.
 /// </summary>
-[Experimental(DiagnosticIds.Experiments.AIToolSearch, UrlFormat = DiagnosticIds.UrlFormat)]
 public class DelegatingAIFunctionDeclaration : AIFunctionDeclaration
 {
     /// <summary>

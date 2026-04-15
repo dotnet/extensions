@@ -7262,7 +7262,7 @@ public class OpenAIResponseClientTests
     {
         const string Input = """
             {
-                "model": "gpt-4o-mini",
+                "model": "gpt-5.4-mini",
                 "input": [
                     {
                         "type": "message",
@@ -7314,7 +7314,7 @@ public class OpenAIResponseClientTests
               "object": "response",
               "created_at": 1741892091,
               "status": "completed",
-              "model": "gpt-4o-mini",
+              "model": "gpt-5.4-mini",
               "output": [
                 {
                   "type": "message",
@@ -7329,7 +7329,7 @@ public class OpenAIResponseClientTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-5.4-mini");
 
         var getWeather = AIFunctionFactory.Create(() => 42, "GetWeather", "Gets the weather.");
         var importantTool = AIFunctionFactory.Create(() => 42, "ImportantTool", "An important tool.");
@@ -7354,7 +7354,7 @@ public class OpenAIResponseClientTests
     {
         const string Input = """
             {
-                "model": "gpt-4o-mini",
+                "model": "gpt-5.4-mini",
                 "input": [
                     {
                         "type": "message",
@@ -7384,7 +7384,7 @@ public class OpenAIResponseClientTests
               "object": "response",
               "created_at": 1741892091,
               "status": "completed",
-              "model": "gpt-4o-mini",
+              "model": "gpt-5.4-mini",
               "output": [
                 {
                   "type": "message",
@@ -7399,7 +7399,7 @@ public class OpenAIResponseClientTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-5.4-mini");
 
         var response = await client.GetResponseAsync("hello", new()
         {

@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -12,7 +10,6 @@ namespace Microsoft.Extensions.AI;
 /// This tool does not itself implement tool search. It is a marker that can be used to inform a service
 /// that tool search should be enabled, reducing token usage by deferring full tool schema loading until the model requests it.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIToolSearch, UrlFormat = DiagnosticIds.UrlFormat)]
 public class HostedToolSearchTool : AITool
 {
     /// <summary>Any additional properties associated with the tool.</summary>

@@ -1620,6 +1620,50 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration : Microsoft.Extensions.AI.AIFunctionDeclaration",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.DelegatingAIFunctionDeclaration(Microsoft.Extensions.AI.AIFunctionDeclaration innerFunction);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.ToString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.Description { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionDeclaration Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.InnerFunction { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Text.Json.JsonElement Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.JsonSchema { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override System.Text.Json.JsonElement? Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration.ReturnJsonSchema { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.DelegatingChatClient : Microsoft.Extensions.AI.IChatClient, System.IDisposable",
       "Stage": "Stable",
       "Methods": [
@@ -2306,6 +2350,30 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.HostedToolSearchTool : Microsoft.Extensions.AI.AITool",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedToolSearchTool.HostedToolSearchTool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedToolSearchTool.HostedToolSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedToolSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedToolSearchTool.Name { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.HostedVectorStoreContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
@@ -2879,6 +2947,20 @@
         {
           "Member": "override void Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.ResponseContinuationToken value, System.Text.Json.JsonSerializerOptions options);",
           "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.SearchableAIFunctionDeclaration : Microsoft.Extensions.AI.DelegatingAIFunctionDeclaration",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.SearchableAIFunctionDeclaration.SearchableAIFunctionDeclaration(Microsoft.Extensions.AI.AIFunctionDeclaration innerFunction);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool> Microsoft.Extensions.AI.SearchableAIFunctionDeclaration.CreateToolSet(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIFunctionDeclaration> functions, System.Collections.Generic.IReadOnlyDictionary<string, object?>? toolSearchProperties = null);",
+          "Stage": "Stable"
         }
       ]
     },
