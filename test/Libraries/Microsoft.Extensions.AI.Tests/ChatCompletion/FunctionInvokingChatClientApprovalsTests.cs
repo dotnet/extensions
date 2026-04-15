@@ -766,7 +766,7 @@ public class FunctionInvokingChatClientApprovalsTests
     [InlineData(true)]
     public async Task RejectionSetsInformationalOnlyOnBothRequestAndResponseFccInstancesAsync(bool streaming)
     {
-        // Create two separate FCC objects for the same call — simulating deserialization
+        // Create two separate FCC objects for the same call â€” simulating deserialization
         // where TARC and TAResp hold different FCC instances with the same CallId.
         var requestFcc = new FunctionCallContent("callId1", "Func1");
         var responseFcc = new FunctionCallContent("callId1", "Func1");
