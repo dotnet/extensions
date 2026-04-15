@@ -833,4 +833,52 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.NotNull(response);
         Assert.NotEmpty(response.Text);
     }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_OnlyToolSearchNoFunctions()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        // HostedToolSearchTool with no deferred tools — the API rejects this with 400
+        // because tool_search requires at least one tool with defer_loading.
+        await Assert.ThrowsAsync<ClientResultException>(() =>
+            ChatClient.GetResponseAsync(
+                "Say hello.",
+                new()
+                {
+                    Tools = [new HostedToolSearchTool()],
+                }));
+    }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_WithNonDeferredFunctionsOnly()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        // HostedToolSearchTool alongside plain (non-deferred) functions — the API rejects
+        // this with 400 because tool_search requires at least one deferred tool.
+        AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
+
+        await Assert.ThrowsAsync<ClientResultException>(() =>
+            ChatClient.GetResponseAsync(
+                "What's the weather? Reply with just the weather info.",
+                new()
+                {
+                    Tools =
+                    [
+                        new HostedToolSearchTool(),
+                        getWeather,
+                    ],
+                }));
+    }
 }
