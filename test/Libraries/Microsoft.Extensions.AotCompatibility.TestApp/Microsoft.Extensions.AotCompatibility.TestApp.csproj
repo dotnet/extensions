@@ -15,6 +15,10 @@
     <PackageReference Remove="ReferenceTrimmer" />
 
     <LibraryProjects Include="$(RepoRoot)\src\Libraries\**\*.csproj" />
+
+    <!-- MEVD.ConformanceTests is a published test base project and is not NativeAOT-compatible. -->
+    <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.VectorData.ConformanceTests\Microsoft.Extensions.VectorData.ConformanceTests.csproj" />
+
     <!-- https://github.com/dotnet/extensions/issues/5624 -->
     <LibraryProjects Remove="$(RepoRoot)\src\Libraries\Microsoft.Extensions.Caching.Hybrid\Microsoft.Extensions.Caching.Hybrid.csproj" />
     <!-- https://github.com/dotnet/extensions/issues/5623 -->

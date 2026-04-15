@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.VectorData.ConformanceTests</RootNamespace>
+    <Description>Conformance tests for Microsoft.Extensions.VectorData providers.</Description>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InjectSharedThrow>false</InjectSharedThrow>
+    <Stage>normal</Stage>
+    <Api>false</Api>
+    <IsShipping>true</IsShipping>
+    <Workstream>AI</Workstream>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
+    <IsTrimmable>false</IsTrimmable>
+    <IsAotCompatible>false</IsAotCompatible>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);CS1591;SA1614;SA1616;SA1618;SA1623;S1135;S125;LA0003;RT0000</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" VersionOverride="$(XUnitVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.VectorData.Abstractions\Microsoft.Extensions.VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <PackageReference Include="System.Memory.Data" />
+  </ItemGroup>
+
+</Project>

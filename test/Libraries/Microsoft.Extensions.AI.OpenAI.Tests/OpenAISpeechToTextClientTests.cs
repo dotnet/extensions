@@ -5,6 +5,7 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ using OpenAI;
 using OpenAI.Audio;
 using Xunit;
 
+#pragma warning disable MEAI001 // Experimental MEAI APIs
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 #pragma warning disable S103 // Lines should not be too long
 
 namespace Microsoft.Extensions.AI;
@@ -283,6 +286,67 @@ public class OpenAISpeechToTextClientTests
 
     private static Stream GetAudioStream()
         => new MemoryStream([0x01, 0x02]);
+
+    [Fact]
+    public async Task GetStreamingTextAsync_SegmentUpdates_SurfaceTimingMetadata()
+    {
+        const string Input = """
+                {
+                    "model": "gpt-4o-mini-transcribe",
+                    "stream":true
+                }
+                """;
+
+        const string Output = """
+                data: {"type":"transcript.text.delta","delta":"Hello world."}
+
+                data: {"type":"transcript.text.segment","id":"seg_001","start":0.0,"end":2.5,"text":"Hello world.","speaker":"speaker_0"}
+
+                data: {"type":"transcript.text.done","text":"Hello world.","usage":{"type":"tokens","input_tokens":43,"input_token_details":{"text_tokens":0,"audio_tokens":43},"output_tokens":13,"total_tokens":56}}
+
+                data: [DONE]
+
+                """;
+
+        using VerbatimMultiPartHttpHandler handler = new(Input, Output) { ExpectedRequestUriContains = "audio/transcriptions" };
+        using HttpClient httpClient = new(handler);
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-mini-transcribe");
+
+        using var audioSpeechStream = GetAudioStream();
+        var updates = new System.Collections.Generic.List<SpeechToTextResponseUpdate>();
+        await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream))
+        {
+            updates.Add(update);
+        }
+
+        // Expect 3 updates: delta, segment, done
+        Assert.Equal(3, updates.Count);
+
+        // First: delta with text
+        Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdated, updates[0].Kind);
+        Assert.Equal("Hello world.", updates[0].Text);
+        Assert.IsType<StreamingAudioTranscriptionTextDeltaUpdate>(updates[0].RawRepresentation);
+
+        // Second: segment with timing metadata, no text content (to avoid duplicating deltas)
+        Assert.Equal(SpeechToTextResponseUpdateKind.TextUpdated, updates[1].Kind);
+        Assert.Equal(TimeSpan.Zero, updates[1].StartTime);
+        Assert.Equal(TimeSpan.FromSeconds(2.5), updates[1].EndTime);
+        Assert.Empty(updates[1].Text);
+        var segmentRaw = Assert.IsType<StreamingAudioTranscriptionTextSegmentUpdate>(updates[1].RawRepresentation);
+        Assert.Equal("seg_001", segmentRaw.SegmentId);
+        Assert.Equal("speaker_0", segmentRaw.SpeakerLabel);
+        Assert.Equal("Hello world.", segmentRaw.Text);
+
+        // Third: session close with usage
+        Assert.Equal(SpeechToTextResponseUpdateKind.SessionClose, updates[2].Kind);
+        Assert.IsType<StreamingAudioTranscriptionTextDoneUpdate>(updates[2].RawRepresentation);
+        var usage = updates[2].Contents.OfType<UsageContent>().Single();
+        Assert.Equal(43, usage.Details.InputTokenCount);
+        Assert.Equal(13, usage.Details.OutputTokenCount);
+        Assert.Equal(56, usage.Details.TotalTokenCount);
+        Assert.Equal(43, usage.Details.InputAudioTokenCount);
+        Assert.Equal(0, usage.Details.InputTextTokenCount);
+    }
 
     private static ISpeechToTextClient CreateSpeechToTextClient(HttpClient httpClient, string modelId) =>
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
