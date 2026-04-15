@@ -22,28 +22,21 @@ public sealed class SearchableAIFunctionDeclaration : DelegatingAIFunctionDeclar
     /// Initializes a new instance of the <see cref="SearchableAIFunctionDeclaration"/> class.
     /// </summary>
     /// <param name="innerFunction">The <see cref="AIFunctionDeclaration"/> represented by this instance.</param>
-    /// <param name="namespaceName">An optional namespace to group this function under for tool search.</param>
     /// <exception cref="System.ArgumentNullException"><paramref name="innerFunction"/> is <see langword="null"/>.</exception>
-    public SearchableAIFunctionDeclaration(AIFunctionDeclaration innerFunction, string? namespaceName = null)
+    public SearchableAIFunctionDeclaration(AIFunctionDeclaration innerFunction)
         : base(innerFunction)
     {
-        Namespace = namespaceName;
     }
-
-    /// <summary>Gets the namespace this function belongs to, or <see langword="null"/> if it is a standalone deferred function.</summary>
-    public string? Namespace { get; }
 
     /// <summary>
     /// Creates a complete tool list with a <see cref="HostedToolSearchTool"/> and the given functions wrapped as <see cref="SearchableAIFunctionDeclaration"/>.
     /// </summary>
     /// <param name="functions">The functions to include as searchable tools.</param>
-    /// <param name="namespaceName">An optional namespace to group the functions under.</param>
     /// <param name="toolSearchProperties">Any additional properties to pass to the <see cref="HostedToolSearchTool"/>.</param>
     /// <returns>A list of <see cref="AITool"/> instances ready for use in <see cref="ChatOptions.Tools"/>.</returns>
     /// <exception cref="System.ArgumentNullException"><paramref name="functions"/> is <see langword="null"/>.</exception>
     public static IList<AITool> CreateToolSet(
         IEnumerable<AIFunctionDeclaration> functions,
-        string? namespaceName = null,
         IReadOnlyDictionary<string, object?>? toolSearchProperties = null)
     {
         _ = Throw.IfNull(functions);
@@ -51,7 +44,7 @@ public sealed class SearchableAIFunctionDeclaration : DelegatingAIFunctionDeclar
         var tools = new List<AITool> { new HostedToolSearchTool(toolSearchProperties) };
         foreach (var fn in functions)
         {
-            tools.Add(new SearchableAIFunctionDeclaration(fn, namespaceName));
+            tools.Add(new SearchableAIFunctionDeclaration(fn));
         }
 
         return tools;
