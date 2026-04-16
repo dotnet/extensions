@@ -702,7 +702,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         (response is not null && response.Patch.TryGetValue("$.store"u8, out bool store) && !store);
 #pragma warning restore SCME0001
 
-    internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null)
+    internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null, ToolSearchLookup? toolSearchLookup = null)
     {
         switch (tool)
         {
@@ -711,7 +711,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             case AIFunctionDeclaration aiFunction:
                 var functionTool = ToResponseTool(aiFunction, options);
-                if (IsDeferredByAnyToolSearch(aiFunction.Name, options))
+                if ((toolSearchLookup ??= ToolSearchLookup.Create(options?.Tools)).IsDeferred(aiFunction.Name))
                 {
                     functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
                 }
@@ -833,7 +833,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
                 }
 
-                if (IsDeferredByAnyToolSearch(mcpTool.ServerName, options))
+                if ((toolSearchLookup ??= ToolSearchLookup.Create(options?.Tools)).IsDeferred(mcpTool.ServerName))
                 {
                     responsesMcpTool.Patch.Set("$.defer_loading"u8, "true"u8);
                 }
@@ -858,47 +858,6 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             FunctionDescription = aiFunction.Description,
         };
-    }
-
-    /// <summary>Checks whether any <see cref="HostedToolSearchTool"/> in the options considers the tool deferred.</summary>
-    private static bool IsDeferredByAnyToolSearch(string toolName, ChatOptions? options)
-    {
-        if (options?.Tools is { } tools)
-        {
-            foreach (AITool t in tools)
-            {
-                if (t is HostedToolSearchTool toolSearch && IsDeferredLoading(toolName, toolSearch))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>Determines whether the tool with the given name should have deferred loading based on the <see cref="HostedToolSearchTool"/> configuration.</summary>
-    private static bool IsDeferredLoading(string toolName, HostedToolSearchTool toolSearch)
-    {
-        return toolSearch.DeferredTools is not { } deferred || deferred.Contains(toolName);
-    }
-
-    /// <summary>
-    /// Finds the namespace name that a tool belongs to by checking all <see cref="HostedToolSearchTool"/> instances.
-    /// Returns the namespace from the first <see cref="HostedToolSearchTool"/> that has a <see cref="HostedToolSearchTool.Namespace"/>
-    /// and considers the tool deferred.
-    /// </summary>
-    private static string? FindNamespaceForTool(string toolName, IList<AITool> tools)
-    {
-        foreach (AITool t in tools)
-        {
-            if (t is HostedToolSearchTool { Namespace: string ns } toolSearch && IsDeferredLoading(toolName, toolSearch))
-            {
-                return ns;
-            }
-        }
-
-        return null;
     }
 
     /// <summary>
@@ -1012,11 +971,12 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Populate tools if there are any.
         if (options.Tools is { Count: > 0 } tools)
         {
+            ToolSearchLookup toolSearchLookup = ToolSearchLookup.Create(tools);
             Dictionary<string, List<ResponseTool>>? namespaceGroups = null;
 
             foreach (AITool tool in tools)
             {
-                if (ToResponseTool(tool, options) is { } responseTool)
+                if (ToResponseTool(tool, options, toolSearchLookup) is { } responseTool)
                 {
                     // When a namespaced HostedToolSearchTool claims this deferred tool,
                     // collect it for later wrapping in a namespace container.
@@ -1025,7 +985,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         : null;
 
                     if (responseToolName is not null
-                        && FindNamespaceForTool(responseToolName, tools) is { } ns)
+                        && toolSearchLookup.GetNamespace(responseToolName) is { } ns)
                     {
                         namespaceGroups ??= new(StringComparer.Ordinal);
                         if (!namespaceGroups.TryGetValue(ns, out var group))
@@ -1083,6 +1043,104 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return result;
+    }
+
+    internal sealed class ToolSearchLookup
+    {
+        private static readonly ToolSearchLookup _empty = new(deferAll: false, deferredToolNames: [], namespacedToolNames: []);
+        private readonly bool _deferAll;
+        private readonly HashSet<string> _deferredToolNames;
+        private readonly Dictionary<string, string> _namespacedToolNames;
+
+        private ToolSearchLookup(bool deferAll, HashSet<string> deferredToolNames, Dictionary<string, string> namespacedToolNames)
+        {
+            _deferAll = deferAll;
+            _deferredToolNames = deferredToolNames;
+            _namespacedToolNames = namespacedToolNames;
+        }
+
+        public static ToolSearchLookup Create(IList<AITool>? tools)
+        {
+            if (tools is not { Count: > 0 })
+            {
+                return _empty;
+            }
+
+            HashSet<string>? functionAndMcpToolNames = null;
+            foreach (AITool tool in tools)
+            {
+                string? toolName = tool switch
+                {
+                    AIFunctionDeclaration aiFunction => aiFunction.Name,
+                    HostedMcpServerTool mcpTool => mcpTool.ServerName,
+                    _ => null,
+                };
+
+                if (toolName is not null)
+                {
+                    functionAndMcpToolNames ??= new(StringComparer.Ordinal);
+                    _ = functionAndMcpToolNames.Add(toolName);
+                }
+            }
+
+            if (functionAndMcpToolNames is null)
+            {
+                return _empty;
+            }
+
+            bool deferAll = false;
+            HashSet<string> deferredToolNames = new(StringComparer.Ordinal);
+            Dictionary<string, string> namespacedToolNames = new(StringComparer.Ordinal);
+            HashSet<string> unclaimedToolNames = [.. functionAndMcpToolNames];
+
+            foreach (AITool tool in tools)
+            {
+                if (tool is not HostedToolSearchTool toolSearch)
+                {
+                    continue;
+                }
+
+                if (toolSearch.DeferredTools is not { } deferredTools)
+                {
+                    deferAll = true;
+                    deferredToolNames.UnionWith(functionAndMcpToolNames);
+
+                    if (toolSearch.Namespace is { } ns && unclaimedToolNames.Count > 0)
+                    {
+                        foreach (string toolName in unclaimedToolNames)
+                        {
+                            namespacedToolNames[toolName] = ns;
+                        }
+
+                        unclaimedToolNames.Clear();
+                    }
+
+                    continue;
+                }
+
+                foreach (string deferredTool in deferredTools)
+                {
+                    if (!functionAndMcpToolNames.Contains(deferredTool))
+                    {
+                        continue;
+                    }
+
+                    _ = deferredToolNames.Add(deferredTool);
+                    if (toolSearch.Namespace is { } ns && unclaimedToolNames.Remove(deferredTool))
+                    {
+                        namespacedToolNames[deferredTool] = ns;
+                    }
+                }
+            }
+
+            return new(deferAll, deferredToolNames, namespacedToolNames);
+        }
+
+        public bool IsDeferred(string toolName) =>
+            _deferAll || _deferredToolNames.Contains(toolName);
+
+        public string? GetNamespace(string toolName) =>
+            _namespacedToolNames.TryGetValue(toolName, out string? ns) ? ns : null;
     }
 
     internal static ResponseTextFormat? ToOpenAIResponseTextFormat(ChatResponseFormat? format, ChatOptions? options = null) =>
