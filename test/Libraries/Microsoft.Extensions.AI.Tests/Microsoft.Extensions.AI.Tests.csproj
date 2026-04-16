@@ -25,6 +25,8 @@
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestSpeechToTextClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestTextToSpeechClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestImageGenerator.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestVideoGenerator.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestVideoGenerationOperation.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestEmbeddingGenerator.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestRealtimeClientSession.cs" />
   </ItemGroup>
