@@ -3,6 +3,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -254,6 +255,55 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.Equal(2, approvalsCount);
             Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
         }
+    }
+
+    [ConditionalFact]
+    public async Task RemoteMCP_DeferLoadingTools()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
+        {
+            ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
+        };
+
+        var mcpResponseTool = mcpTool.AsOpenAIResponseTool()!;
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        mcpResponseTool.Patch.Set("$.defer_loading"u8, "true"u8);
+#pragma warning restore SCME0001
+
+        ChatOptions chatOptions = new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool(),
+                mcpResponseTool.AsAITool(),
+            ],
+        };
+
+        ChatResponse response = await ChatClient.GetResponseAsync(
+            "Tell me the path to the README.md file for Microsoft.Extensions.AI.Abstractions in the dotnet/extensions repository",
+            chatOptions);
+
+        Assert.NotNull(response);
+        Assert.Contains("src/Libraries/Microsoft.Extensions.AI.Abstractions/README.md", response.Text);
+        Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolCallContent>());
+        Assert.NotEmpty(response.Messages.SelectMany(m => m.Contents).OfType<McpServerToolResultContent>());
+
+        // Verify tool_search response items are present via RawRepresentation,
+        // since the OpenAI SDK doesn't expose dedicated types for them yet.
+        var allContents = response.Messages.SelectMany(m => m.Contents).ToList();
+        var rawJsons = allContents
+            .Where(c => c.RawRepresentation is ResponseItem)
+            .Select(c => ModelReaderWriter.Write((ResponseItem)c.RawRepresentation!, ModelReaderWriterOptions.Json).ToString())
+            .ToList();
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_call\"") || json.Contains("\"type\": \"tool_search_call\""));
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
     }
 
     [ConditionalFact]
@@ -753,5 +803,126 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             }
         });
         Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_WithDeferredFunctions()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
+        AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
+
+        var response = await ChatClient.GetResponseAsync(
+            "What's the weather like? Just respond with the weather info, nothing else.",
+            new()
+            {
+                Tools =
+                [
+                    new HostedToolSearchTool(),
+                    new SearchableAIFunctionDeclaration(getWeather),
+                    new SearchableAIFunctionDeclaration(getTime),
+                ],
+            });
+
+        Assert.NotNull(response);
+        Assert.NotEmpty(response.Text);
+
+        // Verify tool_search response items occurred.
+        var rawJsons = response.Messages
+            .SelectMany(m => m.Contents)
+            .Where(c => c.RawRepresentation is ResponseItem)
+            .Select(c => ModelReaderWriter.Write((ResponseItem)c.RawRepresentation!, ModelReaderWriterOptions.Json).ToString())
+            .ToList();
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_call\"") || json.Contains("\"type\": \"tool_search_call\""));
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
+    }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_OnlyToolSearchNoFunctions()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        // HostedToolSearchTool with no deferred tools — the API rejects this with 400
+        // because tool_search requires at least one tool with defer_loading.
+        await Assert.ThrowsAsync<ClientResultException>(() =>
+            ChatClient.GetResponseAsync(
+                "Say hello.",
+                new()
+                {
+                    Tools = [new HostedToolSearchTool()],
+                }));
+    }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_WithNonDeferredFunctionsOnly()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        // HostedToolSearchTool alongside plain (non-deferred) functions — the API rejects
+        // this with 400 because tool_search requires at least one deferred tool.
+        AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
+
+        await Assert.ThrowsAsync<ClientResultException>(() =>
+            ChatClient.GetResponseAsync(
+                "What's the weather? Reply with just the weather info.",
+                new()
+                {
+                    Tools =
+                    [
+                        new HostedToolSearchTool(),
+                        getWeather,
+                    ],
+                }));
+    }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_WithNamespace()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
+        AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
+
+        var response = await ChatClient.GetResponseAsync(
+            "What's the weather like? Just respond with the weather info, nothing else.",
+            new()
+            {
+                Tools = SearchableAIFunctionDeclaration.CreateToolSet(
+                    [getWeather, getTime],
+                    @namespace: "utilities"),
+            });
+
+        Assert.NotNull(response);
+        Assert.NotEmpty(response.Text);
+
+        // Verify tool_search response items occurred.
+        var rawJsons = response.Messages
+            .SelectMany(m => m.Contents)
+            .Where(c => c.RawRepresentation is ResponseItem)
+            .Select(c => ModelReaderWriter.Write((ResponseItem)c.RawRepresentation!, ModelReaderWriterOptions.Json).ToString())
+            .ToList();
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_call\"") || json.Contains("\"type\": \"tool_search_call\""));
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
     }
 }

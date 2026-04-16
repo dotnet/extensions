@@ -7,6 +7,7 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -17,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
+using OpenAI;
 using OpenAI.Responses;
 
 #pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
@@ -709,7 +711,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return rtat.Tool;
 
             case AIFunctionDeclaration aiFunction:
-                return ToResponseTool(aiFunction, options);
+                var functionTool = ToResponseTool(aiFunction, options);
+                if (tool.GetService<SearchableAIFunctionDeclaration>() is not null)
+                {
+                    functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
+                }
+
+                return functionTool;
+
+            case HostedToolSearchTool:
+                // Workaround: The OpenAI .NET SDK doesn't yet expose a ToolSearchTool type.
+                // See https://github.com/openai/openai-dotnet/issues/1053
+                return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
 
             case HostedWebSearchTool webSearchTool:
                 return new WebSearchTool
@@ -843,6 +856,34 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         };
     }
 
+    /// <summary>
+    /// Builds a <c>{"type":"namespace"}</c> <see cref="ResponseTool"/> from a name and set of function tools.
+    /// The OpenAI .NET SDK doesn't expose a NamespaceTool type, so we construct the JSON manually.
+    /// </summary>
+    internal static ResponseTool ToNamespaceResponseTool(string name, IEnumerable<FunctionTool> functionTools)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("type"u8, "namespace"u8);
+            writer.WriteString("name"u8, name);
+
+            writer.WriteStartArray("tools"u8);
+            foreach (var functionTool in functionTools)
+            {
+                var toolData = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json, OpenAIContext.Default);
+                using var doc = JsonDocument.Parse(toolData);
+                doc.RootElement.WriteTo(writer);
+            }
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromBytes(stream.ToArray()), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
+    }
+
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
     private static ChatRole AsChatRole(MessageRole? role) =>
         role switch
@@ -926,11 +967,36 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Populate tools if there are any.
         if (options.Tools is { Count: > 0 } tools)
         {
+            // Group SearchableAIFunctionDeclarations that share a namespace into namespace tools.
+            Dictionary<string, List<FunctionTool>>? namespaces = null;
             foreach (AITool tool in tools)
             {
+                if (tool.GetService<SearchableAIFunctionDeclaration>() is { Namespace: string ns })
+                {
+                    namespaces ??= new(StringComparer.Ordinal);
+                    if (!namespaces.TryGetValue(ns, out var entry))
+                    {
+                        entry = new List<FunctionTool>();
+                        namespaces[ns] = entry;
+                    }
+
+                    var ft = ToResponseTool((AIFunctionDeclaration)tool, options);
+                    ft.Patch.Set("$.defer_loading"u8, "true"u8);
+                    entry.Add(ft);
+                    continue;
+                }
+
                 if (ToResponseTool(tool, options) is { } responseTool)
                 {
                     result.Tools.Add(responseTool);
+                }
+            }
+
+            if (namespaces is not null)
+            {
+                foreach (var kvp in namespaces)
+                {
+                    result.Tools.Add(ToNamespaceResponseTool(kvp.Key, kvp.Value));
                 }
             }
 
