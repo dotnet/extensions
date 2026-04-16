@@ -1066,24 +1066,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return _empty;
             }
 
-            HashSet<string>? functionAndMcpToolNames = null;
-            foreach (AITool tool in tools)
-            {
-                string? toolName = tool switch
-                {
-                    AIFunctionDeclaration aiFunction => aiFunction.Name,
-                    HostedMcpServerTool mcpTool => mcpTool.ServerName,
-                    _ => null,
-                };
+            HashSet<string> functionAndMcpToolNames = new(
+                tools.Select(
+                    static tool => tool switch
+                    {
+                        AIFunctionDeclaration aiFunction => aiFunction.Name,
+                        HostedMcpServerTool mcpTool => mcpTool.ServerName,
+                        _ => null,
+                    })
+                .OfType<string>(),
+                StringComparer.Ordinal);
 
-                if (toolName is not null)
-                {
-                    functionAndMcpToolNames ??= new(StringComparer.Ordinal);
-                    _ = functionAndMcpToolNames.Add(toolName);
-                }
-            }
-
-            if (functionAndMcpToolNames is null)
+            if (functionAndMcpToolNames.Count == 0)
             {
                 return _empty;
             }
@@ -1091,7 +1085,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             bool deferAll = false;
             HashSet<string> deferredToolNames = new(StringComparer.Ordinal);
             Dictionary<string, string> namespacedToolNames = new(StringComparer.Ordinal);
-            HashSet<string> unclaimedToolNames = [.. functionAndMcpToolNames];
+            HashSet<string> unclaimedToolNames = new(functionAndMcpToolNames, StringComparer.Ordinal);
 
             foreach (AITool tool in tools)
             {
