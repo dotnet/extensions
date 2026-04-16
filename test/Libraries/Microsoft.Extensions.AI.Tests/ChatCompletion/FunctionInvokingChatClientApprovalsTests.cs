@@ -755,6 +755,74 @@ public class FunctionInvokingChatClientApprovalsTests
     }
 
     /// <summary>
+    /// After serialization/deserialization, the TARC and TAResp may contain separate FCC object instances
+    /// for the same call. When a rejection is processed, GenerateRejectedFunctionResults must set
+    /// InformationalOnly=true on BOTH the TAResp's FCC and the TARC's FCC to ensure consistency
+    /// across serialization boundaries. This test verifies that both FCC instances are correctly
+    /// marked after rejection processing.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RejectionSetsInformationalOnlyOnBothRequestAndResponseFccInstancesAsync(bool streaming)
+    {
+        // Create two separate FCC objects for the same call — simulating deserialization
+        // where TARC and TAResp hold different FCC instances with the same CallId.
+        var requestFcc = new FunctionCallContent("callId1", "Func1");
+        var responseFcc = new FunctionCallContent("callId1", "Func1");
+
+        Assert.False(requestFcc.InformationalOnly);
+        Assert.False(responseFcc.InformationalOnly);
+
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", requestFcc),
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", false, responseFcc),
+            ]),
+        ];
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
+                Task.FromResult(new ChatResponse([new ChatMessage(ChatRole.Assistant, "world")])),
+            GetStreamingResponseAsyncCallback = (contents, actualOptions, actualCancellationToken) =>
+                YieldAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, "world")]).ToChatResponseUpdates()),
+        };
+
+        IChatClient service = innerClient.AsBuilder()
+            .Use(s => new FunctionInvokingChatClient(s))
+            .Build();
+
+        if (streaming)
+        {
+            await service.GetStreamingResponseAsync(input, options).ToChatResponseAsync();
+        }
+        else
+        {
+            await service.GetResponseAsync(input, options);
+        }
+
+        // The fix ensures both FCC instances are marked InformationalOnly=true,
+        // even when they are separate objects (as happens after serialization).
+        Assert.True(requestFcc.InformationalOnly);
+        Assert.True(responseFcc.InformationalOnly);
+    }
+
+    /// <summary>
     /// This verifies the following scenario:
     /// 1. We are streaming (also including non-streaming in the test for completeness).
     /// 2. There is one function that requires approval and one that does not.
