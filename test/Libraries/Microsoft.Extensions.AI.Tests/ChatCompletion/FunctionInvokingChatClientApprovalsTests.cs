@@ -1418,52 +1418,6 @@ public class FunctionInvokingChatClientApprovalsTests
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, additionalTools: useAdditionalTools ? tools : null);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task SearchableWrappingApprovalRequired_StillRequiresApprovalAsync(bool useAdditionalTools)
-    {
-        // Wrap ApprovalRequiredAIFunction with SearchableAIFunctionDeclaration to verify
-        // FunctionInvokingChatClient discovers the approval requirement through GetService chaining.
-        AITool[] tools =
-        [
-            new SearchableAIFunctionDeclaration(
-                new ApprovalRequiredAIFunction(
-                    AIFunctionFactory.Create(() => "Result 1", "Func1"))),
-            new SearchableAIFunctionDeclaration(
-                new ApprovalRequiredAIFunction(
-                    AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"))),
-        ];
-
-        var options = new ChatOptions
-        {
-            Tools = useAdditionalTools ? null : tools
-        };
-
-        List<ChatMessage> input =
-        [
-            new ChatMessage(ChatRole.User, "hello"),
-        ];
-
-        List<ChatMessage> downstreamClientOutput =
-        [
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-        ];
-
-        List<ChatMessage> expectedOutput =
-        [
-            new ChatMessage(ChatRole.Assistant,
-            [
-                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
-                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
-            ])
-        ];
-
-        await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput, additionalTools: useAdditionalTools ? tools : null);
-
-        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput, additionalTools: useAdditionalTools ? tools : null);
-    }
-
     private static Task<List<ChatMessage>> InvokeAndAssertAsync(
         ChatOptions? options,
         List<ChatMessage> input,

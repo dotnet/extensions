@@ -818,15 +818,16 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
         AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
 
-        var response = await ChatClient.GetResponseAsync(
+        using var client = new FunctionInvokingChatClient(ChatClient);
+        var response = await client.GetResponseAsync(
             "What's the weather like? Just respond with the weather info, nothing else.",
             new()
             {
                 Tools =
                 [
                     new HostedToolSearchTool(),
-                    new SearchableAIFunctionDeclaration(getWeather),
-                    new SearchableAIFunctionDeclaration(getTime),
+                    getWeather,
+                    getTime,
                 ],
             });
 
@@ -874,8 +875,8 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             throw new SkipTestException("Tool search requires gpt-5.4 or later.");
         }
 
-        // HostedToolSearchTool alongside plain (non-deferred) functions — the API rejects
-        // this with 400 because tool_search requires at least one deferred tool.
+        // HostedToolSearchTool with DeferredTools explicitly set to empty — no tools are deferred.
+        // The API rejects this with 400 because tool_search requires at least one deferred tool.
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
 
         await Assert.ThrowsAsync<ClientResultException>(() =>
@@ -885,44 +886,9 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 {
                     Tools =
                     [
-                        new HostedToolSearchTool(),
+                        new HostedToolSearchTool { DeferredTools = [] },
                         getWeather,
                     ],
                 }));
-    }
-
-    [ConditionalFact]
-    public async Task UseToolSearch_WithNamespace()
-    {
-        SkipIfNotEnabled();
-
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
-        }
-
-        AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
-        AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
-
-        var response = await ChatClient.GetResponseAsync(
-            "What's the weather like? Just respond with the weather info, nothing else.",
-            new()
-            {
-                Tools = SearchableAIFunctionDeclaration.CreateToolSet(
-                    [getWeather, getTime],
-                    @namespace: "utilities"),
-            });
-
-        Assert.NotNull(response);
-        Assert.NotEmpty(response.Text);
-
-        // Verify tool_search response items occurred.
-        var rawJsons = response.Messages
-            .SelectMany(m => m.Contents)
-            .Where(c => c.RawRepresentation is ResponseItem)
-            .Select(c => ModelReaderWriter.Write((ResponseItem)c.RawRepresentation!, ModelReaderWriterOptions.Json).ToString())
-            .ToList();
-        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_call\"") || json.Contains("\"type\": \"tool_search_call\""));
-        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
     }
 }

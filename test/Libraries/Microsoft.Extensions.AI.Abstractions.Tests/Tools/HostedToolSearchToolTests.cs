@@ -16,6 +16,8 @@ public class HostedToolSearchToolTests
         Assert.Empty(tool.Description);
         Assert.Empty(tool.AdditionalProperties);
         Assert.Equal(tool.Name, tool.ToString());
+        Assert.Null(tool.DeferredTools);
+        Assert.Null(tool.Namespace);
     }
 
     [Fact]
@@ -34,5 +36,37 @@ public class HostedToolSearchToolTests
         var tool = new HostedToolSearchTool(null);
 
         Assert.Empty(tool.AdditionalProperties);
+    }
+
+    [Fact]
+    public void DeferredTools_Roundtrips()
+    {
+        var tool = new HostedToolSearchTool
+        {
+            DeferredTools = ["GetWeather", "GetTime"]
+        };
+
+        Assert.NotNull(tool.DeferredTools);
+        Assert.Equal(2, tool.DeferredTools.Count);
+        Assert.Contains("GetWeather", tool.DeferredTools);
+        Assert.Contains("GetTime", tool.DeferredTools);
+    }
+
+    [Fact]
+    public void Namespace_Roundtrips()
+    {
+        var tool = new HostedToolSearchTool
+        {
+            Namespace = "my_tools"
+        };
+
+        Assert.Equal("my_tools", tool.Namespace);
+    }
+
+    [Fact]
+    public void Namespace_DefaultsToNull()
+    {
+        var tool = new HostedToolSearchTool();
+        Assert.Null(tool.Namespace);
     }
 }

@@ -7,7 +7,6 @@ using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -712,7 +711,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             case AIFunctionDeclaration aiFunction:
                 var functionTool = ToResponseTool(aiFunction, options);
-                if (tool.GetService<SearchableAIFunctionDeclaration>() is not null)
+                if (IsDeferredByAnyToolSearch(aiFunction.Name, options))
                 {
                     functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
                 }
@@ -834,6 +833,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
                 }
 
+                if (IsDeferredByAnyToolSearch(mcpTool.ServerName, options))
+                {
+                    responsesMcpTool.Patch.Set("$.defer_loading"u8, "true"u8);
+                }
+
                 return responsesMcpTool;
 
             default:
@@ -856,13 +860,54 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         };
     }
 
+    /// <summary>Checks whether any <see cref="HostedToolSearchTool"/> in the options considers the tool deferred.</summary>
+    private static bool IsDeferredByAnyToolSearch(string toolName, ChatOptions? options)
+    {
+        if (options?.Tools is { } tools)
+        {
+            foreach (AITool t in tools)
+            {
+                if (t is HostedToolSearchTool toolSearch && IsDeferredLoading(toolName, toolSearch))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Determines whether the tool with the given name should have deferred loading based on the <see cref="HostedToolSearchTool"/> configuration.</summary>
+    private static bool IsDeferredLoading(string toolName, HostedToolSearchTool toolSearch)
+    {
+        return toolSearch.DeferredTools is not { } deferred || deferred.Contains(toolName);
+    }
+
     /// <summary>
-    /// Builds a <c>{"type":"namespace"}</c> <see cref="ResponseTool"/> from a name and set of function tools.
+    /// Finds the namespace name that a tool belongs to by checking all <see cref="HostedToolSearchTool"/> instances.
+    /// Returns the namespace from the first <see cref="HostedToolSearchTool"/> that has a <see cref="HostedToolSearchTool.Namespace"/>
+    /// and considers the tool deferred.
+    /// </summary>
+    private static string? FindNamespaceForTool(string toolName, IList<AITool> tools)
+    {
+        foreach (AITool t in tools)
+        {
+            if (t is HostedToolSearchTool { Namespace: string ns } toolSearch && IsDeferredLoading(toolName, toolSearch))
+            {
+                return ns;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Builds a <c>{"type":"namespace"}</c> <see cref="ResponseTool"/> from a name and set of tools.
     /// The OpenAI .NET SDK doesn't expose a NamespaceTool type, so we construct the JSON manually.
     /// </summary>
-    internal static ResponseTool ToNamespaceResponseTool(string name, IEnumerable<FunctionTool> functionTools)
+    internal static ResponseTool ToNamespaceResponseTool(string name, IEnumerable<ResponseTool> namespacedTools)
     {
-        using var stream = new MemoryStream();
+        using var stream = new System.IO.MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
         {
             writer.WriteStartObject();
@@ -870,9 +915,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             writer.WriteString("name"u8, name);
 
             writer.WriteStartArray("tools"u8);
-            foreach (var functionTool in functionTools)
+            foreach (var namespacedTool in namespacedTools)
             {
-                var toolData = ModelReaderWriter.Write(functionTool, ModelReaderWriterOptions.Json, OpenAIContext.Default);
+                var toolData = ModelReaderWriter.Write(namespacedTool, ModelReaderWriterOptions.Json, OpenAIContext.Default);
                 using var doc = JsonDocument.Parse(toolData);
                 doc.RootElement.WriteTo(writer);
             }
@@ -967,34 +1012,39 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Populate tools if there are any.
         if (options.Tools is { Count: > 0 } tools)
         {
-            // Group SearchableAIFunctionDeclarations that share a namespace into namespace tools.
-            Dictionary<string, List<FunctionTool>>? namespaces = null;
+            Dictionary<string, List<ResponseTool>>? namespaceGroups = null;
+
             foreach (AITool tool in tools)
             {
-                if (tool.GetService<SearchableAIFunctionDeclaration>() is { Namespace: string ns })
-                {
-                    namespaces ??= new(StringComparer.Ordinal);
-                    if (!namespaces.TryGetValue(ns, out var entry))
-                    {
-                        entry = new List<FunctionTool>();
-                        namespaces[ns] = entry;
-                    }
-
-                    var ft = ToResponseTool((AIFunctionDeclaration)tool, options);
-                    ft.Patch.Set("$.defer_loading"u8, "true"u8);
-                    entry.Add(ft);
-                    continue;
-                }
-
                 if (ToResponseTool(tool, options) is { } responseTool)
                 {
+                    // When a namespaced HostedToolSearchTool claims this deferred tool,
+                    // collect it for later wrapping in a namespace container.
+                    string? responseToolName = responseTool is FunctionTool ft ? ft.FunctionName
+                        : responseTool is McpTool mcp ? mcp.ServerLabel
+                        : null;
+
+                    if (responseToolName is not null
+                        && FindNamespaceForTool(responseToolName, tools) is { } ns)
+                    {
+                        namespaceGroups ??= new(StringComparer.Ordinal);
+                        if (!namespaceGroups.TryGetValue(ns, out var group))
+                        {
+                            group = new();
+                            namespaceGroups[ns] = group;
+                        }
+
+                        group.Add(responseTool);
+                        continue;
+                    }
+
                     result.Tools.Add(responseTool);
                 }
             }
 
-            if (namespaces is not null)
+            if (namespaceGroups is not null)
             {
-                foreach (var kvp in namespaces)
+                foreach (KeyValuePair<string, List<ResponseTool>> kvp in namespaceGroups)
                 {
                     result.Tools.Add(ToNamespaceResponseTool(kvp.Key, kvp.Value));
                 }
