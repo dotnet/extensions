@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// that tool search should be enabled, reducing token usage by deferring full tool schema loading until the model requests it.
 /// </para>
 /// <para>
-/// By default, when a <see cref="HostedToolSearchTool"/> is present in the tools list, all tools that support deferred loading
+/// By default, when a <see cref="HostedToolSearchTool"/> is present in the tools list, all other deferrable tools
 /// are treated as having deferred loading enabled. Use <see cref="DeferredTools"/> to control which tools have deferred loading
 /// on a per-tool basis.
 /// </para>
@@ -45,10 +45,10 @@ public class HostedToolSearchTool : AITool
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The default value is <see langword="null"/>, which enables deferred loading for all tools in the tools list.
+    /// The default value is <see langword="null"/>, which enables deferred loading for all deferrable tools in the tools list.
     /// </para>
     /// <para>
-    /// When non-null, only tools whose names appear in this list will have deferred loading enabled.
+    /// When non-null, only deferrable tools whose names appear in this list will have deferred loading enabled.
     /// </para>
     /// </remarks>
     public IList<string>? DeferredTools { get; set; }
