@@ -994,9 +994,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (namespaces is not null)
             {
-                foreach (var (ns, functions) in namespaces)
+                foreach (var kvp in namespaces)
                 {
-                    result.Tools.Add(ToNamespaceResponseTool(ns, functions));
+                    result.Tools.Add(ToNamespaceResponseTool(kvp.Key, kvp.Value));
                 }
             }
 

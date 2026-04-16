@@ -910,7 +910,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             {
                 Tools = SearchableAIFunctionDeclaration.CreateToolSet(
                     [getWeather, getTime],
-                    namespaceName: "utilities"),
+                    @namespace: "utilities"),
             });
 
         Assert.NotNull(response);

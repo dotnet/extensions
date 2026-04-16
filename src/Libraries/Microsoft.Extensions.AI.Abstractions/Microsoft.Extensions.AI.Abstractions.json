@@ -3971,11 +3971,11 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.SearchableAIFunctionDeclaration.SearchableAIFunctionDeclaration(Microsoft.Extensions.AI.AIFunctionDeclaration innerFunction, string? namespaceName = null);",
+          "Member": "Microsoft.Extensions.AI.SearchableAIFunctionDeclaration.SearchableAIFunctionDeclaration(Microsoft.Extensions.AI.AIFunctionDeclaration innerFunction, string? @namespace = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "static System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool> Microsoft.Extensions.AI.SearchableAIFunctionDeclaration.CreateToolSet(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIFunctionDeclaration> functions, string? namespaceName = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? toolSearchProperties = null);",
+          "Member": "static System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool> Microsoft.Extensions.AI.SearchableAIFunctionDeclaration.CreateToolSet(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIFunctionDeclaration> functions, string? @namespace = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? toolSearchProperties = null);",
           "Stage": "Stable"
         }
       ],

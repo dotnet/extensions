@@ -138,7 +138,7 @@ public class SearchableAIFunctionDeclarationTests
         var f1 = AIFunctionFactory.Create(() => 1, "F1");
         var f2 = AIFunctionFactory.Create(() => 2, "F2");
 
-        var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1, f2], namespaceName: "crm");
+        var tools = SearchableAIFunctionDeclaration.CreateToolSet([f1, f2], @namespace: "crm");
 
         Assert.Equal(3, tools.Count);
         Assert.IsType<HostedToolSearchTool>(tools[0]);
