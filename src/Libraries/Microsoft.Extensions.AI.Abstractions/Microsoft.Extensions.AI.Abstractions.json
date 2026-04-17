@@ -2688,6 +2688,38 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.HostedToolSearchTool : Microsoft.Extensions.AI.AITool",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedToolSearchTool.HostedToolSearchTool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedToolSearchTool.HostedToolSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedToolSearchTool.AdditionalProperties { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedToolSearchTool.DeferredTools { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedToolSearchTool.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedToolSearchTool.Namespace { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.HostedVectorStoreContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
