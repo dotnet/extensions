@@ -633,10 +633,15 @@ public static partial class AIFunctionFactory
                 // JsonSerializerOptions.UnmappedMemberHandling behavior for object deserialization by
                 // applying the same policy to top-level AIFunction argument binding. Argument name matching
                 // honors the comparer of the supplied AIFunctionArguments dictionary (ordinal by default).
+                //
+                // Validation is skipped when custom ParameterBindingOptions.BindParameter callbacks are in
+                // use, since those may legitimately source values from argument keys that do not correspond
+                // to the .NET parameter names.
                 if (FunctionDescriptor.JsonSerializerOptions.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow &&
                     arguments.Count > 0 &&
-                    FunctionDescriptor.ExpectedArgumentNames is { } expectedNames)
+                    !FunctionDescriptor.HasCustomParameterBinding)
                 {
+                    HashSet<string> expectedNames = FunctionDescriptor.ExpectedArgumentNames;
                     int matched = 0;
                     foreach (string name in expectedNames)
                     {
@@ -772,7 +777,8 @@ public static partial class AIFunctionFactory
 
             // Get marshaling delegates for parameters.
             ParameterMarshallers = parameters.Length > 0 ? new Func<AIFunctionArguments, CancellationToken, object?>[parameters.Length] : [];
-            HashSet<string>? expectedArgumentNames = null;
+            HashSet<string> expectedArgumentNames = new(StringComparer.Ordinal);
+            bool hasCustomParameterBinding = false;
             for (int i = 0; i < parameters.Length; i++)
             {
                 if (boundParameters?.TryGetValue(parameters[i], out AIFunctionFactoryOptions.ParameterBindingOptions options) is not true)
@@ -782,22 +788,30 @@ public static partial class AIFunctionFactory
 
                 ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
 
+                if (options.BindParameter is not null)
+                {
+                    // Custom BindParameter callbacks can legally source their value from arbitrary keys in the
+                    // AIFunctionArguments dictionary, so we cannot know in advance which keys are "expected".
+                    // Note this down so that strict unmapped-member validation is skipped in InvokeCoreAsync.
+                    hasCustomParameterBinding = true;
+                }
+
                 // Collect the set of parameter names that are potentially sourced from the arguments dictionary.
                 // Infrastructure parameters (CancellationToken, AIFunctionArguments, IServiceProvider) are always
-                // bound from dedicated sources and are never resolved by argument name, so they are excluded.
-                // Custom BindParameter callbacks may read arbitrary keys from the arguments dictionary, so we
-                // include their parameter name as a permitted argument name rather than flagging it as unmapped.
+                // bound from dedicated sources and are never resolved by argument name, so they are excluded from
+                // the permitted set.
                 Type pType = parameters[i].ParameterType;
                 if (pType != typeof(CancellationToken) &&
                     pType != typeof(AIFunctionArguments) &&
                     pType != typeof(IServiceProvider) &&
                     !string.IsNullOrEmpty(parameters[i].Name))
                 {
-                    _ = (expectedArgumentNames ??= new HashSet<string>(StringComparer.Ordinal)).Add(parameters[i].Name!);
+                    _ = expectedArgumentNames.Add(parameters[i].Name!);
                 }
             }
 
             ExpectedArgumentNames = expectedArgumentNames;
+            HasCustomParameterBinding = hasCustomParameterBinding;
 
             ReturnParameterMarshaller = GetReturnParameterMarshaller(key, serializerOptions, out Type? returnType);
             Method = key.Method;
@@ -826,7 +840,8 @@ public static partial class AIFunctionFactory
         public JsonElement? ReturnJsonSchema { get; }
         public Func<AIFunctionArguments, CancellationToken, object?>[] ParameterMarshallers { get; }
         public Func<object?, CancellationToken, ValueTask<object?>> ReturnParameterMarshaller { get; }
-        public HashSet<string>? ExpectedArgumentNames { get; }
+        public HashSet<string> ExpectedArgumentNames { get; }
+        public bool HasCustomParameterBinding { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
         private static string GetFunctionName(MethodInfo method)

@@ -32,9 +32,18 @@ public sealed class AIFunctionFactoryOptions
     /// When <see cref="JsonSerializerOptions.UnmappedMemberHandling"/> is set to
     /// <see cref="System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow"/>, the produced
     /// <see cref="AIFunction"/> will throw at invocation time if the <see cref="AIFunctionArguments"/>
-    /// dictionary contains keys that do not correspond to any of the function's parameters. This mirrors
+    /// dictionary contains keys that do not correspond to a bindable function parameter. This mirrors
     /// the handling of unmapped properties during object deserialization and enables strict validation of
-    /// tool call arguments.
+    /// tool call arguments. For this validation, only parameters populated from <see cref="AIFunctionArguments"/>
+    /// are considered valid argument names; infrastructure parameters such as <see cref="System.Threading.CancellationToken"/>,
+    /// <see cref="AIFunctionArguments"/>, and <see cref="IServiceProvider"/> are excluded, so argument keys
+    /// matching those parameter names are still treated as unexpected even if the underlying method declares
+    /// parameters with those names.
+    /// </para>
+    /// <para>
+    /// This strict validation is based on the function's parameter metadata and is not applied to functions
+    /// that use custom parameter binding configured through <see cref="ConfigureParameterBinding"/>, since
+    /// such callbacks may legitimately source parameter values from arbitrary argument keys.
     /// </para>
     /// </remarks>
     public JsonSerializerOptions? SerializerOptions { get; set; }

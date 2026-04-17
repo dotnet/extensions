@@ -1533,6 +1533,56 @@ public partial class AIFunctionFactoryTest
         Assert.Contains("PHASE", ex.Message);
     }
 
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_ParameterlessMethod_ThrowsOnAnyArgument_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        AIFunction func = AIFunctionFactory.Create(
+            () => "ok",
+            new AIFunctionFactoryOptions { SerializerOptions = strictOptions });
+
+        // No args is fine.
+        AssertExtensions.EqualFunctionCallResults("ok", await func.InvokeAsync());
+
+        // Any extra key is flagged.
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>("arguments", async () =>
+            await func.InvokeAsync(new() { ["phase"] = "completed" }));
+        Assert.Contains("phase", ex.Message);
+    }
+
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_CustomBindParameter_SkipsStrictValidation_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        // A custom BindParameter callback sources its value from a key that does not correspond
+        // to the .NET parameter name. Strict validation must be skipped so such binders keep working.
+        AIFunction func = AIFunctionFactory.Create(
+            (string update) => $"update:{update}",
+            new AIFunctionFactoryOptions
+            {
+                SerializerOptions = strictOptions,
+                ConfigureParameterBinding = _ => new()
+                {
+                    BindParameter = (_, args) => args["aliasedKey"],
+                },
+            });
+
+        object? result = await func.InvokeAsync(new()
+        {
+            ["aliasedKey"] = "hello",
+            ["anotherKey"] = "world",
+        });
+        AssertExtensions.EqualFunctionCallResults("update:hello", result);
+    }
+
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]
     [JsonSerializable(typeof(string))]
