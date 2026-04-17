@@ -1501,6 +1501,38 @@ public partial class AIFunctionFactoryTest
         AssertExtensions.EqualFunctionCallResults("Done:False", result);
     }
 
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_HonorsArgumentsComparer_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        AIFunction func = AIFunctionFactory.Create(
+            (string update, bool markComplete = false) => $"{update}:{markComplete}",
+            new AIFunctionFactoryOptions { SerializerOptions = strictOptions });
+
+        // Case-insensitive arguments dictionary: casing variations of the parameter name must not be
+        // flagged as unmapped, since the binding lookup itself is case-insensitive.
+        AIFunctionArguments caseInsensitive = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["UPDATE"] = "Done",
+            ["MarkComplete"] = true,
+        };
+        AssertExtensions.EqualFunctionCallResults("Done:True", await func.InvokeAsync(caseInsensitive));
+
+        // A genuinely unmapped key is still flagged even with a case-insensitive comparer.
+        AIFunctionArguments withExtra = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["update"] = "Done",
+            ["PHASE"] = "completed",
+        };
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>("arguments", async () =>
+            await func.InvokeAsync(withExtra));
+        Assert.Contains("PHASE", ex.Message);
+    }
+
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]
     [JsonSerializable(typeof(string))]

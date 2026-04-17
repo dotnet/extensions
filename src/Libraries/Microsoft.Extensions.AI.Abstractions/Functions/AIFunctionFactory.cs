@@ -631,19 +631,38 @@ public static partial class AIFunctionFactory
                 // If the configured serializer options request strict handling of unmapped members,
                 // verify that every argument key corresponds to a declared parameter name. This mirrors
                 // JsonSerializerOptions.UnmappedMemberHandling behavior for object deserialization by
-                // applying the same policy to top-level AIFunction argument binding.
-                if (FunctionDescriptor.JsonSerializerOptions.UnmappedMemberHandling == JsonUnmappedMemberHandling.Disallow &&
+                // applying the same policy to top-level AIFunction argument binding. Argument name matching
+                // honors the comparer of the supplied AIFunctionArguments dictionary (ordinal by default).
+                if (FunctionDescriptor.JsonSerializerOptions.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow &&
                     arguments.Count > 0 &&
                     FunctionDescriptor.ExpectedArgumentNames is { } expectedNames)
                 {
-                    foreach (KeyValuePair<string, object?> kvp in arguments)
+                    int matched = 0;
+                    foreach (string name in expectedNames)
                     {
-                        if (!expectedNames.Contains(kvp.Key))
+                        if (arguments.ContainsKey(name))
                         {
-                            Throw.ArgumentException(
-                                nameof(arguments),
-                                $"The arguments dictionary contains an unexpected key '{kvp.Key}' that does not correspond to any parameter of '{Name}'.");
+                            matched++;
                         }
+                    }
+
+                    if (matched != arguments.Count)
+                    {
+                        foreach (KeyValuePair<string, object?> kvp in arguments)
+                        {
+                            if (!expectedNames.Contains(kvp.Key))
+                            {
+                                Throw.ArgumentException(
+                                    nameof(arguments),
+                                    $"The arguments dictionary contains an unexpected key '{kvp.Key}' that does not correspond to any parameter of '{Name}'.");
+                            }
+                        }
+
+                        // Fallback for comparer mismatches (e.g. case-insensitive arguments dictionary
+                        // with duplicate-casing keys aliasing to the same parameter).
+                        Throw.ArgumentException(
+                            nameof(arguments),
+                            $"The arguments dictionary contains keys that do not correspond to any parameter of '{Name}'.");
                     }
                 }
 
