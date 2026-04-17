@@ -8107,4 +8107,90 @@ public class OpenAIResponseClientTests
         Assert.Equal("Hello!", response.Text);
     }
 
+    [Fact]
+    public async Task ToolSearchTool_NonDeferrableToolStaysTopLevel_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-5.4-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "code_interpreter",
+                        "container": {
+                            "type": "auto"
+                        }
+                    },
+                    {
+                        "type": "function",
+                        "name": "LocalFunc",
+                        "description": "A local function.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-5.4-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-5.4-mini");
+
+        var codeTool = new HostedCodeInterpreterTool();
+        var localFunc = AIFunctionFactory.Create(() => 42, "LocalFunc", "A local function.");
+
+        // code_interpreter is not deferrable — it stays top-level even when listed in DeferredTools with a namespace.
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool { Namespace = "sandbox", DeferredTools = ["code_interpreter"] },
+                codeTool,
+                localFunc,
+            ],
+            AdditionalProperties = new() { ["strict"] = true },
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
 }

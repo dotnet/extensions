@@ -740,6 +740,22 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_NonDeferrableTool_IgnoresDeferredTools()
+    {
+        var codeTool = new HostedCodeInterpreterTool();
+        var options = new ChatOptions
+        {
+            Tools = [new HostedToolSearchTool { DeferredTools = ["code_interpreter"] }, codeTool]
+        };
+
+        var result = codeTool.AsOpenAIResponseTool(options);
+        Assert.NotNull(result);
+        var json = ModelReaderWriter.Write(result, ModelReaderWriterOptions.Json).ToString();
+        Assert.DoesNotContain("defer_loading", json);
+        Assert.IsType<CodeInterpreterTool>(result);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithNullTool_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>("tool", () => ((AITool)null!).AsOpenAIResponseTool());
