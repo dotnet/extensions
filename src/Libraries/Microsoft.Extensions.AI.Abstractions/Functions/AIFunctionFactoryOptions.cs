@@ -29,21 +29,10 @@ public sealed class AIFunctionFactoryOptions
     /// If no value has been specified, the <see cref="AIJsonUtilities.DefaultOptions"/> instance will be used.
     /// </para>
     /// <para>
-    /// When <see cref="JsonSerializerOptions.UnmappedMemberHandling"/> is set to
-    /// <see cref="System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow"/>, the produced
-    /// <see cref="AIFunction"/> will throw at invocation time if the <see cref="AIFunctionArguments"/>
-    /// dictionary contains keys that do not correspond to a bindable function parameter. This mirrors
-    /// the handling of unmapped properties during object deserialization and enables strict validation of
-    /// tool call arguments. For this validation, only parameters populated from <see cref="AIFunctionArguments"/>
-    /// are considered valid argument names; infrastructure parameters such as <see cref="System.Threading.CancellationToken"/>,
-    /// <see cref="AIFunctionArguments"/>, and <see cref="IServiceProvider"/> are excluded, so argument keys
-    /// matching those parameter names are still treated as unexpected even if the underlying method declares
-    /// parameters with those names.
-    /// </para>
-    /// <para>
-    /// This strict validation is based on the function's parameter metadata and is not applied to functions
-    /// that use custom parameter binding configured through <see cref="ConfigureParameterBinding"/>, since
-    /// such callbacks may legitimately source parameter values from arbitrary argument keys.
+    /// The <see cref="JsonSerializerOptions.UnmappedMemberHandling"/> setting is honored by the function parameter
+    /// binder: when set to <see cref="System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow"/>, invoking
+    /// the produced <see cref="AIFunction"/> throws if the supplied <see cref="AIFunctionArguments"/> contains keys
+    /// that do not correspond to a bindable parameter of the underlying method.
     /// </para>
     /// </remarks>
     public JsonSerializerOptions? SerializerOptions { get; set; }
