@@ -1455,6 +1455,52 @@ public partial class AIFunctionFactoryTest
 #endif
     }
 
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_ThrowsOnExtraArgument_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        AIFunction func = AIFunctionFactory.Create(
+            (string taskId, string update, bool markComplete = false) => $"{taskId}:{update}:{markComplete}",
+            new AIFunctionFactoryOptions { SerializerOptions = strictOptions });
+
+        // Extra, unrecognized argument causes a throw.
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>("arguments", async () =>
+            await func.InvokeAsync(new()
+            {
+                ["taskId"] = "abc",
+                ["update"] = "Done",
+                ["phase"] = "completed",
+            }));
+        Assert.Contains("phase", ex.Message);
+
+        // Still succeeds when no unexpected arguments are present (optional parameter omitted).
+        object? result = await func.InvokeAsync(new()
+        {
+            ["taskId"] = "abc",
+            ["update"] = "Done",
+        });
+        AssertExtensions.EqualFunctionCallResults("abc:Done:False", result);
+    }
+
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDefault_IgnoresExtraArgument_Async()
+    {
+        // Default behavior (Skip) should preserve pre-existing lenient binding.
+        AIFunction func = AIFunctionFactory.Create(
+            (string update, bool markComplete = false) => $"{update}:{markComplete}");
+
+        object? result = await func.InvokeAsync(new()
+        {
+            ["update"] = "Done",
+            ["phase"] = "completed",
+        });
+        AssertExtensions.EqualFunctionCallResults("Done:False", result);
+    }
+
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]
     [JsonSerializable(typeof(int[]))]
     [JsonSerializable(typeof(string))]

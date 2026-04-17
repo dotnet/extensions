@@ -25,7 +25,17 @@ public sealed class AIFunctionFactoryOptions
 
     /// <summary>Gets or sets the <see cref="JsonSerializerOptions"/> used to marshal .NET values being passed to the underlying delegate.</summary>
     /// <remarks>
+    /// <para>
     /// If no value has been specified, the <see cref="AIJsonUtilities.DefaultOptions"/> instance will be used.
+    /// </para>
+    /// <para>
+    /// When <see cref="JsonSerializerOptions.UnmappedMemberHandling"/> is set to
+    /// <see cref="System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow"/>, the produced
+    /// <see cref="AIFunction"/> will throw at invocation time if the <see cref="AIFunctionArguments"/>
+    /// dictionary contains keys that do not correspond to any of the function's parameters. This mirrors
+    /// the handling of unmapped properties during object deserialization and enables strict validation of
+    /// tool call arguments.
+    /// </para>
     /// </remarks>
     public JsonSerializerOptions? SerializerOptions { get; set; }
 
