@@ -1,5 +1,5 @@
-﻿{
-  "Name": "Microsoft.Extensions.AI.Abstractions, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+{
+  "Name": "Microsoft.Extensions.AI.Abstractions, Version=10.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.AI.AdditionalPropertiesDictionary : Microsoft.Extensions.AI.AdditionalPropertiesDictionary<object?>",
@@ -2521,29 +2521,29 @@
     },
     {
       "Type": "class Microsoft.Extensions.AI.HostedImageGenerationTool : Microsoft.Extensions.AI.AITool",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedImageGenerationTool.HostedImageGenerationTool();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.HostedImageGenerationTool.HostedImageGenerationTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedImageGenerationTool.AdditionalProperties { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override string Microsoft.Extensions.AI.HostedImageGenerationTool.Name { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationOptions? Microsoft.Extensions.AI.HostedImageGenerationTool.Options { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -2956,27 +2956,27 @@
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageGenerationToolCallContent(string callId);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageGenerationToolResultContent(string callId);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.ImageGenerationToolResultContent.Outputs { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
