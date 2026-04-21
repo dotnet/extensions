@@ -40,9 +40,7 @@ public class HostedImageGenerationToolTests
     [Fact]
     public void Options_Roundtrip()
     {
-#pragma warning disable MEAI001 // ImageGenerationOptions is experimental
         var options = new ImageGenerationOptions();
-#pragma warning restore MEAI001
         var tool = new HostedImageGenerationTool
         {
             Options = options

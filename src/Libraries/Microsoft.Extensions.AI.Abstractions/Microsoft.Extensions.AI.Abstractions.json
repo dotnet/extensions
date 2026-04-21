@@ -2821,53 +2821,53 @@
     },
     {
       "Type": "class Microsoft.Extensions.AI.ImageGenerationOptions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationOptions.ImageGenerationOptions();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationOptions.ImageGenerationOptions(Microsoft.Extensions.AI.ImageGenerationOptions? other);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "virtual Microsoft.Extensions.AI.ImageGenerationOptions Microsoft.Extensions.AI.ImageGenerationOptions.Clone();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.ImageGenerationOptions.AdditionalProperties { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "int? Microsoft.Extensions.AI.ImageGenerationOptions.Count { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Drawing.Size? Microsoft.Extensions.AI.ImageGenerationOptions.ImageSize { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ImageGenerationOptions.MediaType { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ImageGenerationOptions.ModelId { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Func<Microsoft.Extensions.AI.IImageGenerator, object?>? Microsoft.Extensions.AI.ImageGenerationOptions.RawRepresentationFactory { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationResponseFormat? Microsoft.Extensions.AI.ImageGenerationOptions.ResponseFormat { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "int? Microsoft.Extensions.AI.ImageGenerationOptions.StreamingCount { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -2929,27 +2929,27 @@
     },
     {
       "Type": "enum Microsoft.Extensions.AI.ImageGenerationResponseFormat",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationResponseFormat.ImageGenerationResponseFormat();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Fields": [
         {
           "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Data",
-          "Stage": "Experimental",
+          "Stage": "Stable",
           "Value": "1"
         },
         {
           "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Hosted",
-          "Stage": "Experimental",
+          "Stage": "Stable",
           "Value": "2"
         },
         {
           "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Uri",
-          "Stage": "Experimental",
+          "Stage": "Stable",
           "Value": "0"
         }
       ]
