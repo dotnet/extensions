@@ -2,14 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a hosted tool that can be specified to an AI service to enable it to search for and selectively load tool definitions on demand.</summary>
+/// <summary>
+/// Represents a hosted tool that can be specified to an AI service to enable it to search for and selectively load tool definitions on demand.
+/// </summary>
 /// <remarks>
 /// <para>
 /// This tool does not itself implement tool search. It is a marker that can be used to inform a service
-/// that tool search should be enabled, reducing token usage by deferring full tool schema loading until the model requests it.
+/// that tool search should be enabled. When included, deferred tools are not placed into the model's context
+/// upfront; instead, the model invokes tool search to surface relevant tools on demand, reducing the input
+/// tokens consumed by tool definitions the model doesn't need.
 /// </para>
 /// <para>
 /// By default, when a <see cref="HostedToolSearchTool"/> is present in the tools list, all other deferrable tools
@@ -17,6 +23,7 @@ namespace Microsoft.Extensions.AI;
 /// on a per-tool basis.
 /// </para>
 /// </remarks>
+[Experimental(DiagnosticIds.Experiments.AIToolSearch, UrlFormat = DiagnosticIds.UrlFormat)]
 public class HostedToolSearchTool : AITool
 {
     /// <summary>Any additional properties associated with the tool.</summary>
