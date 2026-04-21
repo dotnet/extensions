@@ -116,7 +116,7 @@ public class ImageGenerationOptionsTests
     [Theory]
     [InlineData(ImageGenerationResponseFormat.Uri)]
     [InlineData(ImageGenerationResponseFormat.Data)]
-    [InlineData(ImageGenerationResponseFormat.Hosted)]
+
     public void ImageGenerationResponseFormat_Values_AreValid(ImageGenerationResponseFormat responseFormat)
     {
         Assert.True(Enum.IsDefined(typeof(ImageGenerationResponseFormat), responseFormat));

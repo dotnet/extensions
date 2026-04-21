@@ -110,8 +110,4 @@ public enum ImageGenerationResponseFormat
     /// </summary>
     Data,
 
-    /// <summary>
-    /// The generated image is returned as a hosted resource identifier, which can be used to retrieve the image later.
-    /// </summary>
-    Hosted,
 }
