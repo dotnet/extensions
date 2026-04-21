@@ -272,17 +272,12 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire,
         };
 
-        var mcpResponseTool = mcpTool.AsOpenAIResponseTool()!;
-#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        mcpResponseTool.Patch.Set("$.defer_loading"u8, "true"u8);
-#pragma warning restore SCME0001
-
         ChatOptions chatOptions = new()
         {
             Tools =
             [
                 new HostedToolSearchTool(),
-                mcpResponseTool.AsAITool(),
+                mcpTool,
             ],
         };
 
@@ -845,7 +840,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     }
 
     [ConditionalFact]
-    public async Task UseToolSearch_OnlyToolSearchNoFunctions()
+    public async Task UseToolSearch_OnlyToolSearchNoFunctions_Throws()
     {
         SkipIfNotEnabled();
 
@@ -866,7 +861,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     }
 
     [ConditionalFact]
-    public async Task UseToolSearch_WithNonDeferredFunctionsOnly()
+    public async Task UseToolSearch_WithNonDeferredFunctionsOnly_Throws()
     {
         SkipIfNotEnabled();
 
@@ -888,6 +883,35 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                     [
                         new HostedToolSearchTool { DeferredTools = [] },
                         getWeather,
+                    ],
+                }));
+    }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_DeferLoadingOnNonDeferrableTool_Throws()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        // Force defer_loading on a code_interpreter tool via Patch — the API should reject this.
+        var codeTool = new HostedCodeInterpreterTool();
+        var responseTool = codeTool.AsOpenAIResponseTool()!;
+#pragma warning disable SCME0001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        responseTool.Patch.Set("$.defer_loading"u8, "true"u8);
+#pragma warning restore SCME0001
+
+        await Assert.ThrowsAsync<ClientResultException>(() =>
+            ChatClient.GetResponseAsync(
+                "Use code interpreter to calculate 2+2.",
+                new()
+                {
+                    Tools =
+                    [
+                        responseTool.AsAITool(),
                     ],
                 }));
     }
