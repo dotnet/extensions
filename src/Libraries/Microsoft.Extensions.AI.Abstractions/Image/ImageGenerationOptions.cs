@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -109,5 +111,11 @@ public enum ImageGenerationResponseFormat
     /// The generated image is returned as in-memory image data.
     /// </summary>
     Data,
+
+    /// <summary>
+    /// The generated image is returned as a hosted resource identifier, which can be used to retrieve the image later.
+    /// </summary>
+    [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+    Hosted,
 
 }
