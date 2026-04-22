@@ -1385,6 +1385,12 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                         (allApprovalResponses ??= []).Add(tarc);
                         break;
 
+                    case ToolApprovalResponseContent tarc when tarc.ToolCall is FunctionCallContent { InformationalOnly: true }:
+                        // Remove from validation set to handle sessions serialized before the fix
+                        // for https://github.com/dotnet/extensions/pull/7468.
+                        _ = approvalRequestCallIds?.Remove(tarc.ToolCall.CallId);
+                        goto default;
+
                     case FunctionResultContent frc:
                         // Maintain a list of function calls that have already been invoked to avoid invoking them twice.
                         _ = (functionResultCallIds ??= []).Add(frc.CallId);
