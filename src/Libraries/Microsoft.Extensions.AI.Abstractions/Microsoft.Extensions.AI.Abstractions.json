@@ -2943,6 +2943,11 @@
           "Value": "1"
         },
         {
+          "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Hosted",
+          "Stage": "Experimental",
+          "Value": "2"
+        },
+        {
           "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Uri",
           "Stage": "Stable",
           "Value": "0"
