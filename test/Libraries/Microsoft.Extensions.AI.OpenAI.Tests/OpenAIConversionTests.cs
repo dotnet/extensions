@@ -589,6 +589,30 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_ProducesValidToolSearchTool()
+    {
+        var toolSearchTool = new HostedToolSearchTool();
+
+        var result = toolSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var json = ModelReaderWriter.Write(result, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("\"type\"", json);
+        Assert.Contains("tool_search", json);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_ProducesNewInstanceEachTime()
+    {
+        var result1 = new HostedToolSearchTool().AsOpenAIResponseTool();
+        var result2 = new HostedToolSearchTool().AsOpenAIResponseTool();
+
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+        Assert.NotSame(result1, result2);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithNullTool_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>("tool", () => ((AITool)null!).AsOpenAIResponseTool());
