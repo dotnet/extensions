@@ -13,6 +13,7 @@ internal partial class DefaultHybridCache
         private IHybridCacheSerializer<T>? _serializer;
         private BufferChunk _buffer;
         private T? _fallbackValue; // only used in the case of serialization failures
+        private long _localCacheSizeOverride = -1; // -1 means use buffer length
 
         public MutableCacheItem(long creationTimestamp, TagSet tags)
             : base(creationTimestamp, tags)
@@ -66,13 +67,18 @@ internal partial class DefaultHybridCache
             // only if we haven't already burned
             if (TryReserve())
             {
-                size = _buffer.Length;
+                size = _localCacheSizeOverride >= 0 ? _localCacheSizeOverride : _buffer.Length;
                 _ = Release();
                 return true;
             }
 
             size = 0;
             return false;
+        }
+
+        public void SetLocalCacheSizeOverride(long size)
+        {
+            _localCacheSizeOverride = size;
         }
 
         public override bool TryReserveBuffer(out BufferChunk buffer)
