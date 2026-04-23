@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
+using OpenAI;
 using OpenAI.Responses;
 
 #pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
@@ -701,7 +702,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         (response is not null && response.Patch.TryGetValue("$.store"u8, out bool store) && !store);
 #pragma warning restore SCME0001
 
-    internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null)
+    internal static ResponseTool? ToResponseTool(AITool tool, ChatOptions? options = null, ToolSearchLookup? toolSearchLookup = null)
     {
         switch (tool)
         {
@@ -709,7 +710,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 return rtat.Tool;
 
             case AIFunctionDeclaration aiFunction:
-                return ToResponseTool(aiFunction, options);
+                var functionTool = ToResponseTool(aiFunction, options);
+                if ((toolSearchLookup ??= ToolSearchLookup.Create(options?.Tools)).IsDeferred(aiFunction.Name))
+                {
+                    functionTool.Patch.Set("$.defer_loading"u8, "true"u8);
+                }
+
+                return functionTool;
+
+            case HostedToolSearchTool:
+                // Workaround: The OpenAI .NET SDK doesn't yet expose a ToolSearchTool type.
+                // See https://github.com/openai/openai-dotnet/issues/1053
+                return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
 
             case HostedWebSearchTool webSearchTool:
                 return new WebSearchTool
@@ -821,6 +833,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         break;
                 }
 
+                if ((toolSearchLookup ??= ToolSearchLookup.Create(options?.Tools)).IsDeferred(mcpTool.ServerName))
+                {
+                    responsesMcpTool.Patch.Set("$.defer_loading"u8, "true"u8);
+                }
+
                 return responsesMcpTool;
 
             default:
@@ -841,6 +858,34 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             FunctionDescription = aiFunction.Description,
         };
+    }
+
+    /// <summary>
+    /// Builds a <c>{"type":"namespace"}</c> <see cref="ResponseTool"/> from a name and set of tools.
+    /// The OpenAI .NET SDK doesn't expose a NamespaceTool type, so we construct the JSON manually.
+    /// </summary>
+    internal static ResponseTool ToNamespaceResponseTool(string name, IEnumerable<ResponseTool> namespacedTools)
+    {
+        using var stream = new System.IO.MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("type"u8, "namespace"u8);
+            writer.WriteString("name"u8, name);
+
+            writer.WriteStartArray("tools"u8);
+            foreach (var namespacedTool in namespacedTools)
+            {
+                var toolData = ModelReaderWriter.Write(namespacedTool, ModelReaderWriterOptions.Json, OpenAIContext.Default);
+                using var doc = JsonDocument.Parse(toolData);
+                doc.RootElement.WriteTo(writer);
+            }
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromBytes(stream.ToArray()), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
@@ -926,11 +971,42 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Populate tools if there are any.
         if (options.Tools is { Count: > 0 } tools)
         {
+            ToolSearchLookup toolSearchLookup = ToolSearchLookup.Create(tools);
+            Dictionary<string, List<ResponseTool>>? namespaceGroups = null;
+
             foreach (AITool tool in tools)
             {
-                if (ToResponseTool(tool, options) is { } responseTool)
+                if (ToResponseTool(tool, options, toolSearchLookup) is { } responseTool)
                 {
+                    // When a namespaced HostedToolSearchTool claims this deferred tool,
+                    // collect it for later wrapping in a namespace container.
+                    string? responseToolName = responseTool is FunctionTool ft ? ft.FunctionName
+                        : responseTool is McpTool mcp ? mcp.ServerLabel
+                        : null;
+
+                    if (responseToolName is not null
+                        && toolSearchLookup.GetNamespace(responseToolName) is { } ns)
+                    {
+                        namespaceGroups ??= new(StringComparer.Ordinal);
+                        if (!namespaceGroups.TryGetValue(ns, out var group))
+                        {
+                            group = new();
+                            namespaceGroups[ns] = group;
+                        }
+
+                        group.Add(responseTool);
+                        continue;
+                    }
+
                     result.Tools.Add(responseTool);
+                }
+            }
+
+            if (namespaceGroups is not null)
+            {
+                foreach (KeyValuePair<string, List<ResponseTool>> kvp in namespaceGroups)
+                {
+                    result.Tools.Add(ToNamespaceResponseTool(kvp.Key, kvp.Value));
                 }
             }
 
@@ -967,6 +1043,98 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         return result;
+    }
+
+    internal sealed class ToolSearchLookup
+    {
+        private static readonly ToolSearchLookup _empty = new(deferAll: false, deferredToolNames: [], namespacedToolNames: []);
+        private readonly bool _deferAll;
+        private readonly HashSet<string> _deferredToolNames;
+        private readonly Dictionary<string, string> _namespacedToolNames;
+
+        private ToolSearchLookup(bool deferAll, HashSet<string> deferredToolNames, Dictionary<string, string> namespacedToolNames)
+        {
+            _deferAll = deferAll;
+            _deferredToolNames = deferredToolNames;
+            _namespacedToolNames = namespacedToolNames;
+        }
+
+        public static ToolSearchLookup Create(IList<AITool>? tools)
+        {
+            if (tools is not { Count: > 0 })
+            {
+                return _empty;
+            }
+
+            HashSet<string> functionAndMcpToolNames = new(
+                tools.Select(
+                    static tool => tool switch
+                    {
+                        AIFunctionDeclaration aiFunction => aiFunction.Name,
+                        HostedMcpServerTool mcpTool => mcpTool.ServerName,
+                        _ => null,
+                    })
+                .OfType<string>(),
+                StringComparer.Ordinal);
+
+            if (functionAndMcpToolNames.Count == 0)
+            {
+                return _empty;
+            }
+
+            bool deferAll = false;
+            HashSet<string> deferredToolNames = new(StringComparer.Ordinal);
+            Dictionary<string, string> namespacedToolNames = new(StringComparer.Ordinal);
+            HashSet<string> unclaimedToolNames = new(functionAndMcpToolNames, StringComparer.Ordinal);
+
+            foreach (AITool tool in tools)
+            {
+                if (tool is not HostedToolSearchTool toolSearch)
+                {
+                    continue;
+                }
+
+                if (toolSearch.DeferredTools is not { } deferredTools)
+                {
+                    deferAll = true;
+                    deferredToolNames.UnionWith(functionAndMcpToolNames);
+
+                    if (toolSearch.Namespace is { } ns && unclaimedToolNames.Count > 0)
+                    {
+                        foreach (string toolName in unclaimedToolNames)
+                        {
+                            namespacedToolNames[toolName] = ns;
+                        }
+
+                        unclaimedToolNames.Clear();
+                    }
+
+                    continue;
+                }
+
+                foreach (string deferredTool in deferredTools)
+                {
+                    if (!functionAndMcpToolNames.Contains(deferredTool))
+                    {
+                        continue;
+                    }
+
+                    _ = deferredToolNames.Add(deferredTool);
+                    if (toolSearch.Namespace is { } ns && unclaimedToolNames.Remove(deferredTool))
+                    {
+                        namespacedToolNames[deferredTool] = ns;
+                    }
+                }
+            }
+
+            return new(deferAll, deferredToolNames, namespacedToolNames);
+        }
+
+        public bool IsDeferred(string toolName) =>
+            _deferAll || _deferredToolNames.Contains(toolName);
+
+        public string? GetNamespace(string toolName) =>
+            _namespacedToolNames.TryGetValue(toolName, out string? ns) ? ns : null;
     }
 
     internal static ResponseTextFormat? ToOpenAIResponseTextFormat(ChatResponseFormat? format, ChatOptions? options = null) =>
