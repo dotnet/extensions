@@ -597,7 +597,9 @@ public sealed class DataContentTests
         byte[] testData = [1, 2, 3];
         DataContent content = new(testData, "application/json");
 
-        string filename = $"test_{Guid.NewGuid()}.json";
+        string filename = $"test_{Guid.NewGuid():N}.json";
+        string cwdBefore = Directory.GetCurrentDirectory();
+        string expectedAbsolute = Path.Combine(cwdBefore, filename);
         string? savedPath = null;
 
         try
@@ -606,14 +608,17 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory
             Assert.Equal(filename, Path.GetFileName(savedPath));
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+
+            // Verify the file actually landed in cwd-at-call-time using an absolute path,
+            // so the assertion is independent of cwd at check time.
+            Assert.True(File.Exists(expectedAbsolute));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            if (savedPath is not null && File.Exists(savedPath))
+            if (File.Exists(expectedAbsolute))
             {
-                File.Delete(savedPath);
+                File.Delete(expectedAbsolute);
             }
         }
     }
@@ -652,8 +657,10 @@ public sealed class DataContentTests
     {
         // Test that providing an empty string path uses current directory with name from content
         byte[] testData = [7, 8, 9];
-        DataContent content = new(testData, "text/plain") { Name = $"testfile_{Guid.NewGuid()}.txt" };
+        DataContent content = new(testData, "text/plain") { Name = $"testfile_{Guid.NewGuid():N}.txt" };
 
+        string cwdBefore = Directory.GetCurrentDirectory();
+        string expectedAbsolute = Path.Combine(cwdBefore, content.Name!);
         string? savedPath = null;
 
         try
@@ -662,14 +669,17 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory using content's name
             Assert.Equal(content.Name, Path.GetFileName(savedPath));
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+
+            // Verify the file actually landed in cwd-at-call-time using an absolute path,
+            // so the assertion is independent of cwd at check time.
+            Assert.True(File.Exists(expectedAbsolute));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            if (savedPath is not null && File.Exists(savedPath))
+            if (File.Exists(expectedAbsolute))
             {
-                File.Delete(savedPath);
+                File.Delete(expectedAbsolute);
             }
         }
     }

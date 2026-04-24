@@ -197,27 +197,36 @@ public class HostedFileClientExtensionsTests
     public async Task DownloadToAsync_EmptyDestinationPath_UsesCurrentDirectory()
     {
         var data = new byte[] { 42, 43 };
-        var originalDir = Directory.GetCurrentDirectory();
-        var tempDir = Path.Combine(Path.GetTempPath(), $"dlcwd-{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        var fileName = $"output_{Guid.NewGuid():N}.bin";
 
         using var client = new TestHostedFileClient
         {
             DownloadAsyncCallback = (fileId, options, ct) =>
-                Task.FromResult<HostedFileDownloadStream>(new TestHostedFileDownloadStream(data, fileName: "output.bin"))
+                Task.FromResult<HostedFileDownloadStream>(new TestHostedFileDownloadStream(data, fileName: fileName))
         };
 
+        // Capture cwd at call time so the assertion doesn't depend on cwd at check time.
+        string cwdBefore = Directory.GetCurrentDirectory();
+        string? savedPath = null;
         try
         {
-            Directory.SetCurrentDirectory(tempDir);
-            var savedPath = await client.DownloadToAsync("file-cwd", string.Empty);
-            Assert.Equal("output.bin", savedPath);
-            Assert.Equal(data, await File.ReadAllBytesAsync(Path.Combine(tempDir, savedPath)));
+            savedPath = await client.DownloadToAsync("file-cwd", string.Empty);
+
+            // Empty destination path => file is written to cwd; returned path is just the filename (relative).
+            Assert.Equal(fileName, savedPath);
+            Assert.False(Path.IsPathRooted(savedPath));
+
+            string expectedAbsolute = Path.Combine(cwdBefore, savedPath);
+            Assert.True(File.Exists(expectedAbsolute));
+            Assert.Equal(data, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            Directory.SetCurrentDirectory(originalDir);
-            Directory.Delete(tempDir, recursive: true);
+            if (savedPath is not null)
+            {
+                string absolute = Path.Combine(cwdBefore, savedPath);
+                if (File.Exists(absolute)) File.Delete(absolute);
+            }
         }
     }
 
