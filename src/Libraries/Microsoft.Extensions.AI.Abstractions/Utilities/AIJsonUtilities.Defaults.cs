@@ -53,8 +53,6 @@ public static partial class AIJsonUtilities
         // Once they're no longer [Experimental] and added as [JsonDerivedType] on AIContent, these lines should be removed.
         AddAIContentTypeChain(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
         AddAIContentTypeChain(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
-        AddAIContentTypeChain(options, typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
-        AddAIContentTypeChain(options, typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
         AddAIContentTypeChain(options, typeof(WebSearchToolCallContent), typeDiscriminatorId: "webSearchToolCall", checkBuiltIn: false);
         AddAIContentTypeChain(options, typeof(WebSearchToolResultContent), typeDiscriminatorId: "webSearchToolResult", checkBuiltIn: false);
 
@@ -123,8 +121,6 @@ public static partial class AIJsonUtilities
     // and are included via [JsonDerivedType] on AIContent.
     [JsonSerializable(typeof(CodeInterpreterToolCallContent))]
     [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
-    [JsonSerializable(typeof(ImageGenerationToolCallContent))]
-    [JsonSerializable(typeof(ImageGenerationToolResultContent))]
     [JsonSerializable(typeof(WebSearchToolCallContent))]
     [JsonSerializable(typeof(WebSearchToolResultContent))]
     [JsonSerializable(typeof(ResponseContinuationToken))]

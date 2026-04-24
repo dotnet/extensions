@@ -5,6 +5,7 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -131,6 +132,59 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.NotNull(ca.Title);
             Assert.NotEmpty(ca.Title);
         });
+    }
+
+    [ConditionalTheory]
+    [InlineData(false, "gpt-image-1-mini")]
+    [InlineData(true, "gpt-image-2")]
+    public async Task UseImageGeneration_ProducesImageContent(bool streaming, string imageModel)
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Image generation tool requires gpt-5.4 or later.");
+        }
+
+        var chatOptions = new ChatOptions
+        {
+            Tools =
+            [
+                new HostedImageGenerationTool
+                {
+                    Options = new ImageGenerationOptions { ModelId = imageModel },
+                },
+            ],
+        };
+
+        ChatResponse response = streaming
+            ? await ChatClient.GetStreamingResponseAsync("Generate an image of a simple blue circle on a white background.", chatOptions).ToChatResponseAsync()
+            : await ChatClient.GetResponseAsync("Generate an image of a simple blue circle on a white background.", chatOptions);
+
+        Assert.NotNull(response);
+
+        ChatMessage m = Assert.Single(response.Messages);
+
+        // Verify that the image generation tool call and result content are present.
+        var igCall = m.Contents.OfType<ImageGenerationToolCallContent>().FirstOrDefault();
+        Assert.NotNull(igCall);
+        Assert.NotNull(igCall.CallId);
+
+        var igResult = m.Contents.OfType<ImageGenerationToolResultContent>().FirstOrDefault();
+        Assert.NotNull(igResult);
+        Assert.Equal(igCall.CallId, igResult.CallId);
+
+        // Verify that the result contains image data.
+        Assert.NotNull(igResult.Outputs);
+        Assert.NotEmpty(igResult.Outputs);
+        var imageContent = Assert.Single(igResult.Outputs.OfType<DataContent>());
+        Assert.False(imageContent.Data.IsEmpty);
+        Assert.StartsWith("image/", imageContent.MediaType, StringComparison.Ordinal);
+
+        // Save to temp file for manual inspection.
+        string extension = imageContent.MediaType == "image/png" ? ".png" : ".webp";
+        string tempPath = Path.Combine(Path.GetTempPath(), $"image_gen_test_{imageModel}{extension}");
+        File.WriteAllBytes(tempPath, imageContent.Data.ToArray());
     }
 
     [ConditionalFact]

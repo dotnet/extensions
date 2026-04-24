@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 [JsonDerivedType(typeof(FunctionCallContent), "functionCall")]
 [JsonDerivedType(typeof(McpServerToolCallContent), "mcpServerToolCall")]
+[JsonDerivedType(typeof(ImageGenerationToolCallContent), "imageGenerationToolCall")]
 
 // Same as in AIContent.
 // These should be added in once they're no longer [Experimental]. If they're included while still
@@ -20,7 +21,6 @@ namespace Microsoft.Extensions.AI;
 // these lines should be uncommented and the corresponding lines in AIJsonUtilities.CreateDefaultOptions
 // as well as the [JsonSerializable] attributes for them on the JsonContext should be removed.
 // [JsonDerivedType(typeof(CodeInterpreterToolCallContent), "codeInterpreterToolCall")]
-// [JsonDerivedType(typeof(ImageGenerationToolCallContent), "imageGenerationToolCall")]
 // [JsonDerivedType(typeof(WebSearchToolCallContent), "webSearchToolCall")]
 public class ToolCallContent : AIContent
 {
