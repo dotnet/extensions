@@ -24,7 +24,6 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <typeparam name="T">The type of the chunk content.</typeparam>
 public sealed class IngestionPipeline<T> : IDisposable
 {
-    private readonly IngestionDocumentReader _reader;
     private readonly IngestionChunker<T> _chunker;
     private readonly IngestionChunkWriter<T> _writer;
     private readonly ActivitySource _activitySource;
@@ -33,19 +32,16 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="IngestionPipeline{T}"/> class.
     /// </summary>
-    /// <param name="reader">The reader for ingestion documents.</param>
     /// <param name="chunker">The chunker to split documents into chunks.</param>
     /// <param name="writer">The writer for processing chunks.</param>
     /// <param name="options">The options for the ingestion pipeline.</param>
     /// <param name="loggerFactory">The logger factory for creating loggers.</param>
     public IngestionPipeline(
-        IngestionDocumentReader reader,
         IngestionChunker<T> chunker,
         IngestionChunkWriter<T> writer,
         IngestionPipelineOptions? options = default,
         ILoggerFactory? loggerFactory = default)
     {
-        _reader = Throw.IfNull(reader);
         _chunker = Throw.IfNull(chunker);
         _writer = Throw.IfNull(writer);
         _activitySource = new((options ?? new()).ActivitySourceName);
@@ -70,16 +66,35 @@ public sealed class IngestionPipeline<T> : IDisposable
     public IList<IngestionChunkProcessor<T>> ChunkProcessors { get; } = [];
 
     /// <summary>
+    /// Processes the specified document through the pipeline.
+    /// </summary>
+    /// <param name="document">The document to process.</param>
+    /// <param name="cancellationToken">The cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation, returning the processed document.</returns>
+    public async Task<IngestionDocument> ProcessAsync(IngestionDocument document, CancellationToken cancellationToken = default)
+    {
+        Throw.IfNull(document);
+
+        using (Activity? activity = _activitySource.StartActivity(ProcessDocument.ActivityName))
+        {
+            activity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
+            return await IngestAsync(document, activity, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Processes all files in the specified directory that match the given search pattern and option.
     /// </summary>
+    /// <param name="reader">The reader for ingestion documents.</param>
     /// <param name="directory">The directory to process.</param>
     /// <param name="searchPattern">The search pattern for file selection.</param>
     /// <param name="searchOption">The search option for directory traversal.</param>
     /// <param name="cancellationToken">The cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async IAsyncEnumerable<IngestionResult> ProcessAsync(DirectoryInfo directory, string searchPattern = "*.*",
+    public async IAsyncEnumerable<IngestionResult> ProcessAsync(IngestionDocumentReader reader, DirectoryInfo directory, string searchPattern = "*.*",
         SearchOption searchOption = SearchOption.TopDirectoryOnly, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Throw.IfNull(reader);
         Throw.IfNull(directory);
         Throw.IfNullOrEmpty(searchPattern);
         Throw.IfOutOfRange((int)searchOption, (int)SearchOption.TopDirectoryOnly, (int)SearchOption.AllDirectories);
@@ -91,7 +106,7 @@ public sealed class IngestionPipeline<T> : IDisposable
                          .SetTag(ProcessDirectory.SearchOptionTagName, searchOption.ToString());
             _logger?.ProcessingDirectory(directory.FullName, searchPattern, searchOption);
 
-            await foreach (var ingestionResult in ProcessAsync(directory.EnumerateFiles(searchPattern, searchOption), rootActivity, cancellationToken).ConfigureAwait(false))
+            await foreach (IngestionResult ingestionResult in ProcessAsync(reader, directory.EnumerateFiles(searchPattern, searchOption), rootActivity, cancellationToken).ConfigureAwait(false))
             {
                 yield return ingestionResult;
             }
@@ -101,16 +116,18 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <summary>
     /// Processes the specified files.
     /// </summary>
+    /// <param name="reader">The reader for ingestion documents.</param>
     /// <param name="files">The collection of files to process.</param>
     /// <param name="cancellationToken">The cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async IAsyncEnumerable<IngestionResult> ProcessAsync(IEnumerable<FileInfo> files, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IngestionResult> ProcessAsync(IngestionDocumentReader reader, IEnumerable<FileInfo> files, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Throw.IfNull(reader);
         Throw.IfNull(files);
 
         using (Activity? rootActivity = _activitySource.StartActivity(ProcessFiles.ActivityName))
         {
-            await foreach (var ingestionResult in ProcessAsync(files, rootActivity, cancellationToken).ConfigureAwait(false))
+            await foreach (IngestionResult ingestionResult in ProcessAsync(reader, files, rootActivity, cancellationToken).ConfigureAwait(false))
             {
                 yield return ingestionResult;
             }
@@ -125,7 +142,7 @@ public sealed class IngestionPipeline<T> : IDisposable
                  .SetStatus(ActivityStatusCode.Error, ex.Message);
     }
 
-    private async IAsyncEnumerable<IngestionResult> ProcessAsync(IEnumerable<FileInfo> files, Activity? rootActivity,
+    private async IAsyncEnumerable<IngestionResult> ProcessAsync(IngestionDocumentReader reader, IEnumerable<FileInfo> files, Activity? rootActivity,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
 #if NET
@@ -143,13 +160,13 @@ public sealed class IngestionPipeline<T> : IDisposable
             using (Activity? processFileActivity = _activitySource.StartActivity(ProcessFile.ActivityName, ActivityKind.Internal, parentContext: rootActivity?.Context ?? default))
             {
                 processFileActivity?.SetTag(ProcessFile.FilePathTagName, fileInfo.FullName);
-                _logger?.ReadingFile(fileInfo.FullName, GetShortName(_reader));
+                _logger?.ReadingFile(fileInfo.FullName, GetShortName(reader));
 
                 IngestionDocument? document = null;
                 Exception? failure = null;
                 try
                 {
-                    document = await _reader.ReadAsync(fileInfo, cancellationToken).ConfigureAwait(false);
+                    document = await reader.ReadAsync(fileInfo, cancellationToken).ConfigureAwait(false);
 
                     processFileActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
                     _logger?.ReadDocument(document.Identifier);
@@ -181,7 +198,7 @@ public sealed class IngestionPipeline<T> : IDisposable
         }
 
         IAsyncEnumerable<IngestionChunk<T>> chunks = _chunker.ProcessAsync(document, cancellationToken);
-        foreach (var processor in ChunkProcessors)
+        foreach (IngestionChunkProcessor<T> processor in ChunkProcessors)
         {
             chunks = processor.ProcessAsync(chunks, cancellationToken);
         }

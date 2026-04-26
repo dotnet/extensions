@@ -44,6 +44,38 @@ using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new
 await writer.WriteAsync(chunks);
 ```
 
+## Using the IngestionPipeline
+
+### Processing documents from the file system
+
+To process documents from the file system, create an `IngestionPipeline` and pass a reader to the `ProcessAsync` method:
+
+```csharp
+using IngestionPipeline<string> pipeline = new(chunker, writer);
+
+IngestionDocumentReader reader = new MarkdownReader();
+await foreach (IngestionResult result in pipeline.ProcessAsync(reader, directory, "*.md"))
+{
+    Console.WriteLine($"Processed '{result.DocumentId}'. Succeeded: {result.Succeeded}");
+}
+```
+
+### Processing documents without a reader
+
+The `IngestionPipeline` can also process documents that are already in memory, without requiring a reader:
+
+```csharp
+using IngestionPipeline<string> pipeline = new(chunker, writer);
+
+IngestionDocument document = new("my-document-id");
+IngestionDocumentSection section = new("Main");
+section.Elements.Add(new IngestionDocumentHeader("Introduction", level: 1));
+section.Elements.Add(new IngestionDocumentParagraph("This is the content of my document."));
+document.Sections.Add(section);
+
+IngestionDocument processedDocument = await pipeline.ProcessAsync(document);
+```
+
 ### Custom metadata
 
 To store custom metadata alongside each chunk, create a type derived from `IngestionChunkVectorRecord<TChunk>` with additional properties, and a `VectorStoreWriter` subclass that overrides `SetMetadata`:
