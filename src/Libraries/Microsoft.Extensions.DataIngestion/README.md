@@ -69,7 +69,7 @@ using IngestionPipeline<string> pipeline = new(chunker, writer);
 
 IngestionDocument document = new("my-document-id");
 IngestionDocumentSection section = new("Main");
-section.Elements.Add(new IngestionDocumentHeader("Introduction", level: 1));
+section.Elements.Add(new IngestionDocumentHeader("# Introduction") { Level = 1 });
 section.Elements.Add(new IngestionDocumentParagraph("This is the content of my document."));
 document.Sections.Add(section);
 

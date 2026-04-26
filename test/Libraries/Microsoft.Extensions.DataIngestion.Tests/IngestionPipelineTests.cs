@@ -255,7 +255,7 @@ public sealed class IngestionPipelineTests : IDisposable
 
         IngestionDocument document = new("test-document-id");
         IngestionDocumentSection section = new("Main");
-        section.Elements.Add(new IngestionDocumentHeader("Introduction", level: 1));
+        section.Elements.Add(new IngestionDocumentHeader("# Introduction") { Level = 1 });
         section.Elements.Add(new IngestionDocumentParagraph("This is the content of a manually created document."));
         document.Sections.Add(section);
 
