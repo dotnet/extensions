@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
-    <Description>Stabilization tests for ImageGeneration content types (no MEAI001 suppression).</Description>
+    <Description>Stabilization tests for ImageGeneration, CodeInterpreter, and WebSearch content types (no MEAI001 suppression).</Description>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -22,6 +22,12 @@
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\ImageGenerationToolCallContentTests.cs" Link="Contents\ImageGenerationToolCallContentTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\ImageGenerationToolResultContentTests.cs" Link="Contents\ImageGenerationToolResultContentTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Tools\HostedImageGenerationToolTests.cs" Link="Tools\HostedImageGenerationToolTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\CodeInterpreterToolCallContentTests.cs" Link="Contents\CodeInterpreterToolCallContentTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\CodeInterpreterToolResultContentTests.cs" Link="Contents\CodeInterpreterToolResultContentTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\WebSearchToolCallContentTests.cs" Link="Contents\WebSearchToolCallContentTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\WebSearchToolResultContentTests.cs" Link="Contents\WebSearchToolResultContentTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Tools\HostedCodeInterpreterToolTests.cs" Link="Tools\HostedCodeInterpreterToolTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Tools\HostedWebSearchToolTests.cs" Link="Tools\HostedWebSearchToolTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
