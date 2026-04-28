@@ -24,6 +24,7 @@ using OpenAI.Responses;
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable S3254 // Default parameter values should not be passed as arguments
 #pragma warning disable SA1204 // Static elements should appear before instance elements
+#pragma warning disable MEAI001 // OpenAIRequestPolicies is experimental
 
 namespace Microsoft.Extensions.AI;
 
@@ -59,6 +60,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     /// <summary>The default model ID to use for the chat client.</summary>
     private readonly string? _defaultModelId;
 
+    /// <summary>Caller-registered policies applied to every <see cref="RequestOptions"/>.</summary>
+    private readonly OpenAIRequestPolicies _requestPolicies = new();
+
     /// <summary>Initializes a new instance of the <see cref="OpenAIResponsesChatClient"/> class for the specified <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The underlying client.</param>
     /// <param name="defaultModelId">The default model ID to use for the chat client.</param>
@@ -82,6 +86,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             serviceKey is not null ? null :
             serviceType == typeof(ChatClientMetadata) ? _metadata :
             serviceType == typeof(ResponsesClient) ? _responseClient :
+            serviceType == typeof(OpenAIRequestPolicies) ? _requestPolicies :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
@@ -100,7 +105,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         // Provided continuation token signals that an existing background response should be fetched.
         if (GetContinuationToken(messages, options) is { } token)
         {
-            var getTask = _responseClient.GetResponseAsync(token.ResponseId, include: null, stream: null, startingAfter: null, includeObfuscation: null, cancellationToken.ToRequestOptions(streaming: false));
+            var getTask = _responseClient.GetResponseAsync(token.ResponseId, include: null, stream: null, startingAfter: null, includeObfuscation: null, cancellationToken.ToRequestOptions(streaming: false, _requestPolicies));
             var response = (ResponseResult)await getTask.ConfigureAwait(false);
             return FromOpenAIResponse(response, openAIOptions, openAIConversationId);
         }
@@ -111,7 +116,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         }
 
         // Make the call to the ResponsesClient.
-        var createTask = _responseClient.CreateResponseAsync((BinaryContent)openAIOptions, cancellationToken.ToRequestOptions(streaming: false));
+        var createTask = _responseClient.CreateResponseAsync((BinaryContent)openAIOptions, cancellationToken.ToRequestOptions(streaming: false, _requestPolicies));
         var openAIResponsesResult = (ResponseResult)await createTask.ConfigureAwait(false);
 
         // Convert the response to a ChatResponse.
@@ -330,7 +335,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             Debug.Assert(_getResponseStreamingAsync is not null, $"Unable to find {nameof(_getResponseStreamingAsync)} method");
             IAsyncEnumerable<StreamingResponseUpdate> getUpdates = _getResponseStreamingAsync is not null ?
-                _getResponseStreamingAsync(_responseClient, getOptions, cancellationToken.ToRequestOptions(streaming: true)) :
+                _getResponseStreamingAsync(_responseClient, getOptions, cancellationToken.ToRequestOptions(streaming: true, _requestPolicies)) :
                 _responseClient.GetResponseStreamingAsync(getOptions, cancellationToken);
 
             return FromOpenAIStreamingResponseUpdatesAsync(getUpdates, openAIOptions, openAIConversationId, token.ResponseId, cancellationToken);
@@ -343,7 +348,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         Debug.Assert(_createResponseStreamingAsync is not null, $"Unable to find {nameof(_createResponseStreamingAsync)} method");
         AsyncCollectionResult<StreamingResponseUpdate> createUpdates = _createResponseStreamingAsync is not null ?
-            _createResponseStreamingAsync(_responseClient, openAIOptions, cancellationToken.ToRequestOptions(streaming: true)) :
+            _createResponseStreamingAsync(_responseClient, openAIOptions, cancellationToken.ToRequestOptions(streaming: true, _requestPolicies)) :
             _responseClient.CreateResponseStreamingAsync(openAIOptions, cancellationToken);
 
         return FromOpenAIStreamingResponseUpdatesAsync(createUpdates, openAIOptions, openAIConversationId, cancellationToken: cancellationToken);
