@@ -85,46 +85,48 @@ public class OpenAIRequestPoliciesTests
     [Fact]
     public async Task AddPolicy_CustomUserAgent_ReplacesMeaiHeader()
     {
-        using var handler = new ThrowUserAgentExceptionHandler();
+        using var handler = new CapturingUserAgentHandler();
         using var http = new HttpClient(handler);
         IChatClient client = NewChatClient(http);
 
         client.GetService<OpenAIRequestPolicies>()!.AddPolicy(new SetUserAgentPolicy("my-sdk/1.0"));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hi"));
+        await Assert.ThrowsAnyAsync<Exception>(() => client.GetResponseAsync("hi"));
 
         // Customer policy ran after MEAI's UA policy and replaced the value.
-        Assert.Contains("my-sdk/1.0", ex.Message);
-        Assert.DoesNotContain("MEAI", ex.Message);
+        Assert.NotNull(handler.CapturedUserAgent);
+        Assert.Equal("my-sdk/1.0", handler.CapturedUserAgent);
     }
 
     [Fact]
     public async Task AddPolicy_CustomHeaderAdd_StacksWithMeaiUserAgent()
     {
-        using var handler = new ThrowUserAgentExceptionHandler();
+        using var handler = new CapturingUserAgentHandler();
         using var http = new HttpClient(handler);
         IChatClient client = NewChatClient(http);
 
         client.GetService<OpenAIRequestPolicies>()!.AddPolicy(new AddUserAgentPolicy("extra-sdk/9.9"));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hi"));
+        await Assert.ThrowsAnyAsync<Exception>(() => client.GetResponseAsync("hi"));
 
-        Assert.Contains("MEAI", ex.Message);
-        Assert.Contains("extra-sdk/9.9", ex.Message);
+        Assert.NotNull(handler.CapturedUserAgent);
+        Assert.Contains("MEAI", handler.CapturedUserAgent);
+        Assert.Contains("extra-sdk/9.9", handler.CapturedUserAgent);
     }
 
     [Fact]
     public async Task NoPolicyRegistered_MeaiUserAgentStillEmitted()
     {
-        using var handler = new ThrowUserAgentExceptionHandler();
+        using var handler = new CapturingUserAgentHandler();
         using var http = new HttpClient(handler);
         IChatClient client = NewChatClient(http);
 
         Assert.NotNull(client.GetService<OpenAIRequestPolicies>()); // touch but don't register
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetResponseAsync("hi"));
+        await Assert.ThrowsAnyAsync<Exception>(() => client.GetResponseAsync("hi"));
 
-        Assert.Contains("MEAI", ex.Message);
+        Assert.NotNull(handler.CapturedUserAgent);
+        Assert.Contains("MEAI", handler.CapturedUserAgent);
     }
 
     [Fact]
@@ -152,6 +154,20 @@ public class OpenAIRequestPoliciesTests
         return new OpenAIClient(new ApiKeyCredential("k"), options)
             .GetChatClient("gpt-4o-mini")
             .AsIChatClient();
+    }
+
+    private sealed class CapturingUserAgentHandler : HttpMessageHandler
+    {
+        public string? CapturedUserAgent { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        {
+            // Capture the User-Agent values exactly as they appear on the outgoing request.
+            CapturedUserAgent = request.Headers.UserAgent.ToString();
+
+            // Short-circuit; the test only cares about what was sent.
+            throw new InvalidOperationException("captured");
+        }
     }
 
     private sealed class NoopPolicy : PipelinePolicy
