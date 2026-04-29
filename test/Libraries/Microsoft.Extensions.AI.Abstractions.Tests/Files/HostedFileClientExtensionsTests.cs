@@ -197,7 +197,7 @@ public class HostedFileClientExtensionsTests
     public async Task DownloadToAsync_EmptyDestinationPath_UsesCurrentDirectory()
     {
         var data = new byte[] { 42, 43 };
-        var fileName = $"output_{Guid.NewGuid():N}.bin";
+        var fileName = $"output_{Guid.NewGuid()}.bin";
 
         using var client = new TestHostedFileClient
         {
@@ -207,6 +207,7 @@ public class HostedFileClientExtensionsTests
 
         // Capture cwd at call time so the assertion doesn't depend on cwd at check time.
         string cwdBefore = Directory.GetCurrentDirectory();
+        string expectedAbsolute = Path.Combine(cwdBefore, fileName);
         string? savedPath = null;
         try
         {
@@ -216,17 +217,12 @@ public class HostedFileClientExtensionsTests
             Assert.Equal(fileName, savedPath);
             Assert.False(Path.IsPathRooted(savedPath));
 
-            string expectedAbsolute = Path.Combine(cwdBefore, savedPath);
             Assert.True(File.Exists(expectedAbsolute));
             Assert.Equal(data, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            if (savedPath is not null)
-            {
-                string absolute = Path.Combine(cwdBefore, savedPath);
-                if (File.Exists(absolute)) File.Delete(absolute);
-            }
+            File.Delete(expectedAbsolute);
         }
     }
 

@@ -597,7 +597,7 @@ public sealed class DataContentTests
         byte[] testData = [1, 2, 3];
         DataContent content = new(testData, "application/json");
 
-        string filename = $"test_{Guid.NewGuid():N}.json";
+        string filename = $"test_{Guid.NewGuid()}.json";
         string cwdBefore = Directory.GetCurrentDirectory();
         string expectedAbsolute = Path.Combine(cwdBefore, filename);
         string? savedPath = null;
@@ -608,9 +608,6 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory
             Assert.Equal(filename, Path.GetFileName(savedPath));
-
-            // Verify the file actually landed in cwd-at-call-time using an absolute path,
-            // so the assertion is independent of cwd at check time.
             Assert.True(File.Exists(expectedAbsolute));
             Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
@@ -657,7 +654,7 @@ public sealed class DataContentTests
     {
         // Test that providing an empty string path uses current directory with name from content
         byte[] testData = [7, 8, 9];
-        DataContent content = new(testData, "text/plain") { Name = $"testfile_{Guid.NewGuid():N}.txt" };
+        DataContent content = new(testData, "text/plain") { Name = $"testfile_{Guid.NewGuid()}.txt" };
 
         string cwdBefore = Directory.GetCurrentDirectory();
         string expectedAbsolute = Path.Combine(cwdBefore, content.Name!);
@@ -669,9 +666,6 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory using content's name
             Assert.Equal(content.Name, Path.GetFileName(savedPath));
-
-            // Verify the file actually landed in cwd-at-call-time using an absolute path,
-            // so the assertion is independent of cwd at check time.
             Assert.True(File.Exists(expectedAbsolute));
             Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
