@@ -598,6 +598,8 @@ public sealed class DataContentTests
         DataContent content = new(testData, "application/json");
 
         string filename = $"test_{Guid.NewGuid()}.json";
+        string cwdBefore = Directory.GetCurrentDirectory();
+        string expectedAbsolute = Path.Combine(cwdBefore, filename);
         string? savedPath = null;
 
         try
@@ -606,14 +608,14 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory
             Assert.Equal(filename, Path.GetFileName(savedPath));
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+            Assert.True(File.Exists(expectedAbsolute));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            if (savedPath is not null && File.Exists(savedPath))
+            if (File.Exists(expectedAbsolute))
             {
-                File.Delete(savedPath);
+                File.Delete(expectedAbsolute);
             }
         }
     }
@@ -654,6 +656,8 @@ public sealed class DataContentTests
         byte[] testData = [7, 8, 9];
         DataContent content = new(testData, "text/plain") { Name = $"testfile_{Guid.NewGuid()}.txt" };
 
+        string cwdBefore = Directory.GetCurrentDirectory();
+        string expectedAbsolute = Path.Combine(cwdBefore, content.Name!);
         string? savedPath = null;
 
         try
@@ -662,14 +666,14 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory using content's name
             Assert.Equal(content.Name, Path.GetFileName(savedPath));
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+            Assert.True(File.Exists(expectedAbsolute));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            if (savedPath is not null && File.Exists(savedPath))
+            if (File.Exists(expectedAbsolute))
             {
-                File.Delete(savedPath);
+                File.Delete(expectedAbsolute);
             }
         }
     }
