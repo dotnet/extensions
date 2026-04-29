@@ -272,7 +272,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                     message.Contents.Add(new WebSearchToolResultContent(wscri.Id)
                     {
-                        Results = GetWebSearchSources(wscri),
+                        Outputs = GetWebSearchSources(wscri),
                         RawRepresentation = wscri,
                     });
                     break;
@@ -566,7 +566,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             // Also yield the WebSearchToolResultContent.
                             yield return CreateUpdate(new WebSearchToolResultContent(wscri.Id)
                             {
-                                Results = GetWebSearchSources(wscri),
+                                Outputs = GetWebSearchSources(wscri),
                                 RawRepresentation = wscri,
                             });
                             break;

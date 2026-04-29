@@ -28,17 +28,10 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(McpServerToolResultContent), typeDiscriminator: "mcpServerToolResult")]
 [JsonDerivedType(typeof(ImageGenerationToolCallContent), typeDiscriminator: "imageGenerationToolCall")]
 [JsonDerivedType(typeof(ImageGenerationToolResultContent), typeDiscriminator: "imageGenerationToolResult")]
-
-// These should be added in once they're no longer [Experimental]. If they're included while still
-// experimental, any JsonSerializerContext that includes AIContent will incur errors about using
-// experimental types in its source generated files. When [Experimental] is removed from these types,
-// these lines should be uncommented and the corresponding lines in AIJsonUtilities.CreateDefaultOptions
-// as well as the [JsonSerializable] attributes for them on the JsonContext should be removed.
-// [JsonDerivedType(typeof(CodeInterpreterToolCallContent), typeDiscriminator: "codeInterpreterToolCall")]
-// [JsonDerivedType(typeof(CodeInterpreterToolResultContent), typeDiscriminator: "codeInterpreterToolResult")]
-// [JsonDerivedType(typeof(WebSearchToolCallContent), typeDiscriminator: "webSearchToolCall")]
-// [JsonDerivedType(typeof(WebSearchToolResultContent), typeDiscriminator: "webSearchToolResult")]
-
+[JsonDerivedType(typeof(CodeInterpreterToolCallContent), typeDiscriminator: "codeInterpreterToolCall")]
+[JsonDerivedType(typeof(CodeInterpreterToolResultContent), typeDiscriminator: "codeInterpreterToolResult")]
+[JsonDerivedType(typeof(WebSearchToolCallContent), typeDiscriminator: "webSearchToolCall")]
+[JsonDerivedType(typeof(WebSearchToolResultContent), typeDiscriminator: "webSearchToolResult")]
 public class AIContent
 {
     /// <summary>
