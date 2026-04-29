@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class OpenAI.Assistants.MicrosoftExtensionsAIAssistantsExtensions",
@@ -205,6 +205,20 @@
       "Properties": [
         {
           "Member": "Microsoft.Extensions.AI.RealtimeSessionOptions? Microsoft.Extensions.AI.OpenAIRealtimeClientSession.Options { get; private set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenAIRequestPolicies",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenAIRequestPolicies.OpenAIRequestPolicies();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OpenAIRequestPolicies.AddPolicy(System.ClientModel.Primitives.PipelinePolicy policy, System.ClientModel.Primitives.PipelinePosition position = System.ClientModel.Primitives.PipelinePosition.PerCall);",
           "Stage": "Experimental"
         }
       ]
