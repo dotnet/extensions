@@ -969,4 +969,49 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                     ],
                 }));
     }
+
+    [ConditionalFact]
+    public async Task UseToolSearch_NamespaceWithDescription_RoundTrips()
+    {
+        SkipIfNotEnabled();
+
+        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+        }
+
+        AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
+        AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
+
+        using var client = new FunctionInvokingChatClient(ChatClient);
+        var response = await client.GetResponseAsync(
+            "What's the weather like? Just respond with the weather info, nothing else.",
+            new()
+            {
+                Tools =
+                [
+                    new HostedToolSearchTool
+                    {
+                        Namespace = "weather_and_time",
+                        NamespaceDescription = "Tools for getting current weather and time.",
+                        DeferredTools = ["GetWeather", "GetTime"],
+                    },
+                    getWeather,
+                    getTime,
+                ],
+            });
+
+        Assert.NotNull(response);
+        Assert.NotEmpty(response.Text);
+
+        // Verify tool_search response items occurred (the namespace wrapper must have been
+        // accepted by the service for tool search to fire).
+        var rawJsons = response.Messages
+            .SelectMany(m => m.Contents)
+            .Where(c => c.RawRepresentation is ResponseItem)
+            .Select(c => ModelReaderWriter.Write((ResponseItem)c.RawRepresentation!, ModelReaderWriterOptions.Json).ToString())
+            .ToList();
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_call\"") || json.Contains("\"type\": \"tool_search_call\""));
+        Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
+    }
 }

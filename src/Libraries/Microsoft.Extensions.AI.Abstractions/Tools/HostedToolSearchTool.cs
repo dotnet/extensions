@@ -72,6 +72,23 @@ public class HostedToolSearchTool : AITool
     /// When <see langword="null"/> (the default), deferred tools are sent as top-level tools
     /// with <c>defer_loading</c> set individually.
     /// </para>
+    /// <para>
+    /// Use <see cref="NamespaceDescription"/> to supply a description for the namespace.
+    /// </para>
     /// </remarks>
     public string? Namespace { get; set; }
+
+    /// <summary>
+    /// Gets or sets the description for the namespace produced when <see cref="Namespace"/> is specified.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Setting this property alone does not create a namespace.
+    /// </para>
+    /// <para>
+    /// When <see langword="null"/>, no description is emitted on the namespace. The underlying provider
+    /// may require a description when a namespace is supplied.
+    /// </para>
+    /// </remarks>
+    public string? NamespaceDescription { get; set; }
 }
