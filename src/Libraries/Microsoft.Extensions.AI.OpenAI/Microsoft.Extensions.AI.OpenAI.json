@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.OpenAI, Version=10.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class OpenAI.Assistants.MicrosoftExtensionsAIAssistantsExtensions",
