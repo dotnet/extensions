@@ -1161,20 +1161,37 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         public Namespace? GetNamespace(string toolName) =>
             _namespacedToolNames.TryGetValue(toolName, out Namespace? ns) ? ns : null;
 
-        // First-writer-wins per namespace name: the first HostedToolSearchTool to claim a given
-        // namespace name supplies the description used for that namespace's wrapper.
+        // Prefers the first non-empty description supplied for a given namespace name; later
+        // HostedToolSearchTool instances may upgrade a previously-empty description but cannot
+        // overwrite one that's already set.
         private static Namespace GetOrCreateNamespace(Dictionary<string, Namespace> namespacesByName, string name, string? description)
         {
             if (!namespacesByName.TryGetValue(name, out Namespace? existing))
             {
-                existing = new Namespace(name, description);
+                existing = new Namespace(name) { Description = description };
                 namespacesByName[name] = existing;
+            }
+            else if (string.IsNullOrEmpty(existing.Description))
+            {
+                existing.Description = description;
             }
 
             return existing;
         }
 
-        internal sealed record Namespace(string Name, string? Description);
+        // A class (not a record) so that all entries in _namespacedToolNames sharing a namespace
+        // name reference the same instance; updating Description in place propagates to every
+        // tool already grouped under it.
+        internal sealed class Namespace
+        {
+            public Namespace(string name)
+            {
+                Name = name;
+            }
+
+            public string Name { get; }
+            public string? Description { get; set; }
+        }
     }
 
     internal static ResponseTextFormat? ToOpenAIResponseTextFormat(ChatResponseFormat? format, ChatOptions? options = null) =>
