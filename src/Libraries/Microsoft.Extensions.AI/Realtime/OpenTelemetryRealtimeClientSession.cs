@@ -8,7 +8,6 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
@@ -512,13 +511,13 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     /// <summary>Serializes a single message to OTel format (as an array with one element).</summary>
     private static string SerializeMessage(RealtimeOtelMessage message)
     {
-        return JsonSerializer.Serialize(new[] { message }, RealtimeOtelContext.Default.IEnumerableRealtimeOtelMessage);
+        return JsonSerializer.Serialize(new[] { message }, OtelContext.Default.IEnumerableRealtimeOtelMessage);
     }
 
     /// <summary>Serializes content items to OTel format.</summary>
     private static string SerializeMessages(IEnumerable<RealtimeOtelMessage> messages)
     {
-        return JsonSerializer.Serialize(messages, RealtimeOtelContext.Default.IEnumerableRealtimeOtelMessage);
+        return JsonSerializer.Serialize(messages, OtelContext.Default.IEnumerableRealtimeOtelMessage);
     }
 
     /// <summary>Extracts content from an AIContent list and converts to OTel format.</summary>
@@ -571,7 +570,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     {
                         Content = dc.Base64Data.ToString(),
                         MimeType = dc.MediaType,
-                        Modality = DeriveModalityFromMediaType(dc.MediaType),
+                        Modality = OtelMessageSerializer.DeriveModalityFromMediaType(dc.MediaType),
                     });
                     break;
 
@@ -581,7 +580,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     {
                         Uri = uc.Uri.AbsoluteUri,
                         MimeType = uc.MediaType,
-                        Modality = DeriveModalityFromMediaType(uc.MediaType),
+                        Modality = OtelMessageSerializer.DeriveModalityFromMediaType(uc.MediaType),
                     });
                     break;
 
@@ -591,7 +590,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     {
                         FileId = fc.FileId,
                         MimeType = fc.MediaType,
-                        Modality = DeriveModalityFromMediaType(fc.MediaType),
+                        Modality = OtelMessageSerializer.DeriveModalityFromMediaType(fc.MediaType),
                     });
                     break;
 
@@ -670,32 +669,6 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
         return message.Parts.Count > 0 ? message : null;
     }
 
-    /// <summary>Derives modality from media type for telemetry purposes.</summary>
-    private static string? DeriveModalityFromMediaType(string? mediaType)
-    {
-        if (string.IsNullOrEmpty(mediaType))
-        {
-            return null;
-        }
-
-        if (mediaType!.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-        {
-            return "image";
-        }
-
-        if (mediaType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
-        {
-            return "audio";
-        }
-
-        if (mediaType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
-        {
-            return "video";
-        }
-
-        return null;
-    }
-
     /// <summary>Creates an activity for a realtime session request, or returns <see langword="null"/> if not enabled.</summary>
     private Activity? CreateAndConfigureActivity(RealtimeSessionOptions? options, bool streamingResponse = false)
     {
@@ -754,7 +727,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                         {
                             _ = activity.AddTag(
                                 OpenTelemetryConsts.GenAI.SystemInstructions,
-                                JsonSerializer.Serialize(new object[1] { new OtelGenericPart { Content = options.Instructions } }, RealtimeOtelContext.Default.IListObject));
+                                JsonSerializer.Serialize(new object[1] { new OtelGenericPart { Content = options.Instructions } }, OtelContext.Default.IListObject));
                         }
 
                     }
@@ -763,7 +736,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     {
                         _ = activity.AddTag(
                             OpenTelemetryConsts.GenAI.Tool.Definitions,
-                            JsonSerializer.Serialize(options.Tools.Select(t => OtelFunction.Create(t, includeOptionalProperties: EnableSensitiveData)), RealtimeOtelContext.Default.IEnumerableOtelFunction));
+                            JsonSerializer.Serialize(options.Tools.Select(t => OtelFunction.Create(t, includeOptionalProperties: EnableSensitiveData)), OtelContext.Default.IEnumerableOtelFunction));
                     }
                 }
             }
@@ -845,17 +818,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
             }
         }
 
-        if (error is not null)
-        {
-            _ = activity?
-                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
-
-            if (_logger is not null)
-            {
-                OpenTelemetryLog.OperationException(_logger, error);
-            }
-        }
+        OpenTelemetryLog.RecordOperationError(activity, _logger, error);
 
         if (response is not null && activity is not null)
         {
@@ -964,39 +927,23 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     //
     // Types whose layout is shared 1:1 with OpenTelemetryChatClient live in
     // Common/OtelMessageParts.cs. The types below are either entirely realtime-specific or
-    // contain realtime-specific fields.
-    private sealed class RealtimeOtelMessage
-    {
-        public string? Role { get; set; }
-        public List<object> Parts { get; set; } = [];
-    }
-
-    private sealed class RealtimeOtelToolCallPart
-    {
-        public string Type { get; set; } = "tool_call";
-        public string? Id { get; set; }
-        public string? Name { get; set; }
-        public IDictionary<string, object?>? Arguments { get; set; }
-    }
+    // contain realtime-specific fields. The shared JsonSerializerContext lives in Common/OtelContext.cs.
 
     #endregion
+}
 
-    [JsonSourceGenerationOptions(
-        PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonSerializable(typeof(IList<object>))]
-    [JsonSerializable(typeof(OtelGenericPart))]
-    [JsonSerializable(typeof(OtelBlobPart))]
-    [JsonSerializable(typeof(OtelUriPart))]
-    [JsonSerializable(typeof(OtelFilePart))]
-    [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
-    [JsonSerializable(typeof(IEnumerable<RealtimeOtelMessage>))]
-    [JsonSerializable(typeof(RealtimeOtelMessage))]
-    [JsonSerializable(typeof(RealtimeOtelToolCallPart))]
-    [JsonSerializable(typeof(OtelToolCallResponsePart))]
-    [JsonSerializable(typeof(OtelServerToolCallPart<OtelMcpToolCall>))]
-    [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelMcpToolCallResponse>))]
+#pragma warning disable SA1402 // File may only contain a single type — realtime-specific OTel POCOs are co-located with the realtime session.
 
-    private sealed partial class RealtimeOtelContext : JsonSerializerContext;
+internal sealed class RealtimeOtelMessage
+{
+    public string? Role { get; set; }
+    public List<object> Parts { get; set; } = [];
+}
+
+internal sealed class RealtimeOtelToolCallPart
+{
+    public string Type { get; set; } = "tool_call";
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public IDictionary<string, object?>? Arguments { get; set; }
 }

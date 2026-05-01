@@ -288,17 +288,7 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
             }
         }
 
-        if (error is not null)
-        {
-            _ = activity?
-                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
-
-            if (_logger is not null)
-            {
-                OpenTelemetryLog.OperationException(_logger, error);
-            }
-        }
+        OpenTelemetryLog.RecordOperationError(activity, _logger, error);
 
         if (response is not null)
         {
@@ -368,7 +358,7 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
         {
             _ = activity.AddTag(
                 OpenTelemetryConsts.GenAI.Output.Messages,
-                OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.Assistant, response.Contents)]));
+                OtelMessageSerializer.SerializeChatMessages([new(ChatRole.Assistant, response.Contents)]));
         }
     }
 }

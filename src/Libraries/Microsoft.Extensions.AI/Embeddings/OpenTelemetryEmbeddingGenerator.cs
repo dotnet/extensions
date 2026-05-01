@@ -232,17 +232,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
         if (activity is not null)
         {
-            if (error is not null)
-            {
-                _ = activity
-                    .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                    .SetStatus(ActivityStatusCode.Error, error.Message);
-
-                if (_logger is not null)
-                {
-                    OpenTelemetryLog.OperationException(_logger, error);
-                }
-            }
+            OpenTelemetryLog.RecordOperationError(activity, _logger, error);
 
             if (inputTokens.HasValue)
             {

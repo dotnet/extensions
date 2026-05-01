@@ -198,7 +198,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
 
                     _ = activity.AddTag(
                         OpenTelemetryConsts.GenAI.Input.Messages,
-                        OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.User, content)]));
+                        OtelMessageSerializer.SerializeChatMessages([new(ChatRole.User, content)]));
 
                     if (options?.AdditionalProperties is { } props)
                     {
@@ -235,17 +235,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
             _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
         }
 
-        if (error is not null)
-        {
-            _ = activity?
-                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
-
-            if (_logger is not null)
-            {
-                OpenTelemetryLog.OperationException(_logger, error);
-            }
-        }
+        OpenTelemetryLog.RecordOperationError(activity, _logger, error);
 
         if (response is not null)
         {
@@ -255,7 +245,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
             {
                 _ = activity.AddTag(
                     OpenTelemetryConsts.GenAI.Output.Messages,
-                    OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.Assistant, contents)]));
+                    OtelMessageSerializer.SerializeChatMessages([new(ChatRole.Assistant, contents)]));
             }
 
             if (response.Usage is { } usage)
