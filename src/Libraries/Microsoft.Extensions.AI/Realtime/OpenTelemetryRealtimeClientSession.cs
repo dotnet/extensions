@@ -370,7 +370,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
             case InputAudioBufferAppendRealtimeClientMessage audioAppendMsg:
                 var audioMessage = new RealtimeOtelMessage { Role = "user" };
-                audioMessage.Parts.Add(new RealtimeOtelBlobPart
+                audioMessage.Parts.Add(new OtelBlobPart
                 {
                     Content = audioAppendMsg.Content.Base64Data.ToString(),
                     MimeType = audioAppendMsg.Content.MediaType,
@@ -383,7 +383,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 return new RealtimeOtelMessage
                 {
                     Role = "user",
-                    Parts = { new RealtimeOtelGenericPart { Type = "audio_commit" } },
+                    Parts = { new OtelGenericPart { Type = "audio_commit" } },
                 };
 
             case CreateResponseRealtimeClientMessage responseCreateMsg:
@@ -392,7 +392,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 // Add instructions if present
                 if (!string.IsNullOrWhiteSpace(responseCreateMsg.Instructions))
                 {
-                    responseMessage.Parts.Add(new RealtimeOtelGenericPart
+                    responseMessage.Parts.Add(new OtelGenericPart
                     {
                         Type = "instructions",
                         Content = responseCreateMsg.Instructions,
@@ -457,7 +457,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                 }
 
                 var textAudioOtelMessage = new RealtimeOtelMessage { Role = "assistant" };
-                textAudioOtelMessage.Parts.Add(new RealtimeOtelGenericPart
+                textAudioOtelMessage.Parts.Add(new OtelGenericPart
                 {
                     Type = partType,
                     Content = content,
@@ -466,7 +466,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
             case InputAudioTranscriptionRealtimeServerMessage transcriptionMsg when !string.IsNullOrEmpty(transcriptionMsg.Transcription):
                 var transcriptionOtelMessage = new RealtimeOtelMessage { Role = "user" };
-                transcriptionOtelMessage.Parts.Add(new RealtimeOtelGenericPart
+                transcriptionOtelMessage.Parts.Add(new OtelGenericPart
                 {
                     Type = "input_transcription",
                     Content = transcriptionMsg.Transcription,
@@ -475,7 +475,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
             case ErrorRealtimeServerMessage errorMsg when errorMsg.Error is not null:
                 var errorOtelMessage = new RealtimeOtelMessage { Role = "system" };
-                errorOtelMessage.Parts.Add(new RealtimeOtelGenericPart
+                errorOtelMessage.Parts.Add(new OtelGenericPart
                 {
                     Type = "error",
                     Content = errorMsg.Error.Message,
@@ -540,11 +540,11 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
             {
                 // Standard text content
                 case TextContent tc when !string.IsNullOrEmpty(tc.Text):
-                    message.Parts.Add(new RealtimeOtelGenericPart { Content = tc.Text });
+                    message.Parts.Add(new OtelGenericPart { Content = tc.Text });
                     break;
 
                 case TextReasoningContent trc when !string.IsNullOrEmpty(trc.Text):
-                    message.Parts.Add(new RealtimeOtelGenericPart { Type = "reasoning", Content = trc.Text });
+                    message.Parts.Add(new OtelGenericPart { Type = "reasoning", Content = trc.Text });
                     break;
 
                 // Function call content
@@ -558,7 +558,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     break;
 
                 case FunctionResultContent frc:
-                    message.Parts.Add(new RealtimeOtelToolCallResponsePart
+                    message.Parts.Add(new OtelToolCallResponsePart
                     {
                         Id = frc.CallId,
                         Response = frc.Result,
@@ -567,7 +567,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
                 // Data content (binary data)
                 case DataContent dc:
-                    message.Parts.Add(new RealtimeOtelBlobPart
+                    message.Parts.Add(new OtelBlobPart
                     {
                         Content = dc.Base64Data.ToString(),
                         MimeType = dc.MediaType,
@@ -577,7 +577,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
                 // URI content
                 case UriContent uc:
-                    message.Parts.Add(new RealtimeOtelUriPart
+                    message.Parts.Add(new OtelUriPart
                     {
                         Uri = uc.Uri.AbsoluteUri,
                         MimeType = uc.MediaType,
@@ -587,7 +587,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
                 // Hosted file content
                 case HostedFileContent fc:
-                    message.Parts.Add(new RealtimeOtelFilePart
+                    message.Parts.Add(new OtelFilePart
                     {
                         FileId = fc.FileId,
                         MimeType = fc.MediaType,
@@ -597,20 +597,20 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
                 // Non-standard "generic" parts
                 case HostedVectorStoreContent vsc:
-                    message.Parts.Add(new RealtimeOtelGenericPart { Type = "vector_store", Content = vsc.VectorStoreId });
+                    message.Parts.Add(new OtelGenericPart { Type = "vector_store", Content = vsc.VectorStoreId });
                     break;
 
                 case ErrorContent ec:
-                    message.Parts.Add(new RealtimeOtelGenericPart { Type = "error", Content = ec.Message });
+                    message.Parts.Add(new OtelGenericPart { Type = "error", Content = ec.Message });
                     break;
 
                 // MCP server tool content
                 case McpServerToolCallContent mstcc:
-                    message.Parts.Add(new RealtimeOtelServerToolCallPart<RealtimeOtelMcpToolCall>
+                    message.Parts.Add(new OtelServerToolCallPart<OtelMcpToolCall>
                     {
                         Id = mstcc.CallId,
                         Name = mstcc.Name,
-                        ServerToolCall = new RealtimeOtelMcpToolCall
+                        ServerToolCall = new OtelMcpToolCall
                         {
                             Arguments = mstcc.Arguments as IReadOnlyDictionary<string, object?> ?? mstcc.Arguments?.ToDictionary(k => k.Key, v => v.Value),
                             ServerName = mstcc.ServerName,
@@ -619,10 +619,10 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     break;
 
                 case McpServerToolResultContent mstrc:
-                    message.Parts.Add(new RealtimeOtelServerToolCallResponsePart<RealtimeOtelMcpToolCallResponse>
+                    message.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpToolCallResponse>
                     {
                         Id = mstrc.CallId,
-                        ServerToolCallResponse = new RealtimeOtelMcpToolCallResponse
+                        ServerToolCallResponse = new OtelMcpToolCallResponse
                         {
                             Output = mstrc.Outputs,
                         },
@@ -656,7 +656,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
                     if (element.ValueKind != JsonValueKind.Undefined)
                     {
-                        message.Parts.Add(new RealtimeOtelGenericPart
+                        message.Parts.Add(new OtelGenericPart
                         {
                             Type = content.GetType().Name,
                             Content = element,
@@ -754,7 +754,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                         {
                             _ = activity.AddTag(
                                 OpenTelemetryConsts.GenAI.SystemInstructions,
-                                JsonSerializer.Serialize(new object[1] { new RealtimeOtelGenericPart { Content = options.Instructions } }, RealtimeOtelContext.Default.IListObject));
+                                JsonSerializer.Serialize(new object[1] { new OtelGenericPart { Content = options.Instructions } }, RealtimeOtelContext.Default.IListObject));
                         }
 
                     }
@@ -960,36 +960,11 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
     #region OTel Serialization Types
 
-    private sealed class RealtimeOtelGenericPart
-    {
-        public string Type { get; set; } = "text";
-        public object? Content { get; set; }
-    }
-
-    private sealed class RealtimeOtelBlobPart
-    {
-        public string Type { get; set; } = "blob";
-        public string? Content { get; set; } // base64-encoded binary data
-        public string? MimeType { get; set; }
-        public string? Modality { get; set; }
-    }
-
-    private sealed class RealtimeOtelUriPart
-    {
-        public string Type { get; set; } = "uri";
-        public string? Uri { get; set; }
-        public string? MimeType { get; set; }
-        public string? Modality { get; set; }
-    }
-
-    private sealed class RealtimeOtelFilePart
-    {
-        public string Type { get; set; } = "file";
-        public string? FileId { get; set; }
-        public string? MimeType { get; set; }
-        public string? Modality { get; set; }
-    }
-
+    // Realtime-specific OTel serialization POCOs.
+    //
+    // Types whose layout is shared 1:1 with OpenTelemetryChatClient live in
+    // Common/OtelMessageParts.cs. The types below are either entirely realtime-specific or
+    // contain realtime-specific fields.
     private sealed class RealtimeOtelMessage
     {
         public string? Role { get; set; }
@@ -1004,43 +979,6 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
         public IDictionary<string, object?>? Arguments { get; set; }
     }
 
-    private sealed class RealtimeOtelToolCallResponsePart
-    {
-        public string Type { get; set; } = "tool_call_response";
-        public string? Id { get; set; }
-        public object? Response { get; set; }
-    }
-
-    private sealed class RealtimeOtelServerToolCallPart<T>
-        where T : class
-    {
-        public string Type { get; set; } = "server_tool_call";
-        public string? Id { get; set; }
-        public string? Name { get; set; }
-        public T? ServerToolCall { get; set; }
-    }
-
-    private sealed class RealtimeOtelServerToolCallResponsePart<T>
-        where T : class
-    {
-        public string Type { get; set; } = "server_tool_call_response";
-        public string? Id { get; set; }
-        public T? ServerToolCallResponse { get; set; }
-    }
-
-    private sealed class RealtimeOtelMcpToolCall
-    {
-        public string Type { get; set; } = "mcp";
-        public string? ServerName { get; set; }
-        public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
-    }
-
-    private sealed class RealtimeOtelMcpToolCallResponse
-    {
-        public string Type { get; set; } = "mcp";
-        public object? Output { get; set; }
-    }
-
     #endregion
 
     [JsonSourceGenerationOptions(
@@ -1048,17 +986,17 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonSerializable(typeof(IList<object>))]
-    [JsonSerializable(typeof(RealtimeOtelGenericPart))]
-    [JsonSerializable(typeof(RealtimeOtelBlobPart))]
-    [JsonSerializable(typeof(RealtimeOtelUriPart))]
-    [JsonSerializable(typeof(RealtimeOtelFilePart))]
+    [JsonSerializable(typeof(OtelGenericPart))]
+    [JsonSerializable(typeof(OtelBlobPart))]
+    [JsonSerializable(typeof(OtelUriPart))]
+    [JsonSerializable(typeof(OtelFilePart))]
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     [JsonSerializable(typeof(IEnumerable<RealtimeOtelMessage>))]
     [JsonSerializable(typeof(RealtimeOtelMessage))]
     [JsonSerializable(typeof(RealtimeOtelToolCallPart))]
-    [JsonSerializable(typeof(RealtimeOtelToolCallResponsePart))]
-    [JsonSerializable(typeof(RealtimeOtelServerToolCallPart<RealtimeOtelMcpToolCall>))]
-    [JsonSerializable(typeof(RealtimeOtelServerToolCallResponsePart<RealtimeOtelMcpToolCallResponse>))]
+    [JsonSerializable(typeof(OtelToolCallResponsePart))]
+    [JsonSerializable(typeof(OtelServerToolCallPart<OtelMcpToolCall>))]
+    [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelMcpToolCallResponse>))]
 
     private sealed partial class RealtimeOtelContext : JsonSerializerContext;
 }

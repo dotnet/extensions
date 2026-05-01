@@ -430,7 +430,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                             Name = mstcc.Name,
                             ServerToolCall = new OtelMcpToolCall
                             {
-                                Arguments = mstcc.Arguments,
+                                Arguments = mstcc.Arguments as IReadOnlyDictionary<string, object?> ?? mstcc.Arguments?.ToDictionary(k => k.Key, v => v.Value),
                                 ServerName = mstcc.ServerName,
                             },
                         });
@@ -839,6 +839,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
+    // Chat-specific OTel serialization POCOs.
+    //
+    // Types whose layout is shared 1:1 with OpenTelemetryRealtimeClientSession live in
+    // Common/OtelMessageParts.cs. The types below are either entirely chat-specific or
+    // contain chat-specific fields.
     private sealed class OtelMessage
     {
         public string? Role { get; set; }
@@ -847,66 +852,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         public string? FinishReason { get; set; }
     }
 
-    private sealed class OtelGenericPart
-    {
-        public string Type { get; set; } = "text";
-        public object? Content { get; set; } // should be a string when Type == "text"
-    }
-
-    private sealed class OtelBlobPart
-    {
-        public string Type { get; set; } = "blob";
-        public string? Content { get; set; } // base64-encoded binary data
-        public string? MimeType { get; set; }
-        public string? Modality { get; set; }
-    }
-
-    private sealed class OtelUriPart
-    {
-        public string Type { get; set; } = "uri";
-        public string? Uri { get; set; }
-        public string? MimeType { get; set; }
-        public string? Modality { get; set; }
-    }
-
-    private sealed class OtelFilePart
-    {
-        public string Type { get; set; } = "file";
-        public string? FileId { get; set; }
-        public string? MimeType { get; set; }
-        public string? Modality { get; set; }
-    }
-
     private sealed class OtelToolCallRequestPart
     {
         public string Type { get; set; } = "tool_call";
         public string? Id { get; set; }
         public string? Name { get; set; }
         public IDictionary<string, object?>? Arguments { get; set; }
-    }
-
-    private sealed class OtelToolCallResponsePart
-    {
-        public string Type { get; set; } = "tool_call_response";
-        public string? Id { get; set; }
-        public object? Response { get; set; }
-    }
-
-    private sealed class OtelServerToolCallPart<T>
-        where T : class
-    {
-        public string Type { get; set; } = "server_tool_call";
-        public string? Id { get; set; }
-        public string? Name { get; set; }
-        public T? ServerToolCall { get; set; }
-    }
-
-    private sealed class OtelServerToolCallResponsePart<T>
-        where T : class
-    {
-        public string Type { get; set; } = "server_tool_call_response";
-        public string? Id { get; set; }
-        public T? ServerToolCallResponse { get; set; }
     }
 
     private sealed class OtelCodeInterpreterToolCall
@@ -929,19 +880,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     private sealed class OtelImageGenerationToolCallResponse
     {
         public string Type { get; set; } = "image_generation";
-        public object? Output { get; set; }
-    }
-
-    private sealed class OtelMcpToolCall
-    {
-        public string Type { get; set; } = "mcp";
-        public string? ServerName { get; set; }
-        public IDictionary<string, object?>? Arguments { get; set; }
-    }
-
-    private sealed class OtelMcpToolCallResponse
-    {
-        public string Type { get; set; } = "mcp";
         public object? Output { get; set; }
     }
 
