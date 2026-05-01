@@ -355,16 +355,9 @@ public static class OpenAIClientExtensions
     /// </summary>
     internal static void AddOpenAIApiType(string apiType)
     {
-        Activity? activity = Activity.Current;
-        if (activity is { IsAllDataRequested: true })
+        if (GetCurrentChatActivity() is { } activity)
         {
-            string name = activity.DisplayName;
-            // Accept "chat" and "chat <name>".
-            if (name.StartsWith(ChatOperationName, StringComparison.Ordinal) &&
-                (name.Length == ChatOperationName.Length || name[ChatOperationName.Length] == ' '))
-            {
-                _ = activity.AddTag(OpenAIApiTypeTag, apiType);
-            }
+            _ = activity.AddTag(OpenAIApiTypeTag, apiType);
         }
     }
 
@@ -374,24 +367,40 @@ public static class OpenAIClientExtensions
     /// </summary>
     internal static void AddOpenAIResponseAttributes(string? serviceTier, string? systemFingerprint)
     {
+        if (GetCurrentChatActivity() is { } activity)
+        {
+            if (!string.IsNullOrWhiteSpace(serviceTier))
+            {
+                _ = activity.SetTag(OpenAIResponseServiceTierTag, serviceTier);
+            }
+
+            if (!string.IsNullOrWhiteSpace(systemFingerprint))
+            {
+                _ = activity.SetTag(OpenAIResponseSystemFingerprintTag, systemFingerprint);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns <see cref="Activity.Current"/> if it has data requested and its
+    /// <see cref="Activity.DisplayName"/> represents a gen_ai "chat" span
+    /// (the name is "chat" or "chat {name}"); otherwise <see langword="null"/>.
+    /// </summary>
+    private static Activity? GetCurrentChatActivity()
+    {
         Activity? activity = Activity.Current;
         if (activity is { IsAllDataRequested: true })
         {
+            // Recognize an activity name of "chat" or "chat {name}".
             string name = activity.DisplayName;
-            // Accept "chat" and "chat <name>".
+
             if (name.StartsWith(ChatOperationName, StringComparison.Ordinal) &&
                 (name.Length == ChatOperationName.Length || name[ChatOperationName.Length] == ' '))
             {
-                if (!string.IsNullOrWhiteSpace(serviceTier))
-                {
-                    _ = activity.SetTag(OpenAIResponseServiceTierTag, serviceTier);
-                }
-
-                if (!string.IsNullOrWhiteSpace(systemFingerprint))
-                {
-                    _ = activity.SetTag(OpenAIResponseSystemFingerprintTag, systemFingerprint);
-                }
+                return activity;
             }
         }
+
+        return null;
     }
 }

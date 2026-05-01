@@ -23,8 +23,14 @@ Review checklist for gen-ai convention changes. Based on patterns from past PR r
 - [ ] Cross-cutting telemetry code is shared via `Common/` classes, not duplicated
 - [ ] Similar patterns across multiple OpenTelemetry* clients use shared helpers
 - [ ] New helper methods are added to `TelemetryHelpers.cs` or `OpenTelemetryLog.cs` as appropriate
+- [ ] **Search before adding**: before introducing a new helper, method, or internal type, search `Common/`, `TelemetryHelpers.cs`, `OpenTelemetryLog.cs`, and sibling OpenTelemetry* client files for existing logic that does the same thing. Prefer reusing an existing helper or extending it over adding a parallel one.
+- [ ] **Cross-file diff for new helpers**: when the same convention change introduces helper logic in more than one OpenTelemetry* client, diff the new blocks against each other. Byte-for-byte (or near-byte-for-byte) identical helpers must be factored into a shared helper in `Common/` rather than duplicated per file.
+- [ ] **Parallel types with identical shape**: when defining a new internal/private type (e.g. for serialization, OTel mapping, tool definitions), check whether a sibling client already defines a type with the same shape (same properties, same purpose). Unify the two — either reuse the existing type or move both to a single shared definition under `Common/`.
 
-**Past feedback**: PR #7379 — tarekgh noted duplicated code across clients and requested consolidation to `Common/`.
+**Past feedback**:
+- PR #7379 — tarekgh noted duplicated code across clients and requested consolidation to `Common/`.
+- PR [#7497 r3161304243](https://github.com/dotnet/extensions/pull/7497#discussion_r3161304243) — reviewer flagged that the `chat` / `chat {name}` activity-name check was duplicated in several files; consolidated to a shared helper.
+- PR [#7497 r3161364739](https://github.com/dotnet/extensions/pull/7497#discussion_r3161364739) / [r3162514449](https://github.com/dotnet/extensions/pull/7497#discussion_r3162514449) — reviewer flagged that `CreateOtelToolDefinition` returned a `RealtimeOtelFunction` in the realtime client and an `OtelFunction` in the chat client, with byte-for-byte identical logic and identical type shape (`Name`, `Description`, `Parameters`, `Type`). The two parallel types should have been unified from the start.
 
 ### 4. Fluent API Style
 - [ ] Activity API calls use fluent chains (`.SetStatus(...).SetTag(...)`)
@@ -49,6 +55,7 @@ Review checklist for gen-ai convention changes. Based on patterns from past PR r
 - [ ] New constants added to appropriate nested class in `OpenTelemetryConsts.cs`
 - [ ] Constant names follow PascalCase convention
 - [ ] String values match the semantic convention attribute names exactly
+- [ ] **No orphan constants**: every newly added constant in `OpenTelemetryConsts.cs` is referenced by at least one emission site added in this PR. Verify with `grep -rn NewConstantName src/Libraries/Microsoft.Extensions.AI/`. If no client populates the attribute, the constant must be removed from this PR and deferred to the PR that adds emission (classify as 🟢 *Constant not yet emitted*).
 
 ### 8. Scope Completeness
 - [ ] Changes applied to ALL relevant OpenTelemetry* client classes (not just the chat client)
@@ -80,3 +87,6 @@ Review checklist for gen-ai convention changes. Based on patterns from past PR r
 | Updating version in one file only | Check for version drift first, then update ALL files with version reference |
 | Creating CHANGELOG entries | No CHANGELOGs — info goes in release notes only |
 | Using `null` for optional metric units | Use the appropriate unit constant or omit |
+| Adding a constant for an attribute no client emits | Defer the constant until the PR that adds the emission site (classify as 🟢 *Constant not yet emitted*) |
+| Adding a new helper without searching for an existing one | Search `Common/`, `TelemetryHelpers.cs`, `OpenTelemetryLog.cs`, and sibling OpenTelemetry* clients first; reuse or extend rather than parallel-implement |
+| Defining a parallel internal type with the same shape as one in a sibling client (e.g. `RealtimeOtelFunction` vs `OtelFunction`) | Unify the types — reuse the existing one or move a single shared definition to `Common/` |

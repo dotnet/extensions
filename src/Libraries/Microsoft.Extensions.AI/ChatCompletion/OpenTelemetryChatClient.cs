@@ -185,8 +185,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options, streaming: true);
-        bool trackChunkTimes = _timeToFirstChunkHistogram.Enabled || _timePerOutputChunkHistogram.Enabled;
-        Stopwatch? stopwatch = _operationDurationHistogram.Enabled || trackChunkTimes || activity is not null ? Stopwatch.StartNew() : null;
+        bool recordChunkHistograms = _timeToFirstChunkHistogram.Enabled || _timePerOutputChunkHistogram.Enabled;
+        Stopwatch? stopwatch = _operationDurationHistogram.Enabled || recordChunkHistograms || activity is not null ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
         AddInputMessagesTags(messages, options, activity);
@@ -209,7 +209,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         bool responseModelSet = false;
         double? timeToFirstChunk = null;
         TagList chunkMetricTags = default;
-        if (trackChunkTimes)
+        if (recordChunkHistograms)
         {
             AddMetricTags(ref chunkMetricTags, requestModelId, response: null);
         }
@@ -235,9 +235,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     throw;
                 }
 
-                if (trackChunkTimes)
+                if (recordChunkHistograms)
                 {
-                    Debug.Assert(stopwatch is not null, "stopwatch should have been initialized when trackChunkTimes is true");
+                    Debug.Assert(stopwatch is not null, "stopwatch should have been initialized when recordChunkHistograms is true");
                     TimeSpan currentElapsed = stopwatch!.Elapsed;
                     double delta = (currentElapsed - lastChunkElapsed).TotalSeconds;
 
@@ -831,6 +831,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
     private OtelFunction CreateOtelToolDefinition(AITool tool)
     {
+        // EnableSensitiveData gates the tool's Description and Parameters (JSON schema)
+        // because they may contain user-authored prompts or large payloads. The Name
+        // (and the fallback Type) is always emitted; it does not contain sensitive data.
         if (tool.GetService<AIFunctionDeclaration>() is { } function)
         {
             return new()

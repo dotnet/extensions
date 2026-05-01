@@ -2,6 +2,8 @@
 
 Code patterns for common convention update change types. Use these as templates when implementing compensating changes.
 
+> **Reuse before adding.** Before applying any of the patterns below, search the touched libraries (`Common/`, `TelemetryHelpers.cs`, `OpenTelemetryLog.cs`, and sibling OpenTelemetry* client files) for an existing helper, method, or internal type that already does the same thing. Reuse or extend it instead of adding a parallel implementation. If the same logic will be needed in two or more places, factor it into `Common/` from the start rather than duplicating it per file. The same rule applies to parallel internal types — when a sibling client already defines a type with the same shape, unify under a single shared definition. See [review-checklist.md §3](review-checklist.md#3-code-deduplication) for what reviewers look for.
+
 ## Pattern 1: Adding a New Constant
 
 Location: `src/Libraries/Microsoft.Extensions.AI/OpenTelemetryConsts.cs`

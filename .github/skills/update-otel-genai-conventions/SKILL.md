@@ -185,12 +185,13 @@ Critical knowledge from past PR reviews that should inform all modes:
 - **Exception recording**: Use `ILogger` with `[LoggerMessage]`, NOT `Activity.AddEvent`. The OTel SDK handles `Exception` passed to `ILogger`. See `OpenTelemetryLog.cs` in `Common/`.
 - **Sensitive data**: Attributes that could contain user data (e.g. `exception.message`, message content) must be gated behind `EnableSensitiveData`. When in doubt, gate it.
 - **Fluent chains**: Use fluent Activity API chains (`.SetStatus(...).SetTag(...)`) rather than separate statements.
-- **Shared code**: Cross-cutting concerns (like exception logging) shared across multiple OpenTelemetry* clients belong in `src/Libraries/Microsoft.Extensions.AI/Common/`.
+- **Shared code**: Cross-cutting concerns (like exception logging) shared across multiple OpenTelemetry* clients belong in `src/Libraries/Microsoft.Extensions.AI/Common/`. Before adding a new helper, method, or internal type, search `Common/`, `TelemetryHelpers.cs`, `OpenTelemetryLog.cs`, and sibling OpenTelemetry* clients for existing logic with the same purpose — reuse or extend instead of introducing a parallel implementation. When the same helper is needed in 2+ places, factor it into `Common/` from the start. The same applies to parallel internal types: if a sibling client already defines a type with the same shape (same properties, same role, e.g. `RealtimeOtelFunction` vs `OtelFunction`), unify them under a single shared definition rather than letting each client carry its own copy.
 - **Test augmentation**: Prefer augmenting existing test assertions over creating new test methods. Check for existing tests that validate the same scenario.
 - **Version references**: When bumping the convention version, update all files that match `grep -rn "Semantic Conventions for Generative AI systems v" src/Libraries/Microsoft.Extensions.AI/`. Not all OpenTelemetry* files contain this reference — only update the ones that do.
 - **No CHANGELOGs**: This repository no longer maintains per-library CHANGELOG.md files. Do NOT create or update any CHANGELOG files.
 - **Source-generated JSON**: Adding new OTel part types requires: (1) new inner class, (2) `[JsonSerializable]` registration on `OtelContext`, (3) switch case in `SerializeChatMessages()`.
 - **LoggerMessage text**: When using `[LoggerMessage]`, the message text should match the OTel event name for console logger readability.
+- **No orphan constants**: Never add a constant to `OpenTelemetryConsts.cs` unless the same PR also adds at least one emission site for it. If the convention defines an attribute that no current client populates, classify the change as 🟢 *Constant not yet emitted* and defer the constant — do not add it ahead of emission. Verify with `grep -rn NewConstantName src/Libraries/Microsoft.Extensions.AI/` before submitting.
 
 ## Validation
 

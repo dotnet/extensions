@@ -12,12 +12,14 @@ Taxonomy for classifying gen-ai changes from semantic-conventions releases. Use 
 | **Already implemented** | Change was already implemented in a prior PR | A change that was part of an earlier draft spec we adopted |
 | **Server-side only** | Change affects server/provider-side instrumentation, not client-side | Server span attributes |
 | **Documentation only** | Clarification of existing semantics with no behavioral change | Rewording of attribute descriptions |
+| **Constant not yet emitted** | New attribute defined upstream, but no OpenTelemetry* client in this repo populates a value for it | `gen_ai.usage.cache_creation.input_tokens` — defer the constant until a future PR adds an emission site |
+
+> **No orphan constants.** A new constant in `OpenTelemetryConsts.cs` must only be added in a PR that also adds at least one emission site for it. If no client populates the attribute, classify the change as 🟢 *Constant not yet emitted* and defer adding the constant entirely — do not add it speculatively.
 
 ### 🟡 Minor Action Required
 
 | Type | Description | Action |
 |------|-------------|--------|
-| **New constant (not emitted)** | New attribute defined but optional or not yet applicable | Add constant to `OpenTelemetryConsts.cs`, skip emission |
 | **Version bump** | Convention version number changed | Update `v1.XX` in doc comments across all OpenTelemetry* files |
 | **Stability promotion** | Attribute moved from experimental to stable | Usually no code change; note in audit table |
 
@@ -40,7 +42,7 @@ Use these indicators consistently in audit reports, implementation summaries, an
 | Indicator | Category | Meaning |
 |---|---|---|
 | 🟢 | No action required | No compensating code change is needed; explain why. |
-| 🟡 | Minor action required | Small metadata, constant-only, stability, or version-reference update. |
+| 🟡 | Minor action required | Small metadata, stability, or version-reference update. |
 | 🔴 | Code change required | Runtime behavior, emission logic, metrics, events, serialization, or tests must change. |
 
 ## Impact Assessment Heuristic
@@ -67,6 +69,7 @@ When presenting the analysis, use this table format:
 | Semantic Convention Change | Upstream PR | Classification | Action Required | Complexity |
 |---|---|---|---|---|
 | `gen_ai.new.attribute` | [#1234](link) | New required attribute | Add constant + emission + test | Low |
+| `gen_ai.deferred.attribute` | [#2345](link) | Constant not yet emitted | Defer — no client populates this attribute in this PR | — |
 | `retrieval` operation | [#5678](link) | N/A — No client | None | — |
 | Version reference | — | Version bump | Update doc comments | Low |
 ```
@@ -81,6 +84,7 @@ When preparing a PR description, adapt the audit table into a concise reviewer-f
 | v1.XX | 🔴 | `gen_ai.new.attribute` added | New required attribute | Added constant, emission, and tests in `{files}`. |
 | v1.XX | 🟡 | Version reference update | Version bump | Updated OpenTelemetry* doc comments to v1.XX. |
 | v1.XX | 🟢 | Provider server span clarified | Server-side only | No client-side instrumentation change needed. |
+| v1.XX | 🟢 | `gen_ai.deferred.attribute` added upstream | Constant not yet emitted | No client populates this attribute today; constant will be added in the PR that adds emission. |
 ```
 
-The final column should either describe the compensating change made or explain why no code change was made, such as "already implemented", "no local source exists", "no client exists", "server-side only", or "documentation-only clarification".
+The final column should either describe the compensating change made or explain why no code change was made, such as "already implemented", "no local source exists", "no client exists", "server-side only", "documentation-only clarification", or "no client populates this attribute today; constant deferred until a PR adds emission".

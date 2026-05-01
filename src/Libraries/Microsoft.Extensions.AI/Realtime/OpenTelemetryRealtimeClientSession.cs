@@ -22,10 +22,14 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents a delegating realtime session that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
+/// <summary>Represents a delegating realtime session that follows the OpenTelemetry Semantic Conventions for Generative AI systems where applicable.</summary>
 /// <remarks>
 /// <para>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.41, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class follows the patterns of the Semantic Conventions for Generative AI systems v1.41 where applicable, as defined at
+/// <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />, with custom extensions for realtime-specific behavior.
+/// The specification does not currently define a realtime operation; a custom operation name is used.
+/// </para>
+/// <para>
 /// The specification is still experimental and subject to change; as such, the telemetry output by this session is also subject to change.
 /// </para>
 /// <para>
@@ -33,7 +37,7 @@ namespace Microsoft.Extensions.AI;
 /// <list type="bullet">
 ///   <item><c>gen_ai.operation.name</c> - Operation name ("chat")</item>
 ///   <item><c>gen_ai.request.model</c> - Model name from options</item>
-///   <item><c>gen_ai.request.stream</c> - Indicates streaming response requests</item>
+///   <item><c>gen_ai.request.stream</c> - Indicates streaming response requests; always <see langword="true"/> as realtime is inherently streaming</item>
 ///   <item><c>gen_ai.provider.name</c> - Provider name from metadata</item>
 ///   <item><c>gen_ai.response.id</c> - Response ID from ResponseDone messages</item>
 ///   <item><c>gen_ai.response.model</c> - Model ID from response</item>
