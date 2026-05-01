@@ -18,6 +18,7 @@ public class HostedToolSearchToolTests
         Assert.Equal(tool.Name, tool.ToString());
         Assert.Null(tool.DeferredTools);
         Assert.Null(tool.Namespace);
+        Assert.Null(tool.NamespaceDescription);
     }
 
     [Fact]
@@ -68,5 +69,23 @@ public class HostedToolSearchToolTests
     {
         var tool = new HostedToolSearchTool();
         Assert.Null(tool.Namespace);
+    }
+
+    [Fact]
+    public void NamespaceDescription_Roundtrips()
+    {
+        var tool = new HostedToolSearchTool
+        {
+            NamespaceDescription = "Tools for managing my data."
+        };
+
+        Assert.Equal("Tools for managing my data.", tool.NamespaceDescription);
+    }
+
+    [Fact]
+    public void NamespaceDescription_DefaultsToNull()
+    {
+        var tool = new HostedToolSearchTool();
+        Assert.Null(tool.NamespaceDescription);
     }
 }

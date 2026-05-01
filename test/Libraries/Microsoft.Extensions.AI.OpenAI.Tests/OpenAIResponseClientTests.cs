@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -7037,15 +7037,15 @@ public class OpenAIResponseClientTests
         var wsResult = Assert.IsType<WebSearchToolResultContent>(message.Contents[1]);
         Assert.Equal("ws_0ed9cd9f8606486b0069888072b3d08190818b61da9cf032a7", wsResult.CallId);
         Assert.NotNull(wsResult.RawRepresentation);
-        Assert.NotNull(wsResult.Results);
-        Assert.Equal(2, wsResult.Results.Count);
+        Assert.NotNull(wsResult.Outputs);
+        Assert.Equal(2, wsResult.Outputs.Count);
 
-        var source0 = Assert.IsType<UriContent>(wsResult.Results[0]);
+        var source0 = Assert.IsType<UriContent>(wsResult.Outputs[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), source0.Uri);
         var source0Raw = Assert.IsType<WebSearchActionUriSource>(source0.RawRepresentation);
         Assert.Equal("\"Announcing .NET 10 - .NET Blog\"", ReadPatchValue(source0Raw, "$.title"u8));
 
-        var source1 = Assert.IsType<UriContent>(wsResult.Results[1]);
+        var source1 = Assert.IsType<UriContent>(wsResult.Outputs[1]);
         Assert.Equal(new Uri("https://dotnet.microsoft.com/en-us/download/dotnet/10.0"), source1.Uri);
         var source1Raw = Assert.IsType<WebSearchActionUriSource>(source1.RawRepresentation);
         Assert.Equal("\"Download .NET 10\"", ReadPatchValue(source1Raw, "$.title"u8));
@@ -7178,9 +7178,9 @@ public class OpenAIResponseClientTests
         var wsResult = wsResultUpdate.Contents.OfType<WebSearchToolResultContent>().First();
         Assert.Equal("ws_02441a08b3f3bf4b00698880914730819eb48b3ae0c359bff3", wsResult.CallId);
         Assert.NotNull(wsResult.RawRepresentation);
-        Assert.NotNull(wsResult.Results);
-        Assert.Single(wsResult.Results);
-        var streamSource = Assert.IsType<UriContent>(wsResult.Results[0]);
+        Assert.NotNull(wsResult.Outputs);
+        Assert.Single(wsResult.Outputs);
+        var streamSource = Assert.IsType<UriContent>(wsResult.Outputs[0]);
         Assert.Equal(new Uri("https://devblogs.microsoft.com/dotnet/announcing-dotnet-10"), streamSource.Uri);
         Assert.IsType<WebSearchActionUriSource>(streamSource.RawRepresentation);
 
@@ -7749,9 +7749,6 @@ public class OpenAIResponseClientTests
                         "type": "tool_search"
                     },
                     {
-                        "type": "tool_search"
-                    },
-                    {
                         "type": "namespace",
                         "name": "crm",
                         "tools": [
@@ -7858,9 +7855,6 @@ public class OpenAIResponseClientTests
                         "type": "tool_search"
                     },
                     {
-                        "type": "tool_search"
-                    },
-                    {
                         "type": "namespace",
                         "name": "crm",
                         "tools": [
@@ -7957,9 +7951,6 @@ public class OpenAIResponseClientTests
                     }
                 ],
                 "tools": [
-                    {
-                        "type": "tool_search"
-                    },
                     {
                         "type": "tool_search"
                     },
@@ -8196,6 +8187,445 @@ public class OpenAIResponseClientTests
                 new HostedToolSearchTool { Namespace = "sandbox", DeferredTools = ["code_interpreter"] },
                 codeTool,
                 localFunc,
+            ],
+            AdditionalProperties = new() { ["strict"] = true },
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolSearchTool_NamespaceWithDescription_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-5.4-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "function",
+                        "name": "ImportantTool",
+                        "description": "An important tool.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true
+                    },
+                    {
+                        "type": "namespace",
+                        "name": "crm",
+                        "description": "Customer relationship management tools.",
+                        "tools": [
+                            {
+                                "type": "function",
+                                "name": "GetCustomer",
+                                "description": "Gets a customer.",
+                                "parameters": {
+                                    "type": "object",
+                                    "required": [],
+                                    "properties": {},
+                                    "additionalProperties": false
+                                },
+                                "strict": true,
+                                "defer_loading": true
+                            },
+                            {
+                                "type": "function",
+                                "name": "ListOrders",
+                                "description": "Lists orders.",
+                                "parameters": {
+                                    "type": "object",
+                                    "required": [],
+                                    "properties": {},
+                                    "additionalProperties": false
+                                },
+                                "strict": true,
+                                "defer_loading": true
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-5.4-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-5.4-mini");
+
+        var getCustomer = AIFunctionFactory.Create(() => 42, "GetCustomer", "Gets a customer.");
+        var listOrders = AIFunctionFactory.Create(() => 42, "ListOrders", "Lists orders.");
+        var importantTool = AIFunctionFactory.Create(() => 42, "ImportantTool", "An important tool.");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool
+                {
+                    Namespace = "crm",
+                    NamespaceDescription = "Customer relationship management tools.",
+                    DeferredTools = ["GetCustomer", "ListOrders"],
+                },
+                getCustomer,
+                listOrders,
+                importantTool,
+            ],
+            AdditionalProperties = new() { ["strict"] = true },
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolSearchTool_NamespaceDescriptionAloneDoesNotWrap_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-5.4-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "function",
+                        "name": "GetWeather",
+                        "description": "Gets the weather.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true,
+                        "defer_loading": true
+                    },
+                    {
+                        "type": "function",
+                        "name": "ImportantTool",
+                        "description": "An important tool.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-5.4-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-5.4-mini");
+
+        var getWeather = AIFunctionFactory.Create(() => 42, "GetWeather", "Gets the weather.");
+        var importantTool = AIFunctionFactory.Create(() => 42, "ImportantTool", "An important tool.");
+
+        // NamespaceDescription set without Namespace must NOT produce a namespace wrapper.
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool
+                {
+                    NamespaceDescription = "should not appear in payload",
+                    DeferredTools = ["GetWeather"],
+                },
+                getWeather,
+                importantTool,
+            ],
+            AdditionalProperties = new() { ["strict"] = true },
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolSearchTool_NamespaceWithDescription_FirstWins_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model": "gpt-5.4-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "namespace",
+                        "name": "crm",
+                        "description": "first description wins",
+                        "tools": [
+                            {
+                                "type": "function",
+                                "name": "GetCustomer",
+                                "description": "Gets a customer.",
+                                "parameters": {
+                                    "type": "object",
+                                    "required": [],
+                                    "properties": {},
+                                    "additionalProperties": false
+                                },
+                                "strict": true,
+                                "defer_loading": true
+                            },
+                            {
+                                "type": "function",
+                                "name": "ListOrders",
+                                "description": "Lists orders.",
+                                "parameters": {
+                                    "type": "object",
+                                    "required": [],
+                                    "properties": {},
+                                    "additionalProperties": false
+                                },
+                                "strict": true,
+                                "defer_loading": true
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-5.4-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-5.4-mini");
+
+        var getCustomer = AIFunctionFactory.Create(() => 42, "GetCustomer", "Gets a customer.");
+        var listOrders = AIFunctionFactory.Create(() => 42, "ListOrders", "Lists orders.");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool
+                {
+                    Namespace = "crm",
+                    NamespaceDescription = "first description wins",
+                    DeferredTools = ["GetCustomer"],
+                },
+                new HostedToolSearchTool
+                {
+                    Namespace = "crm",
+                    NamespaceDescription = "second description should be ignored",
+                    DeferredTools = ["ListOrders"],
+                },
+                getCustomer,
+                listOrders,
+            ],
+            AdditionalProperties = new() { ["strict"] = true },
+        });
+
+        Assert.NotNull(response);
+        Assert.Equal("Hello!", response.Text);
+    }
+
+    [Fact]
+    public async Task ToolSearchTool_NamespaceDescription_FirstNonEmptyWins_NonStreaming()
+    {
+        // The first HostedToolSearchTool for "crm" omits NamespaceDescription; a later one
+        // supplies it. The supplied description should be used for the namespace wrapper.
+        const string Input = """
+            {
+                "model": "gpt-5.4-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "input_text",
+                                "text": "hello"
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "tool_search"
+                    },
+                    {
+                        "type": "namespace",
+                        "name": "crm",
+                        "description": "supplied by second tool",
+                        "tools": [
+                            {
+                                "type": "function",
+                                "name": "GetCustomer",
+                                "description": "Gets a customer.",
+                                "parameters": {
+                                    "type": "object",
+                                    "required": [],
+                                    "properties": {},
+                                    "additionalProperties": false
+                                },
+                                "strict": true,
+                                "defer_loading": true
+                            },
+                            {
+                                "type": "function",
+                                "name": "ListOrders",
+                                "description": "Lists orders.",
+                                "parameters": {
+                                    "type": "object",
+                                    "required": [],
+                                    "properties": {},
+                                    "additionalProperties": false
+                                },
+                                "strict": true,
+                                "defer_loading": true
+                            }
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_001",
+              "object": "response",
+              "created_at": 1741892091,
+              "status": "completed",
+              "model": "gpt-5.4-mini",
+              "output": [
+                {
+                  "type": "message",
+                  "id": "msg_001",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [{"type": "output_text", "text": "Hello!", "annotations": []}]
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-5.4-mini");
+
+        var getCustomer = AIFunctionFactory.Create(() => 42, "GetCustomer", "Gets a customer.");
+        var listOrders = AIFunctionFactory.Create(() => 42, "ListOrders", "Lists orders.");
+
+        var response = await client.GetResponseAsync("hello", new()
+        {
+            Tools =
+            [
+                new HostedToolSearchTool
+                {
+                    Namespace = "crm",
+                    DeferredTools = ["GetCustomer"],
+                },
+                new HostedToolSearchTool
+                {
+                    Namespace = "crm",
+                    NamespaceDescription = "supplied by second tool",
+                    DeferredTools = ["ListOrders"],
+                },
+                getCustomer,
+                listOrders,
             ],
             AdditionalProperties = new() { ["strict"] = true },
         });
