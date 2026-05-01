@@ -128,6 +128,7 @@ internal static class OpenTelemetryConsts
             public const string PresencePenalty = "gen_ai.request.presence_penalty";
             public const string Seed = "gen_ai.request.seed";
             public const string StopSequences = "gen_ai.request.stop_sequences";
+            public const string Stream = "gen_ai.request.stream";
             public const string Temperature = "gen_ai.request.temperature";
             public const string TopK = "gen_ai.request.top_k";
             public const string TopP = "gen_ai.request.top_p";
@@ -138,6 +139,7 @@ internal static class OpenTelemetryConsts
             public const string FinishReasons = "gen_ai.response.finish_reasons";
             public const string Id = "gen_ai.response.id";
             public const string Model = "gen_ai.response.model";
+            public const string TimeToFirstChunk = "gen_ai.response.time_to_first_chunk";
         }
 
         public static class Token
@@ -170,11 +172,12 @@ internal static class OpenTelemetryConsts
             public const string InputTextTokens = "gen_ai.usage.input_text_tokens";
             public const string OutputAudioTokens = "gen_ai.usage.output_audio_tokens";
             public const string OutputTextTokens = "gen_ai.usage.output_text_tokens";
+            public const string ReasoningOutputTokens = "gen_ai.usage.reasoning.output_tokens";
         }
 
         /// <summary>
         /// Custom attributes for realtime sessions.
-        /// These attributes are NOT part of the OpenTelemetry GenAI semantic conventions (as of v1.40).
+        /// These attributes are NOT part of the OpenTelemetry GenAI semantic conventions (as of v1.41).
         /// They are custom extensions to capture realtime session-specific configuration.
         /// </summary>
         public static class Realtime

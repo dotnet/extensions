@@ -125,6 +125,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
     internal static ChatResponse FromOpenAIResponse(ResponseResult responseResult, CreateResponseOptions? openAIOptions, string? conversationId)
     {
+        OpenAIClientExtensions.AddOpenAIResponseAttributes(responseResult.ServiceTier?.ToString(), systemFingerprint: null);
+
         // Convert and return the results.
         ChatResponse response = new()
         {
@@ -368,6 +370,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         ChatRole? lastRole = null;
         bool anyFunctions = false;
         bool storedOutputDisabled = false;
+        string? serviceTier = null;
+        string? systemFingerprint = null;
         ResponseStatus? latestResponseStatus = null;
         Dictionary<string, ToolApprovalRequestContent>? mcpApprovalRequests = null;
 
@@ -679,6 +683,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         void UpdateConversationId(string? id, ResponseResult? response = null)
         {
+            // Record the service tier and system fingerprint each once if not yet recorded.
+            OpenAIClientExtensions.AddOpenAIResponseAttributes(
+                response?.ServiceTier?.ToString(), systemFingerprint: null,
+                ref serviceTier, ref systemFingerprint);
+
             storedOutputDisabled |= IsStoredOutputDisabled(options, response);
             if (storedOutputDisabled)
             {

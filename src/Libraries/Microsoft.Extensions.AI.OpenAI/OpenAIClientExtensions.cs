@@ -334,6 +334,12 @@ public static class OpenAIClientExtensions
     /// <summary>The "openai.api.type" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
     internal const string OpenAIApiTypeTag = "openai.api.type";
 
+    /// <summary>The "openai.response.service_tier" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
+    internal const string OpenAIResponseServiceTierTag = "openai.response.service_tier";
+
+    /// <summary>The "openai.response.system_fingerprint" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
+    internal const string OpenAIResponseSystemFingerprintTag = "openai.response.system_fingerprint";
+
     /// <summary>The "chat_completions" value for the "openai.api.type" tag.</summary>
     internal const string OpenAIApiTypeChatCompletions = "chat_completions";
 
@@ -349,15 +355,102 @@ public static class OpenAIClientExtensions
     /// </summary>
     internal static void AddOpenAIApiType(string apiType)
     {
+        if (GetCurrentChatActivity() is { } activity)
+        {
+            _ = activity.AddTag(OpenAIApiTypeTag, apiType);
+        }
+    }
+
+    /// <summary>
+    /// If the current <see cref="Activity"/> represents a "chat" operation span,
+    /// adds OpenAI-specific response tags with the specified values.
+    /// </summary>
+    internal static void AddOpenAIResponseAttributes(string? serviceTier, string? systemFingerprint)
+    {
+        if (GetCurrentChatActivity() is { } activity)
+        {
+            if (!string.IsNullOrWhiteSpace(serviceTier))
+            {
+                _ = activity.SetTag(OpenAIResponseServiceTierTag, serviceTier);
+            }
+
+            if (!string.IsNullOrWhiteSpace(systemFingerprint))
+            {
+                _ = activity.SetTag(OpenAIResponseSystemFingerprintTag, systemFingerprint);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Streaming-friendly overload of <see cref="AddOpenAIResponseAttributes(string?, string?)"/>
+    /// that records each tag at most once per stream. Once a non-null value has been written for
+    /// either tag, subsequent calls short-circuit without performing the activity lookup or the
+    /// per-tag <see cref="Activity.SetTag(string, object?)"/> call.
+    /// </summary>
+    /// <remarks>
+    /// Each tag is gated independently so a stream that never reports one of the two values still
+    /// captures the other on its first non-null arrival.
+    /// </remarks>
+    /// <param name="serviceTier">The service tier value from the current update, if any.</param>
+    /// <param name="systemFingerprint">The system fingerprint value from the current update, if any.</param>
+    /// <param name="capturedServiceTier">
+    /// A per-stream cache of the value already written for <c>openai.response.service_tier</c>.
+    /// Initialize to <see langword="null"/> at the start of the stream.
+    /// </param>
+    /// <param name="capturedSystemFingerprint">
+    /// A per-stream cache of the value already written for <c>openai.response.system_fingerprint</c>.
+    /// Initialize to <see langword="null"/> at the start of the stream.
+    /// </param>
+    internal static void AddOpenAIResponseAttributes(
+        string? serviceTier,
+        string? systemFingerprint,
+        ref string? capturedServiceTier,
+        ref string? capturedSystemFingerprint)
+    {
+        bool needsServiceTier = capturedServiceTier is null && !string.IsNullOrWhiteSpace(serviceTier);
+        bool needsSystemFingerprint = capturedSystemFingerprint is null && !string.IsNullOrWhiteSpace(systemFingerprint);
+
+        if (!needsServiceTier && !needsSystemFingerprint)
+        {
+            return;
+        }
+
+        if (GetCurrentChatActivity() is { } activity)
+        {
+            if (needsServiceTier)
+            {
+                capturedServiceTier = serviceTier;
+                _ = activity.SetTag(OpenAIResponseServiceTierTag, serviceTier);
+            }
+
+            if (needsSystemFingerprint)
+            {
+                capturedSystemFingerprint = systemFingerprint;
+                _ = activity.SetTag(OpenAIResponseSystemFingerprintTag, systemFingerprint);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns <see cref="Activity.Current"/> if it has data requested and its
+    /// <see cref="Activity.DisplayName"/> represents a gen_ai "chat" span
+    /// (the name is "chat" or "chat {name}"); otherwise <see langword="null"/>.
+    /// </summary>
+    private static Activity? GetCurrentChatActivity()
+    {
         Activity? activity = Activity.Current;
         if (activity is { IsAllDataRequested: true })
         {
+            // Recognize an activity name of "chat" or "chat {name}".
             string name = activity.DisplayName;
+
             if (name.StartsWith(ChatOperationName, StringComparison.Ordinal) &&
                 (name.Length == ChatOperationName.Length || name[ChatOperationName.Length] == ' '))
             {
-                _ = activity.AddTag(OpenAIApiTypeTag, apiType);
+                return activity;
             }
         }
+
+        return null;
     }
 }
