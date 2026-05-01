@@ -653,7 +653,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     {
                         _ = activity.AddTag(
                             OpenTelemetryConsts.GenAI.Tool.Definitions,
-                            JsonSerializer.Serialize(options.Tools.Select(CreateOtelToolDefinition), OtelContext.Default.IEnumerableOtelFunction));
+                            JsonSerializer.Serialize(options.Tools.Select(t => OtelFunction.Create(t, includeOptionalProperties: EnableSensitiveData)), OtelContext.Default.IEnumerableOtelFunction));
                     }
 
                     if (EnableSensitiveData)
@@ -829,28 +829,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    private OtelFunction CreateOtelToolDefinition(AITool tool)
-    {
-        // EnableSensitiveData gates the tool's Description and Parameters (JSON schema)
-        // because they may contain user-authored prompts or large payloads. The Name
-        // (and the fallback Type) is always emitted; it does not contain sensitive data.
-        if (tool.GetService<AIFunctionDeclaration>() is { } function)
-        {
-            return new()
-            {
-                Name = function.Name,
-                Description = EnableSensitiveData ? function.Description : null,
-                Parameters = EnableSensitiveData ? function.JsonSchema : null,
-            };
-        }
-
-        return new()
-        {
-            Type = tool.Name,
-            Name = tool.Name,
-        };
-    }
-
     private void AddOutputMessagesTags(ChatResponse response, Activity? activity)
     {
         if (EnableSensitiveData && activity is { IsAllDataRequested: true })
@@ -980,14 +958,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         public bool Approved { get; set; }
     }
 
-    private sealed class OtelFunction
-    {
-        public string Type { get; set; } = "function";
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-        public JsonElement? Parameters { get; set; }
-    }
-
     private static readonly JsonSerializerOptions _defaultOptions = CreateDefaultOptions();
     private static readonly JsonElement _emptyObject = JsonSerializer.SerializeToElement(new object(), _defaultOptions.GetTypeInfo(typeof(object)));
 
@@ -1027,4 +997,3 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     private sealed partial class OtelContext : JsonSerializerContext;
 }
-

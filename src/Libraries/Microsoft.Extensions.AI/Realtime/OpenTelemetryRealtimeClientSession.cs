@@ -763,7 +763,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
                     {
                         _ = activity.AddTag(
                             OpenTelemetryConsts.GenAI.Tool.Definitions,
-                            JsonSerializer.Serialize(options.Tools.Select(CreateOtelToolDefinition), RealtimeOtelContext.Default.IEnumerableRealtimeOtelFunction));
+                            JsonSerializer.Serialize(options.Tools.Select(t => OtelFunction.Create(t, includeOptionalProperties: EnableSensitiveData)), RealtimeOtelContext.Default.IEnumerableOtelFunction));
                     }
                 }
             }
@@ -935,25 +935,6 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
         }
     }
 
-    private RealtimeOtelFunction CreateOtelToolDefinition(AITool tool)
-    {
-        if (tool.GetService<AIFunctionDeclaration>() is { } function)
-        {
-            return new()
-            {
-                Name = function.Name,
-                Description = EnableSensitiveData ? function.Description : null,
-                Parameters = EnableSensitiveData ? function.JsonSchema : null,
-            };
-        }
-
-        return new()
-        {
-            Type = tool.Name,
-            Name = tool.Name,
-        };
-    }
-
     private void AddMetricTags(ref TagList tags, string? requestModelId, string? responseModelId)
     {
         tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName);
@@ -1007,14 +988,6 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
         public string? FileId { get; set; }
         public string? MimeType { get; set; }
         public string? Modality { get; set; }
-    }
-
-    private sealed class RealtimeOtelFunction
-    {
-        public string Type { get; set; } = "function";
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-        public JsonElement? Parameters { get; set; }
     }
 
     private sealed class RealtimeOtelMessage
@@ -1079,7 +1052,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     [JsonSerializable(typeof(RealtimeOtelBlobPart))]
     [JsonSerializable(typeof(RealtimeOtelUriPart))]
     [JsonSerializable(typeof(RealtimeOtelFilePart))]
-    [JsonSerializable(typeof(IEnumerable<RealtimeOtelFunction>))]
+    [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
     [JsonSerializable(typeof(IEnumerable<RealtimeOtelMessage>))]
     [JsonSerializable(typeof(RealtimeOtelMessage))]
     [JsonSerializable(typeof(RealtimeOtelToolCallPart))]
