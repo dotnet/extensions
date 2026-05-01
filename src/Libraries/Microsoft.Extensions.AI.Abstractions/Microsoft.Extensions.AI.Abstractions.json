@@ -2716,6 +2716,10 @@
         {
           "Member": "string? Microsoft.Extensions.AI.HostedToolSearchTool.Namespace { get; set; }",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedToolSearchTool.NamespaceDescription { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },

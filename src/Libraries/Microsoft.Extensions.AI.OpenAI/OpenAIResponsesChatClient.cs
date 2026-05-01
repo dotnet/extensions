@@ -869,7 +869,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
     /// Builds a <c>{"type":"namespace"}</c> <see cref="ResponseTool"/> from a name and set of tools.
     /// The OpenAI .NET SDK doesn't expose a NamespaceTool type, so we construct the JSON manually.
     /// </summary>
-    internal static ResponseTool ToNamespaceResponseTool(string name, IEnumerable<ResponseTool> namespacedTools)
+    internal static ResponseTool ToNamespaceResponseTool(string name, string? description, IEnumerable<ResponseTool> namespacedTools)
     {
         using var stream = new System.IO.MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -877,6 +877,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             writer.WriteStartObject();
             writer.WriteString("type"u8, "namespace"u8);
             writer.WriteString("name"u8, name);
+
+            if (!string.IsNullOrEmpty(description))
+            {
+                writer.WriteString("description"u8, description);
+            }
 
             writer.WriteStartArray("tools"u8);
             foreach (var namespacedTool in namespacedTools)
@@ -977,12 +982,25 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         if (options.Tools is { Count: > 0 } tools)
         {
             ToolSearchLookup toolSearchLookup = ToolSearchLookup.Create(tools);
-            Dictionary<string, List<ResponseTool>>? namespaceGroups = null;
+            Dictionary<ToolSearchLookup.Namespace, List<ResponseTool>>? namespaceGroups = null;
+            bool toolSearchAdded = false;
 
             foreach (AITool tool in tools)
             {
                 if (ToResponseTool(tool, options, toolSearchLookup) is { } responseTool)
                 {
+                    // Avoid sending multiple tool_search entries when callers supply more than one
+                    // HostedToolSearchTool; the OpenAI Responses API only accepts one.
+                    if (tool is HostedToolSearchTool)
+                    {
+                        if (toolSearchAdded)
+                        {
+                            continue;
+                        }
+
+                        toolSearchAdded = true;
+                    }
+
                     // When a namespaced HostedToolSearchTool claims this deferred tool,
                     // collect it for later wrapping in a namespace container.
                     string? responseToolName = responseTool is FunctionTool ft ? ft.FunctionName
@@ -992,7 +1010,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     if (responseToolName is not null
                         && toolSearchLookup.GetNamespace(responseToolName) is { } ns)
                     {
-                        namespaceGroups ??= new(StringComparer.Ordinal);
+                        namespaceGroups ??= new();
                         if (!namespaceGroups.TryGetValue(ns, out var group))
                         {
                             group = new();
@@ -1009,9 +1027,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             if (namespaceGroups is not null)
             {
-                foreach (KeyValuePair<string, List<ResponseTool>> kvp in namespaceGroups)
+                foreach (KeyValuePair<ToolSearchLookup.Namespace, List<ResponseTool>> kvp in namespaceGroups)
                 {
-                    result.Tools.Add(ToNamespaceResponseTool(kvp.Key, kvp.Value));
+                    result.Tools.Add(ToNamespaceResponseTool(kvp.Key.Name, kvp.Key.Description, kvp.Value));
                 }
             }
 
@@ -1055,9 +1073,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         private static readonly ToolSearchLookup _empty = new(deferAll: false, deferredToolNames: [], namespacedToolNames: []);
         private readonly bool _deferAll;
         private readonly HashSet<string> _deferredToolNames;
-        private readonly Dictionary<string, string> _namespacedToolNames;
+        private readonly Dictionary<string, Namespace> _namespacedToolNames;
 
-        private ToolSearchLookup(bool deferAll, HashSet<string> deferredToolNames, Dictionary<string, string> namespacedToolNames)
+        private ToolSearchLookup(bool deferAll, HashSet<string> deferredToolNames, Dictionary<string, Namespace> namespacedToolNames)
         {
             _deferAll = deferAll;
             _deferredToolNames = deferredToolNames;
@@ -1089,7 +1107,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
             bool deferAll = false;
             HashSet<string> deferredToolNames = new(StringComparer.Ordinal);
-            Dictionary<string, string> namespacedToolNames = new(StringComparer.Ordinal);
+            Dictionary<string, Namespace> namespacedToolNames = new(StringComparer.Ordinal);
+            Dictionary<string, Namespace> namespacesByName = new(StringComparer.Ordinal);
             HashSet<string> unclaimedToolNames = new(functionAndMcpToolNames, StringComparer.Ordinal);
 
             foreach (AITool tool in tools)
@@ -1104,8 +1123,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     deferAll = true;
                     deferredToolNames.UnionWith(functionAndMcpToolNames);
 
-                    if (toolSearch.Namespace is { } ns && unclaimedToolNames.Count > 0)
+                    if (toolSearch.Namespace is { } nsName && unclaimedToolNames.Count > 0)
                     {
+                        Namespace ns = GetOrCreateNamespace(namespacesByName, nsName, toolSearch.NamespaceDescription);
                         foreach (string toolName in unclaimedToolNames)
                         {
                             namespacedToolNames[toolName] = ns;
@@ -1125,9 +1145,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     }
 
                     _ = deferredToolNames.Add(deferredTool);
-                    if (toolSearch.Namespace is { } ns && unclaimedToolNames.Remove(deferredTool))
+                    if (toolSearch.Namespace is { } nsName && unclaimedToolNames.Remove(deferredTool))
                     {
-                        namespacedToolNames[deferredTool] = ns;
+                        namespacedToolNames[deferredTool] = GetOrCreateNamespace(namespacesByName, nsName, toolSearch.NamespaceDescription);
                     }
                 }
             }
@@ -1138,8 +1158,40 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         public bool IsDeferred(string toolName) =>
             _deferAll || _deferredToolNames.Contains(toolName);
 
-        public string? GetNamespace(string toolName) =>
-            _namespacedToolNames.TryGetValue(toolName, out string? ns) ? ns : null;
+        public Namespace? GetNamespace(string toolName) =>
+            _namespacedToolNames.TryGetValue(toolName, out Namespace? ns) ? ns : null;
+
+        // Prefers the first non-empty description supplied for a given namespace name; later
+        // HostedToolSearchTool instances may upgrade a previously-empty description but cannot
+        // overwrite one that's already set.
+        private static Namespace GetOrCreateNamespace(Dictionary<string, Namespace> namespacesByName, string name, string? description)
+        {
+            if (!namespacesByName.TryGetValue(name, out Namespace? existing))
+            {
+                existing = new Namespace(name) { Description = description };
+                namespacesByName[name] = existing;
+            }
+            else if (string.IsNullOrEmpty(existing.Description))
+            {
+                existing.Description = description;
+            }
+
+            return existing;
+        }
+
+        // A class (not a record) so that all entries in _namespacedToolNames sharing a namespace
+        // name reference the same instance; updating Description in place propagates to every
+        // tool already grouped under it.
+        internal sealed class Namespace
+        {
+            public Namespace(string name)
+            {
+                Name = name;
+            }
+
+            public string Name { get; }
+            public string? Description { get; set; }
+        }
     }
 
     internal static ResponseTextFormat? ToOpenAIResponseTextFormat(ChatResponseFormat? format, ChatOptions? options = null) =>
