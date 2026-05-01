@@ -983,11 +983,24 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         {
             ToolSearchLookup toolSearchLookup = ToolSearchLookup.Create(tools);
             Dictionary<ToolSearchLookup.Namespace, List<ResponseTool>>? namespaceGroups = null;
+            bool toolSearchAdded = false;
 
             foreach (AITool tool in tools)
             {
                 if (ToResponseTool(tool, options, toolSearchLookup) is { } responseTool)
                 {
+                    // Avoid sending multiple tool_search entries when callers supply more than one
+                    // HostedToolSearchTool; the OpenAI Responses API only accepts one.
+                    if (tool is HostedToolSearchTool)
+                    {
+                        if (toolSearchAdded)
+                        {
+                            continue;
+                        }
+
+                        toolSearchAdded = true;
+                    }
+
                     // When a namespaced HostedToolSearchTool claims this deferred tool,
                     // collect it for later wrapping in a namespace container.
                     string? responseToolName = responseTool is FunctionTool ft ? ft.FunctionName

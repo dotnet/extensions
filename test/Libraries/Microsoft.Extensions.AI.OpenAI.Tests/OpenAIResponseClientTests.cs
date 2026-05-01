@@ -7738,9 +7738,6 @@ public class OpenAIResponseClientTests
                         "type": "tool_search"
                     },
                     {
-                        "type": "tool_search"
-                    },
-                    {
                         "type": "namespace",
                         "name": "crm",
                         "tools": [
@@ -7847,9 +7844,6 @@ public class OpenAIResponseClientTests
                         "type": "tool_search"
                     },
                     {
-                        "type": "tool_search"
-                    },
-                    {
                         "type": "namespace",
                         "name": "crm",
                         "tools": [
@@ -7946,9 +7940,6 @@ public class OpenAIResponseClientTests
                     }
                 ],
                 "tools": [
-                    {
-                        "type": "tool_search"
-                    },
                     {
                         "type": "tool_search"
                     },
@@ -8428,9 +8419,6 @@ public class OpenAIResponseClientTests
                     }
                 ],
                 "tools": [
-                    {
-                        "type": "tool_search"
-                    },
                     {
                         "type": "tool_search"
                     },
