@@ -219,10 +219,10 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             _tokenUsageHistogram.Record(inputTokens.Value, tags);
         }
 
+        OpenTelemetryLog.RecordOperationError(activity, _logger, error);
+
         if (activity is not null)
         {
-            OpenTelemetryLog.RecordOperationError(activity, _logger, error);
-
             if (inputTokens.HasValue)
             {
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.InputTokens, inputTokens);
