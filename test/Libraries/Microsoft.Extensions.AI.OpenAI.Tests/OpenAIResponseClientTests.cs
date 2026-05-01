@@ -6625,13 +6625,14 @@ public class OpenAIResponseClientTests
     [InlineData(true)]
     public async Task OpenAIApiTypeTag_SetToResponses(bool streaming)
     {
-        const string Output = """
+        const string NonStreamingOutput = """
             {
               "id": "resp_test",
               "object": "response",
               "created_at": 1741891428,
               "status": "completed",
               "model": "gpt-4o-mini",
+              "service_tier": "default",
               "output": [
                 {
                   "id": "msg_test",
@@ -6654,6 +6655,15 @@ public class OpenAIResponseClientTests
             }
             """;
 
+        const string StreamingOutput = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_test","object":"response","created_at":1741891428,"status":"in_progress","model":"gpt-4o-mini","service_tier":"default","output":[]}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":1,"response":{"id":"resp_test","object":"response","created_at":1741891428,"status":"completed","model":"gpt-4o-mini","service_tier":"default","output":[{"id":"msg_test","type":"message","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!"}]}],"usage":{"input_tokens":8,"output_tokens":2,"total_tokens":10}}}
+
+            """;
+
         var sourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
         using var listener = new ActivityListener
@@ -6664,7 +6674,7 @@ public class OpenAIResponseClientTests
         };
         ActivitySource.AddActivityListener(listener);
 
-        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
+        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), streaming ? StreamingOutput : NonStreamingOutput);
         using HttpClient httpClient = new(handler);
         using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
             .GetResponsesClient()
@@ -6687,6 +6697,7 @@ public class OpenAIResponseClientTests
 
         var activity = Assert.Single(activities);
         Assert.Equal("responses", activity.GetTagItem("openai.api.type"));
+        Assert.Equal("default", activity.GetTagItem("openai.response.service_tier"));
     }
 
     [Fact]

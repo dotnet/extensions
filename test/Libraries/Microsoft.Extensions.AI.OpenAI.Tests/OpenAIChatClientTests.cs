@@ -1976,7 +1976,7 @@ public class OpenAIChatClientTests
     [InlineData(true)]
     public async Task OpenAIApiTypeTag_SetToChatCompletions(bool streaming)
     {
-        const string Output = """
+        const string NonStreamingOutput = """
             {
               "id": "chatcmpl-test",
               "object": "chat.completion",
@@ -1996,8 +1996,19 @@ public class OpenAIChatClientTests
                 "prompt_tokens": 8,
                 "completion_tokens": 2,
                 "total_tokens": 10
-              }
+              },
+              "service_tier": "default",
+              "system_fingerprint": "fp_test"
             }
+            """;
+
+        const string StreamingOutput = """
+            data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":1727888631,"model":"gpt-4o-mini-2024-07-18","service_tier":"default","system_fingerprint":"fp_test","choices":[{"index":0,"delta":{"role":"assistant","content":"Hello!"},"finish_reason":null}]}
+
+            data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":1727888631,"model":"gpt-4o-mini-2024-07-18","service_tier":"default","system_fingerprint":"fp_test","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":8,"completion_tokens":2,"total_tokens":10}}
+
+            data: [DONE]
+
             """;
 
         var sourceName = Guid.NewGuid().ToString();
@@ -2010,7 +2021,7 @@ public class OpenAIChatClientTests
         };
         ActivitySource.AddActivityListener(listener);
 
-        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
+        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), streaming ? StreamingOutput : NonStreamingOutput);
         using HttpClient httpClient = new(handler);
         using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
             .GetChatClient("gpt-4o-mini")
@@ -2033,5 +2044,7 @@ public class OpenAIChatClientTests
 
         var activity = Assert.Single(activities);
         Assert.Equal("chat_completions", activity.GetTagItem("openai.api.type"));
+        Assert.Equal("default", activity.GetTagItem("openai.response.service_tier"));
+        Assert.Equal("fp_test", activity.GetTagItem("openai.response.system_fingerprint"));
     }
 }

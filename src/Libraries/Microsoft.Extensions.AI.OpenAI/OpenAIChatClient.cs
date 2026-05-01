@@ -354,6 +354,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
         string? responseId = null;
         DateTimeOffset? createdAt = null;
         string? modelId = null;
+        string? serviceTier = null;
+        string? systemFingerprint = null;
 
         // Process each update as it arrives
         await foreach (StreamingChatCompletionUpdate update in updates.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -364,6 +366,11 @@ internal sealed partial class OpenAIChatClient : IChatClient
             responseId ??= update.CompletionId;
             createdAt ??= update.CreatedAt;
             modelId ??= update.Model;
+
+            // Record the service tier and system fingerprint each once if not yet recorded.
+            OpenAIClientExtensions.AddOpenAIResponseAttributes(
+                update.ServiceTier?.ToString(), update.SystemFingerprint,
+                ref serviceTier, ref systemFingerprint);
 
             // Create the response content object.
             ChatResponseUpdate responseUpdate = new()
@@ -576,6 +583,8 @@ internal sealed partial class OpenAIChatClient : IChatClient
             RawRepresentation = openAICompletion,
             ResponseId = openAICompletion.Id,
         };
+
+        OpenAIClientExtensions.AddOpenAIResponseAttributes(openAICompletion.ServiceTier?.ToString(), openAICompletion.SystemFingerprint);
 
         if (openAICompletion.Usage is ChatTokenUsage tokenUsage)
         {
