@@ -66,19 +66,8 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         _activitySource = new(name);
         _meter = new(name);
 
-        _tokenUsageHistogram = _meter.CreateHistogram<int>(
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
-            OpenTelemetryConsts.TokensUnit,
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
-            );
-
-        _operationDurationHistogram = _meter.CreateHistogram<double>(
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
-            OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
-            );
+        _tokenUsageHistogram = OtelMetricHelpers.CreateGenAITokenUsageHistogram(_meter);
+        _operationDurationHistogram = OtelMetricHelpers.CreateGenAIOperationDurationHistogram(_meter);
     }
 
     /// <summary>
