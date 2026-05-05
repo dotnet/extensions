@@ -61,7 +61,7 @@ public sealed class RetrievalPipeline : IDisposable
     public IList<RetrievalResultProcessor> ResultProcessors { get; } = [];
 
     /// <summary>
-    /// Executes the retrieval pipeline: query processing → vector search → result processing.
+    /// Processes a query through the retrieval pipeline: query processing → vector search → result processing.
     /// </summary>
     /// <typeparam name="TKey">The vector store key type.</typeparam>
     /// <typeparam name="TRecord">The vector store record type.</typeparam>
@@ -75,7 +75,7 @@ public sealed class RetrievalPipeline : IDisposable
     /// <exception cref="ArgumentException"><paramref name="query"/> is <see langword="null"/> or empty.</exception>
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075",
         Justification = "Record properties are accessed for diagnostic metadata population only.")]
-    public async Task<RetrievalResults> RetrieveAsync<TKey, TRecord>(
+    public async Task<RetrievalResults> ProcessAsync<TKey, TRecord>(
         VectorStoreCollection<TKey, TRecord> collection,
         string query,
         int topK = 5,
@@ -87,7 +87,7 @@ public sealed class RetrievalPipeline : IDisposable
         Throw.IfNull(collection);
         Throw.IfNullOrEmpty(query);
 
-        using (Activity? rootActivity = _activitySource.StartActivity("RetrievalPipeline.Retrieve"))
+        using (Activity? rootActivity = _activitySource.StartActivity("RetrievalPipeline.Process"))
         {
             rootActivity?.SetTag("rag.query", query)
                          .SetTag("rag.topK", topK);

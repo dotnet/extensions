@@ -55,6 +55,6 @@ public sealed class VectorStoreRetriever<TKey, TRecord> : IRetriever
         int topK = 5,
         CancellationToken cancellationToken = default)
     {
-        return _pipeline.RetrieveAsync(_collection, query, topK, _contentSelector, cancellationToken);
+        return _pipeline.ProcessAsync(_collection, query, topK, _contentSelector, cancellationToken);
     }
 }
