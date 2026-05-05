@@ -71,6 +71,8 @@ public sealed class RetrievalPipeline : IDisposable
     /// <param name="contentSelector">Extracts text content from a record for result processing.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The retrieval results.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="collection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="query"/> is <see langword="null"/> or empty.</exception>
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075",
         Justification = "Record properties are accessed for diagnostic metadata population only.")]
     public async Task<RetrievalResults> RetrieveAsync<TKey, TRecord>(
