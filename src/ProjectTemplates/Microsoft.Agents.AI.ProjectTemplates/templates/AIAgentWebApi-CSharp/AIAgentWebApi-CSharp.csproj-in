@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="${PackageVersion:Microsoft.Agents.AI}" />
 <!--#endif -->
     <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="${PackageVersion:Microsoft.Agents.AI.Workflows}" />
+    <PackageReference Include="OpenTelemetry.Api" Version="${PackageVersion:OpenTelemetry.Api}" />
 <!--#if (IsOllama) -->
     <PackageReference Include="OllamaSharp" Version="${PackageVersion:OllamaSharp}" />
 <!--#endif -->

@@ -4,6 +4,7 @@
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -274,6 +275,69 @@ public class OpenAITextToSpeechClientTests
         }
 
         Assert.Equal(1, updateCount);
+    }
+
+    [Fact]
+    public async Task GetStreamingAudioAsync_StreamingModel_YieldsMultipleChunksAndUsage()
+    {
+        const string Input = """
+                {
+                    "model": "gpt-4o-mini-tts",
+                    "input": "Hello streaming",
+                    "voice": "alloy",
+                    "stream_format": "sse"
+                }
+                """;
+
+        const string Output = """
+                event: speech.audio.delta
+                data: {"type":"speech.audio.delta","audio":"AQIDBA=="}
+
+                event: speech.audio.delta
+                data: {"type":"speech.audio.delta","audio":"BQYHCA=="}
+
+                event: speech.audio.done
+                data: {"type":"speech.audio.done","usage":{"input_tokens":5,"output_tokens":10,"total_tokens":15}}
+
+                data: [DONE]
+
+                """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using ITextToSpeechClient client = CreateTextToSpeechClient(httpClient, "gpt-4o-mini-tts");
+
+        List<TextToSpeechResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingAudioAsync("Hello streaming"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal(3, updates.Count);
+
+        // First chunk: bytes 1,2,3,4
+        Assert.Equal(TextToSpeechResponseUpdateKind.AudioUpdating, updates[0].Kind);
+        Assert.Equal("gpt-4o-mini-tts", updates[0].ModelId);
+        Assert.IsType<StreamingSpeechAudioDeltaUpdate>(updates[0].RawRepresentation);
+        var data0 = updates[0].Contents.OfType<DataContent>().Single();
+        Assert.Equal("audio/mpeg", data0.MediaType);
+        Assert.Equal(new byte[] { 1, 2, 3, 4 }, data0.Data.ToArray());
+
+        // Second chunk: bytes 5,6,7,8
+        Assert.Equal(TextToSpeechResponseUpdateKind.AudioUpdating, updates[1].Kind);
+        Assert.IsType<StreamingSpeechAudioDeltaUpdate>(updates[1].RawRepresentation);
+        var data1 = updates[1].Contents.OfType<DataContent>().Single();
+        Assert.Equal("audio/mpeg", data1.MediaType);
+        Assert.Equal(new byte[] { 5, 6, 7, 8 }, data1.Data.ToArray());
+
+        // Done event with usage
+        Assert.Equal(TextToSpeechResponseUpdateKind.SessionClose, updates[2].Kind);
+        Assert.Equal("gpt-4o-mini-tts", updates[2].ModelId);
+        Assert.IsType<StreamingSpeechAudioDoneUpdate>(updates[2].RawRepresentation);
+        var usage = updates[2].Contents.OfType<UsageContent>().Single();
+        Assert.Equal(5, usage.Details.InputTokenCount);
+        Assert.Equal(10, usage.Details.OutputTokenCount);
+        Assert.Equal(15, usage.Details.TotalTokenCount);
     }
 
     private static ITextToSpeechClient CreateTextToSpeechClient(HttpClient httpClient, string modelId) =>

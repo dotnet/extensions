@@ -56,10 +56,10 @@ internal static class DiagnosticIds
 
         internal const string AIChatReduction = AIExperiments;
         internal const string AIResponseContinuations = AIExperiments;
-        internal const string AICodeInterpreter = AIExperiments;
-        internal const string AIWebSearch = AIExperiments;
+        internal const string AIToolSearch = AIExperiments;
         internal const string AIRealTime = AIExperiments;
         internal const string AIFiles = AIExperiments;
+        internal const string AIOpenAIRequestPolicies = AIExperiments;
 
         // These diagnostic IDs are defined by the OpenAI package for its experimental APIs.
         // We use the same IDs so consumers do not need to suppress additional diagnostics
@@ -72,7 +72,12 @@ internal static class DiagnosticIds
         internal const string AIOpenAIRealtime = "OPENAI002";
         internal const string AIOpenAIJsonPatch = "SCME0001";
 
+        // All Vector Data experiments share a diagnostic ID but have different
+        // constants to manage which experiment each API belongs to.
+        internal const string VectorDataProviderServices = VectorDataExperiments;
+
         private const string AIExperiments = "MEAI001";
+        private const string VectorDataExperiments = "MEVD9001";
     }
 
     internal static class LoggerMessage

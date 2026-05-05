@@ -13,6 +13,8 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Audio;
 
+#pragma warning disable MEAI001 // Type is for evaluation purposes only
+#pragma warning disable OPENAI001 // Streaming transcription segment updates are experimental
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 
@@ -102,6 +104,11 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
                     response.EndTime = transcription.Words[wordCount - 1].EndTime;
                 }
             }
+
+            if (transcription.Usage is AudioTranscriptionTokenUsage tokenUsage)
+            {
+                response.Usage = ToUsageDetails(tokenUsage);
+            }
         }
 
         return response;
@@ -145,8 +152,19 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
                         result.Contents = [new TextContent(deltaUpdate.Delta)];
                         break;
 
+                    case StreamingAudioTranscriptionTextSegmentUpdate segmentUpdate:
+                        result.Kind = SpeechToTextResponseUpdateKind.TextUpdated;
+                        result.StartTime = segmentUpdate.StartTime;
+                        result.EndTime = segmentUpdate.EndTime;
+                        break;
+
                     case StreamingAudioTranscriptionTextDoneUpdate doneUpdate:
                         result.Kind = SpeechToTextResponseUpdateKind.SessionClose;
+                        if (doneUpdate.Usage is { } usage)
+                        {
+                            result.Contents = [new UsageContent(ToUsageDetails(usage))];
+                        }
+
                         break;
                 }
 
@@ -183,5 +201,24 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         AudioTranslationOptions result = options?.RawRepresentationFactory?.Invoke(this) as AudioTranslationOptions ?? new();
 
         return result;
+    }
+
+    /// <summary>Maps <see cref="AudioTranscriptionTokenUsage"/> to <see cref="UsageDetails"/>.</summary>
+    private static UsageDetails ToUsageDetails(AudioTranscriptionTokenUsage tokenUsage)
+    {
+        var details = new UsageDetails
+        {
+            InputTokenCount = tokenUsage.InputTokenCount,
+            OutputTokenCount = tokenUsage.OutputTokenCount,
+            TotalTokenCount = tokenUsage.TotalTokenCount,
+        };
+
+        if (tokenUsage.InputTokenDetails is { } inputDetails)
+        {
+            details.InputAudioTokenCount = inputDetails.AudioTokenCount;
+            details.InputTextTokenCount = inputDetails.TextTokenCount;
+        }
+
+        return details;
     }
 }
