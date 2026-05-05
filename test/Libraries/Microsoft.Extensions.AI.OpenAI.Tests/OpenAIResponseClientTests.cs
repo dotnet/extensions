@@ -5974,6 +5974,7 @@ public class OpenAIResponseClientTests
         var functionCallUpdate = updates.FirstOrDefault(u => u.Contents.OfType<FunctionCallContent>().Any());
         Assert.NotNull(functionCallUpdate);
         Assert.Equal(ChatRole.Assistant, functionCallUpdate.Role);
+        Assert.Equal("fc_001", functionCallUpdate.MessageId); // Verify MessageID is set for function calls (issue #7479)
         var fcc = functionCallUpdate.Contents.OfType<FunctionCallContent>().Single();
         Assert.Equal("call_123", fcc.CallId);
         Assert.Equal("get_weather", fcc.Name);
@@ -5994,14 +5995,23 @@ public class OpenAIResponseClientTests
         var response = updates.ToChatResponse();
         Assert.Equal("resp_001", response.ResponseId);
         Assert.Equal("gpt-4o-mini", response.ModelId);
-        Assert.Single(response.Messages);
-        var message = response.Messages[0];
-        Assert.Equal(ChatRole.Assistant, message.Role);
 
-        // Message should contain: FunctionCallContent, FunctionResultContent, and TextContent
-        Assert.Single(message.Contents.OfType<FunctionCallContent>());
-        Assert.Single(message.Contents.OfType<FunctionResultContent>());
-        var textContent = Assert.Single(message.Contents.OfType<TextContent>());
+        // With the MessageID fix, function calls now have their own MessageId ("fc_001") and
+        // the text message has a different MessageId ("msg_001"), resulting in 2 separate messages.
+        Assert.Equal(2, response.Messages.Count);
+
+        // First message contains the function call and result items (MessageId="fc_001")
+        var functionMessage = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, functionMessage.Role);
+        Assert.Equal("fc_001", functionMessage.MessageId);
+        Assert.Single(functionMessage.Contents.OfType<FunctionCallContent>());
+        Assert.Single(functionMessage.Contents.OfType<FunctionResultContent>());
+
+        // Second message contains the text response (MessageId="msg_001")
+        var textMessage = response.Messages[1];
+        Assert.Equal(ChatRole.Assistant, textMessage.Role);
+        Assert.Equal("msg_001", textMessage.MessageId);
+        var textContent = Assert.Single(textMessage.Contents.OfType<TextContent>());
         Assert.Equal("It's 25°C and sunny in Paris.", textContent.Text);
 
         // Verify usage

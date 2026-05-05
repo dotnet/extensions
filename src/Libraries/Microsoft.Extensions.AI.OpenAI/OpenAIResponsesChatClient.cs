@@ -17,7 +17,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
-using OpenAI;
 using OpenAI.Responses;
 
 #pragma warning disable S1226 // Method parameters, caught exceptions and foreach variables' initial values should not be ignored
@@ -464,6 +463,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         case FunctionCallResponseItem fcri:
                             anyFunctions = true;
+                            lastMessageId = outputItemAddedUpdate.Item.Id;
                             lastRole = ChatRole.Assistant;
                             break;
                     }
@@ -735,7 +735,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             case HostedToolSearchTool:
                 // Workaround: The OpenAI .NET SDK doesn't yet expose a ToolSearchTool type.
                 // See https://github.com/openai/openai-dotnet/issues/1053
-                return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
+#pragma warning disable OPENAI001 // OpenAIResponsesContext is experimental
+                return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromString("""{"type": "tool_search"}"""), ModelReaderWriterOptions.Json, OpenAIResponsesContext.Default)!;
+#pragma warning restore OPENAI001
 
             case HostedWebSearchTool webSearchTool:
                 return new WebSearchTool
@@ -895,7 +897,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             writer.WriteStartArray("tools"u8);
             foreach (var namespacedTool in namespacedTools)
             {
-                var toolData = ModelReaderWriter.Write(namespacedTool, ModelReaderWriterOptions.Json, OpenAIContext.Default);
+#pragma warning disable OPENAI001 // OpenAIResponsesContext is experimental
+                var toolData = ModelReaderWriter.Write(namespacedTool, ModelReaderWriterOptions.Json, OpenAIResponsesContext.Default);
+#pragma warning restore OPENAI001
                 using var doc = JsonDocument.Parse(toolData);
                 doc.RootElement.WriteTo(writer);
             }
@@ -904,7 +908,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             writer.WriteEndObject();
         }
 
-        return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromBytes(stream.ToArray()), ModelReaderWriterOptions.Json, OpenAIContext.Default)!;
+#pragma warning disable OPENAI001 // OpenAIResponsesContext is experimental
+        return ModelReaderWriter.Read<ResponseTool>(BinaryData.FromBytes(stream.ToArray()), ModelReaderWriterOptions.Json, OpenAIResponsesContext.Default)!;
+#pragma warning restore OPENAI001
     }
 
     /// <summary>Creates a <see cref="ChatRole"/> from a <see cref="MessageRole"/>.</summary>
