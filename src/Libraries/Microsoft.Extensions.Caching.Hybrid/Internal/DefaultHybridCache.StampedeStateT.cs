@@ -376,6 +376,7 @@ internal partial class DefaultHybridCache
                     // - we're not writing to L2
                     // Additionally, if the caller provided an explicit LocalCacheSize via the factory context,
                     // we can also skip serialization for size purposes (we already know the size).
+                    // TODO: The above doesn't make sense as is.
                     CacheItem cacheItem = CacheItem;
                     bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (activeFlags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
 
