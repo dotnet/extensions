@@ -26,9 +26,9 @@ public class ResponseContinuationTokenTests
         ResponseContinuationToken originalToken = ResponseContinuationToken.FromBytes(new byte[] { 1, 2, 3, 4, 5 });
 
         // Act
-        string json = JsonSerializer.Serialize(originalToken, TestJsonSerializerContext.Default.ResponseContinuationToken);
+        string json = JsonSerializer.Serialize(originalToken, AIJsonUtilities.DefaultOptions);
 
-        ResponseContinuationToken? deserializedToken = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ResponseContinuationToken);
+        ResponseContinuationToken? deserializedToken = JsonSerializer.Deserialize<ResponseContinuationToken>(json, AIJsonUtilities.DefaultOptions);
 
         // Assert
         Assert.NotNull(deserializedToken);

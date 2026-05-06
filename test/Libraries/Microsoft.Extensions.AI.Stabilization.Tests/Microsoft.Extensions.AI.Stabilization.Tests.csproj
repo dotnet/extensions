@@ -19,14 +19,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\ImageGenerationToolCallContentTests.cs" Link="Contents\ImageGenerationToolCallContentTests.cs" />
-    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\ImageGenerationToolResultContentTests.cs" Link="Contents\ImageGenerationToolResultContentTests.cs" />
-    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Tools\HostedImageGenerationToolTests.cs" Link="Tools\HostedImageGenerationToolTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\ResponseContinuationTokenTests.cs" Link="ResponseContinuationTokenTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\CodeInterpreterToolCallContentTests.cs" Link="Contents\CodeInterpreterToolCallContentTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\CodeInterpreterToolResultContentTests.cs" Link="Contents\CodeInterpreterToolResultContentTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\ImageGenerationToolCallContentTests.cs" Link="Contents\ImageGenerationToolCallContentTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\ImageGenerationToolResultContentTests.cs" Link="Contents\ImageGenerationToolResultContentTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\WebSearchToolCallContentTests.cs" Link="Contents\WebSearchToolCallContentTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Contents\WebSearchToolResultContentTests.cs" Link="Contents\WebSearchToolResultContentTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Tools\HostedCodeInterpreterToolTests.cs" Link="Tools\HostedCodeInterpreterToolTests.cs" />
+    <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Tools\HostedImageGenerationToolTests.cs" Link="Tools\HostedImageGenerationToolTests.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\Tools\HostedWebSearchToolTests.cs" Link="Tools\HostedWebSearchToolTests.cs" />
   </ItemGroup>
 
