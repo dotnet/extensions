@@ -244,6 +244,9 @@ public class ChatOptionsTests
 
         string json = JsonSerializer.Serialize(original, AIJsonUtilities.DefaultOptions);
 
+        Assert.Contains("\"allowBackgroundResponses\": true", json, StringComparison.Ordinal);
+        Assert.Contains("\"continuationToken\": \"AQID\"", json, StringComparison.Ordinal);
+
         ChatOptions? result = JsonSerializer.Deserialize<ChatOptions>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(result);

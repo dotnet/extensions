@@ -185,8 +185,6 @@ public class ChatOptions
     /// If the implementation does not support background responses, this property will be ignored.
     /// </para>
     /// </remarks>
-    [JsonInclude]
-    [JsonPropertyName("allowBackgroundResponses")]
     public bool? AllowBackgroundResponses { get; set; }
 
     /// <summary>Gets or sets the continuation token for resuming and getting the result of the chat response identified by this token.</summary>
@@ -200,8 +198,6 @@ public class ChatOptions
     /// can be polled for completion by obtaining the token from the <see cref="ChatResponse.ContinuationToken"/> property
     /// and passing it to this property on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>.
     /// </remarks>
-    [JsonInclude]
-    [JsonPropertyName("continuationToken")]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 
     /// <summary>
