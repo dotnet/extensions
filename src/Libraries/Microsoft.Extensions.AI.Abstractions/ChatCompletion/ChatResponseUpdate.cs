@@ -170,8 +170,6 @@ public class ChatResponseUpdate
     /// to resume streaming from the point of interruption.
     /// </para>
     /// </remarks>
-    [JsonInclude]
-    [JsonPropertyName("continuationToken")]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 
     /// <summary>Gets a <see cref="AIContent"/> object to display in the debugger display.</summary>

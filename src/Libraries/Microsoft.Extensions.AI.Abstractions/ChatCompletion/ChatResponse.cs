@@ -100,8 +100,6 @@ public class ChatResponse
     /// to poll for completion.
     /// </para>
     /// </remarks>
-    [JsonInclude]
-    [JsonPropertyName("continuationToken")]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 
     /// <summary>Gets or sets the raw representation of the chat response from an underlying implementation.</summary>
