@@ -2399,7 +2399,7 @@
       "Properties": [
         {
           "Member": "System.DateTimeOffset? Microsoft.Extensions.AI.HostedFileContent.CreatedAt { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
@@ -2423,7 +2423,7 @@
         },
         {
           "Member": "long? Microsoft.Extensions.AI.HostedFileContent.SizeInBytes { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
