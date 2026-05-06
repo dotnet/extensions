@@ -109,8 +109,6 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(AIContent))]
     [JsonSerializable(typeof(IEnumerable<AIContent>))]
 
-    [JsonSerializable(typeof(ResponseContinuationToken))]
-
     // IEmbeddingGenerator
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]
     [JsonSerializable(typeof(EmbeddingGeneratorMetadata))]
