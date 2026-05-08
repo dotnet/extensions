@@ -13,6 +13,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageReference Include="NuGet.Packaging" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageReference Include="NuGet.Protocol" />
   </ItemGroup>
 
   <ItemGroup>
