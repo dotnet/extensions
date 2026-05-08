@@ -11,7 +11,7 @@
     <!-- Set the version info to align with ModelContextProtocol packages -->
     <MajorVersion>1</MajorVersion>
     <MinorVersion>2</MinorVersion>
-    <PatchVersion>0</PatchVersion>
+    <PatchVersion>1</PatchVersion>
 
     <Workstream>AI</Workstream>
     <!-- Template-only package (no Compile items or tests), so coverage/mutation thresholds are not applicable. -->
