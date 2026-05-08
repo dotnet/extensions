@@ -83,11 +83,11 @@ When presenting the analysis, use this table format. The **Area** column lets re
 ```markdown
 | Area | Semantic Convention Change | Upstream PR | Classification | Action Required | Complexity |
 |---|---|---|---|---|---|
-| `gen-ai` | `gen_ai.new.attribute` | [semantic-conventions-genai#1234](link) | New required attribute | Add constant + emission + test in `Microsoft.Extensions.AI` | Low |
-| `gen-ai` | `gen_ai.deferred.attribute` | [semantic-conventions-genai#2345](link) | Constant not yet emitted | Defer — no client populates this attribute in this PR | — |
-| `mcp` | `mcp.tool.approval` | [semantic-conventions-genai#3456](link) | N/A — No client | None — no MCP instrumentation today | — |
-| `openai` | `openai.new.attribute` | [semantic-conventions-genai#4567](link) | New required attribute | Add to `Microsoft.Extensions.AI.OpenAI` provider package | Low |
-| `anthropic` | `anthropic.new.attribute` | [semantic-conventions-genai#5678](link) | N/A — No client (in this repo) | Out of scope here — [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp) is the actual target. Open a follow-up there. | — |
+| `gen-ai` | `gen_ai.new.attribute` | [open-telemetry/semantic-conventions-genai#1234](link) | New required attribute | Add constant + emission + test in `Microsoft.Extensions.AI` | Low |
+| `gen-ai` | `gen_ai.deferred.attribute` | [open-telemetry/semantic-conventions-genai#2345](link) | Constant not yet emitted | Defer — no client populates this attribute in this PR | — |
+| `mcp` | `mcp.tool.approval` | [open-telemetry/semantic-conventions-genai#3456](link) | N/A — No client | None — no MCP instrumentation today | — |
+| `openai` | `openai.new.attribute` | [open-telemetry/semantic-conventions-genai#4567](link) | New required attribute | Add to `Microsoft.Extensions.AI.OpenAI` provider package | Low |
+| `anthropic` | `anthropic.new.attribute` | [open-telemetry/semantic-conventions-genai#5678](link) | N/A — No client (in this repo) | Out of scope here — [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp) is the actual target. Open a follow-up there. | — |
 | `gen-ai` | Version reference | — | Version bump | Update doc comments to new wording | Low |
 ```
 
