@@ -47,14 +47,16 @@ Review checklist for gen-ai convention changes. Based on patterns from past PR r
 **Past feedback**: PR #7379 — stephentoub asked "do we already have tests validating error.type? If so, can you just augment those".
 
 ### 6. Version Reference Completeness
-- [ ] All files with a gen-ai semantic conventions version reference use the same version before starting the update
+- [ ] All files with a GenAI semantic conventions version reference use the same version before starting the update
 - [ ] ALL OpenTelemetry* client files with a version reference have that reference updated
-- [ ] Grep confirms no remaining references to the old version: `grep -rn "v1.OLD" src/Libraries/Microsoft.Extensions.AI/`
+- [ ] If the next convention update is the one that migrates the doc-comment wording from `Semantic Conventions for Generative AI systems v1.XX` to `GenAI Semantic Conventions vX.Y.Z` (per [file-inventory.md §Wording migration](file-inventory.md#wording-migration)), every matched file is migrated in the same PR — no transitional drift left behind.
+- [ ] Grep confirms no remaining references to the old version. Use the transitional regex while the wording migration is pending: `grep -rEn "Semantic Conventions for Generative AI systems v(OLD)|GenAI Semantic Conventions v(OLD)" src/Libraries/Microsoft.Extensions.AI/`. After the wording is migrated everywhere, simplify to `grep -rn "GenAI Semantic Conventions v(OLD)" src/Libraries/Microsoft.Extensions.AI/`.
 
 ### 7. Constants Organization
 - [ ] New constants added to appropriate nested class in `OpenTelemetryConsts.cs`
 - [ ] Constant names follow PascalCase convention
 - [ ] String values match the semantic convention attribute names exactly
+- [ ] **Area-aware nesting**: attributes from upstream `mcp/`, `openai/`, etc. belong in their own nested class (e.g. `OpenTelemetryConsts.MCP.*`, or in a provider-package constants file for `OpenAI.*`) rather than under `GenAI.*`. Do not add MCP or provider attributes to `GenAI.*`. (See [file-inventory.md §Provider-specific instrumentation](file-inventory.md#provider-specific-instrumentation).)
 - [ ] **No orphan constants**: every newly added constant in `OpenTelemetryConsts.cs` is referenced by at least one emission site added in this PR. Verify with `grep -rn NewConstantName src/Libraries/Microsoft.Extensions.AI/`. If no client populates the attribute, the constant must be removed from this PR and deferred to the PR that adds emission (classify as 🟢 *Constant not yet emitted*).
 
 ### 8. Scope Completeness
@@ -62,6 +64,7 @@ Review checklist for gen-ai convention changes. Based on patterns from past PR r
 - [ ] If a change affects embeddings, image generation, speech, etc., those clients are also updated
 - [ ] Function invocation changes apply to both `FunctionInvokingChatClient` and shared `Common/FunctionInvocationProcessor.cs`
 - [ ] Realtime function invocation via `FunctionInvokingRealtimeClientSession` is also covered if applicable
+- [ ] **Provider-specific scope**: attributes from upstream `openai/`, `anthropic/`, `aws-bedrock/`, `azure-ai-inference/` areas live in the corresponding provider package (e.g. `Microsoft.Extensions.AI.OpenAI` for `openai/`), **not** in `Microsoft.Extensions.AI`. Verify the change landed in the right package and that the provider package's tests cover it. For `anthropic/` and `aws-bedrock/` the corresponding provider package lives in another dotnet SDK repo we contribute to — [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp) and the `BedrockRuntime` library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net) respectively (see [SKILL.md §Cross-repo applicability](../SKILL.md#cross-repo-applicability)); from `dotnet/extensions` they are out of scope — confirm the audit table flags them and that a follow-up has been (or will be) opened in the right SDK repo.
 
 **Past feedback**: PR #7379 — stephentoub asked to extend changes to additional client types.
 

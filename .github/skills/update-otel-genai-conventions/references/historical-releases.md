@@ -1,8 +1,15 @@
 # Historical Releases
 
-Mapping of OpenTelemetry semantic-conventions releases with gen-ai changes to dotnet/extensions PRs.
+Mapping of OpenTelemetry GenAI semantic-conventions releases to dotnet/extensions PRs.
 
-> **Note**: This file is a point-in-time reference and is not intended to be kept up to date with every new release. It provides context for how past convention updates were handled. For the latest release history, consult the [semantic-conventions releases page](https://github.com/open-telemetry/semantic-conventions/releases) and search the dotnet/extensions PR history.
+> **Migration Note**: Every entry in the tables below is from the **old** [`open-telemetry/semantic-conventions`](https://github.com/open-telemetry/semantic-conventions) repo (pre-migration era), where GenAI conventions were tagged with `area:gen-ai`. GenAI conventions have since moved to a dedicated repo: [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai). See [SKILL.md §Migration Note](../SKILL.md#migration-note) for the full picture.
+>
+> **Point-in-time reference**: This file is not intended to be kept up to date with every new release. It provides context for how past convention updates were handled. For current activity, consult:
+>
+> - The new repo's [`CHANGELOG.md`](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/CHANGELOG.md) (`Unreleased` section is the live "what's new" view until releases land).
+> - The new repo's [releases page](https://github.com/open-telemetry/semantic-conventions-genai/releases) (empty as of this writing).
+> - The new repo's [pull request history](https://github.com/open-telemetry/semantic-conventions-genai/pulls?q=is%3Apr).
+> - The dotnet/extensions PR history.
 
 ## Release History
 
