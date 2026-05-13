@@ -45,6 +45,8 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageReference Include="OpenTelemetry.Api" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
     <PackageReference Include="PdfPig" />
   </ItemGroup>
