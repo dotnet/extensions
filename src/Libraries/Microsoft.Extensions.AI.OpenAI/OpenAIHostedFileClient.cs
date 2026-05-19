@@ -120,7 +120,7 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
             var requestOptions = options?.RawRepresentationFactory?.Invoke(this) as RequestOptions ?? new();
             requestOptions.CancellationToken = cancellationToken;
 
-            var result = await GetContainerClient().CreateContainerFileAsync(
+            var result = await GetContainerClient().UploadContainerFileAsync(
                 containerId,
                 binaryContent,
                 multipart.Headers.ContentType!.ToString(),
