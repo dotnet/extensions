@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.ResourceMonitoring, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Diagnostics.ResourceMonitoring, Version=10.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitor",
@@ -107,6 +107,10 @@
         },
         {
           "Member": "bool Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.UseLinuxCalculationV2 { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.UseZeroToOneRangeForLinuxMetrics { get; set; }",
           "Stage": "Experimental"
         },
         {
