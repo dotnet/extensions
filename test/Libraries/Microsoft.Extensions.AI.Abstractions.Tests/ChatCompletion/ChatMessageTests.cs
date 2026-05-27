@@ -336,4 +336,66 @@ public class ChatMessageTests
         Assert.Equal("function-result", functionResultContent.Result?.ToString());
         Assert.Equal("function-id", functionResultContent.CallId);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "role": "user",
+              "authorName": "Fred",
+              "messageId": "msg42",
+              "createdAt": "2024-06-01T12:00:00+00:00",
+              "contents": [
+                {
+                  "$type": "text",
+                  "text": "Hello, world!"
+                },
+                {
+                  "$type": "functionCall",
+                  "callId": "call1",
+                  "name": "myFunc",
+                  "arguments": {
+                    "param1": "value1"
+                  }
+                },
+                {
+                  "$type": "functionResult",
+                  "callId": "call1",
+                  "result": "result-value"
+                }
+              ],
+              "additionalProperties": {
+                "metaKey": "metaValue"
+              }
+            }
+            """;
+
+        ChatMessage? result = JsonSerializer.Deserialize<ChatMessage>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(ChatRole.User, result.Role);
+        Assert.Equal("Fred", result.AuthorName);
+        Assert.Equal("msg42", result.MessageId);
+        Assert.Equal(new DateTimeOffset(2024, 6, 1, 12, 0, 0, TimeSpan.Zero), result.CreatedAt);
+
+        Assert.Equal(3, result.Contents.Count);
+
+        var textContent = Assert.IsType<TextContent>(result.Contents[0]);
+        Assert.Equal("Hello, world!", textContent.Text);
+
+        var funcCall = Assert.IsType<FunctionCallContent>(result.Contents[1]);
+        Assert.Equal("call1", funcCall.CallId);
+        Assert.Equal("myFunc", funcCall.Name);
+        Assert.NotNull(funcCall.Arguments);
+        Assert.Equal("value1", funcCall.Arguments["param1"]?.ToString());
+
+        var funcResult = Assert.IsType<FunctionResultContent>(result.Contents[2]);
+        Assert.Equal("call1", funcResult.CallId);
+        Assert.Equal("result-value", funcResult.Result?.ToString());
+
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Single(result.AdditionalProperties);
+        Assert.Equal("metaValue", result.AdditionalProperties["metaKey"]?.ToString());
+    }
 }

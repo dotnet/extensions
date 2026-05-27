@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -1416,6 +1417,170 @@ public partial class AIFunctionFactoryTest
         Assert.Contains("nullableInt", requiredParams);
         Assert.DoesNotContain("nullableStringWithDefault", requiredParams);
         Assert.DoesNotContain("nullableIntWithDefault", requiredParams);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_DynamicMethod()
+    {
+        DynamicMethod dynamicMethod = new DynamicMethod(
+            "DoubleIt",
+            typeof(Task<int>),
+            new[] { typeof(int) },
+            typeof(AIFunctionFactoryTest).Module);
+
+        dynamicMethod.DefineParameter(1, ParameterAttributes.None, "value");
+
+        ILGenerator il = dynamicMethod.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldc_I4_2);
+        il.Emit(OpCodes.Mul);
+        il.Emit(OpCodes.Call, typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(typeof(int)));
+        il.Emit(OpCodes.Ret);
+
+        Delegate testDelegate = dynamicMethod.CreateDelegate(typeof(Func<int, Task<int>>));
+
+        AIFunction func = AIFunctionFactory.Create(testDelegate.GetMethodInfo(), testDelegate.Target);
+
+        Assert.Equal("DoubleIt", func.Name);
+
+        JsonElement schema = func.JsonSchema;
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.True(properties.TryGetProperty("value", out _));
+
+#if NET
+        // DynamicMethod invocation via MethodInfo.Invoke is not supported on .NET Framework.
+        object? result = await func.InvokeAsync(new() { ["value"] = 21 });
+        Assert.IsType<JsonElement>(result);
+        Assert.Equal(42, ((JsonElement)result!).GetInt32());
+#endif
+    }
+
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_ThrowsOnExtraArgument_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        AIFunction func = AIFunctionFactory.Create(
+            (string taskId, string update, bool markComplete = false) => $"{taskId}:{update}:{markComplete}",
+            new AIFunctionFactoryOptions { SerializerOptions = strictOptions });
+
+        // Extra, unrecognized argument causes a throw.
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>("arguments", async () =>
+            await func.InvokeAsync(new()
+            {
+                ["taskId"] = "abc",
+                ["update"] = "Done",
+                ["phase"] = "completed",
+            }));
+        Assert.Contains("phase", ex.Message);
+
+        // Still succeeds when no unexpected arguments are present (optional parameter omitted).
+        object? result = await func.InvokeAsync(new()
+        {
+            ["taskId"] = "abc",
+            ["update"] = "Done",
+        });
+        AssertExtensions.EqualFunctionCallResults("abc:Done:False", result);
+    }
+
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDefault_IgnoresExtraArgument_Async()
+    {
+        // Default behavior (Skip) should preserve pre-existing lenient binding.
+        AIFunction func = AIFunctionFactory.Create(
+            (string update, bool markComplete = false) => $"{update}:{markComplete}");
+
+        object? result = await func.InvokeAsync(new()
+        {
+            ["update"] = "Done",
+            ["phase"] = "completed",
+        });
+        AssertExtensions.EqualFunctionCallResults("Done:False", result);
+    }
+
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_HonorsArgumentsComparer_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        AIFunction func = AIFunctionFactory.Create(
+            (string update, bool markComplete = false) => $"{update}:{markComplete}",
+            new AIFunctionFactoryOptions { SerializerOptions = strictOptions });
+
+        // Case-insensitive arguments dictionary: casing variations of the parameter name must not be
+        // flagged as unmapped, since the binding lookup itself is case-insensitive.
+        AIFunctionArguments caseInsensitive = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["UPDATE"] = "Done",
+            ["MarkComplete"] = true,
+        };
+        AssertExtensions.EqualFunctionCallResults("Done:True", await func.InvokeAsync(caseInsensitive));
+
+        // A genuinely unmapped key is still flagged even with a case-insensitive comparer.
+        AIFunctionArguments withExtra = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["update"] = "Done",
+            ["PHASE"] = "completed",
+        };
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>("arguments", async () =>
+            await func.InvokeAsync(withExtra));
+        Assert.Contains("PHASE", ex.Message);
+    }
+
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_ParameterlessMethod_ThrowsOnAnyArgument_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        AIFunction func = AIFunctionFactory.Create(
+            () => "ok",
+            new AIFunctionFactoryOptions { SerializerOptions = strictOptions });
+
+        // No args is fine.
+        AssertExtensions.EqualFunctionCallResults("ok", await func.InvokeAsync());
+
+        // Any extra key is flagged.
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>("arguments", async () =>
+            await func.InvokeAsync(new() { ["phase"] = "completed" }));
+        Assert.Contains("phase", ex.Message);
+    }
+
+    [Fact]
+    public async Task Parameters_UnmappedMemberHandlingDisallow_CustomBindParameter_SkipsStrictValidation_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        // A custom BindParameter callback sources its value from a key that does not correspond
+        // to the .NET parameter name. Strict validation must be skipped so such binders keep working.
+        AIFunction func = AIFunctionFactory.Create(
+            (string update) => $"update:{update}",
+            new AIFunctionFactoryOptions
+            {
+                SerializerOptions = strictOptions,
+                ConfigureParameterBinding = _ => new()
+                {
+                    BindParameter = (_, args) => args["aliasedKey"],
+                },
+            });
+
+        object? result = await func.InvokeAsync(new()
+        {
+            ["aliasedKey"] = "hello",
+            ["anotherKey"] = "world",
+        });
+        AssertExtensions.EqualFunctionCallResults("update:hello", result);
     }
 
     [JsonSerializable(typeof(IAsyncEnumerable<int>))]

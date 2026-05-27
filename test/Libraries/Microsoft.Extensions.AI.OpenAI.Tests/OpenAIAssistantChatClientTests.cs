@@ -13,6 +13,8 @@ using Xunit;
 
 namespace Microsoft.Extensions.AI;
 
+#pragma warning disable OPENAI001 // OpenAI Assistant APIs are experimental
+
 public class OpenAIAssistantChatClientTests
 {
     [Fact]

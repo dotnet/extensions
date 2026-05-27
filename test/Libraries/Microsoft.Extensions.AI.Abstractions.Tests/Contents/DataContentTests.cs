@@ -109,6 +109,35 @@ public sealed class DataContentTests
         Assert.Equal("aGVsbG8=", content.Base64Data.ToString());
     }
 
+    [Theory]
+    [InlineData("data:,hello", "hello")]
+    [InlineData("data:;base64,aGVsbG8=", "hello")]
+    [InlineData("data:,hello%20world", "hello world")]
+    [InlineData("data:,", "")]
+    [InlineData("data:;base64,", "")]
+    public void Ctor_OmittedMediaType_DefaultsToTextPlain(string uri, string expectedData)
+    {
+        // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII"
+        static void Validate(DataContent content, string expectedData)
+        {
+            Assert.Equal("text/plain;charset=US-ASCII", content.MediaType);
+            Assert.Equal(expectedData, Encoding.UTF8.GetString(content.Data.ToArray()));
+        }
+
+        Validate(new DataContent(uri), expectedData);
+        Validate(new DataContent(new Uri(uri)), expectedData);
+    }
+
+    [Theory]
+    [InlineData("data:,hello", "application/json")]
+    [InlineData("data:;base64,aGVsbG8=", "application/octet-stream")]
+    public void Ctor_OmittedMediaType_CanBeOverridden(string uri, string mediaType)
+    {
+        // When media type is omitted in the URI but provided as a parameter, the parameter takes precedence
+        var content = new DataContent(uri, mediaType);
+        Assert.Equal(mediaType, content.MediaType);
+    }
+
     [Fact]
     public void Serialize_MatchesExpectedJson()
     {
@@ -569,6 +598,8 @@ public sealed class DataContentTests
         DataContent content = new(testData, "application/json");
 
         string filename = $"test_{Guid.NewGuid()}.json";
+        string cwdBefore = Directory.GetCurrentDirectory();
+        string expectedAbsolute = Path.Combine(cwdBefore, filename);
         string? savedPath = null;
 
         try
@@ -577,14 +608,14 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory
             Assert.Equal(filename, Path.GetFileName(savedPath));
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+            Assert.True(File.Exists(expectedAbsolute));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            if (savedPath is not null && File.Exists(savedPath))
+            if (File.Exists(expectedAbsolute))
             {
-                File.Delete(savedPath);
+                File.Delete(expectedAbsolute);
             }
         }
     }
@@ -625,6 +656,8 @@ public sealed class DataContentTests
         byte[] testData = [7, 8, 9];
         DataContent content = new(testData, "text/plain") { Name = $"testfile_{Guid.NewGuid()}.txt" };
 
+        string cwdBefore = Directory.GetCurrentDirectory();
+        string expectedAbsolute = Path.Combine(cwdBefore, content.Name!);
         string? savedPath = null;
 
         try
@@ -633,14 +666,14 @@ public sealed class DataContentTests
 
             // The returned path should be in the current directory using content's name
             Assert.Equal(content.Name, Path.GetFileName(savedPath));
-            Assert.True(File.Exists(savedPath));
-            Assert.Equal(testData, await File.ReadAllBytesAsync(savedPath));
+            Assert.True(File.Exists(expectedAbsolute));
+            Assert.Equal(testData, await File.ReadAllBytesAsync(expectedAbsolute));
         }
         finally
         {
-            if (savedPath is not null && File.Exists(savedPath))
+            if (File.Exists(expectedAbsolute))
             {
-                File.Delete(savedPath);
+                File.Delete(expectedAbsolute);
             }
         }
     }
@@ -939,5 +972,31 @@ public sealed class DataContentTests
                 File.Delete(tempPath);
             }
         }
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "data",
+              "uri": "data:audio/wav;base64,AQIDBA==",
+              "name": "audio.wav",
+              "additionalProperties": {
+                "source": "microphone"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var dataContent = Assert.IsType<DataContent>(result);
+        Assert.Equal("data:audio/wav;base64,AQIDBA==", dataContent.Uri);
+        Assert.Equal("audio/wav", dataContent.MediaType);
+        Assert.Equal(new byte[] { 1, 2, 3, 4 }, dataContent.Data.ToArray());
+        Assert.Equal("audio.wav", dataContent.Name);
+        Assert.NotNull(dataContent.AdditionalProperties);
+        Assert.Equal("microphone", dataContent.AdditionalProperties["source"]?.ToString());
     }
 }

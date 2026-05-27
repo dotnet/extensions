@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating speech-to-text client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.38, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.41, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -39,16 +39,18 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
     private readonly string? _serverAddress;
     private readonly int _serverPort;
 
+    private readonly ILogger? _logger;
+
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetrySpeechToTextClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="ISpeechToTextClient"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the client.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-#pragma warning disable IDE0060 // Remove unused parameter; it exists for consistency with IChatClient and future use
     public OpenTelemetrySpeechToTextClient(ISpeechToTextClient innerClient, ILogger? logger = null, string? sourceName = null)
-#pragma warning restore IDE0060
         : base(innerClient)
     {
         Debug.Assert(innerClient is not null, "Should have been validated by the base ctor");
+
+        _logger = logger;
 
         if (innerClient!.GetService<SpeechToTextClientMetadata>() is SpeechToTextClientMetadata metadata)
         {
@@ -62,19 +64,8 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
         _activitySource = new(name);
         _meter = new(name);
 
-        _tokenUsageHistogram = _meter.CreateHistogram<int>(
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
-            OpenTelemetryConsts.TokensUnit,
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
-            );
-
-        _operationDurationHistogram = _meter.CreateHistogram<double>(
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
-            OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
-            );
+        _tokenUsageHistogram = OtelMetricHelpers.CreateGenAITokenUsageHistogram(_meter);
+        _operationDurationHistogram = OtelMetricHelpers.CreateGenAIOperationDurationHistogram(_meter);
     }
 
     /// <inheritdoc/>
@@ -184,7 +175,10 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
 
                 trackedUpdates.Add(update);
                 yield return update;
-                Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                if (activity is not null)
+                {
+                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                }
             }
         }
         finally
@@ -283,12 +277,7 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
             }
         }
 
-        if (error is not null)
-        {
-            _ = activity?
-                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
-        }
+        OpenTelemetryLog.RecordOperationError(activity, _logger, error);
 
         if (response is not null)
         {
@@ -358,7 +347,7 @@ public sealed class OpenTelemetrySpeechToTextClient : DelegatingSpeechToTextClie
         {
             _ = activity.AddTag(
                 OpenTelemetryConsts.GenAI.Output.Messages,
-                OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.Assistant, response.Contents)]));
+                OtelMessageSerializer.SerializeChatMessages([new(ChatRole.Assistant, response.Contents)]));
         }
     }
 }

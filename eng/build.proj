@@ -4,6 +4,7 @@
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\**\*.csproj" />
     <!-- We recursively add all of the test projects -->
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\test\**\*.csproj" />
+    <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\test\**\*.fsproj" />
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\bench\**\*.csproj" />
     <!-- Additionally, include the transport project that is not defined as a csproj -->
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\Packages\Microsoft.Internal.Extensions.DotNetApiDocs.Transport\Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj" />

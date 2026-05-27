@@ -212,7 +212,7 @@ public sealed class IngestionPipelineTests : IDisposable
 
             Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
             Assert.All(ingestionResults, result => Assert.NotEmpty(result.DocumentId));
-            IngestionResult ingestionResult = Assert.Single(ingestionResults.Where(result => !result.Succeeded));
+            IngestionResult ingestionResult = Assert.Single(ingestionResults, result => !result.Succeeded);
             Assert.IsType<ExpectedException>(ingestionResult.Exception);
             AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
 

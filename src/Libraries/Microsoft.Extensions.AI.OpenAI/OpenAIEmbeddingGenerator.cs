@@ -13,6 +13,7 @@ using Microsoft.Shared.Diagnostics;
 using OpenAI.Embeddings;
 
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable MEAI001 // OpenAIRequestPolicies is experimental
 
 namespace Microsoft.Extensions.AI;
 
@@ -40,6 +41,9 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
     /// <summary>The number of dimensions produced by the generator.</summary>
     private readonly int? _dimensions;
 
+    /// <summary>Caller-registered policies applied to every <see cref="RequestOptions"/>.</summary>
+    private readonly OpenAIRequestPolicies _requestPolicies = new();
+
     /// <summary>Initializes a new instance of the <see cref="OpenAIEmbeddingGenerator"/> class.</summary>
     /// <param name="embeddingClient">The underlying client.</param>
     /// <param name="defaultModelDimensions">The number of dimensions to generate in each embedding.</param>
@@ -55,7 +59,9 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             Throw.ArgumentOutOfRangeException(nameof(defaultModelDimensions), "Value must be greater than 0.");
         }
 
+#pragma warning disable OPENAI001 // Endpoint and Model are experimental
         _metadata = new("openai", embeddingClient.Endpoint, _embeddingClient.Model, defaultModelDimensions);
+#pragma warning restore OPENAI001
     }
 
     /// <inheritdoc />
@@ -64,7 +70,7 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         OpenAI.Embeddings.EmbeddingGenerationOptions? openAIOptions = ToOpenAIOptions(options);
 
         var t = _generateEmbeddingsAsync is not null ?
-            _generateEmbeddingsAsync(_embeddingClient, values, openAIOptions, cancellationToken.ToRequestOptions(streaming: false)) :
+            _generateEmbeddingsAsync(_embeddingClient, values, openAIOptions, cancellationToken.ToRequestOptions(streaming: false, _requestPolicies)) :
             _embeddingClient.GenerateEmbeddingsAsync(values, openAIOptions, cancellationToken);
         var embeddings = (await t.ConfigureAwait(false)).Value;
 
@@ -102,6 +108,7 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
             serviceKey is not null ? null :
             serviceType == typeof(EmbeddingGeneratorMetadata) ? _metadata :
             serviceType == typeof(EmbeddingClient) ? _embeddingClient :
+            serviceType == typeof(OpenAIRequestPolicies) ? _requestPolicies :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
@@ -115,7 +122,9 @@ internal sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Emb
         }
 
         result.Dimensions ??= options?.Dimensions ?? _dimensions;
+#pragma warning disable SCME0001 // JsonPatch is experimental
         OpenAIClientExtensions.PatchModelIfNotSet(ref result.Patch, options?.ModelId);
+#pragma warning restore SCME0001
 
         return result;
     }

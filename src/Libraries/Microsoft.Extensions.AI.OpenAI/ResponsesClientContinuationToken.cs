@@ -64,7 +64,7 @@ internal sealed class ResponsesClientContinuationToken : ResponseContinuationTok
 
         if (data.Length == 0)
         {
-            Throw.ArgumentException(nameof(token), "Failed to create OpenAIResponsesResumptionToken from provided token because it does not contain any data.");
+            Throw.ArgumentException(nameof(token), "Failed to create OpenAI continuation token from provided token because it does not contain any data.");
         }
 
         Utf8JsonReader reader = new(data.Span);
@@ -101,7 +101,7 @@ internal sealed class ResponsesClientContinuationToken : ResponseContinuationTok
 
         if (responseId is null)
         {
-            Throw.ArgumentException(nameof(token), "Failed to create MessagesPageToken from provided pageToken because it does not contain a responseId.");
+            Throw.ArgumentException(nameof(token), "Failed to create OpenAI continuation token from provided token because it does not contain a responseId.");
         }
 
         return new(responseId)

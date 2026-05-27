@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S3254 // Default parameter values should not be passed as arguments
@@ -12,6 +14,7 @@ using Microsoft.Shared.Diagnostics;
 namespace OpenAI.Responses;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Responses.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 public static class MicrosoftExtensionsAIResponsesExtensions
 {
     /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
@@ -95,7 +98,6 @@ public static class MicrosoftExtensionsAIResponsesExtensions
             ConversationOptions = OpenAIClientExtensions.IsConversationId(response.ConversationId) ? new(response.ConversationId) : null,
             CreatedAt = response.CreatedAt ?? default,
             Id = response.ResponseId,
-            Instructions = options?.Instructions,
             MaxOutputTokenCount = options?.MaxOutputTokens,
             Model = response.ModelId ?? options?.ModelId,
             ParallelToolCallsEnabled = options?.AllowMultipleToolCalls ?? true,
@@ -104,6 +106,11 @@ public static class MicrosoftExtensionsAIResponsesExtensions
             TopP = options?.TopP,
             Usage = OpenAIResponsesChatClient.ToResponseTokenUsage(response.Usage),
         };
+
+        if (options?.Instructions is { Length: > 0 })
+        {
+            result.Instructions.Add(ResponseItem.CreateDeveloperMessageItem(options.Instructions));
+        }
 
         foreach (var responseItem in OpenAIResponsesChatClient.ToOpenAIResponseItems(response.Messages, options))
         {
@@ -119,7 +126,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <remarks>
     /// <see cref="ResponseTool"/> does not derive from <see cref="AITool"/>, so it cannot be added directly to a list of <see cref="AITool"/>s.
     /// Instead, this method wraps the provided <see cref="ResponseTool"/> in an <see cref="AITool"/> and adds that to the list.
-    /// The <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient)"/> will
+    /// The <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient, string)"/> will
     /// be able to unwrap the <see cref="ResponseTool"/> when it processes the list of tools and use the provided <paramref name="tool"/> as-is.
     /// </remarks>
     public static void Add(this IList<AITool> tools, ResponseTool tool)
@@ -135,7 +142,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <remarks>
     /// <para>
     /// The returned tool is only suitable for use with the <see cref="IChatClient"/> returned by
-    /// <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient)"/> (or <see cref="IChatClient"/>s that delegate
+    /// <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient, string)"/> (or <see cref="IChatClient"/>s that delegate
     /// to such an instance). It is likely to be ignored by any other <see cref="IChatClient"/> implementation.
     /// </para>
     /// <para>
@@ -144,7 +151,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <see cref="HostedFileSearchTool"/>, those types should be preferred instead of this method, as they are more portable,
     /// capable of being respected by any <see cref="IChatClient"/> implementation. This method does not attempt to
     /// map the supplied <see cref="ResponseTool"/> to any of those types, it simply wraps it as-is:
-    /// the <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient)"/> will
+    /// the <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient, string)"/> will
     /// be able to unwrap the <see cref="ResponseTool"/> when it processes the list of tools.
     /// </para>
     /// </remarks>

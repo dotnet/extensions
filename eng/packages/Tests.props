@@ -29,6 +29,7 @@
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
     <PackageVersion Include="Verify.Xunit" Version="28.15.0" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
+    <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
   </ItemGroup>
