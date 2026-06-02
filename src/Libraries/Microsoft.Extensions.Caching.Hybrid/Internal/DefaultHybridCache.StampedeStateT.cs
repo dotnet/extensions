@@ -23,9 +23,9 @@ internal partial class DefaultHybridCache
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
         private Func<TState, CancellationToken, ValueTask<T>>? _underlying; // main data factory
-        private Func<TState, HybridCacheFactoryContext, CancellationToken, ValueTask<T>>? _underlyingWithContext; // context-aware data factory
-        private HybridCacheFactoryContext? _factoryContext;
+        private Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>>? _underlyingWithOptions; // options-aware data factory
         private HybridCacheEntryOptions? _options;
+        private int _factoryOptionsRevision; // initial Revision of the options instance passed to the factory; used to detect mutations
         private Task<T>? _sharedUnwrap; // allows multiple non-cancellable callers to share a single task (when no defensive copy needed)
 
         // ONLY set the result, without any other side-effects
@@ -77,16 +77,18 @@ internal partial class DefaultHybridCache
             return BackgroundFetchAsync();
         }
 
-        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheFactoryContext, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
+        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(_underlyingWithContext is null, "should not already have factory field");
+            Debug.Assert(_underlyingWithOptions is null, "should not already have factory field");
             Debug.Assert(underlying is not null, "factory argument should be meaningful");
 
-            // initialize the callback state
+            // initialize the callback state; we always pass a clone (or fresh instance) to the factory so
+            // it can mutate the options without affecting the caller's instance, and so we can detect
+            // mutations via Revision.
             _state = state;
-            _underlyingWithContext = underlying;
-            _factoryContext = new HybridCacheFactoryContext();
-            _options = options;
+            _underlyingWithOptions = underlying;
+            _options = CloneOptionsOrNew(options);
+            _factoryOptionsRevision = _options.Revision;
 
 #if NETCOREAPP3_0_OR_GREATER
             ThreadPool.UnsafeQueueUserWorkItem(this, false);
@@ -96,16 +98,16 @@ internal partial class DefaultHybridCache
         }
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation is handled separately via SharedToken")]
-        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheFactoryContext, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
+        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(_underlyingWithContext is null, "should not already have factory field");
+            Debug.Assert(_underlyingWithOptions is null, "should not already have factory field");
             Debug.Assert(underlying is not null, "factory argument should be meaningful");
 
-            // initialize the callback state
+            // initialize the callback state (see QueueUserWorkItem above for cloning rationale)
             _state = state;
-            _underlyingWithContext = underlying;
-            _factoryContext = new HybridCacheFactoryContext();
-            _options = options;
+            _underlyingWithOptions = underlying;
+            _options = CloneOptionsOrNew(options);
+            _factoryOptionsRevision = _options.Revision;
 
             return BackgroundFetchAsync();
         }
@@ -300,9 +302,9 @@ internal partial class DefaultHybridCache
                             HybridCacheEventSource.Log.UnderlyingDataQueryStart();
                         }
 
-                        if (_underlyingWithContext is not null)
+                        if (_underlyingWithOptions is not null)
                         {
-                            newValue = await _underlyingWithContext(_state!, _factoryContext!, SharedToken).ConfigureAwait(false);
+                            newValue = await _underlyingWithOptions(_state!, _options!, SharedToken).ConfigureAwait(false);
                         }
                         else
                         {
@@ -331,10 +333,11 @@ internal partial class DefaultHybridCache
                         throw;
                     }
 
-                    // apply context overrides set by the factory callback
-                    if (_factoryContext is not null)
+                    // honor any mutations the factory made to the options it received; we use Revision
+                    // as a fast-path skip for the common case where the factory didn't touch them.
+                    if (_underlyingWithOptions is not null && _options!.Revision != _factoryOptionsRevision)
                     {
-                        ApplyFactoryContext(_factoryContext, ref activeFlags, ref _options);
+                        ApplyFactoryOptions(_options, ref activeFlags);
                     }
 
                     // check whether we're going to hit a timing problem with tag invalidation
@@ -374,7 +377,7 @@ internal partial class DefaultHybridCache
                     // Rephrasing that: the only scenario in which we *do not* need to serialize is if:
                     // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
                     // - we're not writing to L2
-                    // Additionally, if the caller provided an explicit LocalCacheSize via the factory context,
+                    // Additionally, if the caller (or factory) provided an explicit LocalSize via the entry options,
                     // we can also skip serialization for size purposes (we already know the size).
                     // TODO: The above doesn't make sense as is.
                     CacheItem cacheItem = CacheItem;
@@ -491,13 +494,14 @@ internal partial class DefaultHybridCache
             // set a result from L2 cache
             Debug.Assert(value.OversizedArray is not null, "expected buffer");
 
+            long? localSizeOverride = ResolveLocalSize();
             IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
             CacheItem<T> cacheItem;
             switch (CacheItem)
             {
                 case ImmutableCacheItem<T> immutable:
                     // deserialize; and store object; buffer can be recycled now
-                    immutable.SetValue(serializer.Deserialize(new(value.OversizedArray!, value.Offset, value.Length)), value.Length);
+                    immutable.SetValue(serializer.Deserialize(new(value.OversizedArray!, value.Offset, value.Length)), localSizeOverride ?? value.Length);
                     value.RecycleIfAppropriate();
                     cacheItem = immutable;
                     break;
@@ -505,6 +509,11 @@ internal partial class DefaultHybridCache
                     // use the buffer directly as the backing in the cache-item; do *not* recycle now
                     mutable.SetValue(ref value, serializer);
                     mutable.DebugOnlyTrackBuffer(Cache);
+                    if (localSizeOverride is { } mutableSize)
+                    {
+                        mutable.SetLocalSizeOverride(mutableSize);
+                    }
+
                     cacheItem = mutable;
                     break;
                 default:
@@ -513,6 +522,13 @@ internal partial class DefaultHybridCache
             }
 
             SetResult(cacheItem, Key.Flags, remainingTime);
+        }
+
+        private long? ResolveLocalSize()
+        {
+            // factory mutations are applied directly to _options (which is a clone). null means "use
+            // implementation default", per the LocalSize API contract.
+            return _options?.LocalSize;
         }
 
         private void SetImmutableResultWithoutSerialize(T value, HybridCacheEntryFlags activeFlags)
@@ -525,7 +541,7 @@ internal partial class DefaultHybridCache
             {
                 case ImmutableCacheItem<T> immutable:
                     // no serialize needed
-                    immutable.SetValue(value, size: _factoryContext?.LocalCacheSize ?? -1);
+                    immutable.SetValue(value, size: ResolveLocalSize() ?? -1);
                     cacheItem = immutable;
                     break;
                 default:
@@ -545,7 +561,7 @@ internal partial class DefaultHybridCache
             {
                 case ImmutableCacheItem<T> immutable:
                     // no serialize needed
-                    immutable.SetValue(value, size: _factoryContext?.LocalCacheSize ?? buffer.Length);
+                    immutable.SetValue(value, size: ResolveLocalSize() ?? buffer.Length);
                     cacheItem = immutable;
 
                     // (but leave the buffer alone)
@@ -562,9 +578,9 @@ internal partial class DefaultHybridCache
                         mutable.DebugOnlyTrackBuffer(Cache);
                     }
 
-                    if (_factoryContext?.LocalCacheSize is { } mutableSize)
+                    if (ResolveLocalSize() is { } mutableSize)
                     {
-                        mutable.SetLocalCacheSizeOverride(mutableSize);
+                        mutable.SetLocalSizeOverride(mutableSize);
                     }
 
                     cacheItem = mutable;
@@ -597,29 +613,18 @@ internal partial class DefaultHybridCache
             HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite | HybridCacheEntryFlags.DisableCompression;
 
         /// <summary>
-        /// Applies factory context overrides to the active flags and options after the factory callback has executed.
-        /// Only write-side flags are applied; read-side flags are ignored (reads already happened).
+        /// Applies factory mutations to the active flags after the factory callback has executed.
+        /// Only write-side flags are honored; read-side flags are ignored (reads already happened).
+        /// Expiration / LocalCacheExpiration / LocalSize mutations need no action here because the
+        /// factory wrote directly to <see cref="_options"/>, which is read by SetL1 / SetL2Async / ResolveLocalSize.
         /// </summary>
-        private static void ApplyFactoryContext(HybridCacheFactoryContext context, ref HybridCacheEntryFlags activeFlags, ref HybridCacheEntryOptions? options)
+        private static void ApplyFactoryOptions(HybridCacheEntryOptions factoryOptions, ref HybridCacheEntryFlags activeFlags)
         {
-            // apply write-side flags from context; read-side flags
-            // (DisableLocalCacheRead, DisableDistributedCacheRead, DisableUnderlyingData)
-            // are ignored because reads have already been attempted by this point
-            if (context.Flags is { } ctxFlags)
-            {
-                activeFlags |= ctxFlags & WriteSideFlags;
-            }
-
-            // apply expiration overrides from context
-            if (context.Expiration is not null || context.LocalCacheExpiration is not null)
-            {
-                options = new HybridCacheEntryOptions
-                {
-                    Expiration = context.Expiration ?? options?.Expiration,
-                    LocalCacheExpiration = context.LocalCacheExpiration ?? options?.LocalCacheExpiration,
-                    Flags = options?.Flags,
-                };
-            }
+            // Replace write-side bits with whatever the factory left behind; preserve everything else
+            // (including read-side flags already acted on, plus any constraints we OR'd in earlier such
+            // as DisableDistributedCache from validation).
+            HybridCacheEntryFlags factoryFlags = factoryOptions.Flags ?? HybridCacheEntryFlags.None;
+            activeFlags = (activeFlags & ~WriteSideFlags) | (factoryFlags & WriteSideFlags);
         }
     }
 

@@ -210,7 +210,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
     }
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state,
-        Func<TState, HybridCacheFactoryContext, CancellationToken, ValueTask<T>> factory,
+        Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory,
         HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         bool canBeCanceled = cancellationToken.CanBeCanceled;
@@ -223,7 +223,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         if (!ValidateKey(key))
         {
             // we can't use cache, but we can still provide the data
-            return RunWithoutCacheAsync(flags, state, factory, cancellationToken);
+            return RunWithoutCacheAsync(flags, state, factory, options, cancellationToken);
         }
 
         bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
@@ -279,11 +279,39 @@ internal sealed partial class DefaultHybridCache : HybridCache
     }
 
     private static ValueTask<T> RunWithoutCacheAsync<TState, T>(HybridCacheEntryFlags flags, TState state,
-        Func<TState, HybridCacheFactoryContext, CancellationToken, ValueTask<T>> factory,
+        Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory,
+        HybridCacheEntryOptions? options,
         CancellationToken cancellationToken)
     {
+        // pass a clone (or fresh instance) so the caller's options are never mutated;
+        // there's no cache to honor the mutations against, but the factory may rely on
+        // being able to mutate the parameter without surprising the caller.
         return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
-            ? factory(state, new HybridCacheFactoryContext(), cancellationToken) : default;
+            ? factory(state, CloneOptionsOrNew(options), cancellationToken) : default;
+    }
+
+    internal static HybridCacheEntryOptions CloneOptionsOrNew(HybridCacheEntryOptions? options)
+    {
+        if (options is null)
+        {
+            return new HybridCacheEntryOptions();
+        }
+
+#if NET8_0_OR_GREATER
+        return Clone(options);
+
+        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(Clone))]
+        extern static HybridCacheEntryOptions Clone(HybridCacheEntryOptions options);
+#else
+        // Down-level TFMs cannot reach the internal Clone(); copy by hand.
+        return new HybridCacheEntryOptions
+        {
+            Expiration = options.Expiration,
+            LocalCacheExpiration = options.LocalCacheExpiration,
+            Flags = options.Flags,
+            LocalSize = options.LocalSize,
+        };
+#endif
     }
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken token = default)
