@@ -262,7 +262,7 @@ internal partial class DefaultHybridCache
                         // result is the wider payload including HC headers; unwrap it:
                         HybridCachePayload.HybridCachePayloadParseResult parseResult = HybridCachePayload.TryParse(
                             result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out ArraySegment<byte> payload, out TimeSpan remainingTime,
-                            out HybridCachePayload.PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault);
+                            out HybridCachePayload.PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out long? payloadLocalSize, out Exception? fault);
                         switch (parseResult)
                         {
                             case HybridCachePayload.HybridCachePayloadParseResult.Success:
@@ -271,7 +271,7 @@ internal partial class DefaultHybridCache
                                 {
                                     // move into the payload segment (minus any framing/header/etc data)
                                     result = new(payload.Array!, payload.Offset, payload.Count, result.ReturnToPool);
-                                    SetResultAndRecycleIfAppropriate(ref result, remainingTime);
+                                    SetResultAndRecycleIfAppropriate(ref result, remainingTime, payloadLocalSize);
                                     return;
                                 }
 
@@ -489,12 +489,13 @@ internal partial class DefaultHybridCache
             }
         }
 
-        private void SetResultAndRecycleIfAppropriate(ref BufferChunk value, TimeSpan remainingTime)
+        private void SetResultAndRecycleIfAppropriate(ref BufferChunk value, TimeSpan remainingTime, long? payloadLocalSize = null)
         {
             // set a result from L2 cache
             Debug.Assert(value.OversizedArray is not null, "expected buffer");
 
-            long? localSizeOverride = ResolveLocalSize();
+            // precedence: size persisted in the payload > caller-provided options.LocalSize > buffer.Length
+            long? localSizeOverride = payloadLocalSize ?? ResolveLocalSize();
             IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
             CacheItem<T> cacheItem;
             switch (CacheItem)
