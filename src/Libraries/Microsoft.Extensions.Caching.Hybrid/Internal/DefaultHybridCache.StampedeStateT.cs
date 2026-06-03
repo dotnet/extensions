@@ -18,7 +18,6 @@ internal partial class DefaultHybridCache
     internal sealed class StampedeState<TState, T> : StampedeState
     {
         // note on terminology: L1 and L2 are, for brevity, used interchangeably with "local" and "distributed" cache, i.e. `IMemoryCache` and `IDistributedCache`
-        private const HybridCacheEntryFlags FlagsDisableL1AndL2Write = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
 
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
@@ -369,19 +368,21 @@ internal partial class DefaultHybridCache
                         CacheItem.UnsafeSetCreationTimestamp(time);
                     }
 
-                    // If we're writing this value *anywhere*, we're going to need to serialize; this is obvious
-                    // in the case of L2, but we also need it for L1, because MemoryCache might be enforcing
-                    // SizeLimit (we can't know - it is an abstraction), and for *that* we need to know the item size.
-                    // Likewise, if we're writing to a MutableCacheItem, we'll be serializing *anyway* for the payload.
-                    //
-                    // Rephrasing that: the only scenario in which we *do not* need to serialize is if:
-                    // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
-                    // - we're not writing to L2
-                    // Additionally, if the caller (or factory) provided an explicit LocalSize via the entry options,
-                    // we can also skip serialization for size purposes (we already know the size).
-                    // TODO: The above doesn't make sense as is.
+                    // Serialization is required in any of these cases:
+                    // - the CacheItem is mutable (the serialized bytes are the L1 and stampede storage, since each
+                    //   read deserializes a defensive copy, and they double as the L2 payload);
+                    // - the CacheItem is immutable but we are writing to L2 (serialization produces
+                    //   the payload);
+                    // - the CacheItem is immutable, we are writing to L1, and the entry size is not
+                    //   known up-front (MemoryCache may enforce SizeLimit, and we report the
+                    //   serialized byte length as the size). When the caller or factory has supplied
+                    //   LocalSize via the entry options the size is already known, so this last
+                    //   case does not apply.
                     CacheItem cacheItem = CacheItem;
-                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (activeFlags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
+                    long? knownLocalSize = ResolveLocalSize();
+                    bool skipSerialize = cacheItem is ImmutableCacheItem<T>
+                        && (activeFlags & HybridCacheEntryFlags.DisableDistributedCacheWrite) != 0
+                        && ((activeFlags & HybridCacheEntryFlags.DisableLocalCacheWrite) != 0 || knownLocalSize is not null);
 
                     if (skipSerialize)
                     {
@@ -534,7 +535,10 @@ internal partial class DefaultHybridCache
 
         private void SetImmutableResultWithoutSerialize(T value, HybridCacheEntryFlags activeFlags)
         {
-            Debug.Assert((activeFlags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write, "Only expected if L1+L2 disabled");
+            Debug.Assert(
+                (activeFlags & HybridCacheEntryFlags.DisableDistributedCacheWrite) != 0
+                && ((activeFlags & HybridCacheEntryFlags.DisableLocalCacheWrite) != 0 || ResolveLocalSize() is not null),
+                "Only expected if L2 is disabled and either L1 is disabled or LocalSize is known.");
 
             // set a result from a value we calculated directly
             CacheItem<T> cacheItem;
