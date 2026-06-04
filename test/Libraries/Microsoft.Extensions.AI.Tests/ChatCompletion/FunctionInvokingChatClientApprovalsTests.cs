@@ -829,11 +829,12 @@ public class FunctionInvokingChatClientApprovalsTests
     /// across serialization boundaries. Previously, this was not always happening, so adding
     /// a test to ensure that this case does not throw.
     /// See https://github.com/dotnet/extensions/pull/7468.
+    /// Workaround: Use a middleware to normalize InformationalOnly flags on deserialized sessions.
     /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task MixedInformationalOnlyDoesNotThrowAsync(bool streaming)
+    public async Task MixedInformationalOnlyWorkaroundWithMiddlewareAsync(bool streaming)
     {
         // Create two separate FCC objects for the same call — simulating deserialization
         // where TARC and TAResp hold different FCC instances with the same CallId.
@@ -882,7 +883,9 @@ public class FunctionInvokingChatClientApprovalsTests
                 YieldAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, "world")]).ToChatResponseUpdates()),
         };
 
+        // Use a middleware to normalize InformationalOnly flags before FICC processes the messages.
         IChatClient service = innerClient.AsBuilder()
+            .Use(s => new ApprovalHistoryNormalizingChatClient(s))
             .Use(s => new FunctionInvokingChatClient(s))
             .Build();
 
@@ -1740,5 +1743,54 @@ public class FunctionInvokingChatClientApprovalsTests
             },
         _ => c
     };
+
+    /// <summary>
+    /// Workaround middleware for sessions serialized before
+    /// https://github.com/dotnet/extensions/pull/7468.
+    /// Normalizes InformationalOnly flags so TARC/TAResp pairs stay consistent.
+    /// </summary>
+#pragma warning disable SA1402 // File may only contain a single type
+    private sealed class ApprovalHistoryNormalizingChatClient(IChatClient inner) : DelegatingChatClient(inner)
+#pragma warning restore SA1402
+    {
+        public override Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            NormalizeApprovalFlags(messages);
+            return base.GetResponseAsync(messages, options, cancellationToken);
+        }
+
+        public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            NormalizeApprovalFlags(messages);
+            return base.GetStreamingResponseAsync(messages, options, cancellationToken);
+        }
+
+        private static void NormalizeApprovalFlags(IEnumerable<ChatMessage> messages)
+        {
+            var allContents = messages.SelectMany(m => m.Contents);
+
+            var processedCallIds = new HashSet<string>(
+                allContents
+                    .OfType<ToolApprovalResponseContent>()
+                    .Where(t => t.ToolCall is FunctionCallContent { InformationalOnly: true })
+                    .Select(t => t.ToolCall.CallId));
+
+            if (processedCallIds.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var fcc in allContents
+                .OfType<ToolApprovalRequestContent>()
+                .Select(t => t.ToolCall)
+                .OfType<FunctionCallContent>()
+                .Where(fcc => !fcc.InformationalOnly && processedCallIds.Contains(fcc.CallId)))
+            {
+                fcc.InformationalOnly = true;
+            }
+        }
+    }
 }
 
