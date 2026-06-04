@@ -378,6 +378,7 @@ internal partial class DefaultHybridCache
                     //   serialized byte length as the size). When the caller or factory has supplied
                     //   LocalSize via the entry options the size is already known, so this last
                     //   case does not apply.
+
                     CacheItem cacheItem = CacheItem;
                     long? knownLocalSize = ResolveLocalSize();
                     bool skipSerialize = cacheItem is ImmutableCacheItem<T>

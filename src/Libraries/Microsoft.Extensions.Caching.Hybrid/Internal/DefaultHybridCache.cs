@@ -203,12 +203,6 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return stampede.JoinAsync(_logger, cancellationToken);
     }
 
-    public override ValueTask RemoveAsync(string key, CancellationToken token = default)
-    {
-        _localCache.Remove(key);
-        return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
-    }
-
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state,
         Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory,
         HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
@@ -276,6 +270,12 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         return stampede.JoinAsync(_logger, cancellationToken);
+    }
+
+    public override ValueTask RemoveAsync(string key, CancellationToken token = default)
+    {
+        _localCache.Remove(key);
+        return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
     }
 
     private static ValueTask<T> RunWithoutCacheAsync<TState, T>(HybridCacheEntryFlags flags, TState state,
