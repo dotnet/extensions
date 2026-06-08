@@ -11,6 +11,7 @@
   "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
   "shortName": "mcpserver",
   "defaultName": "McpServer",
+  "groupIdentity": "McpServer",
   "sourceName": "McpServer-CSharp",
   "preferNameDirectory": true,
   "tags": {

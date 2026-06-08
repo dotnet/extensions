@@ -9,8 +9,9 @@
   "identity": "Microsoft.McpServer.ProjectTemplates.McpServer.FSharp",
   "name": "MCP Server App",
   "description": "A project template for creating a Model Context Protocol (MCP) server using F# and the ModelContextProtocol package.",
-  "shortName": "mcpserver",
+  "shortName": "mcpserver-fsharp",
   "defaultName": "McpServer",
+  "groupIdentity": "McpServer",
   "sourceName": "McpServer-FSharp",
   "preferNameDirectory": true,
   "tags": {
