@@ -315,7 +315,7 @@ public static class OpenAIClientExtensions
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>
     internal sealed class ToolJson
     {
-        private static readonly JsonElement _falseElement = JsonDocument.Parse("false").RootElement.Clone();
+        private static readonly JsonElement _falseElement = JsonElement.Parse("false"u8);
 
         [JsonPropertyName("type")]
         public string Type { get; set; } = "object";
