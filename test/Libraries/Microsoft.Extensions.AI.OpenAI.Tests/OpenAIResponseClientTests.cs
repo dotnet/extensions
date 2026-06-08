@@ -8633,4 +8633,216 @@ public class OpenAIResponseClientTests
         Assert.NotNull(response);
         Assert.Equal("Hello!", response.Text);
     }
+
+    [Fact]
+    public async Task Tool_SchemaWithObjectAdditionalProperties_FunctionCallArgumentsReceived()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "function",
+                        "name": "TagResource",
+                        "description": "Tags a resource with key-value labels.",
+                        "parameters": {
+                            "type": "object",
+                            "required": ["resource_name"],
+                            "properties": {
+                                "resource_name": {
+                                    "type": "string",
+                                    "description": "Name of the resource."
+                                }
+                            },
+                            "additionalProperties": {"type": "string"}
+                        },
+                        "strict": null
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [{"type": "input_text", "text": "Tag my-server with env=production."}]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_tag_001",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "model": "gpt-4o-mini-2024-07-18",
+              "output": [
+                {
+                  "type": "function_call",
+                  "id": "fc_tag_001",
+                  "call_id": "call_tag_abc",
+                  "name": "TagResource",
+                  "arguments": "{\"resource_name\":\"my-server\",\"env\":\"production\"}",
+                  "status": "completed"
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {"effort": null, "summary": null},
+              "store": true,
+              "temperature": 1.0,
+              "text": {"format": {"type": "text"}},
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 30,
+                "input_tokens_details": {"cached_tokens": 0},
+                "output_tokens": 20,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": 50
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        const string ExplicitSchema = """
+            {
+                "type": "object",
+                "properties": {
+                    "resource_name": {
+                        "type": "string",
+                        "description": "Name of the resource."
+                    }
+                },
+                "required": ["resource_name"],
+                "additionalProperties": {"type": "string"}
+            }
+            """;
+
+        var tool = AIFunctionFactory.CreateDeclaration("TagResource", "Tags a resource with key-value labels.", JsonDocument.Parse(ExplicitSchema).RootElement);
+
+        var response = await client.GetResponseAsync(
+            "Tag my-server with env=production.",
+            new ChatOptions { Tools = [tool] });
+
+        Assert.NotNull(response);
+        var call = Assert.IsType<FunctionCallContent>(Assert.Single(response.Messages[0].Contents));
+        Assert.Equal("TagResource", call.Name);
+        Assert.NotNull(call.Arguments);
+        Assert.Equal("my-server", ((JsonElement)call.Arguments["resource_name"]!).GetString());
+        Assert.Equal("production", ((JsonElement)call.Arguments["env"]!).GetString());
+    }
+
+    [Fact]
+    public async Task Tool_SchemaWithObjectAdditionalProperties_Streaming_FunctionCallArgumentsReceived()
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "tools": [
+                    {
+                        "type": "function",
+                        "name": "TagResource",
+                        "description": "Tags a resource with key-value labels.",
+                        "parameters": {
+                            "type": "object",
+                            "required": ["resource_name"],
+                            "properties": {
+                                "resource_name": {
+                                    "type": "string",
+                                    "description": "Name of the resource."
+                                }
+                            },
+                            "additionalProperties": {"type": "string"}
+                        },
+                        "strict": null
+                    }
+                ],
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [{"type": "input_text", "text": "Tag my-server with env=production."}]
+                    }
+                ],
+                "stream": true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_tag_002","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.in_progress
+            data: {"type":"response.in_progress","response":{"id":"resp_tag_002","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call","id":"fc_tag_002","call_id":"call_tag_def","name":"TagResource","arguments":"","status":"in_progress"}}
+
+            event: response.function_call_arguments.delta
+            data: {"type":"response.function_call_arguments.delta","item_id":"fc_tag_002","output_index":0,"delta":"{\"resource_name\":\"my-server\",\"env\":\"production\"}"}
+
+            event: response.function_call_arguments.done
+            data: {"type":"response.function_call_arguments.done","item_id":"fc_tag_002","output_index":0,"arguments":"{\"resource_name\":\"my-server\",\"env\":\"production\"}"}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"function_call","id":"fc_tag_002","call_id":"call_tag_def","name":"TagResource","arguments":"{\"resource_name\":\"my-server\",\"env\":\"production\"}","status":"completed"}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_tag_002","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"function_call","id":"fc_tag_002","call_id":"call_tag_def","name":"TagResource","arguments":"{\"resource_name\":\"my-server\",\"env\":\"production\"}","status":"completed"}],"usage":{"input_tokens":30,"output_tokens":20,"total_tokens":50}}}
+
+            
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        const string ExplicitSchema = """
+            {
+                "type": "object",
+                "properties": {
+                    "resource_name": {
+                        "type": "string",
+                        "description": "Name of the resource."
+                    }
+                },
+                "required": ["resource_name"],
+                "additionalProperties": {"type": "string"}
+            }
+            """;
+
+        var tool = AIFunctionFactory.CreateDeclaration("TagResource", "Tags a resource with key-value labels.", JsonDocument.Parse(ExplicitSchema).RootElement);
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync(
+            "Tag my-server with env=production.",
+            new ChatOptions { Tools = [tool] }))
+        {
+            updates.Add(update);
+        }
+
+        var functionCallUpdate = updates.FirstOrDefault(u => u.Contents.OfType<FunctionCallContent>().Any());
+        Assert.NotNull(functionCallUpdate);
+        var call = functionCallUpdate.Contents.OfType<FunctionCallContent>().Single();
+        Assert.Equal("call_tag_def", call.CallId);
+        Assert.Equal("TagResource", call.Name);
+        Assert.NotNull(call.Arguments);
+        Assert.Equal("my-server", ((JsonElement)call.Arguments["resource_name"]!).GetString());
+        Assert.Equal("production", ((JsonElement)call.Arguments["env"]!).GetString());
+
+        var response = updates.ToChatResponse();
+        Assert.Equal("resp_tag_002", response.ResponseId);
+        var coalesced = response.Messages[0].Contents.OfType<FunctionCallContent>().Single();
+        Assert.Equal("TagResource", coalesced.Name);
+        Assert.NotNull(coalesced.Arguments);
+        Assert.Equal("my-server", ((JsonElement)coalesced.Arguments["resource_name"]!).GetString());
+        Assert.Equal("production", ((JsonElement)coalesced.Arguments["env"]!).GetString());
+    }
 }
