@@ -775,7 +775,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             "image/png" => ImageGenerationToolOutputFileFormat.Png,
                             "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
                             "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
-                            _ => null,
+                            _ => (ImageGenerationToolOutputFileFormat?)null,
                         } :
                         null,
                     PartialImageCount = igo?.StreamingCount,
