@@ -168,8 +168,8 @@
     <MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>8.0.0</MicrosoftExtensionsOptionsConfigurationExtensionsLTSVersion>
     <MicrosoftExtensionsOptionsLTSVersion>8.0.2</MicrosoftExtensionsOptionsLTSVersion>
     <MicrosoftExtensionsPrimitivesLTSVersion>8.0.0</MicrosoftExtensionsPrimitivesLTSVersion>
-    <MicrosoftNETCoreAppRefLTSVersion>8.0.26</MicrosoftNETCoreAppRefLTSVersion>
-    <MicrosoftNETCoreAppRuntimewinx64LTSVersion>8.0.26</MicrosoftNETCoreAppRuntimewinx64LTSVersion>
+    <MicrosoftNETCoreAppRefLTSVersion>8.0.28</MicrosoftNETCoreAppRefLTSVersion>
+    <MicrosoftNETCoreAppRuntimewinx64LTSVersion>8.0.28</MicrosoftNETCoreAppRuntimewinx64LTSVersion>
     <SystemCollectionsImmutableLTSVersion>8.0.0</SystemCollectionsImmutableLTSVersion>
     <SystemConfigurationConfigurationManagerLTSVersion>8.0.1</SystemConfigurationConfigurationManagerLTSVersion>
     <SystemDiagnosticsDiagnosticSourceLTSVersion>8.0.1</SystemDiagnosticsDiagnosticSourceLTSVersion>
@@ -186,18 +186,18 @@
     <SystemTextJsonLTSVersion>8.0.6</SystemTextJsonLTSVersion>
     <SystemThreadingChannelsLTSVersion>8.0.0</SystemThreadingChannelsLTSVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefLTSVersion>8.0.26</MicrosoftAspNetCoreAppRefLTSVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>8.0.26</MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>
-    <MicrosoftAspNetCoreMvcTestingLTSVersion>8.0.26</MicrosoftAspNetCoreMvcTestingLTSVersion>
-    <MicrosoftAspNetCoreTestHostLTSVersion>8.0.26</MicrosoftAspNetCoreTestHostLTSVersion>
-    <MicrosoftExtensionsCachingSqlServerLTSVersion>8.0.26</MicrosoftExtensionsCachingSqlServerLTSVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>8.0.26</MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.26</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
-    <MicrosoftExtensionsFeaturesLTSVersion>8.0.26</MicrosoftExtensionsFeaturesLTSVersion>
-    <MicrosoftExtensionsHttpPollyLTSVersion>8.0.26</MicrosoftExtensionsHttpPollyLTSVersion>
-    <MicrosoftExtensionsObjectPoolLTSVersion>8.0.26</MicrosoftExtensionsObjectPoolLTSVersion>
+    <MicrosoftAspNetCoreAppRefLTSVersion>8.0.28</MicrosoftAspNetCoreAppRefLTSVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>8.0.28</MicrosoftAspNetCoreAppRuntimewinx64LTSVersion>
+    <MicrosoftAspNetCoreMvcTestingLTSVersion>8.0.28</MicrosoftAspNetCoreMvcTestingLTSVersion>
+    <MicrosoftAspNetCoreTestHostLTSVersion>8.0.28</MicrosoftAspNetCoreTestHostLTSVersion>
+    <MicrosoftExtensionsCachingSqlServerLTSVersion>8.0.28</MicrosoftExtensionsCachingSqlServerLTSVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>8.0.28</MicrosoftExtensionsCachingStackExchangeRedisLTSVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>8.0.28</MicrosoftExtensionsDiagnosticsHealthChecksLTSVersion>
+    <MicrosoftExtensionsFeaturesLTSVersion>8.0.28</MicrosoftExtensionsFeaturesLTSVersion>
+    <MicrosoftExtensionsHttpPollyLTSVersion>8.0.28</MicrosoftExtensionsHttpPollyLTSVersion>
+    <MicrosoftExtensionsObjectPoolLTSVersion>8.0.28</MicrosoftExtensionsObjectPoolLTSVersion>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
-    <MicrosoftEntityFrameworkCoreSqliteLTSVersion>8.0.26</MicrosoftEntityFrameworkCoreSqliteLTSVersion>
+    <MicrosoftEntityFrameworkCoreSqliteLTSVersion>8.0.28</MicrosoftEntityFrameworkCoreSqliteLTSVersion>
   </PropertyGroup>
   <!--
 
