@@ -1,7 +1,7 @@
 ﻿open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
-open MCPLocalServer.FSharp.Tools
+open McpServer.Tools
 
 [<EntryPoint>]
 let main args =

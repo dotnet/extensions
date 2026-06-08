@@ -1,4 +1,4 @@
-namespace MCPLocalServer.FSharp.Tools
+namespace McpServer.Tools
 open System
 open System.ComponentModel
 open System.Runtime.InteropServices
