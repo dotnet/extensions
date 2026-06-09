@@ -22,6 +22,12 @@
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="Moq.AutoMock" Version="3.1.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageVersion Include="NuGet.Packaging" Version="6.8.2" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageVersion Include="NuGet.Protocol" Version="6.8.2" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.15.3" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.9.0" />
     <PackageVersion Include="Polly.Testing" Version="8.4.2" />
     <PackageVersion Include="SharpFuzz" Version="2.1.1" />
