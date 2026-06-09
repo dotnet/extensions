@@ -107,6 +107,35 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIChatTool_ExplicitSchema_PreservesObjectAdditionalProperties()
+    {
+        var schema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "labels": { "type": "object" }
+                },
+                "additionalProperties": { "type": "string" }
+            }
+            """).RootElement;
+
+        var function = AIFunctionFactory.CreateDeclaration(
+            "set_labels",
+            "Stores labels and arbitrary string metadata.",
+            schema);
+
+        var tool = function.AsOpenAIChatTool();
+        Assert.NotNull(tool);
+        Assert.Equal("set_labels", tool.FunctionName);
+
+        using var parsedParams = JsonDocument.Parse(tool.FunctionParameters);
+        var root = parsedParams.RootElement;
+        Assert.True(root.TryGetProperty("additionalProperties", out var ap), "additionalProperties should be preserved");
+        Assert.Equal(JsonValueKind.Object, ap.ValueKind);
+        Assert.Equal("string", ap.GetProperty("type").GetString());
+    }
+
+    [Fact]
     public void AsOpenAIChatTool_PreservesExtraTopLevelPropertiesLikeDefs()
     {
         // Create a JSON schema with $defs (used for reference types)
@@ -166,6 +195,36 @@ public class OpenAIConversionTests
         var functionTool = Assert.IsType<FunctionTool>(tool);
         Assert.Equal("test_function", functionTool.FunctionName);
         Assert.Equal("A test function for conversion", functionTool.FunctionDescription);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_ExplicitSchema_PreservesObjectAdditionalProperties()
+    {
+        var schema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "labels": { "type": "object" }
+                },
+                "additionalProperties": { "type": "string" }
+            }
+            """).RootElement;
+
+        var function = AIFunctionFactory.CreateDeclaration(
+            "set_labels",
+            "Stores labels and arbitrary string metadata.",
+            schema);
+
+        var tool = function.AsOpenAIResponseTool();
+        Assert.NotNull(tool);
+        var functionTool = Assert.IsType<FunctionTool>(tool);
+        Assert.Equal("set_labels", functionTool.FunctionName);
+
+        using var parsedParams = JsonDocument.Parse(functionTool.FunctionParameters);
+        var root = parsedParams.RootElement;
+        Assert.True(root.TryGetProperty("additionalProperties", out var ap), "additionalProperties should be preserved");
+        Assert.Equal(JsonValueKind.Object, ap.ValueKind);
+        Assert.Equal("string", ap.GetProperty("type").GetString());
     }
 
     [Fact]

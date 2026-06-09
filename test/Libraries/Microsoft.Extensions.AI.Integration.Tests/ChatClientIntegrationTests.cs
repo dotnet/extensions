@@ -497,6 +497,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
                 createWithSchema("""
                     {"properties":{"commit_message":{"description":"Extra detail for merge commit","type":"string"},"commit_title":{"description":"Title for merge commit","type":"string"},"merge_method":{"description":"Merge method","enum":["merge","squash","rebase"],"type":"string"},"owner":{"description":"Repository owner","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"}},"required":["owner","repo","pullNumber"],"type":"object"}
                     """),
+
+                createWithSchema("""
+                    {"type":"object","properties":{"labels":{"type":"object"}},"additionalProperties":{"type":"string"}}
+                    """),
             ],
         };
 
