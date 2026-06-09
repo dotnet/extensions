@@ -613,7 +613,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                     for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
                     {
                         var updateToYield = updates[lastYieldedUpdateIndex];
-                        if (TryReplaceFunctionCallsWithApprovalRequests(updateToYield.Contents, out var updatedContents))
+                        if (TryReplaceFunctionCallsWithApprovalRequests(updateToYield.Contents, out var updatedContents, options?.Tools, AdditionalTools))
                         {
                             updateToYield.Contents = updatedContents;
                         }
@@ -1618,7 +1618,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// Replaces all <see cref="FunctionCallContent"/> with <see cref="ToolApprovalRequestContent"/> and ouputs a new list if any of them were replaced.
     /// </summary>
     /// <returns>true if any <see cref="FunctionCallContent"/> was replaced, false otherwise.</returns>
-    private static bool TryReplaceFunctionCallsWithApprovalRequests(IList<AIContent> content, out List<AIContent>? updatedContent)
+    private static bool TryReplaceFunctionCallsWithApprovalRequests(
+        IList<AIContent> content,
+        out List<AIContent>? updatedContent,
+        params ReadOnlySpan<IList<AITool>?> toolLists)
     {
         updatedContent = null;
 
@@ -1629,7 +1632,11 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                 if (content[i] is FunctionCallContent fcc && !fcc.InformationalOnly)
                 {
                     updatedContent ??= [.. content]; // Clone the list if we haven't already
-                    updatedContent[i] = new ToolApprovalRequestContent(ComposeApprovalRequestId(fcc.CallId), fcc);
+                    bool requiredByFunction = FindTool(fcc.Name, toolLists)?.GetService<ApprovalRequiredAIFunction>() is not null;
+                    updatedContent[i] = new ToolApprovalRequestContent(ComposeApprovalRequestId(fcc.CallId), fcc)
+                    {
+                        IsInvokerRequested = !requiredByFunction,
+                    };
                 }
             }
         }
@@ -1648,7 +1655,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         var outputMessages = messages;
 
         bool anyApprovalRequired = false;
-        List<(int, int)>? allFunctionCallContentIndices = null;
+        List<(int MessageIndex, int ContentIndex, bool IsInvokerRequested)>? allFunctionCallContentIndices = null;
 
         // Build a list of the indices of all FunctionCallContent items.
         // Also check if any of them require approval.
@@ -1659,9 +1666,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             {
                 if (content[j] is FunctionCallContent functionCall && !functionCall.InformationalOnly)
                 {
-                    (allFunctionCallContentIndices ??= []).Add((i, j));
+                    bool requiredByFunction = FindTool(functionCall.Name, toolLists)?.GetService<ApprovalRequiredAIFunction>() is not null;
+                    (allFunctionCallContentIndices ??= []).Add((i, j, !requiredByFunction));
 
-                    anyApprovalRequired |= FindTool(functionCall.Name, toolLists)?.GetService<ApprovalRequiredAIFunction>() is not null;
+                    anyApprovalRequired |= requiredByFunction;
                 }
             }
         }
@@ -1676,7 +1684,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             outputMessages = [.. messages];
             int lastMessageIndex = -1;
 
-            foreach (var (messageIndex, contentIndex) in allFunctionCallContentIndices!)
+            foreach (var (messageIndex, contentIndex, isInvokerRequested) in allFunctionCallContentIndices!)
             {
                 // Clone the message if we didn't already clone it in a previous iteration.
                 var message = lastMessageIndex != messageIndex ? outputMessages[messageIndex].Clone() : outputMessages[messageIndex];
@@ -1684,7 +1692,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
 
                 var functionCall = (FunctionCallContent)message.Contents[contentIndex];
                 LogFunctionRequiresApproval(functionCall.Name);
-                message.Contents[contentIndex] = new ToolApprovalRequestContent(ComposeApprovalRequestId(functionCall.CallId), functionCall);
+                message.Contents[contentIndex] = new ToolApprovalRequestContent(ComposeApprovalRequestId(functionCall.CallId), functionCall)
+                {
+                    IsInvokerRequested = isInvokerRequested,
+                };
                 outputMessages[messageIndex] = message;
 
                 lastMessageIndex = messageIndex;

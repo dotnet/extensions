@@ -130,4 +130,28 @@ public class ToolApprovalRequestContentTests
         Assert.NotNull(approvalRequest.AdditionalProperties);
         Assert.Equal("val", approvalRequest.AdditionalProperties["key"]?.ToString());
     }
+
+    [Fact]
+    public void IsInvokerRequested_DefaultsToFalse()
+    {
+        var content = new ToolApprovalRequestContent("req-1", new FunctionCallContent("call1", "Func"));
+        Assert.False(content.IsInvokerRequested);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void IsInvokerRequested_RoundtripsThroughJson(bool value)
+    {
+        var content = new ToolApprovalRequestContent("req-1", new FunctionCallContent("call1", "Func"))
+        {
+            IsInvokerRequested = value,
+        };
+
+        string json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserialized = JsonSerializer.Deserialize<ToolApprovalRequestContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal(value, deserialized!.IsInvokerRequested);
+    }
 }

@@ -83,6 +83,9 @@ public class FunctionInvokingChatClientApprovalsTests
             [
                 new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
                 new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                {
+                    IsInvokerRequested = true,
+                }
             ])
         ];
 
@@ -121,18 +124,119 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
         ];
 
+        // When additionalToolsRequireApproval is true: Func1 (additional tools) requires approval and Func2 (options.Tools) is collateral.
+        // When false: Func2 (options.Tools) requires approval and Func1 (additional tools) is collateral.
         List<ChatMessage> expectedOutput =
         [
             new ChatMessage(ChatRole.Assistant,
             [
-                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
+                {
+                    IsInvokerRequested = !additionalToolsRequireApproval,
+                },
                 new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                {
+                    IsInvokerRequested = additionalToolsRequireApproval,
+                }
             ])
         ];
 
         await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput, additionalTools: additionalTools);
 
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput, additionalTools: additionalTools);
+    }
+
+    private sealed class PassThroughDelegatingAIFunction(AIFunction inner) : DelegatingAIFunction(inner);
+
+    [Fact]
+    public async Task IsInvokerRequested_IsFalseForApprovalRequiredFunctionNestedInDelegatingWrapperAsync()
+    {
+        // Wrap the ApprovalRequiredAIFunction in another DelegatingAIFunction (e.g. a telemetry decorator).
+        // FICC must still classify the call as "function-required approval" (IsInvokerRequested = false)
+        // by walking the delegation chain via GetService<ApprovalRequiredAIFunction>().
+        AITool[] tools =
+        [
+            new PassThroughDelegatingAIFunction(
+                new ApprovalRequiredAIFunction(
+                    AIFunctionFactory.Create(() => "Result 1", "Func1"))),
+            AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+        ];
+
+        var options = new ChatOptions { Tools = tools };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })
+            ]),
+        ];
+
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+                {
+                    IsInvokerRequested = true,
+                }
+            ])
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput);
+    }
+
+    [Fact]
+    public async Task IsInvokerRequested_IsTrueForFunctionCallWithNoMatchingToolWhenPeerRequiresApprovalAsync()
+    {
+        // The downstream client emits an FCC referencing a tool name that is not in the tools list.
+        // Because a peer call (Func1) requires approval, FICC still wraps the unknown call as collateral.
+        // Since no matching tool is found (and therefore no ApprovalRequiredAIFunction is detected),
+        // the resulting approval request must carry IsInvokerRequested = true.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Unknown"),
+            ]),
+        ];
+
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Unknown"))
+                {
+                    IsInvokerRequested = true,
+                }
+            ])
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, expectedOutput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, expectedOutput);
     }
 
     [Fact]
@@ -1735,7 +1839,10 @@ public class FunctionInvokingChatClientApprovalsTests
             InformationalOnly = fcc.InformationalOnly
         },
         ToolApprovalRequestContent tarc =>
-            new ToolApprovalRequestContent(tarc.RequestId, (ToolCallContent)CloneFcc(tarc.ToolCall)),
+            new ToolApprovalRequestContent(tarc.RequestId, (ToolCallContent)CloneFcc(tarc.ToolCall))
+            {
+                IsInvokerRequested = tarc.IsInvokerRequested,
+            },
         ToolApprovalResponseContent tarc =>
             new ToolApprovalResponseContent(tarc.RequestId, tarc.Approved, (ToolCallContent)CloneFcc(tarc.ToolCall))
             {
