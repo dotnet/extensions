@@ -355,7 +355,13 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             anyToolsRequireApproval = AnyToolsRequireApproval(options?.Tools, AdditionalTools);
             if (anyToolsRequireApproval)
             {
-                response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, options?.Tools, AdditionalTools);
+                var approvalRequiredFunctions =
+                    (options?.Tools ?? Enumerable.Empty<AITool>())
+                    .Concat(AdditionalTools ?? Enumerable.Empty<AITool>())
+                    .Where(t => t.GetService<ApprovalRequiredAIFunction>() is not null)
+                    .ToArray();
+
+                response.Messages = ReplaceFunctionCallsWithApprovalRequests(response.Messages, approvalRequiredFunctions);
             }
 
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
@@ -1660,7 +1666,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     private IList<ChatMessage> ReplaceFunctionCallsWithApprovalRequests(
         IList<ChatMessage> messages,
-        params ReadOnlySpan<IList<AITool>?> toolLists)
+        AITool[] approvalRequiredFunctions)
     {
         var outputMessages = messages;
 
@@ -1668,7 +1674,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         List<(int MessageIndex, int ContentIndex, bool RequiresConfirmation)>? allFunctionCallContentIndices = null;
 
         // Build a list of the indices of all FunctionCallContent items.
-        // Also check if any of them require approval.
+        // Also check whether each call's target name matches an approval-required function.
         for (int i = 0; i < messages.Count; i++)
         {
             var content = messages[i].Contents;
@@ -1676,10 +1682,19 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             {
                 if (content[j] is FunctionCallContent functionCall && !functionCall.InformationalOnly)
                 {
-                    bool requiredByFunction = FindTool(functionCall.Name, toolLists)?.GetService<ApprovalRequiredAIFunction>() is not null;
-                    (allFunctionCallContentIndices ??= []).Add((i, j, requiredByFunction));
+                    bool requiresConfirmation = false;
+                    for (int k = 0; k < approvalRequiredFunctions.Length; k++)
+                    {
+                        if (string.Equals(approvalRequiredFunctions[k].Name, functionCall.Name, StringComparison.Ordinal))
+                        {
+                            requiresConfirmation = true;
+                            break;
+                        }
+                    }
 
-                    anyApprovalRequired |= requiredByFunction;
+                    (allFunctionCallContentIndices ??= []).Add((i, j, requiresConfirmation));
+
+                    anyApprovalRequired |= requiresConfirmation;
                 }
             }
         }
