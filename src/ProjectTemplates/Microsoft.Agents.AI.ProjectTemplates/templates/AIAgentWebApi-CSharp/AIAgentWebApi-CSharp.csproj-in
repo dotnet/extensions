@@ -12,8 +12,8 @@
     <PackageReference Include="Azure.Identity" Version="${PackageVersion:Azure.Identity}" />
 <!--#endif -->
     <PackageReference Include="Microsoft.Agents.AI" Version="${PackageVersion:Microsoft.Agents.AI}" />
-    <PackageReference Include="Microsoft.Agents.AI.DevUI" Version="${PackageVersion:Microsoft.Agents.AI}" />
-    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="${PackageVersion:Microsoft.Agents.AI}" />
+    <PackageReference Include="Microsoft.Agents.AI.DevUI" Version="${PackageVersion:Microsoft.Agents.AI.DevUI}" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="${PackageVersion:Microsoft.Agents.AI.Hosting}" />
     <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="${PackageVersion:Microsoft.Agents.AI.Hosting.OpenAI}" />
 <!--#if (IsOpenAI || IsAzureOpenAI || IsGHModels) -->
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="${PackageVersion:Microsoft.Agents.AI}" />
