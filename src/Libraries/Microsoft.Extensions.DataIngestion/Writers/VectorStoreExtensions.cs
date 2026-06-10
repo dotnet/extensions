@@ -123,7 +123,10 @@ public static class VectorStoreExtensions
 
                 // The embedding source is AIContent produced by the chunker.
                 // The vector store's embedding generator converts this content to a vector.
-                new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord.Embedding), typeof(AIContent), dimensionCount)
+                // Using the generic VectorStoreVectorProperty<AIContent> so that the model builder
+                // creates a VectorPropertyModel<AIContent> which knows how to resolve
+                // IEmbeddingGenerator<AIContent, TEmbedding>.
+                new VectorStoreVectorProperty<AIContent>(nameof(IngestionChunkVectorRecord.Embedding), dimensionCount)
                 {
                     DistanceFunction = distanceFunction,
                     IndexKind = indexKind,
