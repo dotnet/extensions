@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="{VERSION}" />
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="{VERSION}" />
     <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="{VERSION}" />
+    <PackageReference Include="OpenTelemetry.Api" Version="{VERSION}" />
   </ItemGroup>
 
 </Project>
