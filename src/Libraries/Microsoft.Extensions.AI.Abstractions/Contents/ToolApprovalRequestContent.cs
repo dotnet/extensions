@@ -40,7 +40,9 @@ public sealed class ToolApprovalRequestContent : InputRequestContent
     /// Defaults to <see langword="true"/>. When <see langword="true"/>, the underlying tool
     /// requires a confirmation (such as a user prompt, a policy decision, or any other approver)
     /// before it can be invoked. When <see langword="false"/>, the underlying tool does not
-    /// require a confirmation and the consumer may proceed without prompting.
+    /// require a confirmation and the consumer may proceed without prompting; a corresponding
+    /// <see cref="ToolApprovalResponseContent"/> still has to be supplied so the originating
+    /// tool call can be invoked.
     /// </remarks>
     public bool RequiresConfirmation { get; set; } = true;
 
