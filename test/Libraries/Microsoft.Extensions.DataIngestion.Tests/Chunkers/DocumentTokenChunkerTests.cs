@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.AI;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,11 +24,11 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            IngestionChunker<string> chunker = CreateDocumentChunker();
-            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker chunker = CreateDocumentChunker();
+            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
-            IngestionChunk<string> chunk = Assert.Single(chunks);
-            Assert.Equal(text, chunk.Content, ignoreLineEndingDifferences: true);
+            IngestionChunk chunk = Assert.Single(chunks);
+            Assert.Equal(text, ((TextContent)chunk.Content).Text, ignoreLineEndingDifferences: true);
         }
     }
 }

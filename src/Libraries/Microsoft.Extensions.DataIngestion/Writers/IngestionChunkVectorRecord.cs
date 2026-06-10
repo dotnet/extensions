@@ -7,17 +7,16 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.Extensions.DataIngestion;
 
 /// <summary>
-/// Represents the base record type used by <see cref="VectorStoreWriter{TChunk, TRecord}"/> to store ingested chunks in a vector store.
+/// Represents the base record type used by <see cref="VectorStoreWriter{TRecord}"/> to store ingested chunks in a vector store.
 /// </summary>
-/// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <remarks>
 /// When the vector dimension count is not known at compile time,
-/// use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string?, string?)"/>
-/// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> and pass it to the <see cref="VectorStoreWriter{TChunk, TRecord}"/> constructor.
+/// use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord}(VectorStore, string, int, string?, string?)"/>
+/// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> and pass it to the <see cref="VectorStoreWriter{TRecord}"/> constructor.
 /// When the vector dimension count is known at compile time, derive from this class and add
 /// the <see cref="VectorStoreVectorAttribute"/> to the <see cref="Embedding"/> property.
 /// </remarks>
-public class IngestionChunkVectorRecord<TChunk>
+public class IngestionChunkVectorRecord
 {
     /// <summary>
     /// Gets or sets the unique key for this record.
@@ -32,10 +31,10 @@ public class IngestionChunkVectorRecord<TChunk>
     public virtual string DocumentId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the content of the chunk.
+    /// Gets or sets the serialized content of the chunk.
     /// </summary>
     [VectorStoreData]
-    public virtual TChunk? Content { get; set; }
+    public virtual string SerializedContent { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets additional context for the chunk.
@@ -47,9 +46,9 @@ public class IngestionChunkVectorRecord<TChunk>
     /// Gets the embedding value for this record.
     /// </summary>
     /// <remarks>
-    /// By default, returns the <see cref="Content"/> value. The vector store's embedding generator
+    /// By default, returns the <see cref="SerializedContent"/> value. The vector store's embedding generator
     /// will convert this to a vector. Override this property in derived classes to add
     /// the <see cref="VectorStoreVectorAttribute"/> with the appropriate dimension count.
     /// </remarks>
-    public virtual TChunk? Embedding => Content;
+    public virtual string? Embedding => SerializedContent;
 }

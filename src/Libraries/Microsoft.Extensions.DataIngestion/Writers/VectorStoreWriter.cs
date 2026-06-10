@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Shared.Diagnostics;
 
@@ -13,22 +15,21 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Writes chunks to a <see cref="VectorStoreCollection{TKey, TRecord}"/>.
 /// </summary>
-/// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <typeparam name="TRecord">The type of the record stored in the vector store.</typeparam>
-public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
-    where TRecord : IngestionChunkVectorRecord<TChunk>, new()
+public class VectorStoreWriter<TRecord> : IngestionChunkWriter
+    where TRecord : IngestionChunkVectorRecord, new()
 {
     private readonly VectorStoreWriterOptions _options;
     private bool _collectionEnsured;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VectorStoreWriter{TChunk, TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="VectorStoreWriter{TRecord}"/> class.
     /// </summary>
-    /// <param name="collection">The <see cref="VectorStoreCollection{TKey, TRecord}"/> to use to store the <see cref="IngestionChunk{T}"/> instances.</param>
+    /// <param name="collection">The <see cref="VectorStoreCollection{TKey, TRecord}"/> to use to store the <see cref="IngestionChunk"/> instances.</param>
     /// <param name="options">The options for the vector store writer.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="collection"/> is null.</exception>
     /// <remarks>
-    /// You can use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string?, string?)"/>
+    /// You can use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord}(VectorStore, string, int, string?, string?)"/>
     /// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> with the appropriate schema for storing ingestion chunks.
     /// </remarks>
     public VectorStoreWriter(VectorStoreCollection<Guid, TRecord> collection, VectorStoreWriterOptions? options = default)
@@ -43,7 +44,7 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
     public VectorStoreCollection<Guid, TRecord> VectorStoreCollection { get; }
 
     /// <inheritdoc/>
-    public override async Task WriteAsync(IAsyncEnumerable<IngestionChunk<TChunk>> chunks, CancellationToken cancellationToken = default)
+    public override async Task WriteAsync(IAsyncEnumerable<IngestionChunk> chunks, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(chunks);
 
@@ -51,7 +52,7 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
         List<TRecord>? batch = null;
         long currentBatchTokenCount = 0;
 
-        await foreach (IngestionChunk<TChunk> chunk in chunks.WithCancellation(cancellationToken))
+        await foreach (IngestionChunk chunk in chunks.WithCancellation(cancellationToken))
         {
             if (!_collectionEnsured)
             {
@@ -66,7 +67,7 @@ public class VectorStoreWriter<TChunk, TRecord> : IngestionChunkWriter<TChunk>
 
             TRecord record = new()
             {
-                Content = chunk.Content,
+                SerializedContent = JsonSerializer.Serialize(chunk.Content, AIJsonUtilities.DefaultOptions),
                 Context = chunk.Context,
                 DocumentId = chunk.Document.Identifier,
             };

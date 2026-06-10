@@ -14,12 +14,12 @@ public class DataIngestor(
 {
     public async Task IngestDataAsync(DirectoryInfo directory, string searchPattern)
     {
-        using var writer = new VectorStoreWriter<string, IngestedChunk>(vectorCollection, new()
+        using var writer = new VectorStoreWriter<IngestedChunk>(vectorCollection, new()
         {
             IncrementalIngestion = false,
         });
 
-        using var pipeline = new IngestionPipeline<string>(
+        using var pipeline = new IngestionPipeline(
             reader: new DocumentReader(directory),
             chunker: new SemanticSimilarityChunker(embeddingGenerator, new(TiktokenTokenizer.CreateForModel("gpt-4o"))),
             writer: writer,

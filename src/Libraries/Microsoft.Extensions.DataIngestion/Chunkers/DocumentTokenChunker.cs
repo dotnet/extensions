@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Microsoft.Extensions.AI;
 using Microsoft.ML.Tokenizers;
 using Microsoft.Shared.Diagnostics;
 
@@ -20,7 +21,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
     /// tokens into chunks of a specified size, with a configurable overlap between consecutive chunks.</para>
     /// <para>Note that tables may be split mid-row.</para>
     /// </remarks>
-    public sealed class DocumentTokenChunker : IngestionChunker<string>
+    public sealed class DocumentTokenChunker : IngestionChunker
     {
         private readonly Tokenizer _tokenizer;
         private readonly int _maxTokensPerChunk;
@@ -40,7 +41,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
         }
 
         /// <inheritdoc/>
-        public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<IngestionChunk> ProcessAsync(IngestionDocument document, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             _ = Throw.IfNull(document);
 
@@ -90,10 +91,10 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
             }
             yield break;
 
-            IngestionChunk<string> FinalizeChunk()
+            IngestionChunk FinalizeChunk()
             {
-                IngestionChunk<string> chunk = new IngestionChunk<string>(
-                    content: stringBuilder.ToString(),
+                IngestionChunk chunk = new IngestionChunk(
+                    content: new TextContent(stringBuilder.ToString()),
                     document: document,
                     tokenCount: stringBuilderTokenCount,
                     context: string.Empty);
@@ -102,14 +103,15 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
                 if (_chunkOverlap > 0)
                 {
+                    string chunkText = ((TextContent)chunk.Content).Text!;
                     int index = _tokenizer.GetIndexByTokenCountFromEnd(
-                        text: chunk.Content,
+                        text: chunkText,
                         maxTokenCount: _chunkOverlap,
                         out string? _,
                         out stringBuilderTokenCount,
                         considerNormalization: false);
 
-                    ReadOnlySpan<char> overlapContent = chunk.Content.AsSpan().Slice(index);
+                    ReadOnlySpan<char> overlapContent = chunkText.AsSpan().Slice(index);
                     unsafe
                     {
                         fixed (char* ptr = &MemoryMarshal.GetReference(overlapContent))

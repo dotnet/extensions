@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers;
 /// <summary>
 /// Splits a <see cref="IngestionDocument"/> into chunks based on semantic similarity between its elements based on cosine distance of their embeddings.
 /// </summary>
-public sealed class SemanticSimilarityChunker : IngestionChunker<string>
+public sealed class SemanticSimilarityChunker : IngestionChunker
 {
     private readonly ElementsChunker _elementsChunker;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
@@ -44,7 +44,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document,
+    public override async IAsyncEnumerable<IngestionChunk> ProcessAsync(IngestionDocument document,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(document);
@@ -93,7 +93,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
         return elementDistances;
     }
 
-    private IEnumerable<IngestionChunk<string>> MakeChunks(IngestionDocument document, List<(IngestionDocumentElement element, float distance)> elementDistances)
+    private IEnumerable<IngestionChunk> MakeChunks(IngestionDocument document, List<(IngestionDocumentElement element, float distance)> elementDistances)
     {
         float distanceThreshold = Percentile(elementDistances);
 

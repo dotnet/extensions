@@ -5,12 +5,12 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
-public class TestChunkRecordWithMetadata : IngestionChunkVectorRecord<string>
+public class TestChunkRecordWithMetadata : IngestionChunkVectorRecord
 {
     public const int TestDimensionCount = 4;
 
     [VectorStoreVector(TestDimensionCount)]
-    public override string? Embedding => Content;
+    public override string? Embedding => SerializedContent;
 
     [VectorStoreData(StorageName = "classification")]
     public string? Classification { get; set; }

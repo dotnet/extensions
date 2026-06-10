@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.AI;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -11,14 +12,13 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Represents a chunk of content extracted from an <see cref="IngestionDocument"/>.
 /// </summary>
-/// <typeparam name="T">The type of the content.</typeparam>
 [DebuggerDisplay("Content = {Content}")]
-public sealed class IngestionChunk<T>
+public sealed class IngestionChunk
 {
     private Dictionary<string, object>? _metadata;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="IngestionChunk{T}"/> class.
+    /// Initializes a new instance of the <see cref="IngestionChunk"/> class.
     /// </summary>
     /// <param name="content">The content of the chunk.</param>
     /// <param name="document">The document from which this chunk was extracted.</param>
@@ -27,23 +27,12 @@ public sealed class IngestionChunk<T>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="content"/> or <paramref name="document"/> is <see langword="null"/>.
     /// </exception>
-    /// <exception cref="ArgumentException">
-    /// <paramref name="content"/> is a string that is empty or contains only white-space characters.
-    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="tokenCount"/> is negative.
     /// </exception>
-    public IngestionChunk(T content, IngestionDocument document, int tokenCount, string? context = null)
+    public IngestionChunk(AIContent content, IngestionDocument document, int tokenCount, string? context = null)
     {
-        if (typeof(T) == typeof(string))
-        {
-            Content = (T)(object)Throw.IfNullOrEmpty((string)(object)content!);
-        }
-        else
-        {
-            Content = Throw.IfNull(content);
-        }
-
+        Content = Throw.IfNull(content);
         Document = Throw.IfNull(document);
         Context = context;
         TokenCount = Throw.IfLessThanOrEqual(tokenCount, 0);
@@ -52,7 +41,7 @@ public sealed class IngestionChunk<T>
     /// <summary>
     /// Gets the content of the chunk.
     /// </summary>
-    public T Content { get; }
+    public AIContent Content { get; }
 
     /// <summary>
     /// Gets the document from which this chunk was extracted.

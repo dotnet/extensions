@@ -7,7 +7,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DataIngestion;
 
 /// <summary>
-/// Represents options for the <see cref="VectorStoreWriter{TChunk, TRecord}"/>.
+/// Represents options for the <see cref="VectorStoreWriter{TRecord}"/>.
 /// </summary>
 public sealed class VectorStoreWriterOptions
 {
