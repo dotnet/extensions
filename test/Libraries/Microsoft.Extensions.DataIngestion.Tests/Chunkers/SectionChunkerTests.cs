@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.ML.Tokenizers;
 using Xunit;
 
@@ -34,7 +33,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Single(chunks);
             string expectedResult = "This is a paragraph.\nThis is another paragraph.";
-            Assert.Equal(expectedResult, ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedResult, GetText(chunks[0]), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -69,8 +68,8 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             Assert.Equal(2, chunks.Count);
             string expectedResult1 = "This is a paragraph.\nThis is another paragraph.";
             string expectedResult2 = "This is a paragraph in section 2.\nThis is another paragraph in section 2.";
-            Assert.Equal(expectedResult1, ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
-            Assert.Equal(expectedResult2, ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedResult1, GetText(chunks[0]), ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedResult2, GetText(chunks[1]), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -130,15 +129,15 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             Assert.Equal(4, chunks.Count);
             Assert.Equal("# Section title", chunks[0].Context);
             Assert.Equal("# Section title\nThis is a paragraph in section 1.\nThis is another paragraph in section 1.",
-                ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+                GetText(chunks[0]), ignoreLineEndingDifferences: true);
             Assert.Equal("# Section title ## Subsection title", chunks[1].Context);
             Assert.Equal("# Section title ## Subsection title\nThis is a paragraph in subsection 1.1.\nThis is another paragraph in subsection 1.1.",
-                ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+                GetText(chunks[1]), ignoreLineEndingDifferences: true);
             Assert.Equal("# Section title ## Subsection title ### Subsubsection title", chunks[2].Context);
             Assert.Equal("# Section title ## Subsection title ### Subsubsection title\nThis is a paragraph in subsubsection 1.1.1.\nThis is another paragraph in subsubsection 1.1.1.",
-                ((TextContent)chunks[2].Content).Text, ignoreLineEndingDifferences: true);
+                GetText(chunks[2]), ignoreLineEndingDifferences: true);
             Assert.Equal("# Section title ## Subsection title", chunks[3].Context);
-            Assert.Equal("# Section title ## Subsection title\nThis is the last paragraph in subsection 1.2.", ((TextContent)chunks[3].Content).Text, ignoreLineEndingDifferences: true);
+            Assert.Equal("# Section title ## Subsection title\nThis is the last paragraph in subsection 1.2.", GetText(chunks[3]), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -156,9 +155,9 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             IngestionChunker chunker = CreateDocumentChunker(maxTokensPerChunk: 512);
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
-            Assert.True(((TextContent)chunks[0].Content).Text.Split(' ').Length <= 512);
-            Assert.True(((TextContent)chunks[1].Content).Text.Split(' ').Length <= 512);
-            Assert.Equal(text, string.Join("", chunks.Select(c => ((TextContent)c.Content).Text)), ignoreLineEndingDifferences: true);
+            Assert.True(GetText(chunks[0]).Split(' ').Length <= 512);
+            Assert.True(GetText(chunks[1]).Split(' ').Length <= 512);
+            Assert.Equal(text, string.Join("", chunks.Select(c => GetText(c))), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -178,7 +177,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             IngestionChunk chunk = Assert.Single(chunks);
             string expectedResult = "Section 1\nThis is a paragraph in section 1.\nThis is another paragraph in section 1.";
-            Assert.Equal(expectedResult, ((TextContent)chunk.Content).Text, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedResult, GetText(chunk), ignoreLineEndingDifferences: true);
             Assert.Equal("Section 1", chunk.Context);
         }
     }

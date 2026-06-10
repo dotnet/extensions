@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator());
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Single(chunks);
-            Assert.Equal(text, ((TextContent)chunks[0].Content).Text);
+            Assert.Equal(text, GetText(chunks[0]));
         }
 
         [Fact]
@@ -99,8 +99,8 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator());
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
-            Assert.Equal(text1 + Environment.NewLine + text2, ((TextContent)chunks[0].Content).Text);
-            Assert.Equal(text3, ((TextContent)chunks[1].Content).Text);
+            Assert.Equal(text1 + Environment.NewLine + text2, GetText(chunks[0]));
+            Assert.Equal(text3, GetText(chunks[1]));
         }
 
         [Fact]
@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 The .NET platform supports multiple programming languages:
 {dotNetTableMarkdown}
 C# remains the most popular language for .NET development.",
-            ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+            GetText(chunks[0]), ignoreLineEndingDifferences: true);
             Assert.Equal($@"# Ancient Greek Olympian Gods
 The twelve Olympian gods were the principal deities of the Greek pantheon:
 | God | Domain | Symbol | Roman Name |
@@ -197,13 +197,13 @@ The twelve Olympian gods were the principal deities of the Greek pantheon:
 | Hephaestus | Fire & Forge | Hammer | Vulcan |
 | Demeter | Harvest & Nature | Wheat | Ceres |
 | Dionysus | Wine & Festivity | Grapes | Bacchus |",
-            ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+            GetText(chunks[1]), ignoreLineEndingDifferences: true);
             Assert.Equal("""
             | God | Domain | Symbol | Roman Name |
             | --- | --- | --- | --- |
             | Hermes | Messages & Trade | Caduceus | Mercury |
             These gods resided on Mount Olympus and ruled over different aspects of mortal and divine life.
-            """, ((TextContent)chunks[2].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[2]), ignoreLineEndingDifferences: true);
 
             static string[,] CreateGreekGodsTableCells() => new string[,]
                 {

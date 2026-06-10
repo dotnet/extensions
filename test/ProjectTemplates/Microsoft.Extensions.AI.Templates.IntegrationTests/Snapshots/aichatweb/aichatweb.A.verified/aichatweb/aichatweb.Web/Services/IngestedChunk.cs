@@ -11,5 +11,5 @@ public class IngestedChunk : IngestionChunkVectorRecord
     public const string CollectionName = "data-aichatweb-chunks";
 
     [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction)]
-    public override AIContent? Embedding { get; set; }
+    public override AIContent? Embedding => Content;
 }

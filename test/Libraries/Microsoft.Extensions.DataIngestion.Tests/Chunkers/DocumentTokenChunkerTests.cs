@@ -4,15 +4,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 {
     public abstract class DocumentTokenChunkerTests : DocumentChunkerTests
     {
-        protected static string GetText(IngestionChunk chunk) => ((TextContent)chunk.Content).Text!;
-
         [Fact]
         public async Task SingleChunkText()
         {

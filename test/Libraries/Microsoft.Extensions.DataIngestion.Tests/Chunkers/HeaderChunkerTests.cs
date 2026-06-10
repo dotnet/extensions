@@ -5,15 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.ML.Tokenizers;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests;
 
-public class HeaderChunkerTests
+public class HeaderChunkerTests : DocumentChunkerTests
 {
-    private static string GetText(IngestionChunk chunk) => ((TextContent)chunk.Content).Text!;
+    protected override IngestionChunker CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        => new HeaderChunker(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = maxTokensPerChunk });
+
     [Fact]
     public async Task CanChunkNonTrivialDocument()
     {
