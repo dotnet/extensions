@@ -83,11 +83,11 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        TestEmbeddingGenerator<AIContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(
-            "chunks", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks", TestEmbeddingGenerator<AIContent>.DimensionCount);
         using VectorStoreWriter<IngestionChunkVectorRecord> vectorStoreWriter = new(collection);
 
         using IngestionPipeline pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
@@ -119,11 +119,11 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        TestEmbeddingGenerator<AIContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(
-            "chunks-dir", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-dir", TestEmbeddingGenerator<AIContent>.DimensionCount);
         using VectorStoreWriter<IngestionChunkVectorRecord> vectorStoreWriter = new(collection);
 
         using IngestionPipeline pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
@@ -156,11 +156,11 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        TestEmbeddingGenerator<AIContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(
-            "chunks-img", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-img", TestEmbeddingGenerator<AIContent>.DimensionCount);
         using VectorStoreWriter<IngestionChunkVectorRecord> vectorStoreWriter = new(collection);
         using IngestionPipeline pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
 
@@ -189,11 +189,11 @@ public sealed class IngestionPipelineTests : IDisposable
     [Fact]
     public async Task ChunkerCanProduceMultipleContentTypes()
     {
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        TestEmbeddingGenerator<AIContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(
-            "chunks-multi", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-multi", TestEmbeddingGenerator<AIContent>.DimensionCount);
         using VectorStoreWriter<IngestionChunkVectorRecord> vectorStoreWriter = new(collection);
 
         // Create a document that explicitly has both text and image elements
@@ -239,11 +239,11 @@ public sealed class IngestionPipelineTests : IDisposable
     [Fact]
     public async Task PipelineWorksWithEmbeddingGenerator()
     {
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        TestEmbeddingGenerator<AIContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(
-            "chunks-aicontent", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-aicontent", TestEmbeddingGenerator<AIContent>.DimensionCount);
         using VectorStoreWriter<IngestionChunkVectorRecord> vectorStoreWriter = new(collection);
 
         using IngestionPipeline pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
@@ -317,11 +317,11 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        TestEmbeddingGenerator<AIContent> embeddingGenerator = new();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
 
         VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection = testVectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(
-            "chunks-fail", TestEmbeddingGenerator<string>.DimensionCount);
+            "chunks-fail", TestEmbeddingGenerator<AIContent>.DimensionCount);
         using VectorStoreWriter<IngestionChunkVectorRecord> vectorStoreWriter = new(collection);
 
         using IngestionPipeline pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);

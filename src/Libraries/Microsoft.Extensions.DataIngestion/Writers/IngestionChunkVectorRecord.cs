@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -46,10 +47,10 @@ public class IngestionChunkVectorRecord
     /// Gets or sets the embedding source for this record.
     /// </summary>
     /// <remarks>
-    /// This contains the original text content extracted from the <see cref="Microsoft.Extensions.AI.AIContent"/>
-    /// produced by the chunker. The vector store's embedding generator converts this text to a vector.
+    /// This contains the <see cref="AIContent"/> produced by the chunker.
+    /// The vector store's embedding generator converts this content to a vector.
     /// Override this property in derived classes to add
     /// the <see cref="VectorStoreVectorAttribute"/> with the appropriate dimension count.
     /// </remarks>
-    public virtual string? Embedding { get; set; }
+    public virtual AIContent? Embedding { get; set; }
 }

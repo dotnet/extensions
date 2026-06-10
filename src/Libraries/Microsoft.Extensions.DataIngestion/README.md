@@ -52,7 +52,7 @@ To store custom metadata alongside each chunk, create a type derived from `Inges
 public class ChunkWithMetadata : IngestionChunkVectorRecord
 {
     [VectorStoreVector(1536)]
-    public override string? Embedding { get; set; }
+    public override AIContent? Embedding { get; set; }
 
     [VectorStoreData(StorageName = "classification")]
     public string? Classification { get; set; }
@@ -88,7 +88,7 @@ VectorStoreCollectionDefinition definition = new()
     {
         new VectorStoreKeyProperty(nameof(IngestionChunkVectorRecord.Key), typeof(Guid))
             { StorageName = "my_key" },
-        new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord.Embedding), typeof(string), 1536)
+        new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord.Embedding), typeof(AIContent), 1536)
             { StorageName = "my_embedding" },
         new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord.SerializedContent), typeof(string))
             { StorageName = "my_content" },

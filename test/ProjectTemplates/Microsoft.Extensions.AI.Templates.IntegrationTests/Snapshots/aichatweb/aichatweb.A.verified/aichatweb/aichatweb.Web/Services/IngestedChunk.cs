@@ -1,3 +1,4 @@
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DataIngestion;
 using Microsoft.Extensions.VectorData;
 
@@ -10,5 +11,5 @@ public class IngestedChunk : IngestionChunkVectorRecord
     public const string CollectionName = "data-aichatweb-chunks";
 
     [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction)]
-    public override string? Embedding { get; set; }
+    public override AIContent? Embedding { get; set; }
 }
