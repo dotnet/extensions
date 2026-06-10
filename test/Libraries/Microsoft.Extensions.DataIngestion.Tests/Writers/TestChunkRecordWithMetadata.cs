@@ -11,7 +11,7 @@ public class TestChunkRecordWithMetadata : IngestionChunkVectorRecord
     public const int TestDimensionCount = 4;
 
     [VectorStoreVector(TestDimensionCount)]
-    public override AIContent? Embedding { get; set; }
+    public override AIContent? Embedding => Content;
 
     [VectorStoreData(StorageName = "classification")]
     public string? Classification { get; set; }

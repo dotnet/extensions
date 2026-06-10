@@ -2,7 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
@@ -13,6 +17,38 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </summary>
 public static class VectorStoreExtensions
 {
+    /// <summary>
+    /// Wraps an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that accepts <see cref="string"/> inputs
+    /// into one that accepts <see cref="AIContent"/> inputs, extracting text from <see cref="TextContent"/> instances.
+    /// </summary>
+    /// <typeparam name="TEmbedding">The type of the embedding produced by the generator.</typeparam>
+    /// <param name="stringGenerator">The string-based embedding generator to wrap.</param>
+    /// <returns>An <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that accepts <see cref="AIContent"/> inputs.</returns>
+    public static IEmbeddingGenerator<AIContent, TEmbedding> AsAIContentEmbeddingGenerator<TEmbedding>(
+        this IEmbeddingGenerator<string, TEmbedding> stringGenerator)
+        where TEmbedding : Embedding
+    {
+        _ = Shared.Diagnostics.Throw.IfNull(stringGenerator);
+
+        return new AIContentEmbeddingGeneratorAdapter<TEmbedding>(stringGenerator);
+    }
+
+    /// <summary>
+    /// Wraps an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that accepts <see cref="AIContent"/> inputs
+    /// into one that accepts <see cref="string"/> inputs, wrapping each string as a <see cref="TextContent"/> instance.
+    /// </summary>
+    /// <typeparam name="TEmbedding">The type of the embedding produced by the generator.</typeparam>
+    /// <param name="aiContentGenerator">The AIContent-based embedding generator to wrap.</param>
+    /// <returns>An <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> that accepts <see cref="string"/> inputs.</returns>
+    public static IEmbeddingGenerator<string, TEmbedding> AsStringEmbeddingGenerator<TEmbedding>(
+        this IEmbeddingGenerator<AIContent, TEmbedding> aiContentGenerator)
+        where TEmbedding : Embedding
+    {
+        _ = Shared.Diagnostics.Throw.IfNull(aiContentGenerator);
+
+        return new StringEmbeddingGeneratorAdapter<TEmbedding>(aiContentGenerator);
+    }
+
     /// <summary>
     /// Provides a convenient method to get a vector store collection specifically designed for storing ingested chunk records
     /// using the default <see cref="IngestionChunkVectorRecord"/> type.
@@ -96,5 +132,57 @@ public static class VectorStoreExtensions
         };
 
         return vectorStore.GetCollection<Guid, TRecord>(collectionName, additiveDefinition);
+    }
+
+    private sealed class AIContentEmbeddingGeneratorAdapter<TEmbedding> : IEmbeddingGenerator<AIContent, TEmbedding>
+        where TEmbedding : Embedding
+    {
+        private readonly IEmbeddingGenerator<string, TEmbedding> _innerGenerator;
+
+        internal AIContentEmbeddingGeneratorAdapter(IEmbeddingGenerator<string, TEmbedding> innerGenerator)
+        {
+            _innerGenerator = innerGenerator;
+        }
+
+        public Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(
+            IEnumerable<AIContent> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            IEnumerable<string> stringValues = values.Select(content => content is TextContent tc ? tc.Text ?? string.Empty : content.ToString() ?? string.Empty);
+            return _innerGenerator.GenerateAsync(stringValues, options, cancellationToken);
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => _innerGenerator.GetService(serviceType, serviceKey);
+
+        public void Dispose()
+            => _innerGenerator.Dispose();
+    }
+
+    private sealed class StringEmbeddingGeneratorAdapter<TEmbedding> : IEmbeddingGenerator<string, TEmbedding>
+        where TEmbedding : Embedding
+    {
+        private readonly IEmbeddingGenerator<AIContent, TEmbedding> _innerGenerator;
+
+        internal StringEmbeddingGeneratorAdapter(IEmbeddingGenerator<AIContent, TEmbedding> innerGenerator)
+        {
+            _innerGenerator = innerGenerator;
+        }
+
+        public Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            IEnumerable<AIContent> contentValues = values.Select(text => (AIContent)new TextContent(text));
+            return _innerGenerator.GenerateAsync(contentValues, options, cancellationToken);
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => _innerGenerator.GetService(serviceType, serviceKey);
+
+        public void Dispose()
+            => _innerGenerator.Dispose();
     }
 }

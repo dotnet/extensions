@@ -67,8 +67,7 @@ public class VectorStoreWriter<TRecord> : IngestionChunkWriter
 
             TRecord record = new()
             {
-                Embedding = chunk.Content,
-                SerializedContent = JsonSerializer.Serialize(chunk.Content, AIJsonUtilities.DefaultOptions),
+                Content = chunk.Content,
                 Context = chunk.Context,
                 DocumentId = chunk.Document.Identifier,
             };

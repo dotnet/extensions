@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
@@ -19,6 +21,8 @@ namespace Microsoft.Extensions.DataIngestion;
 /// </remarks>
 public class IngestionChunkVectorRecord
 {
+    private AIContent? _content;
+
     /// <summary>
     /// Gets or sets the unique key for this record.
     /// </summary>
@@ -38,19 +42,33 @@ public class IngestionChunkVectorRecord
     public virtual string SerializedContent { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the content of the chunk.
+    /// </summary>
+    [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
+    public virtual AIContent? Content
+    {
+        get => _content ??= JsonSerializer.Deserialize<AIContent>(SerializedContent, AIJsonUtilities.DefaultOptions);
+        set
+        {
+            _content = value;
+            SerializedContent = JsonSerializer.Serialize(value, AIJsonUtilities.DefaultOptions);
+        }
+    }
+
+    /// <summary>
     /// Gets or sets additional context for the chunk.
     /// </summary>
     [VectorStoreData]
     public virtual string? Context { get; set; }
 
     /// <summary>
-    /// Gets or sets the embedding source for this record.
+    /// Gets the embedding value for this record.
     /// </summary>
     /// <remarks>
-    /// This contains the <see cref="AIContent"/> produced by the chunker.
-    /// The vector store's embedding generator converts this content to a vector.
-    /// Override this property in derived classes to add
+    /// By default, returns the <see cref="Content"/> value. The vector store's embedding generator
+    /// will convert this to a vector. Override this property in derived classes to add
     /// the <see cref="VectorStoreVectorAttribute"/> with the appropriate dimension count.
     /// </remarks>
-    public virtual AIContent? Embedding { get; set; }
+    public virtual AIContent? Embedding => Content;
 }
