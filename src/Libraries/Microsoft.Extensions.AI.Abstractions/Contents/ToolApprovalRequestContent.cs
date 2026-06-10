@@ -35,25 +35,28 @@ public sealed class ToolApprovalRequestContent : InputRequestContent
     public ToolCallContent ToolCall { get; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this approval request was added by the invoker
-    /// of the tool call rather than because the underlying tool itself was declared as requiring approval.
+    /// Gets or sets a value indicating whether this approval request needs a confirmation
+    /// from the consumer before the underlying tool call is invoked.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Defaults to <see langword="false"/>, indicating that the underlying tool itself required
-    /// approval (for example, the targeted function was an <see cref="ApprovalRequiredAIFunction"/>).
+    /// Defaults to <see langword="true"/>, indicating that the underlying tool genuinely
+    /// requires approval (for example, the targeted function is an <see cref="ApprovalRequiredAIFunction"/>)
+    /// and the consumer must obtain a confirmation (for instance, a user prompt, a policy decision,
+    /// or a governance gate) before the call is invoked.
     /// </para>
     /// <para>
     /// Some invokers convert every concurrent function call in a response into a
     /// <see cref="ToolApprovalRequestContent"/> whenever any one of them targets an
     /// <see cref="ApprovalRequiredAIFunction"/>, so that approvals and rejections stay coherent
-    /// across the batch. When set to <see langword="true"/>, this property indicates that the
-    /// request was added for that reason and the underlying tool did not itself require approval;
-    /// consumers may use this to, for example, auto-approve such requests.
+    /// across the response. When set to <see langword="false"/>, this property indicates that
+    /// the underlying tool did not itself require approval and that the request exists only to
+    /// satisfy that constraint; consumers may auto-approve such requests without seeking a
+    /// confirmation.
     /// </para>
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIFunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool IsInvokerRequested { get; set; }
+    public bool RequiresConfirmation { get; set; } = true;
 
     /// <summary>
     /// Creates a <see cref="ToolApprovalResponseContent"/> indicating whether the tool call is approved or rejected.

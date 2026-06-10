@@ -84,7 +84,7 @@ public class FunctionInvokingChatClientApprovalsTests
                 new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
                 new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
                 {
-                    IsInvokerRequested = true,
+                    RequiresConfirmation = false,
                 }
             ])
         ];
@@ -124,19 +124,19 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
         ];
 
-        // When additionalToolsRequireApproval is true: Func1 (additional tools) requires approval and Func2 (options.Tools) is collateral.
-        // When false: Func2 (options.Tools) requires approval and Func1 (additional tools) is collateral.
+        // When additionalToolsRequireApproval is true: Func1 (additional tools) requires approval and Func2 (options.Tools) does not.
+        // When false: Func2 (options.Tools) requires approval and Func1 (additional tools) does not.
         List<ChatMessage> expectedOutput =
         [
             new ChatMessage(ChatRole.Assistant,
             [
                 new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1"))
                 {
-                    IsInvokerRequested = !additionalToolsRequireApproval,
+                    RequiresConfirmation = additionalToolsRequireApproval,
                 },
                 new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
                 {
-                    IsInvokerRequested = additionalToolsRequireApproval,
+                    RequiresConfirmation = !additionalToolsRequireApproval,
                 }
             ])
         ];
@@ -149,10 +149,10 @@ public class FunctionInvokingChatClientApprovalsTests
     private sealed class PassThroughDelegatingAIFunction(AIFunction inner) : DelegatingAIFunction(inner);
 
     [Fact]
-    public async Task IsInvokerRequested_IsFalseForApprovalRequiredFunctionNestedInDelegatingWrapperAsync()
+    public async Task RequiresConfirmation_IsTrueForApprovalRequiredFunctionNestedInDelegatingWrapperAsync()
     {
         // Wrap the ApprovalRequiredAIFunction in another DelegatingAIFunction (e.g. a telemetry decorator).
-        // FICC must still classify the call as "function-required approval" (IsInvokerRequested = false)
+        // FICC must still classify the call as approval-required (RequiresConfirmation = true, the default)
         // by walking the delegation chain via GetService<ApprovalRequiredAIFunction>().
         AITool[] tools =
         [
@@ -184,7 +184,7 @@ public class FunctionInvokingChatClientApprovalsTests
                 new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
                 new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
                 {
-                    IsInvokerRequested = true,
+                    RequiresConfirmation = false,
                 }
             ])
         ];
@@ -195,12 +195,12 @@ public class FunctionInvokingChatClientApprovalsTests
     }
 
     [Fact]
-    public async Task IsInvokerRequested_IsTrueForFunctionCallWithNoMatchingToolWhenPeerRequiresApprovalAsync()
+    public async Task RequiresConfirmation_IsFalseForFunctionCallWithNoMatchingToolWhenPeerRequiresApprovalAsync()
     {
         // The downstream client emits an FCC referencing a tool name that is not in the tools list.
-        // Because a peer call (Func1) requires approval, FICC still wraps the unknown call as collateral.
+        // Because a peer call (Func1) requires approval, FICC still wraps the unknown call.
         // Since no matching tool is found (and therefore no ApprovalRequiredAIFunction is detected),
-        // the resulting approval request must carry IsInvokerRequested = true.
+        // the resulting approval request must carry RequiresConfirmation = false.
         var options = new ChatOptions
         {
             Tools =
@@ -229,7 +229,7 @@ public class FunctionInvokingChatClientApprovalsTests
                 new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
                 new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Unknown"))
                 {
-                    IsInvokerRequested = true,
+                    RequiresConfirmation = false,
                 }
             ])
         ];
@@ -1841,7 +1841,7 @@ public class FunctionInvokingChatClientApprovalsTests
         ToolApprovalRequestContent tarc =>
             new ToolApprovalRequestContent(tarc.RequestId, (ToolCallContent)CloneFcc(tarc.ToolCall))
             {
-                IsInvokerRequested = tarc.IsInvokerRequested,
+                RequiresConfirmation = tarc.RequiresConfirmation,
             },
         ToolApprovalResponseContent tarc =>
             new ToolApprovalResponseContent(tarc.RequestId, tarc.Approved, (ToolCallContent)CloneFcc(tarc.ToolCall))

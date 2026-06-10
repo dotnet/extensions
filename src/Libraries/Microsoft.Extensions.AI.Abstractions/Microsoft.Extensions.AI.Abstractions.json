@@ -4605,7 +4605,7 @@
       ],
       "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.AI.ToolApprovalRequestContent.IsInvokerRequested { get; set; }",
+          "Member": "bool Microsoft.Extensions.AI.ToolApprovalRequestContent.RequiresConfirmation { get; set; }",
           "Stage": "Experimental"
         },
         {

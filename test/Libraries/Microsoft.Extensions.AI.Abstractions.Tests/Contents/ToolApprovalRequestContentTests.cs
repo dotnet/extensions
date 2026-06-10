@@ -132,26 +132,26 @@ public class ToolApprovalRequestContentTests
     }
 
     [Fact]
-    public void IsInvokerRequested_DefaultsToFalse()
+    public void RequiresConfirmation_DefaultsToTrue()
     {
         var content = new ToolApprovalRequestContent("req-1", new FunctionCallContent("call1", "Func"));
-        Assert.False(content.IsInvokerRequested);
+        Assert.True(content.RequiresConfirmation);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void IsInvokerRequested_RoundtripsThroughJson(bool value)
+    public void RequiresConfirmation_RoundtripsThroughJson(bool value)
     {
         var content = new ToolApprovalRequestContent("req-1", new FunctionCallContent("call1", "Func"))
         {
-            IsInvokerRequested = value,
+            RequiresConfirmation = value,
         };
 
         string json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
         var deserialized = JsonSerializer.Deserialize<ToolApprovalRequestContent>(json, AIJsonUtilities.DefaultOptions);
 
         Assert.NotNull(deserialized);
-        Assert.Equal(value, deserialized!.IsInvokerRequested);
+        Assert.Equal(value, deserialized!.RequiresConfirmation);
     }
 }
