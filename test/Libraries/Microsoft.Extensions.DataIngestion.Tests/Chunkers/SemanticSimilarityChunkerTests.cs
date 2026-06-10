@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            using Microsoft.Extensions.AI.TestEmbeddingGenerator<string, Embedding<float>> customGenerator = new()
+            using Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>> customGenerator = new()
             {
                 GenerateAsyncCallback = static async (values, options, ct) =>
                 {
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     return [.. embeddings];
                 }
             };
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator);
+            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator());
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Single(chunks);
             Assert.Equal(text, ((TextContent)chunks[0].Content).Text);
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using var customGenerator = new Microsoft.Extensions.AI.TestEmbeddingGenerator<string, Embedding<float>>
+            using var customGenerator = new Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>>
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             };
 
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator);
+            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator());
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
             Assert.Equal(text1 + Environment.NewLine + text2, ((TextContent)chunks[0].Content).Text);
@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using var customGenerator = new Microsoft.Extensions.AI.TestEmbeddingGenerator<string, Embedding<float>>
+            using var customGenerator = new Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>>
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             };
 
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator, 200, 0);
+            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator(), 200, 0);
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
             Assert.Equal(3, chunks.Count);

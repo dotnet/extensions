@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 

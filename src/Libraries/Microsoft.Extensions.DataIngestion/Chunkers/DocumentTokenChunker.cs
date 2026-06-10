@@ -93,8 +93,9 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
             IngestionChunk FinalizeChunk()
             {
+                TextContent chunkContent = new(stringBuilder.ToString());
                 IngestionChunk chunk = new IngestionChunk(
-                    content: new TextContent(stringBuilder.ToString()),
+                    content: chunkContent,
                     document: document,
                     tokenCount: stringBuilderTokenCount,
                     context: string.Empty);
@@ -103,7 +104,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
                 if (_chunkOverlap > 0)
                 {
-                    string chunkText = ((TextContent)chunk.Content).Text!;
+                    string chunkText = chunkContent.Text;
                     int index = _tokenizer.GetIndexByTokenCountFromEnd(
                         text: chunkText,
                         maxTokenCount: _chunkOverlap,

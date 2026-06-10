@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.AI;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,9 +32,9 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             IngestionChunker chunker = CreateDocumentChunker(maxTokensPerChunk: 512);
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
-            Assert.True(((TextContent)chunks[0].Content).Text.Split(' ').Length <= 512);
-            Assert.True(((TextContent)chunks[1].Content).Text.Split(' ').Length <= 512);
-            Assert.Equal(text, string.Join("", chunks.Select(c => ((TextContent)c.Content).Text)));
+            Assert.True(GetText(chunks[0]).Split(' ').Length <= 512);
+            Assert.True(GetText(chunks[1]).Split(' ').Length <= 512);
+            Assert.Equal(text, string.Join("", chunks.Select(c => GetText(c))));
         }
 
         [Fact]
@@ -56,10 +55,10 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             Assert.Equal(8, chunks.Count);
             foreach (var chunk in chunks)
             {
-                Assert.True(((TextContent)chunk.Content).Text.Split(' ').Count(str => str.Contains("word")) <= 200);
+                Assert.True(GetText(chunk).Split(' ').Count(str => str.Contains("word")) <= 200);
             }
 
-            Assert.Equal(text, string.Join("", chunks.Select(c => ((TextContent)c.Content).Text)));
+            Assert.Equal(text, string.Join("", chunks.Select(c => GetText(c))));
         }
 
         [Fact]
@@ -86,7 +85,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 Assert.True(chunk.TokenCount > 0);
 
                 // Verify that TokenCount matches actual token count of content
-                int actualTokenCount = tokenizer.CountTokens(((TextContent)chunk.Content).Text, considerNormalization: false);
+                int actualTokenCount = tokenizer.CountTokens(GetText(chunk), considerNormalization: false);
                 Assert.Equal(actualTokenCount, chunk.TokenCount);
 
                 // Verify that TokenCount does not exceed max tokens per chunk

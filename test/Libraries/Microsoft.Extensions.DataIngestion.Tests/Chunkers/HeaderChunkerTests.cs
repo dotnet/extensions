@@ -1,11 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.ML.Tokenizers;
 using Xunit;
 
@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests;
 
 public class HeaderChunkerTests
 {
+    private static string GetText(IngestionChunk chunk) => ((TextContent)chunk.Content).Text!;
     [Fact]
     public async Task CanChunkNonTrivialDocument()
     {
@@ -43,15 +44,15 @@ public class HeaderChunkerTests
         Assert.Equal(5, chunks.Count);
 
         Assert.Equal("Header 1 Header 1_1", chunks[0].Context);
-        Assert.Equal($"Header 1 Header 1_1\nParagraph 1_1_1", ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_1\nParagraph 1_1_1", GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_1 Header 1_1_1", chunks[1].Context);
-        Assert.Equal($"Header 1 Header 1_1 Header 1_1_1\nParagraph 1_1_1_1\nParagraph 1_1_1_2", ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_1 Header 1_1_1\nParagraph 1_1_1_1\nParagraph 1_1_1_2", GetText(chunks[1]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_1 Header 1_1_2", chunks[2].Context);
-        Assert.Equal($"Header 1 Header 1_1 Header 1_1_2\nParagraph 1_1_2_1\nParagraph 1_1_2_2", ((TextContent)chunks[2].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_1 Header 1_1_2\nParagraph 1_1_2_1\nParagraph 1_1_2_2", GetText(chunks[2]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_2", chunks[3].Context);
-        Assert.Equal($"Header 1 Header 1_2\nParagraph 1_2_1", ((TextContent)chunks[3].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_2\nParagraph 1_2_1", GetText(chunks[3]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_2 Header 1_2_1", chunks[4].Context);
-        Assert.Equal($"Header 1 Header 1_2 Header 1_2_1\nParagraph 1_2_1_1", ((TextContent)chunks[4].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_2 Header 1_2_1\nParagraph 1_2_1_1", GetText(chunks[4]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -74,9 +75,9 @@ public class HeaderChunkerTests
 
         Assert.Equal(2, chunks.Count);
         Assert.Equal("Header A Header B Header C", chunks[0].Context);
-        Assert.Equal($"Header A Header B Header C\nThis is a very long text.", ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header A Header B Header C\nThis is a very long text.", GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header A Header B Header C", chunks[1].Context);
-        Assert.Equal($"Header A Header B Header C\n It's expressed with plenty of tokens", ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header A Header B Header C\n It's expressed with plenty of tokens", GetText(chunks[1]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -123,9 +124,9 @@ public class HeaderChunkerTests
         Assert.Equal(2, chunks.Count);
         Assert.Equal("Header A Header B Header C", chunks[0].Context);
         Assert.Equal($"Header A Header B Header C\nThis is a very long text. It's expressed with plenty of tokens. And it contains a new line.\n",
-            ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+            GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header A Header B Header C", chunks[1].Context);
-        Assert.Equal($"Header A Header B Header C\nWith some text after the new line.\nAnd following paragraph.", ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header A Header B Header C\nWith some text after the new line.\nAnd following paragraph.", GetText(chunks[1]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -157,7 +158,7 @@ public class HeaderChunkerTests
             | 0 | 1 | 2 | 3 | 4 |
             | 5 | 6 | 7 | 8 | 9 |
             | 10 | 11 | 12 | 13 | 14 |
-            """, ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
@@ -165,7 +166,7 @@ public class HeaderChunkerTests
             | 15 | 16 | 17 | 18 | 19 |
             | 20 | 21 | 22 | 23 | 24 |
             And some follow up.
-            """, ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[1]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -179,43 +180,43 @@ public class HeaderChunkerTests
 
         Assert.Equal(6, chunks.Count);
         Assert.All(chunks, chunk => Assert.Equal("Header A", chunk.Context));
-        Assert.All(chunks, chunk => Assert.InRange(tokenizer.CountTokens(((TextContent)chunk.Content).Text), 1, 50));
+        Assert.All(chunks, chunk => Assert.InRange(tokenizer.CountTokens(GetText(chunk)), 1, 50));
 
         Assert.Equal("""
             Header A
             This is some text that describes why we need the following table.
-            """, ((TextContent)chunks[0].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 0 | 1 | 2 | 3 | 4 |
-            """, ((TextContent)chunks[1].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[1]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 5 | 6 | 7 | 8 | 9 |
-            """, ((TextContent)chunks[2].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[2]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 10 | 11 | 12 | 13 | 14 |
-            """, ((TextContent)chunks[3].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[3]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 15 | 16 | 17 | 18 | 19 |
-            """, ((TextContent)chunks[4].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[4]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 20 | 21 | 22 | 23 | 24 |
             And some follow up.
-            """, ((TextContent)chunks[5].Content).Text, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[5]), ignoreLineEndingDifferences: true);
     }
 
     private static IngestionDocument CreateDocumentWithLargeTable()
@@ -295,7 +296,7 @@ public class HeaderChunkerTests
             Assert.True(chunk.TokenCount > 0);
 
             // Verify that TokenCount matches actual token count of content
-            int actualTokenCount = tokenizer.CountTokens(((TextContent)chunk.Content).Text, considerNormalization: false);
+            int actualTokenCount = tokenizer.CountTokens(GetText(chunk), considerNormalization: false);
             Assert.Equal(actualTokenCount, chunk.TokenCount);
         }
     }

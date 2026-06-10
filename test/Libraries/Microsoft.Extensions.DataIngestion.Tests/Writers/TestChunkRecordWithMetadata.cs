@@ -10,7 +10,7 @@ public class TestChunkRecordWithMetadata : IngestionChunkVectorRecord
     public const int TestDimensionCount = 4;
 
     [VectorStoreVector(TestDimensionCount)]
-    public override string? Embedding => SerializedContent;
+    public override string? Embedding { get; set; }
 
     [VectorStoreData(StorageName = "classification")]
     public string? Classification { get; set; }

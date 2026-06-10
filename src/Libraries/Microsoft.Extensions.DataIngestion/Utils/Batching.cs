@@ -30,7 +30,7 @@ internal static class Batching
             List<AIContent> contents = new(batch.Length);
             foreach (var chunk in batch)
             {
-                contents.Add(chunk.Content is TextContent tc ? tc : new TextContent(chunk.Content.ToString()));
+                contents.Add(chunk.Content);
             }
 
             try

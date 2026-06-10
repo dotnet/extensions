@@ -31,7 +31,7 @@ public class IngestionChunkVectorRecord
     public virtual string DocumentId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the serialized content of the chunk.
+    /// Gets or sets the JSON-serialized content of the chunk, used for storage and retrieval.
     /// </summary>
     [VectorStoreData]
     public virtual string SerializedContent { get; set; } = string.Empty;
@@ -43,12 +43,13 @@ public class IngestionChunkVectorRecord
     public virtual string? Context { get; set; }
 
     /// <summary>
-    /// Gets the embedding value for this record.
+    /// Gets or sets the embedding source for this record.
     /// </summary>
     /// <remarks>
-    /// By default, returns the <see cref="SerializedContent"/> value. The vector store's embedding generator
-    /// will convert this to a vector. Override this property in derived classes to add
+    /// This contains the original text content extracted from the <see cref="Microsoft.Extensions.AI.AIContent"/>
+    /// produced by the chunker. The vector store's embedding generator converts this text to a vector.
+    /// Override this property in derived classes to add
     /// the <see cref="VectorStoreVectorAttribute"/> with the appropriate dimension count.
     /// </remarks>
-    public virtual string? Embedding => SerializedContent;
+    public virtual string? Embedding { get; set; }
 }
