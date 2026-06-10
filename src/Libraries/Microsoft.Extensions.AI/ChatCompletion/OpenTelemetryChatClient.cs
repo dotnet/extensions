@@ -87,14 +87,32 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TimePerOutputChunk.ExplicitBucketBoundaries }
             );
 
-        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+        _jsonSerializerOptions = OtelMessageSerializer.DefaultOptions;
     }
 
     /// <summary>Gets or sets JSON serialization options to use when formatting chat data into telemetry strings.</summary>
+    /// <remarks>
+    /// <para>
+    /// The default value uses <see cref="System.Text.Json.JsonNamingPolicy.SnakeCaseLower"/> property naming,
+    /// <see cref="System.Text.Json.JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
+    /// and includes type metadata for all built-in OpenTelemetry message-part types.
+    /// </para>
+    /// <para>
+    /// To customize settings, it is recommended to copy the current options and override individual properties:
+    /// <code>
+    /// client.JsonSerializerOptions = new JsonSerializerOptions(client.JsonSerializerOptions) { WriteIndented = false };
+    /// </code>
+    /// </para>
+    /// </remarks>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;
-        set => _jsonSerializerOptions = Throw.IfNull(value);
+        set
+        {
+            _ = Throw.IfNull(value);
+            OtelMessageSerializer.ThrowIfMissingOtelResolver(value);
+            _jsonSerializerOptions = value;
+        }
     }
 
     /// <inheritdoc/>
@@ -527,12 +545,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             {
                 _ = activity.AddTag(
                     OpenTelemetryConsts.GenAI.SystemInstructions,
-                    JsonSerializer.Serialize(new object[1] { new OtelGenericPart { Content = options!.Instructions } }, OtelMessageSerializer.DefaultOptions.GetTypeInfo(typeof(IList<object>))));
+                    JsonSerializer.Serialize(new object[1] { new OtelGenericPart { Content = options!.Instructions } }, _jsonSerializerOptions.GetTypeInfo(typeof(IList<object>))));
             }
 
             _ = activity.AddTag(
                 OpenTelemetryConsts.GenAI.Input.Messages,
-                OtelMessageSerializer.SerializeChatMessages(messages, customContentSerializerOptions: _jsonSerializerOptions));
+                OtelMessageSerializer.SerializeChatMessages(messages, options: _jsonSerializerOptions));
         }
     }
 
@@ -542,7 +560,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             _ = activity.AddTag(
                 OpenTelemetryConsts.GenAI.Output.Messages,
-                OtelMessageSerializer.SerializeChatMessages(response.Messages, response.FinishReason, customContentSerializerOptions: _jsonSerializerOptions));
+                OtelMessageSerializer.SerializeChatMessages(response.Messages, response.FinishReason, options: _jsonSerializerOptions));
         }
     }
 

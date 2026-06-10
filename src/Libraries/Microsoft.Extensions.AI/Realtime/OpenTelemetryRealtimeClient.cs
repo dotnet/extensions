@@ -36,7 +36,7 @@ public sealed class OpenTelemetryRealtimeClient : DelegatingRealtimeClient
     {
         _logger = logger;
         _sourceName = sourceName;
-        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+        _jsonSerializerOptions = OtelMessageSerializer.DefaultOptions;
     }
 
     /// <summary>
@@ -51,10 +51,28 @@ public sealed class OpenTelemetryRealtimeClient : DelegatingRealtimeClient
     public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
 
     /// <summary>Gets or sets JSON serialization options to use when formatting realtime data into telemetry strings.</summary>
+    /// <remarks>
+    /// <para>
+    /// The default value uses <see cref="System.Text.Json.JsonNamingPolicy.SnakeCaseLower"/> property naming,
+    /// <see cref="System.Text.Json.JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
+    /// and includes type metadata for all built-in OpenTelemetry message-part types.
+    /// </para>
+    /// <para>
+    /// To customize settings, it is recommended to copy the current options and override individual properties:
+    /// <code>
+    /// client.JsonSerializerOptions = new JsonSerializerOptions(client.JsonSerializerOptions) { WriteIndented = false };
+    /// </code>
+    /// </para>
+    /// </remarks>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;
-        set => _jsonSerializerOptions = Throw.IfNull(value);
+        set
+        {
+            _ = Throw.IfNull(value);
+            OtelMessageSerializer.ThrowIfMissingOtelResolver(value);
+            _jsonSerializerOptions = value;
+        }
     }
 
     /// <inheritdoc />

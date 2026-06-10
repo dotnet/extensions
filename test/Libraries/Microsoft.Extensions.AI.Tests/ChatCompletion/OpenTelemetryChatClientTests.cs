@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,7 +106,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = enableSensitiveData;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -433,7 +434,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -594,7 +595,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -696,7 +697,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -829,7 +830,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -998,6 +999,106 @@ public class OpenTelemetryChatClientTests
     private sealed class NonSerializableAIContent : AIContent;
 
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
+
+    /// <summary>
+    /// Configures the <see cref="OpenTelemetryChatClient"/> with options that chain the
+    /// <see cref="TestJsonSerializerContext"/> resolver after the default OTel resolvers.
+    /// </summary>
+    private static void AddTestJsonResolver(OpenTelemetryChatClient instance)
+    {
+        var opts = new JsonSerializerOptions(instance.JsonSerializerOptions);
+        opts.TypeInfoResolverChain.Add(TestJsonSerializerContext.Default);
+        instance.JsonSerializerOptions = opts;
+    }
+
+    [Fact]
+    public void JsonSerializerOptions_DefaultIsImmutable()
+    {
+        using var innerClient = new TestChatClient();
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+        Assert.True(chatClient.JsonSerializerOptions.IsReadOnly);
+        Assert.Throws<InvalidOperationException>(() => chatClient.JsonSerializerOptions.WriteIndented = true);
+    }
+
+    [Fact]
+    public void JsonSerializerOptions_MissingOtelResolver_Throws()
+    {
+        using var innerClient = new TestChatClient();
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(configure: instance =>
+            {
+                // Blank options — no OTel resolver
+                var ex = Assert.Throws<ArgumentException>(() =>
+                    instance.JsonSerializerOptions = new JsonSerializerOptions());
+                Assert.Contains("OpenTelemetry type resolver", ex.Message);
+
+                // Options with a reflection resolver but no OTel resolver
+                var optsWithReflection = new JsonSerializerOptions();
+                optsWithReflection.TypeInfoResolverChain.Add(JsonSerializerOptions.Default.TypeInfoResolver!);
+                ex = Assert.Throws<ArgumentException>(() =>
+                    instance.JsonSerializerOptions = optsWithReflection);
+                Assert.Contains("OpenTelemetry type resolver", ex.Message);
+            })
+            .Build();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task JsonSerializerOptions_WriteIndented_IsHonored(bool writeIndented)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hi!"))
+                {
+                    FinishReason = ChatFinishReason.Stop,
+                };
+            },
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testprovider", new Uri("http://localhost"), "model") :
+                null,
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = new JsonSerializerOptions(instance.JsonSerializerOptions) { WriteIndented = writeIndented };
+            })
+            .Build();
+
+        await chatClient.GetResponseAsync("Hello!");
+
+        var activity = Assert.Single(activities);
+        var inputMessages = Assert.IsType<string>(activity.GetTagItem("gen_ai.input.messages"));
+        var outputMessages = Assert.IsType<string>(activity.GetTagItem("gen_ai.output.messages"));
+
+        if (writeIndented)
+        {
+            Assert.Contains("\n", inputMessages);
+            Assert.Contains("\n", outputMessages);
+        }
+        else
+        {
+            Assert.DoesNotContain("\n", inputMessages);
+            Assert.DoesNotContain("\n", outputMessages);
+
+            // Verify compact JSON still uses snake_case (not camelCase "finishReason")
+            Assert.Contains("\"finish_reason\":", outputMessages);
+        }
+    }
 
     [Theory]
     [InlineData(false)]
