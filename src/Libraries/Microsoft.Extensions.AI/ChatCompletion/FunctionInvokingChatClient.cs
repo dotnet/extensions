@@ -613,7 +613,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                     for (; lastYieldedUpdateIndex < updates.Count; lastYieldedUpdateIndex++)
                     {
                         var updateToYield = updates[lastYieldedUpdateIndex];
-                        if (TryReplaceFunctionCallsWithApprovalRequests(updateToYield.Contents, out var updatedContents, options?.Tools, AdditionalTools))
+                        if (TryReplaceFunctionCallsWithApprovalRequests(updateToYield.Contents, approvalRequiredFunctions, out var updatedContents))
                         {
                             updateToYield.Contents = updatedContents;
                         }
@@ -1620,8 +1620,8 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <returns>true if any <see cref="FunctionCallContent"/> was replaced, false otherwise.</returns>
     private static bool TryReplaceFunctionCallsWithApprovalRequests(
         IList<AIContent> content,
-        out List<AIContent>? updatedContent,
-        params ReadOnlySpan<IList<AITool>?> toolLists)
+        AITool[] approvalRequiredFunctions,
+        out List<AIContent>? updatedContent)
     {
         updatedContent = null;
 
@@ -1632,10 +1632,20 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                 if (content[i] is FunctionCallContent fcc && !fcc.InformationalOnly)
                 {
                     updatedContent ??= [.. content]; // Clone the list if we haven't already
-                    bool requiredByFunction = FindTool(fcc.Name, toolLists)?.GetService<ApprovalRequiredAIFunction>() is not null;
+
+                    bool requiresConfirmation = false;
+                    for (int j = 0; j < approvalRequiredFunctions.Length; j++)
+                    {
+                        if (string.Equals(approvalRequiredFunctions[j].Name, fcc.Name, StringComparison.Ordinal))
+                        {
+                            requiresConfirmation = true;
+                            break;
+                        }
+                    }
+
                     updatedContent[i] = new ToolApprovalRequestContent(ComposeApprovalRequestId(fcc.CallId), fcc)
                     {
-                        RequiresConfirmation = requiredByFunction,
+                        RequiresConfirmation = requiresConfirmation,
                     };
                 }
             }

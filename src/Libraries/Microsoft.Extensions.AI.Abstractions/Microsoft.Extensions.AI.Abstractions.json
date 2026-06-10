@@ -4606,7 +4606,7 @@
       "Properties": [
         {
           "Member": "bool Microsoft.Extensions.AI.ToolApprovalRequestContent.RequiresConfirmation { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ToolCallContent Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolCall { get; }",

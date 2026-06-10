@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -55,7 +53,6 @@ public sealed class ToolApprovalRequestContent : InputRequestContent
     /// confirmation.
     /// </para>
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.AIFunctionApprovals, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool RequiresConfirmation { get; set; } = true;
 
     /// <summary>
