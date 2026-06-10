@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion;
 #if (IsOpenAI || IsGHModels)
 using OpenAI;
 #endif
@@ -31,6 +32,9 @@ openai.AddChatClient("gpt-4o-mini")
         c.EnableSensitiveData = builder.Environment.IsDevelopment());
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
+
+builder.Services.AddSingleton<IEmbeddingGenerator<AIContent, Embedding<float>>>(sp =>
+    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsAIContentEmbeddingGenerator());
 
 #if (IsAzureAISearch)
 builder.AddAzureSearchClient("search");

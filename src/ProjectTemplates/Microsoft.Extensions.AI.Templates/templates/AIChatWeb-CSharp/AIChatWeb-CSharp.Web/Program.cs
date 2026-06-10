@@ -9,6 +9,7 @@ using Azure;
 using Azure.Identity;
 #endif
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion;
 #if (IsOllama)
 using OllamaSharp;
 #elif (IsGHModels || IsOpenAI || IsAzureOpenAI)
@@ -112,7 +113,7 @@ builder.Services.AddSingleton<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddKeyedSingleton("ingestion_directory", new DirectoryInfo(Path.Combine(builder.Environment.WebRootPath, "Data")));
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
-builder.Services.AddEmbeddingGenerator(embeddingGenerator);
+builder.Services.AddEmbeddingGenerator(embeddingGenerator.AsAIContentEmbeddingGenerator());
 
 var app = builder.Build();
 
