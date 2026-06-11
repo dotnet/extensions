@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using var customGenerator = new Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>>
+            using Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>> customGenerator = new()
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using var customGenerator = new Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>>
+            using Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>> customGenerator = new()
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {

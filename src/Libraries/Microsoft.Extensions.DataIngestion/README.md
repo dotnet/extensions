@@ -39,7 +39,7 @@ The vector store must be configured with an embedding generator that accepts `AI
 IEmbeddingGenerator<AIContent, Embedding<float>> aiContentEmbeddingGenerator =
     stringEmbeddingGenerator.AsAIContentEmbeddingGenerator();
 
-using var vectorStore = new InMemoryVectorStore(new()
+using VectorStore vectorStore = new InMemoryVectorStore(new()
 {
     EmbeddingGenerator = aiContentEmbeddingGenerator
 });

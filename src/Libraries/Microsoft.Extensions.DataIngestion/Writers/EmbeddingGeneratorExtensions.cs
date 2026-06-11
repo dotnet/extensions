@@ -54,7 +54,7 @@ public static class EmbeddingGeneratorExtensions
             {
                 if (content is TextContent tc)
                 {
-                    return tc.Text ?? string.Empty;
+                    return tc.Text;
                 }
 
                 throw new NotSupportedException(
