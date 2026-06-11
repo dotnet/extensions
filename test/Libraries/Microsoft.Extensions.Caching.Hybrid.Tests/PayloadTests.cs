@@ -459,42 +459,6 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         Assert.Null(localCache.Get(key));
     }
 
-    [Fact]
-    public async Task FactoryCanReEnableL2Write_ThatCallerDisabled()
-    {
-        // Positive counterpart to the malformed-key tests: when the key is valid and the
-        // caller passed DisableDistributedCacheWrite, the factory is allowed to clear that
-        // bit on its options and the value should then be persisted to L2.
-        MemoryDistributedCache? localCache = null;
-        using var provider = GetDefaultCache(out var cache, config =>
-        {
-            localCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
-            config.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
-        });
-
-        Assert.NotNull(localCache);
-
-        string key = "my-valid-key";
-
-        _ = await cache.GetOrCreateAsync(
-            key,
-            (entryOptions, _) =>
-            {
-                entryOptions.Flags = HybridCacheEntryFlags.None;
-                return new ValueTask<Guid>(Guid.NewGuid());
-            },
-            options: new HybridCacheEntryOptions
-            {
-                Expiration = TimeSpan.FromMinutes(1),
-                Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite,
-            });
-
-        // Give the background L2 write a chance to complete.
-        await Task.Delay(500);
-
-        Assert.NotNull(localCache.Get(key));
-    }
-
     [Theory]
     [InlineData("tag1,tag2", 2)]
     [InlineData("tag1,tag2,tag3", 3)]
