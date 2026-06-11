@@ -12,6 +12,7 @@
     <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
     <MinCodeCoverage>n/a</MinCodeCoverage>
     <MinMutationScore>n/a</MinMutationScore>
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
