@@ -16,12 +16,12 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         protected override IngestionChunker CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            TestEmbeddingGenerator<string> embeddingClient = new();
+            TestEmbeddingGenerator<AIContent> embeddingClient = new();
 #pragma warning restore CA2000 // Dispose objects before losing scope
             return CreateSemanticSimilarityChunker(embeddingClient, maxTokensPerChunk, overlapTokens);
         }
 
-        private static IngestionChunker CreateSemanticSimilarityChunker(IEmbeddingGenerator<string, Embedding<float>> embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        private static IngestionChunker CreateSemanticSimilarityChunker(IEmbeddingGenerator<AIContent, Embedding<float>> embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
             Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
             return new SemanticSimilarityChunker(embeddingClient,
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     return [.. embeddings];
                 }
             };
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator());
+            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator);
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Single(chunks);
             Assert.Equal(text, GetText(chunks[0]));
@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             };
 
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator());
+            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator);
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
             Assert.Equal(text1 + Environment.NewLine + text2, GetText(chunks[0]));
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             };
 
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator.AsStringEmbeddingGenerator(), 200, 0);
+            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator, 200, 0);
             IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
             Assert.Equal(3, chunks.Count);

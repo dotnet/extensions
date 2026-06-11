@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers;
 public sealed class SemanticSimilarityChunker : IngestionChunker
 {
     private readonly ElementsChunker _elementsChunker;
-    private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
+    private readonly IEmbeddingGenerator<AIContent, Embedding<float>> _embeddingGenerator;
     private readonly float _thresholdPercentile;
 
     /// <summary>
@@ -28,7 +28,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker
     /// <param name="options">The options for the chunker.</param>
     /// <param name="thresholdPercentile">Threshold percentile to consider the chunks to be sufficiently similar. 95th percentile will be used if not specified.</param>
     public SemanticSimilarityChunker(
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        IEmbeddingGenerator<AIContent, Embedding<float>> embeddingGenerator,
         IngestionChunkerOptions options,
         float? thresholdPercentile = null)
     {
@@ -59,7 +59,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker
     private async Task<List<(IngestionDocumentElement element, float distance)>> CalculateDistancesAsync(IngestionDocument documents, CancellationToken cancellationToken)
     {
         List<(IngestionDocumentElement element, float distance)> elementDistances = [];
-        List<string> semanticContents = [];
+        List<AIContent> semanticContents = [];
 
         foreach (IngestionDocumentElement element in documents.EnumerateContent())
         {
@@ -70,7 +70,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker
             if (!string.IsNullOrEmpty(semanticContent))
             {
                 elementDistances.Add((element, default));
-                semanticContents.Add(semanticContent!);
+                semanticContents.Add(new TextContent(semanticContent!));
             }
         }
 

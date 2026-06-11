@@ -62,6 +62,7 @@ public abstract class VectorStoreWriterTests
         Assert.NotEqual(Guid.Empty, record.Key);
         Assert.Equal(documentId, record.DocumentId);
         Assert.NotEmpty(record.SerializedContent);
+        Assert.Equal("custom schema content", ((TextContent)record.Content!).Text);
     }
 
     [Fact]
@@ -93,6 +94,7 @@ public abstract class VectorStoreWriterTests
         Assert.NotEqual(Guid.Empty, record.Key);
         Assert.Equal(documentId, record.DocumentId);
         Assert.NotEmpty(record.SerializedContent);
+        Assert.Equal("some content", ((TextContent)record.Content!).Text);
         Assert.True(testEmbeddingGenerator.WasCalled);
     }
 
@@ -123,6 +125,7 @@ public abstract class VectorStoreWriterTests
         Assert.NotNull(record);
         Assert.Equal(documentId, record.DocumentId);
         Assert.NotEmpty(record.SerializedContent);
+        Assert.Equal("some content", ((TextContent)record.Content!).Text);
         Assert.Equal("important", record.Classification);
     }
 
@@ -172,6 +175,7 @@ public abstract class VectorStoreWriterTests
         Assert.NotNull(record);
         Assert.NotEqual(Guid.Empty, record.Key);
         Assert.Contains("different content", record.SerializedContent);
+        Assert.Equal("different content", ((TextContent)record.Content!).Text);
     }
 
     public static TheoryData<int?, int[]> BatchingTestCases => new()
@@ -276,8 +280,8 @@ public abstract class VectorStoreWriterTests
             .ToListAsync();
 
         Assert.Equal(updatedChunks.Count, records.Count);
-        Assert.Contains(records, r => r.SerializedContent.Contains("updated chunk 1"));
-        Assert.Contains(records, r => r.SerializedContent.Contains("updated chunk 2"));
+        Assert.Contains(records, r => ((TextContent)r.Content!).Text == "updated chunk 1");
+        Assert.Contains(records, r => ((TextContent)r.Content!).Text == "updated chunk 2");
     }
 
     protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<AIContent> testEmbeddingGenerator);

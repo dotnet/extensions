@@ -107,6 +107,7 @@ public sealed class IngestionPipelineTests : IDisposable
         {
             Assert.NotEqual(Guid.Empty, retrieved[i].Key);
             Assert.NotEmpty(retrieved[i].SerializedContent);
+            Assert.NotNull(retrieved[i].Content);
             Assert.Contains(retrieved[i].DocumentId, _sampleFiles.Select(info => info.FullName));
         }
 
@@ -144,6 +145,7 @@ public sealed class IngestionPipelineTests : IDisposable
         {
             Assert.NotEqual(Guid.Empty, retrieved[i].Key);
             Assert.NotEmpty(retrieved[i].SerializedContent);
+            Assert.NotNull(retrieved[i].Content);
             Assert.StartsWith(directory.FullName, retrieved[i].DocumentId);
         }
 
@@ -272,7 +274,7 @@ public sealed class IngestionPipelineTests : IDisposable
                     .ToAsyncEnumerable();
     }
 
-    internal class MultiContentTypeChunker : IngestionChunker
+    internal sealed class MultiContentTypeChunker : IngestionChunker
     {
         public override IAsyncEnumerable<IngestionChunk> ProcessAsync(IngestionDocument document, CancellationToken cancellationToken = default)
         {
