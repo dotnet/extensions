@@ -381,6 +381,120 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         collector.AssertErrors([Log.IdTagInvalidUnicode]);
     }
 
+    public enum FactoryMutation
+    {
+        MutateNonFlags,
+        SetFlagsToNone,
+        SetFlagsReadSideOnly,
+        CallerDisabledL2Write_FactoryClears,
+    }
+
+    [Theory]
+    [InlineData(FactoryMutation.MutateNonFlags)]
+    [InlineData(FactoryMutation.SetFlagsToNone)]
+    [InlineData(FactoryMutation.SetFlagsReadSideOnly)]
+    [InlineData(FactoryMutation.CallerDisabledL2Write_FactoryClears)]
+    public async Task MalformedKey_DoesNotWriteToL2_EvenWhenFactoryMutatesOptions(FactoryMutation mutation)
+    {
+        // When the key fails unicode validation, BackgroundFetchAsync makes sure that the (corrupted) key/tags are
+        // not persisted to L2. ApplyFactoryOptions must preserve that safeguard.
+        using var collector = new LogCollector();
+        MemoryDistributedCache? localCache = null;
+        using var provider = GetDefaultCache(out var cache, config =>
+        {
+            localCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+            config.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
+            config.AddLogging(options =>
+            {
+                options.ClearProviders();
+                options.AddProvider(collector);
+            });
+        });
+
+        Assert.NotNull(localCache);
+
+        string key = "my\uD801\uD802key"; // malformed unicode
+        string[] tags = ["mytag"];
+
+        HybridCacheEntryFlags callerFlags = mutation == FactoryMutation.CallerDisabledL2Write_FactoryClears
+            ? HybridCacheEntryFlags.DisableDistributedCacheWrite
+            : HybridCacheEntryFlags.None;
+
+        _ = await cache.GetOrCreateAsync(
+            key,
+            (entryOptions, _) =>
+            {
+                switch (mutation)
+                {
+                    case FactoryMutation.MutateNonFlags:
+                        entryOptions.LocalSize = 1234;
+                        break;
+                    case FactoryMutation.SetFlagsToNone:
+                        entryOptions.Flags = HybridCacheEntryFlags.None;
+                        break;
+                    case FactoryMutation.SetFlagsReadSideOnly:
+                        entryOptions.Flags = HybridCacheEntryFlags.DisableLocalCacheRead;
+                        break;
+                    case FactoryMutation.CallerDisabledL2Write_FactoryClears:
+                        entryOptions.Flags = HybridCacheEntryFlags.None;
+                        break;
+                }
+
+                return new ValueTask<Guid>(Guid.NewGuid());
+            },
+            options: new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1), Flags = callerFlags },
+            tags: tags);
+
+        // Wait until the unicode-validation log fires (synchronous, inside BackgroundFetchAsync,
+        // just before the L2 write decision); then give the background work a brief moment
+        // to flush any erroneous L2 SetAsync, mirroring the pattern in RedisTests.
+        await collector.WaitForLogsAsync([Log.IdKeyInvalidUnicode], TimeSpan.FromSeconds(5));
+        await Task.Delay(500);
+
+        collector.WriteTo(log);
+        collector.AssertErrors([Log.IdKeyInvalidUnicode]);
+
+        // The corrupted key must NOT have been persisted to L2. (Note: unrelated
+        // tag-invalidation reads against valid tag keys may still appear in the backend.)
+        Assert.Null(localCache.Get(key));
+    }
+
+    [Fact]
+    public async Task FactoryCanReEnableL2Write_ThatCallerDisabled()
+    {
+        // Positive counterpart to the malformed-key tests: when the key is valid and the
+        // caller passed DisableDistributedCacheWrite, the factory is allowed to clear that
+        // bit on its options and the value should then be persisted to L2.
+        MemoryDistributedCache? localCache = null;
+        using var provider = GetDefaultCache(out var cache, config =>
+        {
+            localCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+            config.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
+        });
+
+        Assert.NotNull(localCache);
+
+        string key = "my-valid-key";
+
+        _ = await cache.GetOrCreateAsync(
+            key,
+            (entryOptions, _) =>
+            {
+                entryOptions.Flags = HybridCacheEntryFlags.None;
+                return new ValueTask<Guid>(Guid.NewGuid());
+            },
+            options: new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(1),
+                Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite,
+            });
+
+        // Give the background L2 write a chance to complete.
+        await Task.Delay(500);
+
+        Assert.NotNull(localCache.Get(key));
+    }
+
     [Theory]
     [InlineData("tag1,tag2", 2)]
     [InlineData("tag1,tag2,tag3", 3)]

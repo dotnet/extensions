@@ -200,12 +200,18 @@ internal partial class DefaultHybridCache
             try
             {
                 HybridCacheEntryFlags activeFlags = Key.Flags;
+
+                // Track write-side flags that are required regardless of
+                // anything the user-supplied options or the factory say.
+                HybridCacheEntryFlags mandatoryWriteSideFlags = Cache._hardFlags & WriteSideFlags;
+
                 if ((activeFlags & HybridCacheEntryFlags.DisableDistributedCache) != HybridCacheEntryFlags.DisableDistributedCache)
                 {
                     // in order to use distributed cache, the tags and keys must be valid unicode, to avoid security complications
                     if (!ValidateUnicodeCorrectness(Cache._logger, Key.Key, CacheItem.Tags))
                     {
                         activeFlags |= HybridCacheEntryFlags.DisableDistributedCache;
+                        mandatoryWriteSideFlags |= HybridCacheEntryFlags.DisableDistributedCacheWrite;
                     }
                 }
 
@@ -336,7 +342,7 @@ internal partial class DefaultHybridCache
                     // as a fast-path skip for the common case where the factory didn't touch them.
                     if (_underlyingWithOptions is not null && _options!.Revision != _factoryOptionsRevision)
                     {
-                        ApplyFactoryOptions(_options, ref activeFlags);
+                        ApplyFactoryOptions(_options, mandatoryWriteSideFlags, ref activeFlags);
                     }
 
                     // check whether we're going to hit a timing problem with tag invalidation
@@ -621,16 +627,18 @@ internal partial class DefaultHybridCache
         /// <summary>
         /// Applies factory mutations to the active flags after the factory callback has executed.
         /// Only write-side flags are honored; read-side flags are ignored (reads already happened).
-        /// Expiration / LocalCacheExpiration / LocalSize mutations need no action here because the
-        /// factory wrote directly to <see cref="_options"/>, which is read by SetL1 / SetL2Async / ResolveLocalSize.
+        /// The factory's write-side flags fully replace the user-supplied write-side flags, but
+        /// <paramref name="mandatoryWriteSideFlags"/> are always preserved. Expiration / LocalCacheExpiration / LocalSize mutations need no
+        /// action here because the factory wrote directly to <see cref="_options"/>, which is read
+        /// by SetL1 / SetL2Async / ResolveLocalSize.
         /// </summary>
-        private static void ApplyFactoryOptions(HybridCacheEntryOptions factoryOptions, ref HybridCacheEntryFlags activeFlags)
+        private static void ApplyFactoryOptions(
+            HybridCacheEntryOptions factoryOptions,
+            HybridCacheEntryFlags mandatoryWriteSideFlags,
+            ref HybridCacheEntryFlags activeFlags)
         {
-            // Replace write-side bits with whatever the factory left behind; preserve everything else
-            // (including read-side flags already acted on, plus any constraints we OR'd in earlier such
-            // as DisableDistributedCache from validation).
             HybridCacheEntryFlags factoryFlags = factoryOptions.Flags ?? HybridCacheEntryFlags.None;
-            activeFlags = (activeFlags & ~WriteSideFlags) | (factoryFlags & WriteSideFlags);
+            activeFlags = (activeFlags & ~WriteSideFlags) | (factoryFlags & WriteSideFlags) | mandatoryWriteSideFlags;
         }
     }
 
