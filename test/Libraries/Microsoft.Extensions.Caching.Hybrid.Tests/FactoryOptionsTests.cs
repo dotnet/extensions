@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Reflection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
@@ -18,15 +20,21 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 // directly to the options instance and which are read by SetL1 / SetL2Async / ResolveLocalSize.
 public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
-    private static (DefaultHybridCache cache, MemoryDistributedCache localCache, ServiceProvider provider) BuildCacheWithL2(ITestOutputHelper log)
+    private static (DefaultHybridCache cache, CapturingCache localCache, ServiceProvider provider) BuildCacheWithL2(ITestOutputHelper log)
     {
-        var localCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        var localCache = new CapturingCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())));
         var services = new ServiceCollection();
         services.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
         services.AddHybridCache();
         var provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         return (cache, localCache, provider);
+    }
+
+    private static Task WaitForBackgroundL2WriteAsync(CapturingCache cache, string key)
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        return cache.WaitForWriteAsync(key, cts.Token);
     }
 
     [Fact]
@@ -51,7 +59,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
                     Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite,
                 });
 
-            await Task.Delay(500);
+            await WaitForBackgroundL2WriteAsync(localCache, key);
             Assert.NotNull(localCache.Get(key));
         }
     }
@@ -142,7 +150,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
             },
             options: new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) });
 
-        await Task.Delay(500);
+        await WaitForBackgroundL2WriteAsync(captured, nameof(FactoryExpirationMutation_PropagatesToL2));
         Assert.Equal(factoryExpiration, captured.LastSetOptions?.AbsoluteExpirationRelativeToNow);
     }
 
@@ -327,10 +335,10 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         string payload = new('x', 256);
 
         // ---- Cache A: writes with factory-set LocalSize override ----
-        var loggingA = new LoggingCache(log, sharedL2);
+        var capturingA = new CapturingCache(sharedL2);
         var servicesA = new ServiceCollection();
         servicesA.AddMemoryCache(); // unlimited
-        servicesA.AddSingleton<IDistributedCache>(loggingA);
+        servicesA.AddSingleton<IDistributedCache>(capturingA);
         servicesA.AddHybridCache();
         using (var providerA = servicesA.BuildServiceProvider())
         {
@@ -344,8 +352,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
                 },
                 options: new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) });
 
-            // give the background L2 write a chance to land
-            await Task.Delay(500);
+            await WaitForBackgroundL2WriteAsync(capturingA, key);
         }
 
         // Confirm the value was actually written to L2 by Cache A.
@@ -373,11 +380,37 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         Assert.Equal(opsAfterFirst, loggingB.OpCount);
     }
 
-    // Test-only IDistributedCache that records the DistributedCacheEntryOptions from the
-    // most recent Set/SetAsync invocation so tests can assert against it.
+    // Test-only IDistributedCache that wraps another IDistributedCache and adds:
+    //   - LastSetOptions: the DistributedCacheEntryOptions from the most recent Set/SetAsync,
+    //     for tests that assert on the options the HybridCache layer produced.
+    //   - WaitForWriteAsync(key): a Task that completes after the (possibly background) write
+    //     for that key has finished, so tests can wait deterministically instead of sleeping.
     private sealed class CapturingCache(IDistributedCache tail) : IDistributedCache
     {
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<bool>> _writes = new(StringComparer.Ordinal);
+
         public DistributedCacheEntryOptions? LastSetOptions { get; private set; }
+
+        public Task WaitForWriteAsync(string key, CancellationToken cancellationToken = default)
+        {
+            var tcs = SignalFor(key);
+            if (!cancellationToken.CanBeCanceled)
+            {
+                return tcs.Task;
+            }
+
+            return WaitWithCancellationAsync(tcs.Task, cancellationToken);
+
+            static async Task WaitWithCancellationAsync(Task task, CancellationToken ct)
+            {
+                var cancelTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                using (ct.Register(static state => ((TaskCompletionSource<bool>)state!).TrySetCanceled(), cancelTcs))
+                {
+                    var completed = await Task.WhenAny(task, cancelTcs.Task).ConfigureAwait(false);
+                    await completed.ConfigureAwait(false);
+                }
+            }
+        }
 
         public byte[]? Get(string key) => tail.Get(key);
         public Task<byte[]?> GetAsync(string key, CancellationToken token = default) => tail.GetAsync(key, token);
@@ -390,12 +423,91 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         {
             LastSetOptions = options;
             tail.Set(key, value, options);
+            _ = SignalFor(key).TrySetResult(true);
         }
 
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+        public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
         {
             LastSetOptions = options;
-            return tail.SetAsync(key, value, options, token);
+            await tail.SetAsync(key, value, options, token).ConfigureAwait(false);
+            _ = SignalFor(key).TrySetResult(true);
         }
+
+        private TaskCompletionSource<bool> SignalFor(string key)
+            => _writes.GetOrAdd(key, _ => new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously));
+    }
+
+    // Guards against silent data loss when HybridCacheEntryOptions (owned by dotnet/runtime)
+    // gains a new property and the down-level branch of CloneOptionsOrNew is not updated.
+    // Also exercises the UnsafeAccessor path on net8.0+.
+    [Fact]
+    public void CloneOptionsOrNew_CopiesEveryPublicWritableProperty()
+    {
+        var writableProps = typeof(HybridCacheEntryOptions)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanRead && p.CanWrite)
+            // Revision is an internal mutation counter used by StampedeStateT to detect
+            // factory mutations; a clone deliberately starts fresh so the diff is meaningful.
+            .Where(p => p.Name != "Revision")
+            .ToArray();
+
+        Assert.NotEmpty(writableProps);
+
+        var source = new HybridCacheEntryOptions();
+        var expected = new Dictionary<string, object?>(writableProps.Length);
+        foreach (var prop in writableProps)
+        {
+            object? value = MakeDistinctiveValue(prop.PropertyType, prop.Name);
+            prop.SetValue(source, value);
+            expected[prop.Name] = value;
+        }
+
+        var clone = DefaultHybridCache.CloneOptionsOrNew(source);
+
+        Assert.NotSame(source, clone);
+        foreach (var prop in writableProps)
+        {
+            Assert.Equal(expected[prop.Name], prop.GetValue(clone));
+        }
+    }
+
+    private static object MakeDistinctiveValue(Type t, string propName)
+    {
+        var underlying = Nullable.GetUnderlyingType(t) ?? t;
+
+        // Per-property unique values so cross-wired assignments
+        // (e.g. Expiration <-> LocalCacheExpiration) are also caught.
+        if (underlying == typeof(TimeSpan))
+        {
+            return TimeSpan.FromSeconds((StableHash(propName) % 3600) + 1);
+        }
+
+        if (underlying == typeof(long))
+        {
+            return (long)StableHash(propName) + 1;
+        }
+
+        if (underlying.IsEnum)
+        {
+            var nonDefault = Enum.GetValues(underlying).Cast<object>()
+                .FirstOrDefault(v => !v.Equals(Activator.CreateInstance(underlying)));
+            return nonDefault ?? Activator.CreateInstance(underlying)!;
+        }
+
+        throw new NotSupportedException(
+            $"HybridCacheEntryOptions has a new property '{propName}' of type {underlying.FullName}. " +
+            $"Add a distinctive value generator here AND update DefaultHybridCache.CloneOptionsOrNew.");
+    }
+
+    private static int StableHash(string s)
+    {
+        // FNV-ish stable hash; avoids dependence on string.GetHashCode randomization.
+        int h = 17;
+        foreach (char c in s)
+        {
+            h = unchecked((h * 31) + c);
+        }
+
+        return Math.Abs(h);
     }
 }

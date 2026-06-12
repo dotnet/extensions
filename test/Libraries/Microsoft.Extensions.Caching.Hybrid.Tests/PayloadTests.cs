@@ -119,6 +119,34 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         ArrayPool<byte>.Shared.Return(oversized);
     }
 
+    // Guards the v1 wire format. This test pins a literal v1 byte sequence and asserts the reader
+    // still accepts it.
+    //
+    // The bytes below were produced by `HybridCachePayload.Write` with:
+    //   key="frozen-key", tags=Empty, payload=[0x01..0x08],
+    //   creationTime = 638000000000000000 ticks (~2023-01-30 UTC),
+    //   duration = TimeSpan.FromDays(36500) (100 years headroom so the payload stays valid).
+    [Fact]
+    public void V1_FrozenBytes_StillReadable()
+    {
+        using var provider = GetDefaultCache(out var cache);
+
+        byte[] frozen = Convert.FromBase64String(
+            "AwGPlwAAs6aeodoIAAiAgIztsrqCOAAKZnJvemVuLWtleQECAwQFBgcIAwE=");
+
+        var result = HybridCachePayload.TryParse(
+            new(frozen), "frozen-key", TagSet.Empty, cache,
+            out var payload, out var remaining, out var flags, out _, out var pendingTags,
+            out long? parsedSize, out _);
+
+        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+        Assert.True(payload.AsSpan().SequenceEqual<byte>([ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 ]));
+        Assert.True(pendingTags.IsEmpty);
+        Assert.Null(parsedSize);
+        Assert.Equal(HybridCachePayload.PayloadFlags.None, flags & HybridCachePayload.PayloadFlags.HasLocalSize);
+        Assert.True(remaining > TimeSpan.Zero, "v1 frozen entry should not be expired (100-year duration).");
+    }
+
     [Fact]
     public void RoundTrip_SelfExpiration()
     {
