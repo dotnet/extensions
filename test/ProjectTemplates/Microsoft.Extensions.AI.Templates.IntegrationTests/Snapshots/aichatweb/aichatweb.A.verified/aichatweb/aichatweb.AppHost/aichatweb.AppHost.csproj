@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="{VERSION}" />
+    <!-- Pin MessagePack to a version that resolves GHSA-hv8m-jj95-wg3x (transitive via StreamJsonRpc) -->
+    <PackageReference Include="MessagePack" Version="{VERSION}" />
   </ItemGroup>
 
   <ItemGroup>
