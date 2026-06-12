@@ -37,10 +37,18 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         return GetDefaultCache(out cache, services => services.AddSingleton<IDistributedCache>(new LoggingCache(log, captured)));
     }
 
-    private static Task WaitForBackgroundL2WriteAsync(CapturingCache cache, string key)
+    private static async Task WaitForBackgroundL2WriteAsync(CapturingCache cache, string key)
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        return cache.WaitForWriteAsync(key, cts.Token);
+
+        try
+        {
+            await cache.WaitForWriteAsync(key, cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            Assert.Fail($"Timed out waiting for background L2 write for key '{key}'.");
+        }
     }
 
     [Fact]
