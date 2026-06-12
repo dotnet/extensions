@@ -50,6 +50,8 @@ public static class EmbeddingGeneratorExtensions
             EmbeddingGenerationOptions? options = null,
             CancellationToken cancellationToken = default)
         {
+            _ = Shared.Diagnostics.Throw.IfNull(values);
+
             IEnumerable<string> stringValues = values.Select(content =>
             {
                 if (content is TextContent tc)
@@ -58,14 +60,19 @@ public static class EmbeddingGeneratorExtensions
                 }
 
                 throw new NotSupportedException(
-                    $"The embedding generator only supports TextContent inputs, but received '{content.GetType().Name}'.");
+                    $"The embedding generator only supports TextContent inputs, but received '{content?.GetType().Name ?? "null"}'.");
             });
 
             return _innerGenerator.GenerateAsync(stringValues, options, cancellationToken);
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null)
-            => _innerGenerator.GetService(serviceType, serviceKey);
+        {
+            _ = Shared.Diagnostics.Throw.IfNull(serviceType);
+
+            return serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+                _innerGenerator.GetService(serviceType, serviceKey);
+        }
 
         public void Dispose()
             => _innerGenerator.Dispose();

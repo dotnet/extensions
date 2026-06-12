@@ -231,8 +231,8 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
 
         // Verify we got both text and data content types serialized
-        Assert.Contains(retrieved, r => r.SerializedContent.Contains("\"$type\": \"text\""));
-        Assert.Contains(retrieved, r => r.SerializedContent.Contains("\"$type\": \"data\""));
+        Assert.Contains(retrieved, r => r.SerializedContent.Contains("\"$type\":\"text\"", StringComparison.Ordinal));
+        Assert.Contains(retrieved, r => r.SerializedContent.Contains("\"$type\":\"data\"", StringComparison.Ordinal));
     }
 
     /// <summary>

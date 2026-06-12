@@ -48,7 +48,20 @@ public class IngestionChunkVectorRecord
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     public virtual AIContent? Content
     {
-        get => _content ??= JsonSerializer.Deserialize<AIContent>(SerializedContent, AIJsonUtilities.DefaultOptions);
+        get
+        {
+            if (_content is not null)
+            {
+                return _content;
+            }
+
+            if (string.IsNullOrEmpty(SerializedContent))
+            {
+                return null;
+            }
+
+            return _content = JsonSerializer.Deserialize<AIContent>(SerializedContent, AIJsonUtilities.DefaultOptions);
+        }
         set
         {
             _content = value;
