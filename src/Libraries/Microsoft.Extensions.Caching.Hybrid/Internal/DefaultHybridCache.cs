@@ -26,13 +26,13 @@ internal sealed partial class DefaultHybridCache : HybridCache
 {
     internal const int DefaultExpirationMinutes = 5;
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
+    [SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly IDistributedCache? _backendCache;
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
+    [SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly IMemoryCache _localCache;
     private readonly IServiceProvider _services; // we can't resolve per-type serializers until we see each T
     private readonly IHybridCacheSerializerFactory[] _serializerFactories;
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
+    [SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
     private readonly HybridCacheOptions _options;
     private readonly ILogger _logger;
     private readonly CacheFeatures _features; // used to avoid constant type-testing
@@ -42,6 +42,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private readonly HybridCacheEntryFlags _defaultFlags; // note this already includes hardFlags
     private readonly TimeSpan _defaultExpiration;
     private readonly TimeSpan _defaultLocalCacheExpiration;
+    private readonly long? _defaultLocalSize;
     private readonly int _maximumKeyLength;
 
     private readonly DistributedCacheEntryOptions _defaultDistributedCacheExpiration;
@@ -111,6 +112,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _maximumKeyLength = _options.MaximumKeyLength;
 
         HybridCacheEntryOptions? defaultEntryOptions = _options.DefaultEntryOptions;
+        ValidateOptions(defaultEntryOptions);
 
         if (_backendCache is null)
         {
@@ -120,6 +122,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _defaultFlags = (defaultEntryOptions?.Flags ?? HybridCacheEntryFlags.None) | _hardFlags;
         _defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(DefaultExpirationMinutes);
         _defaultLocalCacheExpiration = GetEffectiveLocalCacheExpiration(defaultEntryOptions) ?? _defaultExpiration;
+        _defaultLocalSize = defaultEntryOptions?.LocalSize;
         _defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _defaultExpiration };
 
 #if NET9_0_OR_GREATER
@@ -241,7 +244,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
         if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0)
         {
-            if (TryGetExisting<T>(key, out CacheItem<T>? typed)
+            if (TryGetExisting(key, out CacheItem<T>? typed)
                 && typed.TryGetValue(_logger, out T? value))
             {
                 if (eventSourceEnabled)

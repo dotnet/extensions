@@ -516,4 +516,49 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
 
         Assert.Equal("options", ex.ParamName);
     }
+
+    [Fact]
+    public async Task DefaultEntryOptionsLocalSize_AppliedWhenCallerOmitsIt()
+    {
+        // We prove that DefaultEntryOptions are honored by setting a tight
+        // L1 SizeLimit + a default LocalSize=1 so a 256-byte payload (which would normally exceed
+        // SizeLimit and be evicted) survives in L1. A second call must hit L1 (same value back,
+        // factory not re-invoked) without the caller ever supplying per-call options.
+        string key = nameof(DefaultEntryOptionsLocalSize_AppliedWhenCallerOmitsIt);
+        int factoryCalls = 0;
+
+        using var provider = GetDefaultCache(out var cache, services =>
+        {
+            services.AddMemoryCache(o => o.SizeLimit = 5);
+            services.Configure<HybridCacheOptions>(o => o.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                LocalSize = 1,
+                Flags = HybridCacheEntryFlags.DisableDistributedCache
+            });
+        });
+
+        string payload = new('x', 256);
+        var first = await cache.GetOrCreateAsync(key, _ =>
+        {
+            Interlocked.Increment(ref factoryCalls);
+            return new ValueTask<string>(payload);
+        });
+        Assert.Equal(1, factoryCalls);
+
+        var second = await cache.GetOrCreateAsync(key, _ => new ValueTask<string>(Guid.NewGuid().ToString()));
+        Assert.Equal(first, second);
+        Assert.Equal(1, factoryCalls);
+    }
+
+    [Fact]
+    public void DefaultEntryOptionsNegativeLocalSize_ThrowsAtConstruction()
+    {
+        var services = new ServiceCollection();
+        services.AddHybridCache();
+        services.Configure<HybridCacheOptions>(o => o.DefaultEntryOptions = new HybridCacheEntryOptions { LocalSize = -1 });
+        using var provider = services.BuildServiceProvider();
+
+        var ex = Assert.Throws<ArgumentException>(() => provider.GetRequiredService<HybridCache>());
+        Assert.Equal("options", ex.ParamName);
+    }
 }

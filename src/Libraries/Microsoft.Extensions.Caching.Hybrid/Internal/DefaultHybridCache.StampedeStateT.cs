@@ -534,8 +534,9 @@ internal partial class DefaultHybridCache
         private long? ResolveLocalSize()
         {
             // factory mutations are applied directly to _options (which is a clone). null means "use
-            // implementation default", per the LocalSize API contract.
-            return _options?.LocalSize;
+            // implementation default", per the LocalSize API contract — which we honor by falling
+            // back to HybridCacheOptions.DefaultEntryOptions.LocalSize (also nullable).
+            return _options?.LocalSize ?? Cache._defaultLocalSize;
         }
 
         private void SetImmutableResultWithoutSerialize(T value, HybridCacheEntryFlags activeFlags)
