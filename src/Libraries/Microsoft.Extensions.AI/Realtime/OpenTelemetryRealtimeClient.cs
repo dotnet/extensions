@@ -53,8 +53,8 @@ public sealed class OpenTelemetryRealtimeClient : DelegatingRealtimeClient
     /// <summary>Gets or sets JSON serialization options to use when formatting realtime data into telemetry strings.</summary>
     /// <remarks>
     /// <para>
-    /// The default value uses <see cref="System.Text.Json.JsonNamingPolicy.SnakeCaseLower"/> property naming,
-    /// <see cref="System.Text.Json.JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
+    /// The default value uses <see cref="JsonNamingPolicy.SnakeCaseLower"/> property naming,
+    /// <see cref="JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
     /// and includes type metadata for all built-in OpenTelemetry message-part types.
     /// </para>
     /// <para>
@@ -63,16 +63,16 @@ public sealed class OpenTelemetryRealtimeClient : DelegatingRealtimeClient
     /// client.JsonSerializerOptions = new JsonSerializerOptions(client.JsonSerializerOptions) { WriteIndented = false };
     /// </code>
     /// </para>
+    /// <para>
+    /// The value must produce OpenTelemetry-conformant message JSON: its <see cref="JsonSerializerOptions.PropertyNamingPolicy"/>
+    /// must be <see cref="JsonNamingPolicy.SnakeCaseLower"/> and the built-in OpenTelemetry type resolver must be first in its
+    /// <see cref="JsonSerializerOptions.TypeInfoResolverChain"/>. Copying the current options as shown above preserves both.
+    /// </para>
     /// </remarks>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;
-        set
-        {
-            _ = Throw.IfNull(value);
-            OtelMessageSerializer.ThrowIfMissingOtelResolver(value);
-            _jsonSerializerOptions = value;
-        }
+        set => _jsonSerializerOptions = Throw.IfNull(value);
     }
 
     /// <inheritdoc />

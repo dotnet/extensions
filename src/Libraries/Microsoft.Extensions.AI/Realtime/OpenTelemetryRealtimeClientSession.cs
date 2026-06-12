@@ -129,8 +129,8 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     /// <summary>Gets or sets JSON serialization options to use when formatting realtime data into telemetry strings.</summary>
     /// <remarks>
     /// <para>
-    /// The default value uses <see cref="System.Text.Json.JsonNamingPolicy.SnakeCaseLower"/> property naming,
-    /// <see cref="System.Text.Json.JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
+    /// The default value uses <see cref="JsonNamingPolicy.SnakeCaseLower"/> property naming,
+    /// <see cref="JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
     /// and includes type metadata for all built-in OpenTelemetry message-part types.
     /// </para>
     /// <para>
@@ -139,16 +139,16 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     /// session.JsonSerializerOptions = new JsonSerializerOptions(session.JsonSerializerOptions) { WriteIndented = false };
     /// </code>
     /// </para>
+    /// <para>
+    /// The value must produce OpenTelemetry-conformant message JSON: its <see cref="JsonSerializerOptions.PropertyNamingPolicy"/>
+    /// must be <see cref="JsonNamingPolicy.SnakeCaseLower"/> and the built-in OpenTelemetry type resolver must be first in its
+    /// <see cref="JsonSerializerOptions.TypeInfoResolverChain"/>. Copying the current options as shown above preserves both.
+    /// </para>
     /// </remarks>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;
-        set
-        {
-            _ = Throw.IfNull(value);
-            OtelMessageSerializer.ThrowIfMissingOtelResolver(value);
-            _jsonSerializerOptions = value;
-        }
+        set => _jsonSerializerOptions = Throw.IfNull(value);
     }
 
     /// <inheritdoc />
@@ -191,8 +191,13 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     }
 
     /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="JsonSerializerOptions"/> is not configured to produce OpenTelemetry-conformant message JSON.
+    /// </exception>
     public async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
     {
+        OtelMessageSerializer.ValidateAndFreeze(_jsonSerializerOptions);
+
         if (EnableSensitiveData && _activitySource.HasListeners())
         {
             var otelMessage = ExtractClientOtelMessage(message);
@@ -211,10 +216,13 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
     }
 
     /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="JsonSerializerOptions"/> is not configured to produce OpenTelemetry-conformant message JSON.
+    /// </exception>
     public async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _jsonSerializerOptions.MakeReadOnly();
+        OtelMessageSerializer.ValidateAndFreeze(_jsonSerializerOptions);
 
         RealtimeSessionOptions? options = Options;
         string? requestModelId = options?.Model ?? _defaultModelId;

@@ -21,16 +21,27 @@ internal static class OtelMessageSerializer
     internal static readonly JsonSerializerOptions DefaultOptions = CreateDefaultOptions();
 
     /// <summary>
-    /// Validates that the given options include the required OTel type resolver.
+    /// Validates that the given options would produce OpenTelemetry-conformant message JSON, then makes them
+    /// read-only so the validated state cannot be mutated afterwards.
     /// </summary>
-    internal static void ThrowIfMissingOtelResolver(JsonSerializerOptions options)
+    internal static void ValidateAndFreeze(JsonSerializerOptions options)
     {
-        if (!options.TypeInfoResolverChain.Any(r => r is OtelContext))
+        const string CopyHint = "Copy the existing JsonSerializerOptions (new JsonSerializerOptions(instance.JsonSerializerOptions)) and override only the properties you need.";
+
+        IList<IJsonTypeInfoResolver> chain = options.TypeInfoResolverChain;
+        if (chain.Count == 0 || chain[0] is not OtelContext)
         {
-            Throw.ArgumentException(
-                nameof(options),
-                "The provided JsonSerializerOptions is missing the required OpenTelemetry type resolver.");
+            Throw.InvalidOperationException(
+                "The configured JsonSerializerOptions must have the required OpenTelemetry type resolver first in its TypeInfoResolverChain. " + CopyHint);
         }
+
+        if (options.PropertyNamingPolicy != JsonNamingPolicy.SnakeCaseLower)
+        {
+            Throw.InvalidOperationException(
+                "The configured JsonSerializerOptions must use JsonNamingPolicy.SnakeCaseLower to produce OpenTelemetry-conformant property names. " + CopyHint);
+        }
+
+        options.MakeReadOnly();
     }
 
     private static readonly JsonElement _emptyObject =

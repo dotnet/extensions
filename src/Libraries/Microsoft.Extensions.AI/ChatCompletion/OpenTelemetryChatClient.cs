@@ -93,8 +93,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <summary>Gets or sets JSON serialization options to use when formatting chat data into telemetry strings.</summary>
     /// <remarks>
     /// <para>
-    /// The default value uses <see cref="System.Text.Json.JsonNamingPolicy.SnakeCaseLower"/> property naming,
-    /// <see cref="System.Text.Json.JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
+    /// The default value uses <see cref="JsonNamingPolicy.SnakeCaseLower"/> property naming,
+    /// <see cref="JsonSerializerOptions.WriteIndented"/> set to <see langword="true"/>,
     /// and includes type metadata for all built-in OpenTelemetry message-part types.
     /// </para>
     /// <para>
@@ -103,16 +103,16 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// client.JsonSerializerOptions = new JsonSerializerOptions(client.JsonSerializerOptions) { WriteIndented = false };
     /// </code>
     /// </para>
+    /// <para>
+    /// The value must produce OpenTelemetry-conformant message JSON: its <see cref="JsonSerializerOptions.PropertyNamingPolicy"/>
+    /// must be <see cref="JsonNamingPolicy.SnakeCaseLower"/> and the built-in OpenTelemetry type resolver must be first in its
+    /// <see cref="JsonSerializerOptions.TypeInfoResolverChain"/>. Copying the current options as shown above preserves both.
+    /// </para>
     /// </remarks>
     public JsonSerializerOptions JsonSerializerOptions
     {
         get => _jsonSerializerOptions;
-        set
-        {
-            _ = Throw.IfNull(value);
-            OtelMessageSerializer.ThrowIfMissingOtelResolver(value);
-            _jsonSerializerOptions = value;
-        }
+        set => _jsonSerializerOptions = Throw.IfNull(value);
     }
 
     /// <inheritdoc/>
@@ -150,11 +150,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="JsonSerializerOptions"/> is not configured to produce OpenTelemetry-conformant message JSON.
+    /// </exception>
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
-        _jsonSerializerOptions.MakeReadOnly();
+        OtelMessageSerializer.ValidateAndFreeze(_jsonSerializerOptions);
 
         using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
@@ -181,11 +184,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     }
 
     /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="JsonSerializerOptions"/> is not configured to produce OpenTelemetry-conformant message JSON.
+    /// </exception>
     public override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
-        _jsonSerializerOptions.MakeReadOnly();
+        OtelMessageSerializer.ValidateAndFreeze(_jsonSerializerOptions);
 
         using Activity? activity = CreateAndConfigureActivity(options, streaming: true);
         bool recordChunkHistograms = _timeToFirstChunkHistogram.Enabled || _timePerOutputChunkHistogram.Enabled;

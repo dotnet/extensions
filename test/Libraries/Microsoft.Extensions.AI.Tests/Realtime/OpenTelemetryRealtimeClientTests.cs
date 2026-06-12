@@ -586,23 +586,92 @@ public class OpenTelemetryRealtimeClientTests
     }
 
     [Fact]
-    public async Task JsonSerializerOptions_MissingOtelResolver_Throws()
+    public async Task JsonSerializerOptions_DefaultOptionsNotCopied_ThrowsOnUse()
     {
         await using var innerSession = new TestRealtimeClientSession();
         using var innerClient = new TestRealtimeClient(innerSession);
         using var client = new OpenTelemetryRealtimeClient(innerClient);
 
-        // Blank options — no OTel resolver
-        var ex = Assert.Throws<ArgumentException>(() =>
-            client.JsonSerializerOptions = new JsonSerializerOptions());
-        Assert.Contains("OpenTelemetry type resolver", ex.Message);
+        // Starting from a blank JsonSerializerOptions (instead of copying the client's existing
+        // options) omits the required OpenTelemetry type resolver, so the first send throws.
+        client.JsonSerializerOptions = new JsonSerializerOptions();
 
-        // Options with a reflection resolver but no OTel resolver
-        var optsWithReflection = new JsonSerializerOptions();
-        optsWithReflection.TypeInfoResolverChain.Add(JsonSerializerOptions.Default.TypeInfoResolver!);
-        ex = Assert.Throws<ArgumentException>(() =>
-            client.JsonSerializerOptions = optsWithReflection);
-        Assert.Contains("OpenTelemetry type resolver", ex.Message);
+        await using var session = await client.CreateSessionAsync();
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            session.SendAsync(new CreateResponseRealtimeClientMessage()));
+
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_OtelResolverNotFirst_ThrowsOnUse()
+    {
+        await using var innerSession = new TestRealtimeClientSession();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+
+        // Capture the OTel resolver from the conformant default before overwriting the options.
+        var otelResolver = client.JsonSerializerOptions.TypeInfoResolverChain[0];
+
+        // OTel resolver present, snake_case set, but shadowed by an earlier reflection-based resolver.
+        // The first resolver in the chain wins, so reflection would serialize a non-conformant shape.
+        var opts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        opts.TypeInfoResolverChain.Add(JsonSerializerOptions.Default.TypeInfoResolver!);
+        opts.TypeInfoResolverChain.Add(otelResolver);
+        client.JsonSerializerOptions = opts;
+
+        await using var session = await client.CreateSessionAsync();
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            session.SendAsync(new CreateResponseRealtimeClientMessage()));
+
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_NonSnakeCaseLowerNamingPolicy_ThrowsOnUse()
+    {
+        await RunTest(null);
+        await RunTest(JsonNamingPolicy.CamelCase);
+
+        static async Task RunTest(JsonNamingPolicy? policy)
+        {
+            await using var innerSession = new TestRealtimeClientSession();
+            using var innerClient = new TestRealtimeClient(innerSession);
+            using var client = new OpenTelemetryRealtimeClient(innerClient);
+
+            // Copy the conformant default (so the OTel resolver stays first) and change only the naming
+            // policy. This isolates the naming-policy check: any value other than SnakeCaseLower must throw.
+            client.JsonSerializerOptions =
+                new JsonSerializerOptions(client.JsonSerializerOptions) { PropertyNamingPolicy = policy };
+
+            await using var session = await client.CreateSessionAsync();
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                session.SendAsync(new CreateResponseRealtimeClientMessage()));
+
+            Assert.Contains("new JsonSerializerOptions(", ex.Message);
+        }
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_ConformantValue_IsFrozenOnFirstUse()
+    {
+        await using var innerSession = new TestRealtimeClientSession();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+
+        // A mutable, conformant copy of the default options.
+        var opts = new JsonSerializerOptions(client.JsonSerializerOptions) { WriteIndented = false };
+        client.JsonSerializerOptions = opts;
+
+        // Assignment alone does not freeze; the options stay mutable until first use.
+        Assert.False(opts.IsReadOnly);
+
+        await using var session = await client.CreateSessionAsync();
+        await session.SendAsync(new CreateResponseRealtimeClientMessage());
+
+        // First use freezes the value so its validated state cannot be mutated afterwards.
+        Assert.True(opts.IsReadOnly);
+        Assert.Throws<InvalidOperationException>(() => opts.PropertyNamingPolicy = null);
     }
 
     [Theory]

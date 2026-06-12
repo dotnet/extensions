@@ -1021,26 +1021,100 @@ public class OpenTelemetryChatClientTests
     }
 
     [Fact]
-    public void JsonSerializerOptions_MissingOtelResolver_Throws()
+    public async Task JsonSerializerOptions_NonSnakeCaseLowerNamingPolicy_ThrowsOnUse()
     {
-        using var innerClient = new TestChatClient();
-        using var chatClient = innerClient
-            .AsBuilder()
-            .UseOpenTelemetry(configure: instance =>
-            {
-                // Blank options — no OTel resolver
-                var ex = Assert.Throws<ArgumentException>(() =>
-                    instance.JsonSerializerOptions = new JsonSerializerOptions());
-                Assert.Contains("OpenTelemetry type resolver", ex.Message);
+        await RunTest(null);
+        await RunTest(JsonNamingPolicy.CamelCase);
 
-                // Options with a reflection resolver but no OTel resolver
-                var optsWithReflection = new JsonSerializerOptions();
-                optsWithReflection.TypeInfoResolverChain.Add(JsonSerializerOptions.Default.TypeInfoResolver!);
-                ex = Assert.Throws<ArgumentException>(() =>
-                    instance.JsonSerializerOptions = optsWithReflection);
-                Assert.Contains("OpenTelemetry type resolver", ex.Message);
-            })
-            .Build();
+        static async Task RunTest(JsonNamingPolicy? policy)
+        {
+            using var innerClient = new TestChatClient
+            {
+                GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                    Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+            };
+            using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+            // Copy the conformant default (so the OTel resolver stays first) and change only the naming
+            // policy. This isolates the naming-policy check: any value other than SnakeCaseLower must throw.
+            chatClient.JsonSerializerOptions =
+                new JsonSerializerOptions(chatClient.JsonSerializerOptions) { PropertyNamingPolicy = policy };
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => chatClient.GetResponseAsync([new(ChatRole.User, "hello")]));
+
+            Assert.Contains("new JsonSerializerOptions(", ex.Message);
+        }
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_DefaultOptionsNotCopied_ThrowsOnUse()
+    {
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+        };
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+        // Starting from a blank JsonSerializerOptions (instead of copying the client's existing
+        // options) omits the required OpenTelemetry type resolver, so the first request throws.
+        chatClient.JsonSerializerOptions = new JsonSerializerOptions();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => chatClient.GetResponseAsync([new(ChatRole.User, "hello")]));
+
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_OtelResolverNotFirst_ThrowsOnUse()
+    {
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+        };
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+        // Capture the OTel resolver from the conformant default before overwriting the options.
+        var otelResolver = chatClient.JsonSerializerOptions.TypeInfoResolverChain[0];
+
+        // OTel resolver present, snake_case set, but shadowed by an earlier reflection-based resolver.
+        // The first resolver in the chain wins, so reflection would serialize a non-conformant shape.
+        var opts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        opts.TypeInfoResolverChain.Add(JsonSerializerOptions.Default.TypeInfoResolver!);
+        opts.TypeInfoResolverChain.Add(otelResolver);
+        chatClient.JsonSerializerOptions = opts;
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => chatClient.GetResponseAsync([new(ChatRole.User, "hello")]));
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_ConformantValue_IsFrozenOnFirstUse()
+    {
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+        };
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+        // A mutable, conformant copy of the default options.
+        var opts = new JsonSerializerOptions(chatClient.JsonSerializerOptions) { WriteIndented = false };
+        chatClient.JsonSerializerOptions = opts;
+
+        // Assignment alone does not freeze; the options stay mutable until first use.
+        Assert.False(opts.IsReadOnly);
+
+        _ = await chatClient.GetResponseAsync([new(ChatRole.User, "hello")]);
+
+        // First use freezes the value so its validated state cannot be mutated afterwards.
+        Assert.True(opts.IsReadOnly);
+        Assert.Same(opts, chatClient.JsonSerializerOptions);
+        Assert.Throws<InvalidOperationException>(() => opts.PropertyNamingPolicy = null);
     }
 
     [Theory]
