@@ -62,6 +62,24 @@ internal partial class DefaultHybridCache
 #endif
         }
 
+        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions options)
+        {
+            Debug.Assert(_underlyingWithOptions is null, "should not already have factory field");
+            Debug.Assert(underlying is not null, "factory argument should be meaningful");
+
+            // initialize the callback state
+            _state = state;
+            _underlyingWithOptions = underlying;
+            _options = options;
+            _factoryOptionsRevision = _options.Revision;
+
+#if NETCOREAPP3_0_OR_GREATER
+            ThreadPool.UnsafeQueueUserWorkItem(this, false);
+#else
+            ThreadPool.UnsafeQueueUserWorkItem(SharedWaitCallback, this);
+#endif
+        }
+
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation is handled separately via SharedToken")]
         public Task ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
@@ -76,36 +94,16 @@ internal partial class DefaultHybridCache
             return BackgroundFetchAsync();
         }
 
-        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
-        {
-            Debug.Assert(_underlyingWithOptions is null, "should not already have factory field");
-            Debug.Assert(underlying is not null, "factory argument should be meaningful");
-
-            // initialize the callback state; we always pass a clone (or fresh instance) to the factory so
-            // it can mutate the options without affecting the caller's instance, and so we can detect
-            // mutations via Revision.
-            _state = state;
-            _underlyingWithOptions = underlying;
-            _options = CloneOptionsOrNew(options);
-            _factoryOptionsRevision = _options.Revision;
-
-#if NETCOREAPP3_0_OR_GREATER
-            ThreadPool.UnsafeQueueUserWorkItem(this, false);
-#else
-            ThreadPool.UnsafeQueueUserWorkItem(SharedWaitCallback, this);
-#endif
-        }
-
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation is handled separately via SharedToken")]
-        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
+        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions options)
         {
             Debug.Assert(_underlyingWithOptions is null, "should not already have factory field");
             Debug.Assert(underlying is not null, "factory argument should be meaningful");
 
-            // initialize the callback state (see QueueUserWorkItem above for cloning rationale)
+            // initialize the callback state
             _state = state;
             _underlyingWithOptions = underlying;
-            _options = CloneOptionsOrNew(options);
+            _options = options;
             _factoryOptionsRevision = _options.Revision;
 
             return BackgroundFetchAsync();

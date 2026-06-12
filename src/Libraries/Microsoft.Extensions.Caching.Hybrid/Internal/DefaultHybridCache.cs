@@ -138,86 +138,101 @@ internal sealed partial class DefaultHybridCache : HybridCache
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
         HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
-        bool canBeCanceled = cancellationToken.CanBeCanceled;
+        GetOrCreateOutcome outcome = TryBeginGetOrCreate(key, options, tags, cancellationToken,
+            out HybridCacheEntryFlags flags, out bool canBeCanceled, out StampedeState<TState, T>? stampede, out ValueTask<T> result);
+
+        switch (outcome)
+        {
+            case GetOrCreateOutcome.NoCache:
+                return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
+                    ? underlyingDataCallback(state, cancellationToken) : default;
+            case GetOrCreateOutcome.L1Hit:
+            case GetOrCreateOutcome.JoinedStampede:
+                return result;
+        }
+
+        // GetOrCreateOutcome.NewStampede: we own this stampede and must dispatch the factory
         if (canBeCanceled)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            // *we* might cancel, but someone else might be depending on the result; start the
+            // work independently, then join the outcome
+            stampede!.QueueUserWorkItem(in state, underlyingDataCallback, options);
+            return stampede.JoinAsync(_logger, cancellationToken);
         }
 
-        HybridCacheEntryFlags flags = GetEffectiveFlags(options);
-        if (!ValidateKey(key))
-        {
-            // we can't use cache, but we can still provide the data
-            return RunWithoutCacheAsync(flags, state, underlyingDataCallback, cancellationToken);
-        }
+        // we're going to run to completion; no need to get complicated
+        _ = stampede!.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
 
-        bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
-
-        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0)
-        {
-            if (TryGetExisting<T>(key, out CacheItem<T>? typed)
-                && typed.TryGetValue(_logger, out T? value))
-            {
-                // short-circuit
-                if (eventSourceEnabled)
-                {
-                    HybridCacheEventSource.Log.LocalCacheHit();
-                }
-
-                return new(value);
-            }
-            else
-            {
-                if (eventSourceEnabled)
-                {
-                    HybridCacheEventSource.Log.LocalCacheMiss();
-                }
-            }
-        }
-
-        if (GetOrCreateStampedeState<TState, T>(key, flags, out StampedeState<TState, T>? stampede, canBeCanceled, tags))
-        {
-            // new query; we're responsible for making it happen
-            if (canBeCanceled)
-            {
-                // *we* might cancel, but someone else might be depending on the result; start the
-                // work independently, then we'll with join the outcome
-                stampede.QueueUserWorkItem(in state, underlyingDataCallback, options);
-            }
-            else
-            {
-                // we're going to run to completion; no need to get complicated
-                _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
-                return stampede.UnwrapReservedAsync(_logger);
-            }
-        }
-        else
-        {
-            // pre-existing query
-            if (eventSourceEnabled)
-            {
-                HybridCacheEventSource.Log.StampedeJoin();
-            }
-        }
-
-        return stampede.JoinAsync(_logger, cancellationToken);
+        return stampede.UnwrapReservedAsync(_logger);
     }
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state,
         Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory,
         HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
-        bool canBeCanceled = cancellationToken.CanBeCanceled;
+        GetOrCreateOutcome outcome = TryBeginGetOrCreate(key, options, tags, cancellationToken,
+            out HybridCacheEntryFlags flags, out bool canBeCanceled, out StampedeState<TState, T>? stampede, out ValueTask<T> result);
+
+        // We always pass a clone (or fresh instance) to the factory so
+        // it can mutate the options without affecting the caller's instance.
+        // In the NoCache case, there's no cache to honor the mutations against, but the factory may rely on
+        // being able to mutate the parameter without surprising the caller.
+
+        switch (outcome)
+        {
+            case GetOrCreateOutcome.NoCache:
+                return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
+                    ? factory(state, CloneOptionsOrNew(options), cancellationToken) : default;
+            case GetOrCreateOutcome.L1Hit:
+            case GetOrCreateOutcome.JoinedStampede:
+                return result;
+        }
+
+        options = CloneOptionsOrNew(options);
+
+        if (canBeCanceled)
+        {
+            stampede!.QueueUserWorkItem(in state, factory, options);
+            return stampede.JoinAsync(_logger, cancellationToken);
+        }
+
+        _ = stampede!.ExecuteDirectAsync(in state, factory, options);
+
+        return stampede.UnwrapReservedAsync(_logger);
+    }
+
+    private enum GetOrCreateOutcome
+    {
+        NoCache,
+        L1Hit,
+        JoinedStampede,
+        NewStampede
+    }
+
+    // Performs the shared pre-factory work for both GetOrCreateAsync overloads.
+    private GetOrCreateOutcome TryBeginGetOrCreate<TState, T>(
+        string key,
+        HybridCacheEntryOptions? options,
+        IEnumerable<string>? tags,
+        CancellationToken cancellationToken,
+        out HybridCacheEntryFlags flags,
+        out bool canBeCanceled,
+        out StampedeState<TState, T>? stampede,
+        out ValueTask<T> result)
+    {
+        canBeCanceled = cancellationToken.CanBeCanceled;
         if (canBeCanceled)
         {
             cancellationToken.ThrowIfCancellationRequested();
         }
 
-        HybridCacheEntryFlags flags = GetEffectiveFlags(options);
+        flags = GetEffectiveFlags(options);
+        stampede = null;
+        result = default;
+
         if (!ValidateKey(key))
         {
-            // we can't use cache, but we can still provide the data
-            return RunWithoutCacheAsync(flags, state, factory, options, cancellationToken);
+            return GetOrCreateOutcome.NoCache;
         }
 
         bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
@@ -227,67 +242,40 @@ internal sealed partial class DefaultHybridCache : HybridCache
             if (TryGetExisting<T>(key, out CacheItem<T>? typed)
                 && typed.TryGetValue(_logger, out T? value))
             {
-                // short-circuit
                 if (eventSourceEnabled)
                 {
                     HybridCacheEventSource.Log.LocalCacheHit();
                 }
 
-                return new(value);
+                result = new(value);
+                return GetOrCreateOutcome.L1Hit;
             }
-            else
-            {
-                if (eventSourceEnabled)
-                {
-                    HybridCacheEventSource.Log.LocalCacheMiss();
-                }
-            }
-        }
 
-        if (GetOrCreateStampedeState<TState, T>(key, flags, out StampedeState<TState, T>? stampede, canBeCanceled, tags))
-        {
-            // new query; we're responsible for making it happen
-            if (canBeCanceled)
-            {
-                // *we* might cancel, but someone else might be depending on the result; start the
-                // work independently, then we'll with join the outcome
-                stampede.QueueUserWorkItem(in state, factory, options);
-            }
-            else
-            {
-                // we're going to run to completion; no need to get complicated
-                _ = stampede.ExecuteDirectAsync(in state, factory, options); // this larger task includes L2 write etc
-                return stampede.UnwrapReservedAsync(_logger);
-            }
-        }
-        else
-        {
-            // pre-existing query
             if (eventSourceEnabled)
             {
-                HybridCacheEventSource.Log.StampedeJoin();
+                HybridCacheEventSource.Log.LocalCacheMiss();
             }
         }
 
-        return stampede.JoinAsync(_logger, cancellationToken);
+        if (GetOrCreateStampedeState(key, flags, out stampede, canBeCanceled, tags))
+        {
+            return GetOrCreateOutcome.NewStampede;
+        }
+
+        // joined a pre-existing stampede
+        if (eventSourceEnabled)
+        {
+            HybridCacheEventSource.Log.StampedeJoin();
+        }
+
+        result = stampede.JoinAsync(_logger, cancellationToken);
+        return GetOrCreateOutcome.JoinedStampede;
     }
 
     public override ValueTask RemoveAsync(string key, CancellationToken token = default)
     {
         _localCache.Remove(key);
         return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
-    }
-
-    private static ValueTask<T> RunWithoutCacheAsync<TState, T>(HybridCacheEntryFlags flags, TState state,
-        Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory,
-        HybridCacheEntryOptions? options,
-        CancellationToken cancellationToken)
-    {
-        // pass a clone (or fresh instance) so the caller's options are never mutated;
-        // there's no cache to honor the mutations against, but the factory may rely on
-        // being able to mutate the parameter without surprising the caller.
-        return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
-            ? factory(state, CloneOptionsOrNew(options), cancellationToken) : default;
     }
 
     internal static HybridCacheEntryOptions CloneOptionsOrNew(HybridCacheEntryOptions? options)
@@ -332,14 +320,6 @@ internal sealed partial class DefaultHybridCache : HybridCache
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
         => (options?.Flags | _hardFlags) ?? _defaultFlags;
-
-    private static ValueTask<T> RunWithoutCacheAsync<TState, T>(HybridCacheEntryFlags flags, TState state,
-        Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
-        CancellationToken cancellationToken)
-    {
-        return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
-            ? underlyingDataCallback(state, cancellationToken) : default;
-    }
 
     private static TimeSpan? GetEffectiveLocalCacheExpiration(HybridCacheEntryOptions? options)
     {
