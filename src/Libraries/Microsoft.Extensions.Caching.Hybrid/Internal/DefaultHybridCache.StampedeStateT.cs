@@ -21,8 +21,8 @@ internal partial class DefaultHybridCache
 
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
-        private Func<TState, CancellationToken, ValueTask<T>>? _underlying; // main data factory
-        private Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>>? _underlyingWithOptions; // options-aware data factory
+        private Func<TState, CancellationToken, ValueTask<T>>? _factory; // main data factory
+        private Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>>? _factoryWithOptions; // options-aware data factory
         private HybridCacheEntryOptions? _options;
         private int _factoryOptionsRevision; // initial Revision of the options instance passed to the factory; used to detect mutations
         private Task<T>? _sharedUnwrap; // allows multiple non-cancellable callers to share a single task (when no defensive copy needed)
@@ -45,14 +45,14 @@ internal partial class DefaultHybridCache
 
         public override Type Type => typeof(T);
 
-        public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
+        public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(_underlying is null, "should not already have factory field");
-            Debug.Assert(underlying is not null, "factory argument should be meaningful");
+            Debug.Assert(_factory is null, "should not already have factory field");
+            Debug.Assert(factory is not null, "factory argument should be meaningful");
 
             // initialize the callback state
             _state = state;
-            _underlying = underlying;
+            _factory = factory;
             _options = options;
 
 #if NETCOREAPP3_0_OR_GREATER
@@ -62,14 +62,14 @@ internal partial class DefaultHybridCache
 #endif
         }
 
-        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions options)
+        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions options)
         {
-            Debug.Assert(_underlyingWithOptions is null, "should not already have factory field");
-            Debug.Assert(underlying is not null, "factory argument should be meaningful");
+            Debug.Assert(_factoryWithOptions is null, "should not already have factory field");
+            Debug.Assert(factory is not null, "factory argument should be meaningful");
 
             // initialize the callback state
             _state = state;
-            _underlyingWithOptions = underlying;
+            _factoryWithOptions = factory;
             _options = options;
             _factoryOptionsRevision = _options.Revision;
 
@@ -81,28 +81,28 @@ internal partial class DefaultHybridCache
         }
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation is handled separately via SharedToken")]
-        public Task ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
+        public Task ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(_underlying is null, "should not already have factory field");
-            Debug.Assert(underlying is not null, "factory argument should be meaningful");
+            Debug.Assert(_factory is null, "should not already have factory field");
+            Debug.Assert(factory is not null, "factory argument should be meaningful");
 
             // initialize the callback state
             _state = state;
-            _underlying = underlying;
+            _factory = factory;
             _options = options;
 
             return BackgroundFetchAsync();
         }
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation is handled separately via SharedToken")]
-        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions options)
+        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions options)
         {
-            Debug.Assert(_underlyingWithOptions is null, "should not already have factory field");
-            Debug.Assert(underlying is not null, "factory argument should be meaningful");
+            Debug.Assert(_factoryWithOptions is null, "should not already have factory field");
+            Debug.Assert(factory is not null, "factory argument should be meaningful");
 
             // initialize the callback state
             _state = state;
-            _underlyingWithOptions = underlying;
+            _factoryWithOptions = factory;
             _options = options;
             _factoryOptionsRevision = _options.Revision;
 
@@ -305,13 +305,13 @@ internal partial class DefaultHybridCache
                             HybridCacheEventSource.Log.UnderlyingDataQueryStart();
                         }
 
-                        if (_underlyingWithOptions is not null)
+                        if (_factoryWithOptions is not null)
                         {
-                            newValue = await _underlyingWithOptions(_state!, _options!, SharedToken).ConfigureAwait(false);
+                            newValue = await _factoryWithOptions(_state!, _options!, SharedToken).ConfigureAwait(false);
                         }
                         else
                         {
-                            newValue = await _underlying!(_state!, SharedToken).ConfigureAwait(false);
+                            newValue = await _factory!(_state!, SharedToken).ConfigureAwait(false);
                         }
 
                         if (eventSourceEnabled)
@@ -338,7 +338,7 @@ internal partial class DefaultHybridCache
 
                     // honor any mutations the factory made to the options it received; we use Revision
                     // as a fast-path skip for the common case where the factory didn't touch them.
-                    if (_underlyingWithOptions is not null && _options!.Revision != _factoryOptionsRevision)
+                    if (_factoryWithOptions is not null && _options!.Revision != _factoryOptionsRevision)
                     {
                         ApplyFactoryOptions(_options, mandatoryWriteSideFlags, ref activeFlags);
                     }

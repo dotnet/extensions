@@ -135,7 +135,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     internal HybridCacheOptions Options => _options;
 
-    public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
+    public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> factory,
         HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         GetOrCreateOutcome outcome = TryBeginGetOrCreate(key, options, tags, cancellationToken,
@@ -145,7 +145,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         {
             case GetOrCreateOutcome.NoCache:
                 return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
-                    ? underlyingDataCallback(state, cancellationToken) : default;
+                    ? factory(state, cancellationToken) : default;
             case GetOrCreateOutcome.L1Hit:
             case GetOrCreateOutcome.JoinedStampede:
                 return result;
@@ -156,12 +156,12 @@ internal sealed partial class DefaultHybridCache : HybridCache
         {
             // *we* might cancel, but someone else might be depending on the result; start the
             // work independently, then join the outcome
-            stampede!.QueueUserWorkItem(in state, underlyingDataCallback, options);
+            stampede!.QueueUserWorkItem(in state, factory, options);
             return stampede.JoinAsync(_logger, cancellationToken);
         }
 
         // we're going to run to completion; no need to get complicated
-        _ = stampede!.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
+        _ = stampede!.ExecuteDirectAsync(in state, factory, options); // this larger task includes L2 write etc
 
         return stampede.UnwrapReservedAsync(_logger);
     }
@@ -272,10 +272,10 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return GetOrCreateOutcome.JoinedStampede;
     }
 
-    public override ValueTask RemoveAsync(string key, CancellationToken token = default)
+    public override ValueTask RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         _localCache.Remove(key);
-        return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
+        return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, cancellationToken));
     }
 
     internal static HybridCacheEntryOptions CloneOptionsOrNew(HybridCacheEntryOptions? options)
@@ -302,12 +302,12 @@ internal sealed partial class DefaultHybridCache : HybridCache
 #endif
     }
 
-    public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken token = default)
+    public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         // since we're forcing a write: disable L1+L2 read; we'll use a direct pass-thru of the value as the callback, to reuse all the code
         // note also that stampede token is not shared with anyone else
         HybridCacheEntryFlags flags = GetEffectiveFlags(options) | (HybridCacheEntryFlags.DisableLocalCacheRead | HybridCacheEntryFlags.DisableDistributedCacheRead);
-        var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), TagSet.Create(tags), token);
+        var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), TagSet.Create(tags), cancellationToken);
         return new(state.ExecuteDirectAsync(value, static (state, _) => new(state), options)); // note this spans L2 write etc
     }
 
