@@ -20,15 +20,21 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 // directly to the options instance and which are read by SetL1 / SetL2Async / ResolveLocalSize.
 public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
-    private static (DefaultHybridCache cache, CapturingCache localCache, ServiceProvider provider) BuildCacheWithL2(ITestOutputHelper log)
+    private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
     {
-        var localCache = new CapturingCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())));
         var services = new ServiceCollection();
-        services.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
+        config?.Invoke(services);
         services.AddHybridCache();
-        var provider = services.BuildServiceProvider();
-        var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
-        return (cache, localCache, provider);
+        ServiceProvider provider = services.BuildServiceProvider();
+        cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+        return provider;
+    }
+
+    private static ServiceProvider BuildCacheWithL2(ITestOutputHelper log, out DefaultHybridCache cache, out CapturingCache localCache)
+    {
+        var captured = new CapturingCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())));
+        localCache = captured;
+        return GetDefaultCache(out cache, services => services.AddSingleton<IDistributedCache>(new LoggingCache(log, captured)));
     }
 
     private static Task WaitForBackgroundL2WriteAsync(CapturingCache cache, string key)
@@ -41,27 +47,24 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     public async Task FactoryCanReEnableL2Write_ThatCallerDisabled()
     {
         // Caller disabled L2 writes; factory clears the flag — value must be persisted to L2.
-        var (cache, localCache, provider) = BuildCacheWithL2(log);
-        using (provider)
-        {
-            string key = nameof(FactoryCanReEnableL2Write_ThatCallerDisabled);
+        using var provider = BuildCacheWithL2(log, out var cache, out var localCache);
+        string key = nameof(FactoryCanReEnableL2Write_ThatCallerDisabled);
 
-            _ = await cache.GetOrCreateAsync(
-                key,
-                (entryOptions, _) =>
-                {
-                    entryOptions.Flags = HybridCacheEntryFlags.None;
-                    return new ValueTask<Guid>(Guid.NewGuid());
-                },
-                options: new HybridCacheEntryOptions
-                {
-                    Expiration = TimeSpan.FromMinutes(1),
-                    Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite,
-                });
+        _ = await cache.GetOrCreateAsync(
+            key,
+            (entryOptions, _) =>
+            {
+                entryOptions.Flags = HybridCacheEntryFlags.None;
+                return new ValueTask<Guid>(Guid.NewGuid());
+            },
+            options: new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(1),
+                Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite,
+            });
 
-            await WaitForBackgroundL2WriteAsync(localCache, key);
-            Assert.NotNull(localCache.Get(key));
-        }
+        await WaitForBackgroundL2WriteAsync(localCache, key);
+        Assert.NotNull(localCache.Get(key));
     }
 
     [Fact]
@@ -69,27 +72,24 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     {
         // Symmetric tightening: caller allowed L2 writes (None), factory disables them.
         // Replace-semantics in ApplyFactoryOptions must make the factory's restriction stick.
-        var (cache, localCache, provider) = BuildCacheWithL2(log);
-        using (provider)
-        {
-            string key = nameof(FactoryCanDisableL2Write_ThatCallerEnabled);
+        using var provider = BuildCacheWithL2(log, out var cache, out var localCache);
+        string key = nameof(FactoryCanDisableL2Write_ThatCallerEnabled);
 
-            _ = await cache.GetOrCreateAsync(
-                key,
-                (entryOptions, _) =>
-                {
-                    entryOptions.Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite;
-                    return new ValueTask<Guid>(Guid.NewGuid());
-                },
-                options: new HybridCacheEntryOptions
-                {
-                    Expiration = TimeSpan.FromMinutes(1),
-                    Flags = HybridCacheEntryFlags.None,
-                });
+        _ = await cache.GetOrCreateAsync(
+            key,
+            (entryOptions, _) =>
+            {
+                entryOptions.Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite;
+                return new ValueTask<Guid>(Guid.NewGuid());
+            },
+            options: new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(1),
+                Flags = HybridCacheEntryFlags.None,
+            });
 
-            await Task.Delay(500);
-            Assert.Null(localCache.Get(key));
-        }
+        await Task.Delay(500);
+        Assert.Null(localCache.Get(key));
     }
 
     [Fact]
@@ -98,10 +98,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         // L1 counterpart of FactoryCanReEnableL2Write: caller passed DisableLocalCacheWrite,
         // factory clears it. If the override sticks, a subsequent read returns the same value
         // from L1 without re-invoking the factory.
-        var services = new ServiceCollection();
-        services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
-        var cache = provider.GetRequiredService<HybridCache>();
+        using var provider = GetDefaultCache(out var cache);
 
         string key = nameof(FactoryCanEnableL1Write_ThatCallerDisabled);
         int factoryCalls = 0;
@@ -134,11 +131,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         // Factory mutates Expiration; the L2 backend must receive DistributedCacheEntryOptions
         // whose AbsoluteExpirationRelativeToNow matches the factory-set value.
         var captured = new CapturingCache(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())));
-        var services = new ServiceCollection();
-        services.AddSingleton<IDistributedCache>(captured);
-        services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
-        var cache = provider.GetRequiredService<HybridCache>();
+        using var provider = GetDefaultCache(out var cache, services => services.AddSingleton<IDistributedCache>(captured));
 
         var factoryExpiration = TimeSpan.FromMinutes(7);
         _ = await cache.GetOrCreateAsync(
@@ -164,14 +157,13 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         using var l1 = new MemoryCache(new MemoryCacheOptions { Clock = clock });
         var l2 = new LoggingCache(log, new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions { Clock = clock })));
 
-        var services = new ServiceCollection();
-        services.AddSingleton<ISystemClock>(clock);
-        services.AddSingleton<TimeProvider>(clock);
-        services.AddSingleton<IMemoryCache>(l1);
-        services.AddSingleton<IDistributedCache>(l2);
-        services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
-        var cache = provider.GetRequiredService<HybridCache>();
+        using var provider = GetDefaultCache(out var cache, services =>
+        {
+            services.AddSingleton<ISystemClock>(clock);
+            services.AddSingleton<TimeProvider>(clock);
+            services.AddSingleton<IMemoryCache>(l1);
+            services.AddSingleton<IDistributedCache>(l2);
+        });
 
         string key = nameof(FactoryLocalCacheExpirationMutation_ShortensL1Only);
         int factoryCalls = 0;
@@ -204,11 +196,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         // entry would be evicted from L1; the factory sets LocalSize = 1 to make the entry fit.
         // Verify by issuing a second call: if L1 retained the value, the factory is not
         // re-invoked and the same Guid is returned.
-        var services = new ServiceCollection();
-        services.AddMemoryCache(options => options.SizeLimit = 5);
-        services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
-        var cache = provider.GetRequiredService<HybridCache>();
+        using var provider = GetDefaultCache(out var cache, services => services.AddMemoryCache(options => options.SizeLimit = 5));
 
         string key = nameof(FactoryLocalSizeMutation_HonoredForL1SizeAccounting);
         int factoryCalls = 0;
@@ -246,10 +234,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         // factory so that any mutations the factory performs do not bleed back into the caller's
         // shared instance. A caller that reuses the same options across many calls must see the
         // exact values it constructed.
-        var services = new ServiceCollection();
-        services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
-        var cache = provider.GetRequiredService<HybridCache>();
+        using var provider = GetDefaultCache(out var cache);
 
         var callerOptions = new HybridCacheEntryOptions
         {
@@ -293,28 +278,25 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         // etc. without a NullReferenceException, and the documented "mutate-in-factory" API
         // shape would be unusable in the common case. We observe both that the options object
         // is non-null and mutable, and that the mutation actually takes effect (no L2 write).
-        var (cache, localCache, provider) = BuildCacheWithL2(log);
-        using (provider)
-        {
-            string key = nameof(FactoryReceivesUsableOptions_WhenCallerPassedNull);
-            int factoryCalls = 0;
+        using var provider = BuildCacheWithL2(log, out var cache, out var localCache);
+        string key = nameof(FactoryReceivesUsableOptions_WhenCallerPassedNull);
+        int factoryCalls = 0;
 
-            _ = await cache.GetOrCreateAsync<Guid>(
-                key,
-                (entryOptions, _) =>
-                {
-                    Interlocked.Increment(ref factoryCalls);
-                    Assert.NotNull(entryOptions);
-                    entryOptions.Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite;
-                    return new ValueTask<Guid>(Guid.NewGuid());
-                });
+        _ = await cache.GetOrCreateAsync<Guid>(
+            key,
+            (entryOptions, _) =>
+            {
+                Interlocked.Increment(ref factoryCalls);
+                Assert.NotNull(entryOptions);
+                entryOptions.Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite;
+                return new ValueTask<Guid>(Guid.NewGuid());
+            });
 
-            Assert.Equal(1, factoryCalls);
+        Assert.Equal(1, factoryCalls);
 
-            // The factory's mutation must have taken effect — no value written to L2.
-            await Task.Delay(500);
-            Assert.Null(localCache.Get(key));
-        }
+        // The factory's mutation must have taken effect — no value written to L2.
+        await Task.Delay(500);
+        Assert.Null(localCache.Get(key));
     }
 
     [Fact]
@@ -509,5 +491,21 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         }
 
         return Math.Abs(h);
+    }
+
+    [Fact]
+    public async Task FactoryNegativeLocalSize_Throws()
+    {
+        using var provider = GetDefaultCache(out var cache);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => cache.GetOrCreateAsync(
+            nameof(FactoryNegativeLocalSize_Throws),
+            (entryOptions, _) =>
+            {
+                entryOptions.LocalSize = -1;
+                return new ValueTask<int>(0);
+            }).AsTask());
+
+        Assert.Equal("options", ex.ParamName);
     }
 }

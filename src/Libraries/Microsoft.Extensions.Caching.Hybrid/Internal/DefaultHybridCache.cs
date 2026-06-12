@@ -220,6 +220,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
         out StampedeState<TState, T>? stampede,
         out ValueTask<T> result)
     {
+        ValidateOptions(options);
+
         canBeCanceled = cancellationToken.CanBeCanceled;
         if (canBeCanceled)
         {
@@ -278,6 +280,15 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, cancellationToken));
     }
 
+    private static void ValidateOptions(HybridCacheEntryOptions? options)
+    {
+        if (options?.LocalSize is { } size && size < 0)
+        {
+            Throw.ArgumentException(nameof(options),
+                $"{nameof(HybridCacheEntryOptions)}.{nameof(HybridCacheEntryOptions.LocalSize)} must be non-negative.");
+        }
+    }
+
     internal static HybridCacheEntryOptions CloneOptionsOrNew(HybridCacheEntryOptions? options)
     {
         if (options is null)
@@ -304,6 +315,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
+        ValidateOptions(options);
+
         // since we're forcing a write: disable L1+L2 read; we'll use a direct pass-thru of the value as the callback, to reuse all the code
         // note also that stampede token is not shared with anyone else
         HybridCacheEntryFlags flags = GetEffectiveFlags(options) | (HybridCacheEntryFlags.DisableLocalCacheRead | HybridCacheEntryFlags.DisableDistributedCacheRead);
