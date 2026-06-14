@@ -24,7 +24,7 @@
     "@types/node": "^22.5.3",
     "@types/react": "^18.3.19",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "babel-plugin-transform-amd-to-commonjs": "^1.6.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
@@ -34,7 +34,7 @@
     "tfx-cli": "^0.21.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.27.0",
-    "vite": "^6.4.2",
+    "vite": "^8.0.16",
     "vite-plugin-singlefile": "^2.0.2"
   }
 }
