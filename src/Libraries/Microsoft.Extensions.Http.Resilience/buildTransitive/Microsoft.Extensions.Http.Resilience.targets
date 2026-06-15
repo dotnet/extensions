@@ -2,6 +2,7 @@
   <PropertyGroup>
     <_GrpcNetClientFactory>Grpc.Net.ClientFactory</_GrpcNetClientFactory>
     <_CompatibleGrpcNetClientFactoryVersion>2.64.0</_CompatibleGrpcNetClientFactoryVersion>
+    <!-- Extract a System.Version-compatible lower bound. Examples: [2.63.0] -> 2.63.0, [2.64.0,3.0.0) -> 2.64.0, (,2.80.0] and [2.64.0-preview.1] -> empty. -->
     <_GrpcNetClientFactoryComparableVersionPattern>^\s*[\[\(]?\s*(\d+(?:\.\d+){1,3})(?=\s*(?:[,)\]]|$))</_GrpcNetClientFactoryComparableVersionPattern>
     <_GrpcNetClientFactoryVersionIsIncorrect>Grpc.Net.ClientFactory 2.63.0 or earlier could cause issues when used together with Microsoft.Extensions.Http.Resilience. For more details, see https://learn.microsoft.com/dotnet/core/resilience/http-resilience#known-issues. Consider using Grpc.Net.ClientFactory $(_CompatibleGrpcNetClientFactoryVersion) or later. To suppress the warning set SuppressCheckGrpcNetClientFactoryVersion=true.</_GrpcNetClientFactoryVersionIsIncorrect>
   </PropertyGroup>
