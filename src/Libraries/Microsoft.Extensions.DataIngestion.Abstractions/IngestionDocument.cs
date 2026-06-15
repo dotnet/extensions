@@ -28,6 +28,11 @@ public sealed class IngestionDocument
     public string Identifier { get; }
 
     /// <summary>
+    /// Gets the exception that occurred while reading the document, if any.
+    /// </summary>
+    internal Exception? ReadException { get; init; }
+
+    /// <summary>
     /// Gets the sections of the document.
     /// </summary>
     public IList<IngestionDocumentSection> Sections { get; } = [];

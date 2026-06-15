@@ -20,12 +20,12 @@ public class DataIngestor(
         });
 
         using var pipeline = new IngestionPipeline<string>(
-            reader: new DocumentReader(directory),
             chunker: new SemanticSimilarityChunker(embeddingGenerator, new(TiktokenTokenizer.CreateForModel("gpt-4o"))),
             writer: writer,
             loggerFactory: loggerFactory);
 
-        await foreach (var result in pipeline.ProcessAsync(directory, searchPattern))
+        var reader = new DocumentReader(directory);
+        await foreach (var result in pipeline.ProcessAsync(reader.ReadAsync(directory, searchPattern)))
         {
             logger.LogInformation("Completed processing '{id}'. Succeeded: '{succeeded}'.", result.DocumentId, result.Succeeded);
         }
