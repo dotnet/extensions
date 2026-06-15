@@ -14,10 +14,7 @@ using static Microsoft.Extensions.Caching.Hybrid.Tests.L2Tests;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-// Covers mutations the factory makes to the HybridCacheEntryOptions it is handed —
-// both Flags (replace semantics, subject to runtime-mandated floor) and non-Flags
-// properties (Expiration / LocalCacheExpiration / LocalSize) that the factory writes
-// directly to the options instance and which are read by SetL1 / SetL2Async / ResolveLocalSize.
+// Covers mutations the factory makes to the HybridCacheEntryOptions it is handed.
 public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
@@ -79,7 +76,6 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     public async Task FactoryCanDisableL2Write_ThatCallerEnabled()
     {
         // Symmetric tightening: caller allowed L2 writes (None), factory disables them.
-        // Replace-semantics in ApplyFactoryOptions must make the factory's restriction stick.
         using var provider = BuildCacheWithL2(log, out var cache, out var localCache);
         string key = nameof(FactoryCanDisableL2Write_ThatCallerEnabled);
 
@@ -202,8 +198,6 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     {
         // Tight L1 SizeLimit + a payload large enough to exceed it. Without the override the
         // entry would be evicted from L1; the factory sets LocalSize = 1 to make the entry fit.
-        // Verify by issuing a second call: if L1 retained the value, the factory is not
-        // re-invoked and the same Guid is returned.
         using var provider = GetDefaultCache(out var cache, services => services.AddMemoryCache(options => options.SizeLimit = 5));
 
         string key = nameof(FactoryLocalSizeMutation_HonoredForL1SizeAccounting);
@@ -238,7 +232,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     [Fact]
     public async Task FactoryMutations_DoNotLeakToCallerOptionsInstance()
     {
-        // The implementation passes a clone (or fresh instance) of the caller's options to the
+        // The implementation passes a clone of the caller's options to the
         // factory so that any mutations the factory performs do not bleed back into the caller's
         // shared instance. A caller that reuses the same options across many calls must see the
         // exact values it constructed.
@@ -282,10 +276,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     public async Task FactoryReceivesUsableOptions_WhenCallerPassedNull()
     {
         // The options-aware overload must hand the factory a real, mutable instance even when
-        // the caller did not supply one — otherwise the factory cannot set entryOptions.Flags
-        // etc. without a NullReferenceException, and the documented "mutate-in-factory" API
-        // shape would be unusable in the common case. We observe both that the options object
-        // is non-null and mutable, and that the mutation actually takes effect (no L2 write).
+        // the caller did not supply one.
         using var provider = BuildCacheWithL2(log, out var cache, out var localCache);
         string key = nameof(FactoryReceivesUsableOptions_WhenCallerPassedNull);
         int factoryCalls = 0;
@@ -310,9 +301,8 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     [Fact]
     public async Task FactoryLocalSize_PersistedInL2_AndReappliedOnL2Reload()
     {
-        // End-to-end exercise of commit 15d649097d: the factory-set LocalSize must be persisted
-        // into the L2 payload so a *different* cache instance reading from the shared L2 still
-        // gets the size override applied to its L1 entry.
+        // The factory-set LocalSize must be persisted into the L2 payload so a *different* cache
+        // instance reading from the shared L2 still gets the size override applied to its L1 entry.
         //
         // Setup:
         //   Cache A: unlimited L1 SizeLimit; factory sets LocalSize=1, payload is 256 bytes.
@@ -427,12 +417,12 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
             => _writes.GetOrAdd(key, _ => new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously));
     }
 
-    // Guards against silent data loss when HybridCacheEntryOptions (owned by dotnet/runtime)
-    // gains a new property and the down-level branch of CloneOptionsOrNew is not updated.
-    // Also exercises the UnsafeAccessor path on net8.0+.
     [Fact]
     public void CloneOptionsOrNew_CopiesEveryPublicWritableProperty()
     {
+        // Guards against silent data loss when HybridCacheEntryOptions
+        // gains a new property and the down-level branch of CloneOptionsOrNew is not updated.
+        // Also exercises the UnsafeAccessor path on net8.0+.
         var writableProps = typeof(HybridCacheEntryOptions)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanRead && p.CanWrite)

@@ -82,7 +82,7 @@ internal static class HybridCachePayload
             + MaxVarint64Length // flags
             + MaxVarint64Length // payload size
             + MaxVarint64Length // duration
-            + MaxVarint64Length // optional local cache size (always budgeted; trivial over-estimate when absent)
+            + MaxVarint64Length // optional local cache size
             + MaxVarint64Length // tag count
             + 2 // trailing sentinel + version
             + GetMaxStringLength(key.Length) // key
@@ -120,7 +120,7 @@ internal static class HybridCachePayload
     {
         int payloadLength = checked((int)payload.Length);
 
-        // a negative localCacheSize is the documented "reset to default" sentinel - treat it as absent.
+        // a negative localCacheSize is the "reset to default" sentinel - treat it as absent.
         if (localCacheSize is < 0)
         {
             localCacheSize = null;
