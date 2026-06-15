@@ -183,13 +183,20 @@ public class GrpcNetClientFactoryVersionTargetTests
             }
             catch (IOException)
             {
+                // Best-effort cleanup should not mask the test failure.
+                DelayBeforeCleanupRetry(retry);
             }
             catch (UnauthorizedAccessException)
             {
+                // Best-effort cleanup should not mask the test failure.
+                DelayBeforeCleanupRetry(retry);
             }
-
-            System.Threading.Thread.Sleep(TimeSpan.FromMilliseconds(50 * (retry + 1)));
         }
+    }
+
+    private static void DelayBeforeCleanupRetry(int retry)
+    {
+        System.Threading.Thread.Sleep(TimeSpan.FromMilliseconds(50 * (retry + 1)));
     }
 
     private static async Task<CommandResult> RunDotNetAsync(string workingDirectory, params string[] arguments)
@@ -222,8 +229,7 @@ public class GrpcNetClientFactoryVersionTargetTests
         {
             KillProcess(process);
             process.WaitForExit();
-            await ObserveOutputTaskAsync(standardOutputTask).ConfigureAwait(false);
-            await ObserveOutputTaskAsync(standardErrorTask).ConfigureAwait(false);
+            await ObserveOutputTasksAsync(standardOutputTask, standardErrorTask).ConfigureAwait(false);
             throw new TimeoutException("Timed out while running dotnet msbuild.");
         }
 
@@ -243,22 +249,27 @@ public class GrpcNetClientFactoryVersionTargetTests
             process.Kill(entireProcessTree: true);
 #endif
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException exception)
         {
+            _ = exception;
         }
     }
 
-    private static async Task ObserveOutputTaskAsync(Task<string> outputTask)
+    private static async Task ObserveOutputTasksAsync(Task<string> standardOutputTask, Task<string> standardErrorTask)
     {
         try
         {
-            await outputTask.ConfigureAwait(false);
+#pragma warning disable VSTHRD003 // Output reader tasks are intentionally observed after the process exits.
+            await Task.WhenAll(standardOutputTask, standardErrorTask).ConfigureAwait(false);
+#pragma warning restore VSTHRD003
         }
-        catch (IOException)
+        catch (IOException exception)
         {
+            _ = exception;
         }
-        catch (ObjectDisposedException)
+        catch (ObjectDisposedException exception)
         {
+            _ = exception;
         }
     }
 
