@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
+#if NETFRAMEWORK
 using System.Text;
+#endif
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
@@ -199,8 +201,17 @@ public class GrpcNetClientFactoryVersionTargetTests
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+#if NETFRAMEWORK
             Arguments = CreateArguments(arguments),
+#endif
         };
+
+#if !NETFRAMEWORK
+        foreach (var argument in arguments)
+        {
+            processStartInfo.ArgumentList.Add(argument);
+        }
+#endif
 
         using var process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start dotnet.");
 
@@ -251,6 +262,7 @@ public class GrpcNetClientFactoryVersionTargetTests
         }
     }
 
+#if NETFRAMEWORK
     private static string CreateArguments(params string[] arguments)
     {
         return string.Join(" ", Array.ConvertAll(arguments, QuoteArgument));
@@ -287,6 +299,7 @@ public class GrpcNetClientFactoryVersionTargetTests
 
         return quoted.ToString();
     }
+#endif
 
     private static string GetTargetPath()
     {
