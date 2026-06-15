@@ -209,7 +209,10 @@ public class GrpcNetClientFactoryVersionTargetTests
 
         if (!process.WaitForExit((int)TimeSpan.FromSeconds(30).TotalMilliseconds))
         {
-            process.Kill();
+            KillProcess(process);
+            process.WaitForExit();
+            await ObserveOutputTaskAsync(standardOutputTask).ConfigureAwait(false);
+            await ObserveOutputTaskAsync(standardErrorTask).ConfigureAwait(false);
             throw new TimeoutException("Timed out while running dotnet msbuild.");
         }
 
@@ -217,6 +220,35 @@ public class GrpcNetClientFactoryVersionTargetTests
         var standardError = await standardErrorTask.ConfigureAwait(false);
 
         return new CommandResult(process.ExitCode, standardOutput, standardError);
+    }
+
+    private static void KillProcess(Process process)
+    {
+        try
+        {
+#if NETFRAMEWORK
+            process.Kill();
+#else
+            process.Kill(entireProcessTree: true);
+#endif
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
+
+    private static async Task ObserveOutputTaskAsync(Task<string> outputTask)
+    {
+        try
+        {
+            await outputTask.ConfigureAwait(false);
+        }
+        catch (IOException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     private static string CreateArguments(params string[] arguments)
