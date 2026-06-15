@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="{VERSION}" />
+    <PackageReference Include="MessagePack" Version="{VERSION}" />
     <PackageReference Include="Aspire.Hosting.Qdrant" Version="{VERSION}" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="{VERSION}" />
   </ItemGroup>
