@@ -166,7 +166,27 @@ public class GrpcNetClientFactoryVersionTargetTests
         }
         finally
         {
-            Directory.Delete(tempDirectory, recursive: true);
+            DeleteDirectoryBestEffort(tempDirectory);
+        }
+    }
+
+    private static void DeleteDirectoryBestEffort(string directory)
+    {
+        for (var retry = 0; retry < 3; retry++)
+        {
+            try
+            {
+                Directory.Delete(directory, recursive: true);
+                return;
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+
+            System.Threading.Thread.Sleep(TimeSpan.FromMilliseconds(50 * (retry + 1)));
         }
     }
 
