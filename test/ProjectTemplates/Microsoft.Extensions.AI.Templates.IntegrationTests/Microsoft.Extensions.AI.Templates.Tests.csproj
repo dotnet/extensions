@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!--
+      Skip these tests pending backport of #7561 to release/10.7. The generated
+      AppHost projects fail 'dotnet restore' with NU1903 because the transitive
+      MessagePack 2.5.192 has a known high severity vulnerability
+      (https://github.com/advisories/GHSA-hv8m-jj95-wg3x). See #7562.
+    -->
+    <SkipTests>true</SkipTests>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <NoWarn>$(NoWarn);CA1063;CA1716;CA1861;CA2201;VSTHRD003;S104;S125;S2699</NoWarn>
   </PropertyGroup>
 
