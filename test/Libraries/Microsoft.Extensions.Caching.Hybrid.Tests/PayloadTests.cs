@@ -279,8 +279,11 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
     }
 
     [Fact]
-    public void RoundTrip_Truncated()
+    public void RoundTrip_TruncatedAtEveryLength_NeverThrows()
     {
+        // Truncating the payload at *every* prefix length must surface as a clean parse result
+        // (never an exception that becomes ParseFault). In particular, a buffer that ends in the
+        // middle of a varint must not read past the end of the span.
         var clock = new FakeTime();
         using var provider = GetDefaultCache(out var cache, config =>
         {
@@ -299,11 +302,19 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         log.WriteLine($"bytes written: {actualLength}");
         Assert.Equal(1063, actualLength);
 
-        var result = HybridCachePayload.TryParse(
-            new(oversized, 0, actualLength - 1), key, tags, cache, out var payload, out var remaining, out var flags, out var entropy, out var pendingTags, out _, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.InvalidData, result);
-        Assert.Equal(0, payload.Count);
-        Assert.True(pendingTags.IsEmpty);
+        for (int truncatedLength = 0; truncatedLength < actualLength; truncatedLength++)
+        {
+            var result = HybridCachePayload.TryParse(
+                new(oversized, 0, truncatedLength), key, tags, cache,
+                out var payload, out _, out _, out _, out var pendingTags, out _, out var fault);
+
+            Assert.Null(fault);
+            Assert.NotEqual(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+            Assert.Equal(0, payload.Count);
+            Assert.True(pendingTags.IsEmpty);
+        }
+
+        ArrayPool<byte>.Shared.Return(oversized);
     }
 
     [Fact]

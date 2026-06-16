@@ -445,7 +445,11 @@ internal static class HybridCachePayload
             int index = 0;
             for (int shift = 0; shift < MaxBytesWithoutOverflow * 7; shift += 7)
             {
-                // ReadByte handles end of stream cases for us.
+                if (index >= buffer.Length)
+                {
+                    return false; // truncated
+                }
+
                 byteReadJustNow = buffer[index++];
                 result |= (byteReadJustNow & 0x7Ful) << shift;
 
@@ -459,6 +463,11 @@ internal static class HybridCachePayload
             // Read the 10th byte. Since we already read 63 bits,
             // the value of this byte must fit within 1 bit (64 - 63),
             // and it must not have the high bit set.
+
+            if (index >= buffer.Length)
+            {
+                return false; // truncated
+            }
 
             byteReadJustNow = buffer[index++];
             if (byteReadJustNow > 0b_1u)
