@@ -435,4 +435,70 @@ public class OpenAISpeechToTextClientTests
             Assert.NotNull(update);
         }
     }
+
+    [Fact]
+    public async Task GetTextAsync_StreamPositionNotAtZero_SkipsDetectionAndDefaultsToMp3()
+    {
+        const string Input = """
+                {
+                    "model": "gpt-4o-transcribe"
+                }
+                """;
+
+        const string Output = """
+                {
+                    "text":"Hello."
+                }
+                """;
+
+        // WAV magic bytes, but position advanced past them — detection should be skipped.
+        byte[] wavHeader = "RIFF\x00\x00\x00\x00WAVE"u8.ToArray();
+        using var audioSpeechStream = new MemoryStream(wavHeader);
+        audioSpeechStream.Position = 4;
+
+        using VerbatimMultiPartHttpHandler handler = new(Input, Output)
+        {
+            ExpectedAudioFilename = "audio.mp3",
+        };
+        using HttpClient httpClient = new(handler);
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
+
+        var response = await client.GetTextAsync(audioSpeechStream);
+        Assert.NotNull(response);
+    }
+
+    [Fact]
+    public async Task GetStreamingTextAsync_StreamPositionNotAtZero_SkipsDetectionAndDefaultsToMp3()
+    {
+        const string Input = """
+                {
+                    "model": "gpt-4o-transcribe",
+                    "stream":true
+                }
+                """;
+
+        const string Output = """
+                {
+                    "text":"Hello."
+                }
+                """;
+
+        // WAV magic bytes, but position advanced past them — detection should be skipped.
+        byte[] wavHeader = "RIFF\x00\x00\x00\x00WAVE"u8.ToArray();
+        using var audioSpeechStream = new MemoryStream(wavHeader);
+        audioSpeechStream.Position = 4;
+
+        using VerbatimMultiPartHttpHandler handler = new(Input, Output)
+        {
+            ExpectedRequestUriContains = "audio/transcriptions",
+            ExpectedAudioFilename = "audio.mp3",
+        };
+        using HttpClient httpClient = new(handler);
+        using ISpeechToTextClient client = CreateSpeechToTextClient(httpClient, "gpt-4o-transcribe");
+
+        await foreach (var update in client.GetStreamingTextAsync(audioSpeechStream))
+        {
+            Assert.NotNull(update);
+        }
+    }
 }

@@ -190,8 +190,8 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
             return Path.GetFileName(fileStream.Name);
         }
 
-        // For seekable streams, peek at the header to detect audio format, then rewind.
-        if (audioSpeechStream.CanSeek)
+        // For seekable streams positioned at the start, peek at the header to detect audio format, then rewind.
+        if (audioSpeechStream.CanSeek && audioSpeechStream.Position == 0)
         {
             byte[] header = new byte[FormatDetectionByteCount];
             int bytesRead = 0;
