@@ -33,15 +33,15 @@ Or directly in the C# project file:
 
 ### Configuring the vector store
 
-The vector store must be configured with an embedding generator that accepts `AIContent` inputs. This allows the ingestion pipeline to pass the original chunked content directly for embedding generation:
+The vector store must be configured with an embedding generator that accepts `AIContent` (or a type that derives from `AIContent`) inputs. This allows the ingestion pipeline to pass the original chunked content directly for embedding generation:
 
 ```csharp
-IEmbeddingGenerator<AIContent, Embedding<float>> aiContentEmbeddingGenerator =
-    stringEmbeddingGenerator.AsAIContentEmbeddingGenerator();
+IEmbeddingGenerator<TextContent, Embedding<float>> textContentEmbeddingGenerator =
+    stringEmbeddingGenerator.AsTextContentEmbeddingGenerator();
 
 using VectorStore vectorStore = new InMemoryVectorStore(new()
 {
-    EmbeddingGenerator = aiContentEmbeddingGenerator
+    EmbeddingGenerator = textContentEmbeddingGenerator
 });
 ```
 

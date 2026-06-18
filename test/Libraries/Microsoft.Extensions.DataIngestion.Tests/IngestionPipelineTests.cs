@@ -106,7 +106,7 @@ public sealed class IngestionPipelineTests : IDisposable
         for (int i = 0; i < retrieved.Count; i++)
         {
             Assert.NotEqual(Guid.Empty, retrieved[i].Key);
-            Assert.NotEmpty(retrieved[i].SerializedContent);
+            Assert.NotEmpty(retrieved[i].SerializedContent!);
             Assert.NotNull(retrieved[i].Content);
             Assert.Contains(retrieved[i].DocumentId, _sampleFiles.Select(info => info.FullName));
         }
@@ -144,7 +144,7 @@ public sealed class IngestionPipelineTests : IDisposable
         for (int i = 0; i < retrieved.Count; i++)
         {
             Assert.NotEqual(Guid.Empty, retrieved[i].Key);
-            Assert.NotEmpty(retrieved[i].SerializedContent);
+            Assert.NotEmpty(retrieved[i].SerializedContent!);
             Assert.NotNull(retrieved[i].Content);
             Assert.StartsWith(directory.FullName, retrieved[i].DocumentId);
         }
@@ -231,8 +231,8 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.NotEmpty(retrieved);
 
         // Verify we got both text and data content types serialized
-        Assert.Contains(retrieved, r => r.SerializedContent.Contains("\"$type\": \"text\"", StringComparison.Ordinal));
-        Assert.Contains(retrieved, r => r.SerializedContent.Contains("\"$type\": \"data\"", StringComparison.Ordinal));
+        Assert.Contains(retrieved, r => r.SerializedContent?.Contains("\"$type\": \"text\"", StringComparison.Ordinal) == true);
+        Assert.Contains(retrieved, r => r.SerializedContent?.Contains("\"$type\": \"data\"", StringComparison.Ordinal) == true);
     }
 
     /// <summary>
@@ -259,7 +259,7 @@ public sealed class IngestionPipelineTests : IDisposable
             .ToListAsync();
 
         Assert.NotEmpty(retrieved);
-        Assert.All(retrieved, r => Assert.NotEmpty(r.SerializedContent));
+        Assert.All(retrieved, r => Assert.NotEmpty(r.SerializedContent!));
     }
 
     internal class ImageChunker : IngestionChunker

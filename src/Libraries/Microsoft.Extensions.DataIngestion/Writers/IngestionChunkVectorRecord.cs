@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
@@ -39,13 +39,14 @@ public class IngestionChunkVectorRecord
     /// Gets or sets the JSON-serialized content of the chunk, used for storage and retrieval.
     /// </summary>
     [VectorStoreData]
-    public virtual string SerializedContent { get; set; } = string.Empty;
+    public virtual string? SerializedContent { get; set; }
+
+    private static readonly JsonTypeInfo<AIContent> _aiContentTypeInfo =
+        (JsonTypeInfo<AIContent>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(AIContent));
 
     /// <summary>
     /// Gets or sets the content of the chunk.
     /// </summary>
-    [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     public virtual AIContent? Content
     {
         get
@@ -60,12 +61,12 @@ public class IngestionChunkVectorRecord
                 return null;
             }
 
-            return _content = JsonSerializer.Deserialize<AIContent>(SerializedContent, AIJsonUtilities.DefaultOptions);
+            return _content = JsonSerializer.Deserialize(SerializedContent!, _aiContentTypeInfo);
         }
         set
         {
             _content = value;
-            SerializedContent = JsonSerializer.Serialize(value, AIJsonUtilities.DefaultOptions);
+            SerializedContent = value is not null ? JsonSerializer.Serialize(value, _aiContentTypeInfo) : null;
         }
     }
 

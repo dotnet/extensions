@@ -10,7 +10,7 @@ public class DataIngestor(
     ILogger<DataIngestor> logger,
     ILoggerFactory loggerFactory,
     VectorStoreCollection<Guid, IngestedChunk> vectorCollection,
-    IEmbeddingGenerator<AIContent, Embedding<float>> embeddingGenerator)
+    IEmbeddingGenerator<TextContent, Embedding<float>> embeddingGenerator)
 {
     public async Task IngestDataAsync(DirectoryInfo directory, string searchPattern)
     {

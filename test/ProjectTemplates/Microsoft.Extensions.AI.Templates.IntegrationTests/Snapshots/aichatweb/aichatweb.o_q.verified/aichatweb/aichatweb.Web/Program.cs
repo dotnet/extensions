@@ -16,8 +16,8 @@ builder.AddOllamaApiClient("chat")
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 
-builder.Services.AddSingleton<IEmbeddingGenerator<AIContent, Embedding<float>>>(sp =>
-    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsAIContentEmbeddingGenerator());
+builder.Services.AddSingleton<IEmbeddingGenerator<TextContent, Embedding<float>>>(sp =>
+    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsTextContentEmbeddingGenerator());
 
 builder.AddQdrantClient("vectordb");
 builder.Services.AddQdrantVectorStore();

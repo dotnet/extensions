@@ -33,8 +33,8 @@ openai.AddChatClient("gpt-4o-mini")
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 #endif
 
-builder.Services.AddSingleton<IEmbeddingGenerator<AIContent, Embedding<float>>>(sp =>
-    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsAIContentEmbeddingGenerator());
+builder.Services.AddSingleton<IEmbeddingGenerator<TextContent, Embedding<float>>>(sp =>
+    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsTextContentEmbeddingGenerator());
 
 #if (IsAzureAISearch)
 builder.AddAzureSearchClient("search");

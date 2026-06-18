@@ -26,43 +26,33 @@ public static class EmbeddingGeneratorExtensions
     /// The returned generator only supports <see cref="TextContent"/> instances. Passing any other
     /// <see cref="AIContent"/>-derived type will throw a <see cref="NotSupportedException"/>.
     /// </remarks>
-    public static IEmbeddingGenerator<AIContent, TEmbedding> AsAIContentEmbeddingGenerator<TEmbedding>(
+    public static IEmbeddingGenerator<TextContent, TEmbedding> AsTextContentEmbeddingGenerator<TEmbedding>(
         this IEmbeddingGenerator<string, TEmbedding> stringGenerator)
         where TEmbedding : Embedding
     {
         _ = Shared.Diagnostics.Throw.IfNull(stringGenerator);
 
-        return new AIContentEmbeddingGeneratorAdapter<TEmbedding>(stringGenerator);
+        return new TextContentEmbeddingGeneratorAdapter<TEmbedding>(stringGenerator);
     }
 
-    private sealed class AIContentEmbeddingGeneratorAdapter<TEmbedding> : IEmbeddingGenerator<AIContent, TEmbedding>
+    private sealed class TextContentEmbeddingGeneratorAdapter<TEmbedding> : IEmbeddingGenerator<TextContent, TEmbedding>
         where TEmbedding : Embedding
     {
         private readonly IEmbeddingGenerator<string, TEmbedding> _innerGenerator;
 
-        internal AIContentEmbeddingGeneratorAdapter(IEmbeddingGenerator<string, TEmbedding> innerGenerator)
+        internal TextContentEmbeddingGeneratorAdapter(IEmbeddingGenerator<string, TEmbedding> innerGenerator)
         {
             _innerGenerator = innerGenerator;
         }
 
         public Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(
-            IEnumerable<AIContent> values,
+            IEnumerable<TextContent> values,
             EmbeddingGenerationOptions? options = null,
             CancellationToken cancellationToken = default)
         {
             _ = Shared.Diagnostics.Throw.IfNull(values);
 
-            IEnumerable<string> stringValues = values.Select(content =>
-            {
-                if (content is TextContent tc)
-                {
-                    return tc.Text;
-                }
-
-                throw new NotSupportedException(
-                    $"The embedding generator only supports TextContent inputs, but received '{content?.GetType().Name ?? "null"}'.");
-            });
-
+            IEnumerable<string> stringValues = values.Select(content => content.Text);
             return _innerGenerator.GenerateAsync(stringValues, options, cancellationToken);
         }
 

@@ -16,8 +16,8 @@ openai.AddChatClient("gpt-4o-mini")
         c.EnableSensitiveData = builder.Environment.IsDevelopment());
 openai.AddEmbeddingGenerator("text-embedding-3-small");
 
-builder.Services.AddSingleton<IEmbeddingGenerator<AIContent, Embedding<float>>>(sp =>
-    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsAIContentEmbeddingGenerator());
+builder.Services.AddSingleton<IEmbeddingGenerator<TextContent, Embedding<float>>>(sp =>
+    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsTextContentEmbeddingGenerator());
 
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
 var vectorStoreConnectionString = $"Data Source={vectorStorePath}";

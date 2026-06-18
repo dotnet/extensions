@@ -61,7 +61,7 @@ public abstract class VectorStoreWriterTests
         Assert.NotNull(record);
         Assert.NotEqual(Guid.Empty, record.Key);
         Assert.Equal(documentId, record.DocumentId);
-        Assert.NotEmpty(record.SerializedContent);
+        Assert.NotEmpty(record.SerializedContent!);
         Assert.Equal(((TextContent)chunks[0].Content).Text, ((TextContent)record.Content!).Text);
     }
 
@@ -93,7 +93,7 @@ public abstract class VectorStoreWriterTests
         Assert.NotNull(record);
         Assert.NotEqual(Guid.Empty, record.Key);
         Assert.Equal(documentId, record.DocumentId);
-        Assert.NotEmpty(record.SerializedContent);
+        Assert.NotEmpty(record.SerializedContent!);
         Assert.Equal(((TextContent)chunks[0].Content).Text, ((TextContent)record.Content!).Text);
         Assert.True(testEmbeddingGenerator.WasCalled);
     }
@@ -124,7 +124,7 @@ public abstract class VectorStoreWriterTests
 
         Assert.NotNull(record);
         Assert.Equal(documentId, record.DocumentId);
-        Assert.NotEmpty(record.SerializedContent);
+        Assert.NotEmpty(record.SerializedContent!);
         Assert.Equal(((TextContent)chunks[0].Content).Text, ((TextContent)record.Content!).Text);
         Assert.Equal("important", record.Classification);
     }

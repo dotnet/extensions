@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// Represents a chunk of content extracted from an <see cref="IngestionDocument"/>.
 /// </summary>
 [DebuggerDisplay("Content = {Content}")]
-public sealed class IngestionChunk
+public class IngestionChunk
 {
     private Dictionary<string, object>? _metadata;
 

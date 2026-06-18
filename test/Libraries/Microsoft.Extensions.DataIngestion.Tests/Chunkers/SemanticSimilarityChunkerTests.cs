@@ -16,12 +16,12 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         protected override IngestionChunker CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            TestEmbeddingGenerator<AIContent> embeddingClient = new();
+            TestEmbeddingGenerator<TextContent> embeddingClient = new();
 #pragma warning restore CA2000 // Dispose objects before losing scope
             return CreateSemanticSimilarityChunker(embeddingClient, maxTokensPerChunk, overlapTokens);
         }
 
-        private static IngestionChunker CreateSemanticSimilarityChunker(IEmbeddingGenerator<AIContent, Embedding<float>> embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        private static IngestionChunker CreateSemanticSimilarityChunker(IEmbeddingGenerator<TextContent, Embedding<float>> embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
             Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
             return new SemanticSimilarityChunker(embeddingClient,
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            using Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>> customGenerator = new()
+            using TestEmbeddingGenerator<TextContent, Embedding<float>> customGenerator = new()
             {
                 GenerateAsyncCallback = static async (values, options, ct) =>
                 {
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>> customGenerator = new()
+            using TestEmbeddingGenerator<TextContent, Embedding<float>> customGenerator = new()
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using Microsoft.Extensions.AI.TestEmbeddingGenerator<AIContent, Embedding<float>> customGenerator = new()
+            using TestEmbeddingGenerator<TextContent, Embedding<float>> customGenerator = new()
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
