@@ -71,7 +71,7 @@ public class VectorStoreWriter<TRecord> : IngestionChunkWriter
             // We obtain the IDs of the pre-existing chunks for given document,
             // and delete them after we finish inserting the new chunks,
             // to avoid a situation where we delete the chunks and then fail to insert the new ones.
-            preExistingKeys ??= await GetPreExistingChunksIdsAsync(chunk.Document, cancellationToken).ConfigureAwait(false);
+            preExistingKeys ??= await GetPreExistingChunksIdsAsync(document!, cancellationToken).ConfigureAwait(false);
 
             TRecord record = new()
             {
