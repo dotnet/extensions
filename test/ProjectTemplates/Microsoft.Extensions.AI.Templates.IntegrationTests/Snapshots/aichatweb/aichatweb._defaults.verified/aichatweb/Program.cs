@@ -1,5 +1,6 @@
 ﻿using System.ClientModel;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion;
 using OpenAI;
 using aichatweb.Components;
 using aichatweb.Services;
@@ -31,7 +32,7 @@ builder.Services.AddSingleton<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddKeyedSingleton("ingestion_directory", new DirectoryInfo(Path.Combine(builder.Environment.WebRootPath, "Data")));
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
-builder.Services.AddEmbeddingGenerator(embeddingGenerator);
+builder.Services.AddEmbeddingGenerator(embeddingGenerator.AsTextContentEmbeddingGenerator());
 
 var app = builder.Build();
 

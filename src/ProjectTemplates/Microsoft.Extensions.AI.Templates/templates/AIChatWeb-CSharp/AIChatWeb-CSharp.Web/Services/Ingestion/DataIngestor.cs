@@ -10,16 +10,16 @@ public class DataIngestor(
     ILogger<DataIngestor> logger,
     ILoggerFactory loggerFactory,
     VectorStoreCollection<Guid, IngestedChunk> vectorCollection,
-    IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
+    IEmbeddingGenerator<TextContent, Embedding<float>> embeddingGenerator)
 {
     public async Task IngestDataAsync(DirectoryInfo directory, string searchPattern)
     {
-        using var writer = new VectorStoreWriter<string, IngestedChunk>(vectorCollection, new()
+        using var writer = new VectorStoreWriter<IngestedChunk>(vectorCollection, new()
         {
             IncrementalIngestion = false,
         });
 
-        using var pipeline = new IngestionPipeline<string>(
+        using var pipeline = new IngestionPipeline(
             reader: new DocumentReader(directory),
             chunker: new SemanticSimilarityChunker(embeddingGenerator, new(TiktokenTokenizer.CreateForModel("gpt-4o"))),
             writer: writer,

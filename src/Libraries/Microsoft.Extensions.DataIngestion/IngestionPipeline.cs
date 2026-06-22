@@ -21,17 +21,16 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Represents a pipeline for ingesting data from documents and processing it into chunks.
 /// </summary>
-/// <typeparam name="T">The type of the chunk content.</typeparam>
-public sealed class IngestionPipeline<T> : IDisposable
+public sealed class IngestionPipeline : IDisposable
 {
     private readonly IngestionDocumentReader _reader;
-    private readonly IngestionChunker<T> _chunker;
-    private readonly IngestionChunkWriter<T> _writer;
+    private readonly IngestionChunker _chunker;
+    private readonly IngestionChunkWriter _writer;
     private readonly ActivitySource _activitySource;
     private readonly ILogger? _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="IngestionPipeline{T}"/> class.
+    /// Initializes a new instance of the <see cref="IngestionPipeline"/> class.
     /// </summary>
     /// <param name="reader">The reader for ingestion documents.</param>
     /// <param name="chunker">The chunker to split documents into chunks.</param>
@@ -40,8 +39,8 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <param name="loggerFactory">The logger factory for creating loggers.</param>
     public IngestionPipeline(
         IngestionDocumentReader reader,
-        IngestionChunker<T> chunker,
-        IngestionChunkWriter<T> writer,
+        IngestionChunker chunker,
+        IngestionChunkWriter writer,
         IngestionPipelineOptions? options = default,
         ILoggerFactory? loggerFactory = default)
     {
@@ -49,7 +48,7 @@ public sealed class IngestionPipeline<T> : IDisposable
         _chunker = Throw.IfNull(chunker);
         _writer = Throw.IfNull(writer);
         _activitySource = new((options ?? new()).ActivitySourceName);
-        _logger = loggerFactory?.CreateLogger<IngestionPipeline<T>>();
+        _logger = loggerFactory?.CreateLogger<IngestionPipeline>();
     }
 
     /// <inheritdoc/>
@@ -67,7 +66,7 @@ public sealed class IngestionPipeline<T> : IDisposable
     /// <summary>
     /// Gets the chunk processors in the pipeline.
     /// </summary>
-    public IList<IngestionChunkProcessor<T>> ChunkProcessors { get; } = [];
+    public IList<IngestionChunkProcessor> ChunkProcessors { get; } = [];
 
     /// <summary>
     /// Processes all files in the specified directory that match the given search pattern and option.
@@ -180,14 +179,14 @@ public sealed class IngestionPipeline<T> : IDisposable
             parentActivity?.SetTag(ProcessSource.DocumentIdTagName, document.Identifier);
         }
 
-        IAsyncEnumerable<IngestionChunk<T>> chunks = _chunker.ProcessAsync(document, cancellationToken);
+        IAsyncEnumerable<IngestionChunk> chunks = _chunker.ProcessAsync(document, cancellationToken);
         foreach (var processor in ChunkProcessors)
         {
             chunks = processor.ProcessAsync(chunks, cancellationToken);
         }
 
         _logger?.WritingChunks(GetShortName(_writer));
-        await _writer.WriteAsync(document, chunks, cancellationToken).ConfigureAwait(false);
+        await _writer.WriteAsync(chunks, cancellationToken).ConfigureAwait(false);
         _logger?.WroteChunks(document.Identifier);
 
         return document;

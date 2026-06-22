@@ -11,17 +11,16 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Writes chunks to a destination.
 /// </summary>
-/// <typeparam name="T">The type of the chunk content.</typeparam>
-public abstract class IngestionChunkWriter<T> : IDisposable
+public abstract class IngestionChunkWriter : IDisposable
 {
     /// <summary>
-    /// Writes the chunks of a single document asynchronously.
+    /// Writes chunks asynchronously. All chunks must belong to the same document.
     /// </summary>
-    /// <param name="document">The document from which the chunks were extracted.</param>
-    /// <param name="chunks">The chunks to write.</param>
+    /// <param name="chunks">The chunks to write. All chunks must originate from the same <see cref="IngestionDocument"/>.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous write operation.</returns>
-    public abstract Task WriteAsync(IngestionDocument document, IAsyncEnumerable<IngestionChunk<T>> chunks, CancellationToken cancellationToken = default);
+    /// <exception cref="InvalidOperationException">Thrown when chunks from multiple documents are passed.</exception>
+    public abstract Task WriteAsync(IAsyncEnumerable<IngestionChunk> chunks, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Disposes the writer and releases all associated resources.
