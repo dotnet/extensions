@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion;
@@ -14,7 +15,7 @@ public static class VectorStoreExtensions
 {
     /// <summary>
     /// Provides a convenient method to get a vector store collection specifically designed for storing ingested chunk records
-    /// using the default <see cref="IngestionChunkVectorRecord{TChunk}"/> type with <see langword="string"/> content.
+    /// using the default <see cref="IngestionChunkVectorRecord"/> type.
     /// </summary>
     /// <param name="vectorStore">The vector store instance to create the collection in.</param>
     /// <param name="collectionName">The name of the collection to be created.</param>
@@ -27,17 +28,16 @@ public static class VectorStoreExtensions
     /// <returns>A vector store collection configured for ingested chunk records.</returns>
     [RequiresDynamicCode("This API is not compatible with NativeAOT. You can implement your own IngestionChunkWriter that uses dynamic mapping via VectorStore.GetCollectionDynamic().")]
     [RequiresUnreferencedCode("This API is not compatible with trimming. You can implement your own IngestionChunkWriter that uses dynamic mapping via VectorStore.GetCollectionDynamic().")]
-    public static VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> GetIngestionRecordCollection(this VectorStore vectorStore,
+    public static VectorStoreCollection<Guid, IngestionChunkVectorRecord> GetIngestionRecordCollection(this VectorStore vectorStore,
         string collectionName, int dimensionCount, string? distanceFunction = null, string? indexKind = null)
     {
-        return vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord<string>, string>(collectionName, dimensionCount, distanceFunction, indexKind);
+        return vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(collectionName, dimensionCount, distanceFunction, indexKind);
     }
 
     /// <summary>
     /// Provides a convenient method to get a vector store collection specifically designed for storing ingested chunk records.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record to be stored in the collection.</typeparam>
-    /// <typeparam name="TChunk">The type of the chunk content.</typeparam>
     /// <param name="vectorStore">The vector store instance to create the collection in.</param>
     /// <param name="collectionName">The name of the collection to be created.</param>
     /// <param name="dimensionCount">The number of dimensions that the vector has.</param>
@@ -53,11 +53,11 @@ public static class VectorStoreExtensions
     /// overload for the common case where no custom metadata is needed.
     /// </para>
     /// <para>
-    /// If you need custom metadata, create a type derived from <see cref="IngestionChunkVectorRecord{TChunk}"/>
+    /// If you need custom metadata, create a type derived from <see cref="IngestionChunkVectorRecord"/>
     /// with additional properties annotated with <see cref="VectorStoreDataAttribute"/>, and pass it as the
     /// <typeparamref name="TRecord"/> type parameter. You will also need to create a derived
-    /// <see cref="VectorStoreWriter{TChunk, TRecord}"/> and override
-    /// <see cref="VectorStoreWriter{TChunk, TRecord}.SetMetadata(TRecord, string, object?)"/>
+    /// <see cref="VectorStoreWriter{TRecord}"/> and override
+    /// <see cref="VectorStoreWriter{TRecord}.SetMetadata(TRecord, string, object?)"/>
     /// to map metadata keys to typed properties.
     /// </para>
     /// <para>
@@ -68,9 +68,9 @@ public static class VectorStoreExtensions
     /// </remarks>
     [RequiresDynamicCode("This API is not compatible with NativeAOT. You can implement your own IngestionChunkWriter that uses dynamic mapping via VectorStore.GetCollectionDynamic().")]
     [RequiresUnreferencedCode("This API is not compatible with trimming. You can implement your own IngestionChunkWriter that uses dynamic mapping via VectorStore.GetCollectionDynamic().")]
-    public static VectorStoreCollection<Guid, TRecord> GetIngestionRecordCollection<TRecord, TChunk>(this VectorStore vectorStore,
+    public static VectorStoreCollection<Guid, TRecord> GetIngestionRecordCollection<TRecord>(this VectorStore vectorStore,
         string collectionName, int dimensionCount, string? distanceFunction = null, string? indexKind = null)
-        where TRecord : IngestionChunkVectorRecord<TChunk>, new()
+        where TRecord : IngestionChunkVectorRecord, new()
     {
         _ = Shared.Diagnostics.Throw.IfNull(vectorStore);
         _ = Shared.Diagnostics.Throw.IfNullOrEmpty(collectionName);
@@ -80,14 +80,17 @@ public static class VectorStoreExtensions
         {
             Properties =
             {
-                new VectorStoreKeyProperty(nameof(IngestionChunkVectorRecord<>.Key), typeof(Guid))
+                new VectorStoreKeyProperty(nameof(IngestionChunkVectorRecord.Key), typeof(Guid))
                 {
                     IsAutoGenerated = true,
                 },
 
-                // By using TChunk as the type here we allow the vector store
-                // to handle the conversion from TChunk to the actual vector type it supports.
-                new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord<>.Embedding), typeof(TChunk), dimensionCount)
+                // The embedding source is AIContent produced by the chunker.
+                // The vector store's embedding generator converts this content to a vector.
+                // Using the generic VectorStoreVectorProperty<AIContent> so that the model builder
+                // creates a VectorPropertyModel<AIContent> which knows how to resolve
+                // IEmbeddingGenerator<AIContent, TEmbedding>.
+                new VectorStoreVectorProperty<AIContent>(nameof(IngestionChunkVectorRecord.Embedding), dimensionCount)
                 {
                     DistanceFunction = distanceFunction,
                     IndexKind = indexKind,

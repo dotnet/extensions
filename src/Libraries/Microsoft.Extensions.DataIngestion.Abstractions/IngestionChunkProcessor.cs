@@ -9,8 +9,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <summary>
 /// Processes chunks in a pipeline.
 /// </summary>
-/// <typeparam name="T">The type of the chunk content.</typeparam>
-public abstract class IngestionChunkProcessor<T>
+public abstract class IngestionChunkProcessor
 {
     /// <summary>
     /// Processes chunks asynchronously.
@@ -18,5 +17,5 @@ public abstract class IngestionChunkProcessor<T>
     /// <param name="chunks">The chunks to process.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>The processed chunks.</returns>
-    public abstract IAsyncEnumerable<IngestionChunk<T>> ProcessAsync(IAsyncEnumerable<IngestionChunk<T>> chunks, CancellationToken cancellationToken = default);
+    public abstract IAsyncEnumerable<IngestionChunk> ProcessAsync(IAsyncEnumerable<IngestionChunk> chunks, CancellationToken cancellationToken = default);
 }
