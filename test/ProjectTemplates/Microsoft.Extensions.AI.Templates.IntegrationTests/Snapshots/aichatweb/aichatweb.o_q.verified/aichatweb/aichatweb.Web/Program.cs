@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DataIngestion;
 using aichatweb.Web.Components;
 using aichatweb.Web.Services;
 using aichatweb.Web.Services.Ingestion;
@@ -15,9 +14,6 @@ builder.AddOllamaApiClient("chat")
         c.EnableSensitiveData = builder.Environment.IsDevelopment());
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
-
-builder.Services.AddSingleton<IEmbeddingGenerator<TextContent, Embedding<float>>>(sp =>
-    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsTextContentEmbeddingGenerator());
 
 builder.AddQdrantClient("vectordb");
 builder.Services.AddQdrantVectorStore();

@@ -23,11 +23,11 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            IngestionChunker chunker = CreateDocumentChunker();
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker<string> chunker = CreateDocumentChunker();
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
-            IngestionChunk chunk = Assert.Single(chunks);
-            Assert.Equal(text, GetText(chunk), ignoreLineEndingDifferences: true);
+            IngestionChunk<string> chunk = Assert.Single(chunks);
+            Assert.Equal(text, chunk.Content, ignoreLineEndingDifferences: true);
         }
     }
 }

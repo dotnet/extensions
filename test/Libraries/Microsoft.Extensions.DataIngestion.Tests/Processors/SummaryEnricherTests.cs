@@ -91,9 +91,9 @@ public class SummaryEnricherTests
         };
 
         SummaryEnricher sut = new(new(chatClient) { LoggerFactory = loggerFactory });
-        List<IngestionChunk> chunks = CreateChunks();
+        List<IngestionChunk<string>> chunks = CreateChunks();
 
-        IReadOnlyList<IngestionChunk> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
+        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
 
         Assert.Equal(chunks.Count, got.Count);
         Assert.All(chunks, chunk => Assert.False(chunk.HasMetadata));
@@ -102,7 +102,7 @@ public class SummaryEnricherTests
         Assert.IsType<ExpectedException>(collector.LatestRecord.Exception);
     }
 
-    private static List<IngestionChunk> CreateChunks() =>
+    private static List<IngestionChunk<string>> CreateChunks() =>
     [
         TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
         TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document)

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DataIngestion;
 using OpenAI;
 using aichatweb.Web.Components;
 using aichatweb.Web.Services;
@@ -15,9 +14,6 @@ openai.AddChatClient("gpt-4o-mini")
     .UseOpenTelemetry(configure: c =>
         c.EnableSensitiveData = builder.Environment.IsDevelopment());
 openai.AddEmbeddingGenerator("text-embedding-3-small");
-
-builder.Services.AddSingleton<IEmbeddingGenerator<TextContent, Embedding<float>>>(sp =>
-    sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>().AsTextContentEmbeddingGenerator());
 
 var vectorStorePath = Path.Combine(AppContext.BaseDirectory, "vector-store.db");
 var vectorStoreConnectionString = $"Data Source={vectorStorePath}";

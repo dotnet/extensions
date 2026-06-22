@@ -33,6 +33,5 @@ public sealed class TestEmbeddingGenerator<T> : IEmbeddingGenerator<T, Embedding
         return Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(embeddings));
     }
 
-    public object? GetService(Type serviceType, object? serviceKey = null)
-        => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
+    public object? GetService(Type serviceType, object? serviceKey = null) => null;
 }

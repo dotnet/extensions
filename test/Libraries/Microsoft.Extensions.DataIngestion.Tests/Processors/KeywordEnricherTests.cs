@@ -90,7 +90,7 @@ public class KeywordEnricherTests
         KeywordEnricher sut = new(new(chatClient), predefinedKeywords: predefined, confidenceThreshold: 0.5);
         var chunks = CreateChunks().ToAsyncEnumerable();
 
-        IReadOnlyList<IngestionChunk> got = await sut.ProcessAsync(chunks).ToListAsync();
+        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks).ToListAsync();
 
         Assert.Equal(["AI", "MEAI"], (string[])got[0].Metadata[KeywordEnricher.MetadataKey]);
         Assert.Equal(["Animals", "Rabbits"], (string[])got[1].Metadata[KeywordEnricher.MetadataKey]);
@@ -107,9 +107,9 @@ public class KeywordEnricherTests
         };
 
         KeywordEnricher sut = new(new(chatClient) { LoggerFactory = loggerFactory }, ["AI", "Other"]);
-        List<IngestionChunk> chunks = CreateChunks();
+        List<IngestionChunk<string>> chunks = CreateChunks();
 
-        IReadOnlyList<IngestionChunk> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
+        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
 
         Assert.Equal(chunks.Count, got.Count);
         Assert.All(chunks, chunk => Assert.False(chunk.HasMetadata));
@@ -118,7 +118,7 @@ public class KeywordEnricherTests
         Assert.IsType<ExpectedException>(collector.LatestRecord.Exception);
     }
 
-    private static List<IngestionChunk> CreateChunks() =>
+    private static List<IngestionChunk<string>> CreateChunks() =>
     [
         TestChunkFactory.CreateChunk("The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components", _document),
         TestChunkFactory.CreateChunk("Rabbits are great pets. They are friendly and make excellent companions.", _document)

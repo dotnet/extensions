@@ -13,15 +13,15 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 {
     public class SemanticSimilarityChunkerTests : DocumentChunkerTests
     {
-        protected override IngestionChunker CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        protected override IngestionChunker<string> CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            TestEmbeddingGenerator<TextContent> embeddingClient = new();
+            TestEmbeddingGenerator embeddingClient = new();
 #pragma warning restore CA2000 // Dispose objects before losing scope
             return CreateSemanticSimilarityChunker(embeddingClient, maxTokensPerChunk, overlapTokens);
         }
 
-        private static IngestionChunker CreateSemanticSimilarityChunker(IEmbeddingGenerator<TextContent, Embedding<float>> embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        private static IngestionChunker<string> CreateSemanticSimilarityChunker(TestEmbeddingGenerator embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
             Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
             return new SemanticSimilarityChunker(embeddingClient,
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            using TestEmbeddingGenerator<TextContent, Embedding<float>> customGenerator = new()
+            using TestEmbeddingGenerator customGenerator = new()
             {
                 GenerateAsyncCallback = static async (values, options, ct) =>
                 {
@@ -53,10 +53,10 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     return [.. embeddings];
                 }
             };
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator);
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker<string> chunker = CreateSemanticSimilarityChunker(customGenerator);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Single(chunks);
-            Assert.Equal(text, GetText(chunks[0]));
+            Assert.Equal(text, chunks[0].Content);
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using TestEmbeddingGenerator<TextContent, Embedding<float>> customGenerator = new()
+            using var customGenerator = new TestEmbeddingGenerator
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -96,11 +96,11 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             };
 
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator);
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker<string> chunker = CreateSemanticSimilarityChunker(customGenerator);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
-            Assert.Equal(text1 + Environment.NewLine + text2, GetText(chunks[0]));
-            Assert.Equal(text3, GetText(chunks[1]));
+            Assert.Equal(text1 + Environment.NewLine + text2, chunks[0].Content);
+            Assert.Equal(text3, chunks[1].Content);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using TestEmbeddingGenerator<TextContent, Embedding<float>> customGenerator = new()
+            using var customGenerator = new TestEmbeddingGenerator
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -172,8 +172,8 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             };
 
-            IngestionChunker chunker = CreateSemanticSimilarityChunker(customGenerator, 200, 0);
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker<string> chunker = CreateSemanticSimilarityChunker(customGenerator, 200, 0);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
             Assert.Equal(3, chunks.Count);
             Assert.All(chunks, chunk => Assert.Same(doc, chunk.Document));
@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 The .NET platform supports multiple programming languages:
 {dotNetTableMarkdown}
 C# remains the most popular language for .NET development.",
-            GetText(chunks[0]), ignoreLineEndingDifferences: true);
+            chunks[0].Content, ignoreLineEndingDifferences: true);
             Assert.Equal($@"# Ancient Greek Olympian Gods
 The twelve Olympian gods were the principal deities of the Greek pantheon:
 | God | Domain | Symbol | Roman Name |
@@ -197,13 +197,13 @@ The twelve Olympian gods were the principal deities of the Greek pantheon:
 | Hephaestus | Fire & Forge | Hammer | Vulcan |
 | Demeter | Harvest & Nature | Wheat | Ceres |
 | Dionysus | Wine & Festivity | Grapes | Bacchus |",
-            GetText(chunks[1]), ignoreLineEndingDifferences: true);
+            chunks[1].Content, ignoreLineEndingDifferences: true);
             Assert.Equal("""
             | God | Domain | Symbol | Roman Name |
             | --- | --- | --- | --- |
             | Hermes | Messages & Trade | Caduceus | Mercury |
             These gods resided on Mount Olympus and ruled over different aspects of mortal and divine life.
-            """, GetText(chunks[2]), ignoreLineEndingDifferences: true);
+            """, chunks[2].Content, ignoreLineEndingDifferences: true);
 
             static string[,] CreateGreekGodsTableCells() => new string[,]
                 {

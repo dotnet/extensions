@@ -6,7 +6,7 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
-public class TestVectorStoreWriterWithMetadata : VectorStoreWriter<TestChunkRecordWithMetadata>
+public class TestVectorStoreWriterWithMetadata : VectorStoreWriter<string, TestChunkRecordWithMetadata>
 {
     public TestVectorStoreWriterWithMetadata(VectorStoreCollection<Guid, TestChunkRecordWithMetadata> collection, VectorStoreWriterOptions? options = default)
         : base(collection, options)

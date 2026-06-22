@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 {
     public class OverlapTokenChunkerTests : DocumentTokenChunkerTests
     {
-        protected override IngestionChunker CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        protected override IngestionChunker<string> CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
             var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
             return new DocumentTokenChunker(new(tokenizer) { MaxTokensPerChunk = maxTokensPerChunk, OverlapTokens = overlapTokens });
@@ -36,27 +36,27 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(3, chunks.Count);
-            Assert.Equal("The quick brown fox", GetText(chunks[0]), ignoreLineEndingDifferences: true);
-            Assert.Equal(" fox jumps over the", GetText(chunks[1]), ignoreLineEndingDifferences: true);
-            Assert.Equal(" the lazy dog", GetText(chunks[2]), ignoreLineEndingDifferences: true);
+            Assert.Equal("The quick brown fox", chunks[0].Content, ignoreLineEndingDifferences: true);
+            Assert.Equal(" fox jumps over the", chunks[1].Content, ignoreLineEndingDifferences: true);
+            Assert.Equal(" the lazy dog", chunks[2].Content, ignoreLineEndingDifferences: true);
 
-            Assert.True(tokenizer.CountTokens(GetText(chunks.Last())) <= chunkSize);
+            Assert.True(tokenizer.CountTokens(chunks.Last().Content) <= chunkSize);
 
             for (int i = 0; i < chunks.Count - 1; i++)
             {
                 var currentChunk = chunks[i];
                 var nextChunk = chunks[i + 1];
 
-                var currentWords = GetText(currentChunk).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                var nextWords = GetText(nextChunk).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var currentWords = currentChunk.Content.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var nextWords = nextChunk.Content.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
                 bool hasOverlap = currentWords.Intersect(nextWords).Any();
                 Assert.True(hasOverlap, $"Chunks {i} and {i + 1} should have overlapping content");
             }
 
-            Assert.NotEmpty(string.Concat(chunks.Select(c => GetText(c))));
+            Assert.NotEmpty(string.Concat(chunks.Select(c => c.Content)));
         }
     }
 }

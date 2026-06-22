@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 {
     public class NoOverlapTokenChunkerTests : DocumentTokenChunkerTests
     {
-        protected override IngestionChunker CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        protected override IngestionChunker<string> CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
             var tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
             return new DocumentTokenChunker(new(tokenizer) { MaxTokensPerChunk = maxTokensPerChunk, OverlapTokens = 0 });
@@ -29,12 +29,12 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            IngestionChunker chunker = CreateDocumentChunker(maxTokensPerChunk: 512);
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 512);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
-            Assert.True(GetText(chunks[0]).Split(' ').Length <= 512);
-            Assert.True(GetText(chunks[1]).Split(' ').Length <= 512);
-            Assert.Equal(text, string.Join("", chunks.Select(c => GetText(c))));
+            Assert.True(chunks[0].Content.Split(' ').Length <= 512);
+            Assert.True(chunks[1].Content.Split(' ').Length <= 512);
+            Assert.Equal(text, string.Join("", chunks.Select(c => c.Content)));
         }
 
         [Fact]
@@ -50,15 +50,15 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            IngestionChunker chunker = CreateDocumentChunker(maxTokensPerChunk: 200, overlapTokens: 0);
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 200, overlapTokens: 0);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(8, chunks.Count);
             foreach (var chunk in chunks)
             {
-                Assert.True(GetText(chunk).Split(' ').Count(str => str.Contains("word")) <= 200);
+                Assert.True(chunk.Content.Split(' ').Count(str => str.Contains("word")) <= 200);
             }
 
-            Assert.Equal(text, string.Join("", chunks.Select(c => GetText(c))));
+            Assert.Equal(text, string.Join("", chunks.Select(c => c.Content)));
         }
 
         [Fact]
@@ -75,17 +75,17 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             });
 
             Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
-            IngestionChunker chunker = CreateDocumentChunker(maxTokensPerChunk: 512, overlapTokens: 0);
-            IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 512, overlapTokens: 0);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
             Assert.Equal(2, chunks.Count);
-            foreach (IngestionChunk chunk in chunks)
+            foreach (IngestionChunk<string> chunk in chunks)
             {
                 // Verify that TokenCount property is set
                 Assert.True(chunk.TokenCount > 0);
 
                 // Verify that TokenCount matches actual token count of content
-                int actualTokenCount = tokenizer.CountTokens(GetText(chunk), considerNormalization: false);
+                int actualTokenCount = tokenizer.CountTokens(chunk.Content, considerNormalization: false);
                 Assert.Equal(actualTokenCount, chunk.TokenCount);
 
                 // Verify that TokenCount does not exceed max tokens per chunk

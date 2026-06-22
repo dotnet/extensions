@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <remarks>
 /// It adds "keywords" metadata to each chunk. It's an array of strings representing the extracted keywords.
 /// </remarks>
-public sealed class KeywordEnricher : IngestionChunkProcessor
+public sealed class KeywordEnricher : IngestionChunkProcessor<string>
 {
     private const int DefaultMaxKeywords = 5;
     private readonly EnricherOptions _options;
@@ -57,7 +57,7 @@ public sealed class KeywordEnricher : IngestionChunkProcessor
     public static string MetadataKey => "keywords";
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<IngestionChunk> ProcessAsync(IAsyncEnumerable<IngestionChunk> chunks, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks, CancellationToken cancellationToken = default)
         => Batching.ProcessAsync<string[]>(chunks, _options, MetadataKey, _systemPrompt, _logger, cancellationToken);
 
     private static void Validate(ReadOnlySpan<string> predefinedKeywords)

@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DataIngestion;
 /// <remarks>
 /// It adds "summary" text metadata to each chunk.
 /// </remarks>
-public sealed class SummaryEnricher : IngestionChunkProcessor
+public sealed class SummaryEnricher : IngestionChunkProcessor<string>
 {
     private readonly EnricherOptions _options;
     private readonly ChatMessage _systemPrompt;
@@ -42,6 +42,6 @@ public sealed class SummaryEnricher : IngestionChunkProcessor
     public static string MetadataKey => "summary";
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<IngestionChunk> ProcessAsync(IAsyncEnumerable<IngestionChunk> chunks, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IAsyncEnumerable<IngestionChunk<string>> chunks, CancellationToken cancellationToken = default)
         => Batching.ProcessAsync<string>(chunks, _options, MetadataKey, _systemPrompt, _logger, cancellationToken);
 }

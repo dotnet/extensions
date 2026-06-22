@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DataIngestion;
+﻿using Microsoft.Extensions.DataIngestion;
 using Microsoft.Extensions.VectorData;
 
 namespace AIChatWeb_CSharp.Web.Services;
 
-public class IngestedChunk : IngestionChunkVectorRecord
+public class IngestedChunk : IngestionChunkVectorRecord<string>
 {
 #if (IsOllama)
     public const int VectorDimensions = 384; // 384 is the default vector size for the all-minilm embedding model
@@ -19,5 +18,5 @@ public class IngestedChunk : IngestionChunkVectorRecord
     public const string CollectionName = "data-AIChatWeb-CSharp.Web-chunks";
 
     [VectorStoreVector(VectorDimensions, DistanceFunction = VectorDistanceFunction)]
-    public override AIContent? Embedding => Content;
+    public override string? Embedding => Content;
 }
