@@ -11,7 +11,8 @@ public class IngestionChunkTests
     [Fact]
     public void Constructor_SetsTokenCountProperty()
     {
-        IngestionChunk<string> chunk = new("test content", 42);
+        IngestionDocument document = new("test");
+        IngestionChunk<string> chunk = new("test content", document, 42);
 
         Assert.Equal(42, chunk.TokenCount);
     }
@@ -19,8 +20,10 @@ public class IngestionChunkTests
     [Fact]
     public void Constructor_ThrowsWhenTokenCountIsNegative()
     {
+        IngestionDocument document = new("test");
+
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IngestionChunk<string>("test content", -1));
+            () => new IngestionChunk<string>("test content", document, -1));
 
         Assert.Equal("tokenCount", exception.ParamName);
     }
@@ -28,8 +31,10 @@ public class IngestionChunkTests
     [Fact]
     public void Constructor_ThrowsWhenTokenCountIsZero()
     {
+        IngestionDocument document = new("test");
+
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IngestionChunk<string>("test content", 0));
+            () => new IngestionChunk<string>("test content", document, 0));
 
         Assert.Equal("tokenCount", exception.ParamName);
     }

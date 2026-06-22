@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
 
 public class ClassificationEnricherTests
 {
+    private static readonly IngestionDocument _document = new("test");
+
     [Fact]
     public void ThrowsOnNullOptions()
     {
@@ -120,9 +122,9 @@ public class ClassificationEnricherTests
     [
         TestChunkFactory.CreateChunk(".NET developers need to integrate and interact with a growing variety of artificial intelligence (AI) services in their apps. " +
             "The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components, and enable seamless" +
-            " integration and interoperability with various AI services."),
+            " integration and interoperability with various AI services.", _document),
         TestChunkFactory.CreateChunk("Rabbits are small mammals in the family Leporidae of the order Lagomorpha (along with the hare and the pika)." +
-            "They are herbivorous animals and are known for their long ears, large hind legs, and short fluffy tails."),
-        TestChunkFactory.CreateChunk("This text does not belong to any category."),
+            "They are herbivorous animals and are known for their long ears, large hind legs, and short fluffy tails.", _document),
+        TestChunkFactory.CreateChunk("This text does not belong to any category.", _document),
     ];
 }

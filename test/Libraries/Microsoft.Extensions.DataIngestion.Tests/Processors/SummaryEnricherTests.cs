@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.DataIngestion.Processors.Tests;
 
 public class SummaryEnricherTests
 {
+    private static readonly IngestionDocument _document = new("test");
+
     [Fact]
     public void ThrowsOnNullOptions()
     {
@@ -102,7 +104,7 @@ public class SummaryEnricherTests
 
     private static List<IngestionChunk<string>> CreateChunks() =>
     [
-        TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding."),
-        TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming.")
+        TestChunkFactory.CreateChunk("I love programming! It's so much fun and rewarding.", _document),
+        TestChunkFactory.CreateChunk("I hate bugs. They are so frustrating and time-consuming.", _document)
     ];
 }

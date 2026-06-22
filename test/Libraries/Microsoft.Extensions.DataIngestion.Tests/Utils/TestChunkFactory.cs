@@ -9,9 +9,9 @@ public static class TestChunkFactory
 {
     private static readonly Tokenizer _tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
 
-    public static IngestionChunk<string> CreateChunk(string content)
+    public static IngestionChunk<string> CreateChunk(string content, IngestionDocument document)
     {
         int tokenCount = _tokenizer.CountTokens(content, considerNormalization: false);
-        return new IngestionChunk<string>(content, tokenCount);
+        return new IngestionChunk<string>(content, document, tokenCount);
     }
 }

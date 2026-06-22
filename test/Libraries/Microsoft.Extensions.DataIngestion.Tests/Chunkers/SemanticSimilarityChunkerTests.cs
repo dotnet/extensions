@@ -176,6 +176,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
             IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
             Assert.Equal(3, chunks.Count);
+            Assert.All(chunks, chunk => Assert.Same(doc, chunk.Document));
             Assert.Equal($@"# .NET Supported Languages
 The .NET platform supports multiple programming languages:
 {dotNetTableMarkdown}
