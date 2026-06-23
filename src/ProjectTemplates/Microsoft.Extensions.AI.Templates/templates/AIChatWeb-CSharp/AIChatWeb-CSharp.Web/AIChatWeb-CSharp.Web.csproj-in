@@ -53,7 +53,6 @@
     <PackageReference Include="Aspire.Qdrant.Client" Version="${PackageVersion:Aspire.Qdrant.Client}" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.Qdrant}" />
 <!--#elif (IsLocalVectorStore)-->
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="${PackageVersion:Microsoft.Data.Sqlite}" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.SqliteVec}" />
 <!--#endif -->
   </ItemGroup>

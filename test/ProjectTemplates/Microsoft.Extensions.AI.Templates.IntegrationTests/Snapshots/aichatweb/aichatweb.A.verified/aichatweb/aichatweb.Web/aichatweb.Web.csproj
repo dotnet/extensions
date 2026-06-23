@@ -16,7 +16,6 @@
     <PackageReference Include="Microsoft.Extensions.DataIngestion.MarkItDown" Version="{VERSION}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="{VERSION}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="{VERSION}" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="{VERSION}" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="{VERSION}" />
   </ItemGroup>
 
