@@ -3,8 +3,8 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.VectorData;
 using CommunityToolkit.VectorData.SqliteVec;
+using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
