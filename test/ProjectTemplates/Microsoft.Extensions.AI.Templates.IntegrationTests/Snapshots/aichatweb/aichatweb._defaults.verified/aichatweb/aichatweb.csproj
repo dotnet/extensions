@@ -15,7 +15,7 @@
     <PackageReference Include="PdfPig" Version="{VERSION}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="{VERSION}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="{VERSION}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="{VERSION}" />
+    <PackageReference Include="CommunityToolkit.VectorData.SqliteVec" Version="{VERSION}" />
   </ItemGroup>
 
 </Project>
