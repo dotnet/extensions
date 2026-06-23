@@ -22,7 +22,7 @@
     <PackageReference Include="DocumentFormat.OpenXml" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
+    <PackageReference Include="CommunityToolkit.VectorData.InMemory" />
     <PackageReference Include="CommunityToolkit.VectorData.SqliteVec" />
     <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
     <PackageReference Include="OpenTelemetry.Api" />
