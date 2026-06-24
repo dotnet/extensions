@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
+using CommunityToolkit.VectorData.SqliteVec;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 

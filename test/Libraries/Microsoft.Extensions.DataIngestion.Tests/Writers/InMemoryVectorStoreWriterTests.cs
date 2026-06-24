@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.InMemory;
+using CommunityToolkit.VectorData.InMemory;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
