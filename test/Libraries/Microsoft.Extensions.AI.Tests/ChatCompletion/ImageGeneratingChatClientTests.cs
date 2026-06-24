@@ -337,7 +337,7 @@ public class ImageGeneratingChatClientTests
         Assert.Single(message.Contents);
 
         var imageToolCallContent = Assert.IsType<ImageGenerationToolCallContent>(message.Contents[0]);
-        Assert.Equal(callId, imageToolCallContent.ImageId);
+        Assert.Equal(callId, imageToolCallContent.CallId);
     }
 
     [Fact]
@@ -381,6 +381,6 @@ public class ImageGeneratingChatClientTests
         Assert.Single(update.Contents);
 
         var imageToolCallContent = Assert.IsType<ImageGenerationToolCallContent>(update.Contents[0]);
-        Assert.Equal(callId, imageToolCallContent.ImageId);
+        Assert.Equal(callId, imageToolCallContent.CallId);
     }
 }

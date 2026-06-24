@@ -23,6 +23,7 @@ Write-Output "Creating .editorconfig files"
 & $Command $Diags editorconfig save --exclude xunit.analyzers bench/.editorconfig               general,performance
 & $Command $Diags editorconfig save --exclude xunit.analyzers eng/Tools/.editorconfig           general
 & $Command $Diags editorconfig save                           test/.editorconfig                general,test
+& $Command $Diags editorconfig save                           src/Libraries/Microsoft.Extensions.VectorData.ConformanceTests/.editorconfig general,test
 
 # The files we publish with the M.E.StaticAnalysis package
 

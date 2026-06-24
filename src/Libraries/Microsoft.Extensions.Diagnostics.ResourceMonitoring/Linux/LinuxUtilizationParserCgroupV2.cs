@@ -357,12 +357,9 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return GetHostAvailableMemory();
         }
 
-        ReadOnlySpan<char> memoryFile;
-        using (ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool))
-        {
-            _fileSystem.ReadAll(_memoryStat, bufferWriter.Buffer);
-            memoryFile = bufferWriter.Buffer.WrittenSpan;
-        }
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadAll(_memoryStat, bufferWriter.Buffer);
+        ReadOnlySpan<char> memoryFile = bufferWriter.Buffer.WrittenSpan;
 
         int index = memoryFile.IndexOf(InactiveFile.AsSpan());
 

@@ -118,4 +118,21 @@ public class ReasoningOptionsTests
             Assert.Equal(output, deserialized);
         }
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "effort": "High",
+              "output": "Full"
+            }
+            """;
+
+        ReasoningOptions? result = JsonSerializer.Deserialize(Json, TestJsonSerializerContext.Default.ReasoningOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(ReasoningEffort.High, result.Effort);
+        Assert.Equal(ReasoningOutput.Full, result.Output);
+    }
 }

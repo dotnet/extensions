@@ -11,16 +11,16 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIOpenAIRealtime)]
 internal sealed class OpenAIRealtimeConversationClient
 {
-    public static ConversationFunctionTool ToOpenAIConversationFunctionTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
+    public static RealtimeFunctionTool ToOpenAIRealtimeFunctionTool(AIFunctionDeclaration aiFunction, ChatOptions? options = null)
     {
         bool? strict =
             OpenAIClientExtensions.HasStrict(aiFunction.AdditionalProperties) ??
             OpenAIClientExtensions.HasStrict(options?.AdditionalProperties);
 
-        return new ConversationFunctionTool(aiFunction.Name)
+        return new RealtimeFunctionTool(aiFunction.Name)
         {
-            Description = aiFunction.Description,
-            Parameters = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
+            FunctionDescription = aiFunction.Description,
+            FunctionParameters = OpenAIClientExtensions.ToOpenAIFunctionParameters(aiFunction, strict),
         };
     }
 }

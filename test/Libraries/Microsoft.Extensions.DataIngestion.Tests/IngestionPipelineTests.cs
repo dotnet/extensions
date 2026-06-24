@@ -8,10 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.VectorData.InMemory;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.ML.Tokenizers;
-using Microsoft.SemanticKernel.Connectors.InMemory;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -337,7 +337,7 @@ public sealed class IngestionPipelineTests : IDisposable
 
             Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
             Assert.All(ingestionResults, result => Assert.NotEmpty(result.DocumentId));
-            IngestionResult ingestionResult = Assert.Single(ingestionResults.Where(result => !result.Succeeded));
+            IngestionResult ingestionResult = Assert.Single(ingestionResults, result => !result.Succeeded);
             Assert.IsType<ExpectedException>(ingestionResult.Exception);
             AssertErrorActivities(activities, expectedFailedActivitiesCount: 1);
 

@@ -25,7 +25,9 @@ namespace Microsoft.Extensions.Logging.Testing;
 #if NET9_0_OR_GREATER
 public class FakeLogger : ILogger, IBufferedLogger
 #else
+#pragma warning disable LA0007
 public class FakeLogger : ILogger
+#pragma warning restore LA0007
 #endif
 {
     private readonly ConcurrentDictionary<LogLevel, bool> _disabledLevels = new();  // used as a set, the value is ignored
@@ -185,3 +187,7 @@ public class FakeLogger : ILogger
         }
     }
 }
+
+#if !NET9_0_OR_GREATER
+#pragma warning restore LA0007
+#endif
