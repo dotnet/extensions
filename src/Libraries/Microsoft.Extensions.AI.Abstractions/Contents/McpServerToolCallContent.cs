@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -13,36 +11,37 @@ namespace Microsoft.Extensions.AI;
 /// Represents a tool call request to a MCP server.
 /// </summary>
 /// <remarks>
+/// <para>
 /// This content type is used to represent an invocation of an MCP server tool by a hosted service.
-/// It is informational only.
+/// It is informational only and may appear as part of an approval request
+/// to convey what is being approved, or as a record of which MCP server tool was invoked.
+/// </para>
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AIMcpServers, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class McpServerToolCallContent : AIContent
+public sealed class McpServerToolCallContent : ToolCallContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="McpServerToolCallContent"/> class.
     /// </summary>
     /// <param name="callId">The tool call ID.</param>
-    /// <param name="toolName">The tool name.</param>
+    /// <param name="name">The tool name.</param>
     /// <param name="serverName">The MCP server name that hosts the tool.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="toolName"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="toolName"/> is empty or composed entirely of whitespace.</exception>
-    public McpServerToolCallContent(string callId, string toolName, string? serverName)
+    /// <exception cref="ArgumentNullException"><paramref name="callId"/> or <paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="callId"/> or <paramref name="name"/> is empty or composed entirely of whitespace.</exception>
+    /// <remarks>
+    /// This content is informational only and may appear as part of an approval request
+    /// to convey what is being approved, or as a record of which MCP server tool was invoked.
+    /// </remarks>
+    public McpServerToolCallContent(string callId, string name, string? serverName)
+        : base(Throw.IfNullOrWhitespace(callId))
     {
-        CallId = Throw.IfNullOrWhitespace(callId);
-        ToolName = Throw.IfNullOrWhitespace(toolName);
+        Name = Throw.IfNullOrWhitespace(name);
         ServerName = serverName;
     }
 
     /// <summary>
-    /// Gets the tool call ID.
+    /// Gets the name of the tool requested.
     /// </summary>
-    public string CallId { get; }
-
-    /// <summary>
-    /// Gets the name of the tool called.
-    /// </summary>
-    public string ToolName { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Gets the name of the MCP server that hosts the tool.
@@ -50,7 +49,7 @@ public sealed class McpServerToolCallContent : AIContent
     public string? ServerName { get; }
 
     /// <summary>
-    /// Gets or sets the arguments used for the tool call.
+    /// Gets or sets the arguments requested to be provided to the tool.
     /// </summary>
-    public IReadOnlyDictionary<string, object?>? Arguments { get; set; }
+    public IDictionary<string, object?>? Arguments { get; set; }
 }

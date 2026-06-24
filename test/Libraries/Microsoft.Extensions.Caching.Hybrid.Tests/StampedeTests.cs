@@ -215,12 +215,15 @@ public class StampedeTests : IClassFixture<TestEventListener>
             cancel.Cancel();
         }
 
-        await Task.Delay(500); // cancellation happens on a worker; need to allow a moment
+        // allow the shared underlying task time to enter its semaphore wait
+        await Task.Delay(500);
+
         for (var i = 0; i < callerCount; i++)
         {
             var result = results[i];
 
-            // should have already cancelled, even though underlying task hasn't finished yet
+            // cancellation happens on a worker; wait up to 5 seconds total for the caller's task to observe its cancel
+            await WaitForCompletionAsync(result, 5_000);
             Assert.Equal(TaskStatus.Canceled, result.Status);
             var ex = Assert.Throws<OperationCanceledException>(() => result.GetAwaiter().GetResult());
             Assert.Equal(cancels[i].Token, ex.CancellationToken); // each gets the correct blame
@@ -296,14 +299,17 @@ public class StampedeTests : IClassFixture<TestEventListener>
             }
         }
 
-        await Task.Delay(500); // cancellation happens on a worker; need to allow a moment
+        // allow the shared underlying task time to enter its semaphore wait
+        await Task.Delay(500);
+
         for (var i = 0; i < callerCount; i++)
         {
             if (i != remaining)
             {
                 var result = results[i];
 
-                // should have already cancelled, even though underlying task hasn't finished yet
+                // cancellation happens on a worker; wait up to 5 seconds total for the caller's task to observe its cancel
+                await WaitForCompletionAsync(result, 5_000);
                 Assert.Equal(TaskStatus.Canceled, result.Status);
                 var ex = Assert.Throws<OperationCanceledException>(() => result.GetAwaiter().GetResult());
                 Assert.Equal(cancels[i].Token, ex.CancellationToken); // each gets the correct blame
@@ -491,4 +497,23 @@ public class StampedeTests : IClassFixture<TestEventListener>
     }
 
     private static string Me([CallerMemberName] string caller = "") => caller;
+
+    private static async Task WaitForCompletionAsync(
+        Task task,
+        int timeoutMs,
+        [CallerArgumentExpression(nameof(task))] string? expression = null)
+    {
+        if (task.IsCompleted)
+        {
+            return;
+        }
+
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+        var completed = await Task.WhenAny(task, Task.Delay(timeoutMs));
+#pragma warning restore VSTHRD003
+        if (completed != task)
+        {
+            throw new TimeoutException($"Task '{expression}' did not complete within {timeoutMs}ms");
+        }
+    }
 }

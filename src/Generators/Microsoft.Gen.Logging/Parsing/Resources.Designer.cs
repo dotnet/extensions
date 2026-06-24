@@ -187,20 +187,20 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logging methods can&apos;t be generic.
+        ///   Looks up a localized string similar to Logging methods can&apos;t use the &apos;allows ref struct&apos; constraint.
         /// </summary>
-        internal static string LoggingMethodIsGenericMessage {
+        internal static string LoggingMethodHasAllowsRefStructConstraintMessage {
             get {
-                return ResourceManager.GetString("LoggingMethodIsGenericMessage", resourceCulture);
+                return ResourceManager.GetString("LoggingMethodHasAllowsRefStructConstraintMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Logging methods can&apos;t be generic.
+        ///   Looks up a localized string similar to Logging methods can&apos;t use the &apos;allows ref struct&apos; constraint.
         /// </summary>
-        internal static string LoggingMethodIsGenericTitle {
+        internal static string LoggingMethodHasAllowsRefStructConstraintTitle {
             get {
-                return ResourceManager.GetString("LoggingMethodIsGenericTitle", resourceCulture);
+                return ResourceManager.GetString("LoggingMethodHasAllowsRefStructConstraintTitle", resourceCulture);
             }
         }
         
@@ -489,6 +489,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         internal static string PrimaryConstructorParameterLoggerHiddenTitle {
             get {
                 return ResourceManager.GetString("PrimaryConstructorParameterLoggerHiddenTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logging method parameter &quot;{0}&quot; has an unsupported modifier (&quot;params&quot; or &quot;scoped&quot;).
+        /// </summary>
+        internal static string LoggingMethodParameterParamsMessage {
+            get {
+                return ResourceManager.GetString("LoggingMethodParameterParamsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logging method parameters can&apos;t have the &quot;params&quot; or &quot;scoped&quot; modifier.
+        /// </summary>
+        internal static string LoggingMethodParameterParamsTitle {
+            get {
+                return ResourceManager.GetString("LoggingMethodParameterParamsTitle", resourceCulture);
             }
         }
         

@@ -1,13 +1,13 @@
 {
-  "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=9.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=10.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLoggingRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Logging.LoggingRedactionOptions>? configure = null);",
@@ -78,11 +78,11 @@
     },
     {
       "Type": "interface Microsoft.AspNetCore.Diagnostics.Logging.IHttpLogEnricher",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "void Microsoft.AspNetCore.Diagnostics.Logging.IHttpLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector, Microsoft.AspNetCore.Http.HttpContext httpContext);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -189,7 +189,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule> Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.Rules { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Diagnostics.Buffering.LogBufferingFilterRule> Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.Rules { get; set; }",     
           "Stage": "Stable"
         }
       ]
@@ -251,7 +251,7 @@
       "Properties": [
         {
           "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersLogEnricherOptions.HeadersDataClasses { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },

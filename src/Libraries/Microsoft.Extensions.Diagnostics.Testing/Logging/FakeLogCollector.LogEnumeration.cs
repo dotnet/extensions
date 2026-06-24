@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging.Testing;
 
@@ -52,7 +50,6 @@ public partial class FakeLogCollector
     /// }
     /// ]]></code>
     /// </example>
-    [Experimental(DiagnosticIds.Experiments.Telemetry)]
     public IAsyncEnumerable<FakeLogRecord> GetLogsAsync(CancellationToken cancellationToken = default)
         => new LogAsyncEnumerable(this, cancellationToken);
 

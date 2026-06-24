@@ -1,0 +1,36 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
+
+namespace Microsoft.Extensions.VectorData.ProviderServices;
+
+/// <summary>
+/// Represents a data property on a vector store record.
+/// This is an internal support type meant for use by providers only and not by applications.
+/// </summary>
+[Experimental(DiagnosticIds.Experiments.VectorDataProviderServices, UrlFormat = DiagnosticIds.UrlFormat)]
+public class DataPropertyModel(string modelName, Type type) : PropertyModel(modelName, type)
+{
+    /// <summary>
+    /// Gets or sets a value indicating whether this data property is indexed.
+    /// </summary>
+    /// <value>
+    /// The default is <see langword="false" />.
+    /// </value>
+    public bool IsIndexed { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this data property is indexed for full-text search.
+    /// </summary>
+    /// <value>
+    /// The default is <see langword="false" />.
+    /// </value>
+    public bool IsFullTextIndexed { get; set; }
+
+    /// <inheritdoc/>
+    public override string ToString()
+        => $"{ModelName} (Data, {Type.Name})";
+}

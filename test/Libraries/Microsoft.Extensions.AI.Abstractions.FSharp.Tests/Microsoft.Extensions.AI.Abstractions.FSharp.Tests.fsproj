@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>F# tests for Microsoft.Extensions.AI.Abstractions.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Suppress F# nullability warnings when interoperating with nullable C# APIs -->
+    <NoWarn>$(NoWarn);FS3261</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="FSharpOptionalParameterTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+
+</Project>

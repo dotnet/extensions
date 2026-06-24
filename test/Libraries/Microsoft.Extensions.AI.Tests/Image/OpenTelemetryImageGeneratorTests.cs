@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using OpenTelemetry.Trace;
 using Xunit;
 
@@ -164,5 +166,49 @@ public class OpenTelemetryImageGeneratorTests
         }
 
         static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
+    }
+
+    [Fact]
+    public async Task ExceptionLogged_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
+        var expectedException = new InvalidOperationException("test exception message");
+
+        using var innerGenerator = new TestImageGenerator
+        {
+            GenerateImagesAsyncCallback = (request, options, cancellationToken) => throw expectedException,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ImageGeneratorMetadata) ? new ImageGeneratorMetadata("testservice", new Uri("http://localhost:12345"), "testmodel") :
+                null,
+        };
+
+        using var g = innerGenerator
+            .AsBuilder()
+            .UseOpenTelemetry(loggerFactory, sourceName)
+            .Build();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            g.GenerateAsync(new ImageGenerationRequest { Prompt = "a cat" }));
+
+        var activity = Assert.Single(activities);
+
+        // Existing error behavior is preserved
+        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+        // Exception is logged via ILogger
+        var logEntry = Assert.Single(collector.GetSnapshot());
+        Assert.Equal("gen_ai.client.operation.exception", logEntry.Id.Name);
+        Assert.Equal(LogLevel.Warning, logEntry.Level);
+        Assert.Same(expectedException, logEntry.Exception);
     }
 }

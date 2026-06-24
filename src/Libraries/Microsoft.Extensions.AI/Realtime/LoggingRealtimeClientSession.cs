@@ -1,0 +1,261 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Shared.Diagnostics;
+
+namespace Microsoft.Extensions.AI;
+
+/// <summary>A delegating realtime session that logs operations to an <see cref="ILogger"/>.</summary>
+/// <remarks>
+/// <para>
+/// The provided implementation of <see cref="IRealtimeClientSession"/> is thread-safe for concurrent use so long as the
+/// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
+/// </para>
+/// <para>
+/// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of
+/// messages and options are logged. These messages and options may contain sensitive application data.
+/// <see cref="Logging.LogLevel.Trace"/> is disabled by default and should never be enabled in a production environment.
+/// Messages and options are not logged at other logging levels.
+/// </para>
+/// </remarks>
+internal sealed partial class LoggingRealtimeClientSession : IRealtimeClientSession
+{
+    /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
+    private readonly ILogger _logger;
+
+    /// <summary>The inner session to delegate to.</summary>
+    private readonly IRealtimeClientSession _innerSession;
+
+    /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization of state written to the logger.</summary>
+    private JsonSerializerOptions _jsonSerializerOptions;
+
+    /// <summary>Initializes a new instance of the <see cref="LoggingRealtimeClientSession"/> class.</summary>
+    /// <param name="innerSession">The underlying <see cref="IRealtimeClientSession"/>.</param>
+    /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
+    public LoggingRealtimeClientSession(IRealtimeClientSession innerSession, ILogger logger)
+    {
+        _innerSession = Throw.IfNull(innerSession);
+        _logger = Throw.IfNull(logger);
+        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
+    }
+
+    /// <inheritdoc />
+    public RealtimeSessionOptions? Options => _innerSession.Options;
+
+    /// <summary>Gets or sets JSON serialization options to use when serializing logging data.</summary>
+    public JsonSerializerOptions JsonSerializerOptions
+    {
+        get => _jsonSerializerOptions;
+        set => _jsonSerializerOptions = Throw.IfNull(value);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        await _innerSession.DisposeAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        _ = Throw.IfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            _innerSession.GetService(serviceType, serviceKey);
+    }
+
+    /// <inheritdoc/>
+    public async Task SendAsync(RealtimeClientMessage message, CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(message);
+
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogSendMessageSensitive(GetLoggableString(message));
+            }
+            else
+            {
+                LogSendMessage();
+            }
+        }
+
+        try
+        {
+            await _innerSession.SendAsync(message, cancellationToken).ConfigureAwait(false);
+
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                LogCompleted(nameof(SendAsync));
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            LogInvocationCanceled(nameof(SendAsync));
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogInvocationFailed(nameof(SendAsync), ex);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<RealtimeServerMessage> GetStreamingResponseAsync(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            LogInvoked(nameof(GetStreamingResponseAsync));
+        }
+
+        IAsyncEnumerator<RealtimeServerMessage> e;
+        try
+        {
+            e = _innerSession.GetStreamingResponseAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            LogInvocationCanceled(nameof(GetStreamingResponseAsync));
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogInvocationFailed(nameof(GetStreamingResponseAsync), ex);
+            throw;
+        }
+
+        try
+        {
+            RealtimeServerMessage? message = null;
+            while (true)
+            {
+                try
+                {
+                    if (!await e.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+
+                    message = e.Current;
+                }
+                catch (OperationCanceledException)
+                {
+                    LogInvocationCanceled(nameof(GetStreamingResponseAsync));
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    LogInvocationFailed(nameof(GetStreamingResponseAsync), ex);
+                    throw;
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    if (_logger.IsEnabled(LogLevel.Trace))
+                    {
+                        LogStreamingServerMessageSensitive(GetLoggableString(message));
+                    }
+                    else
+                    {
+                        LogStreamingServerMessage();
+                    }
+                }
+
+                yield return message;
+            }
+
+            LogCompleted(nameof(GetStreamingResponseAsync));
+        }
+        finally
+        {
+            await e.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    private string GetLoggableString(RealtimeClientMessage message)
+    {
+        var obj = new JsonObject
+        {
+            ["type"] = message.GetType().Name,
+        };
+
+        if (message.RawRepresentation is string s)
+        {
+            obj["content"] = s;
+        }
+        else if (message.RawRepresentation is not null)
+        {
+            obj["content"] = AsJson(message.RawRepresentation);
+        }
+        else if (message.MessageId is not null)
+        {
+            obj["messageId"] = message.MessageId;
+        }
+
+        return obj.ToJsonString();
+    }
+
+    private string GetLoggableString(RealtimeServerMessage message)
+    {
+        var obj = new JsonObject
+        {
+            ["type"] = message.Type.ToString(),
+        };
+
+        if (message.RawRepresentation is string s)
+        {
+            obj["content"] = s;
+        }
+        else if (message.RawRepresentation is not null)
+        {
+            obj["content"] = AsJson(message.RawRepresentation);
+        }
+        else if (message.MessageId is not null)
+        {
+            obj["messageId"] = message.MessageId;
+        }
+
+        return obj.ToJsonString();
+    }
+
+    private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
+    private partial void LogInvoked(string methodName);
+
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: Options: {Options}.")]
+    private partial void LogInvokedSensitive(string methodName, string options);
+
+    [LoggerMessage(LogLevel.Debug, "SendAsync invoked.")]
+    private partial void LogSendMessage();
+
+    [LoggerMessage(LogLevel.Trace, "SendAsync invoked: Message: {Message}.")]
+    private partial void LogSendMessageSensitive(string message);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
+    private partial void LogCompleted(string methodName);
+
+    [LoggerMessage(LogLevel.Debug, "GetStreamingResponseAsync received server message.")]
+    private partial void LogStreamingServerMessage();
+
+    [LoggerMessage(LogLevel.Trace, "GetStreamingResponseAsync received server message: {ServerMessage}")]
+    private partial void LogStreamingServerMessageSensitive(string serverMessage);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
+    private partial void LogInvocationCanceled(string methodName);
+
+    [LoggerMessage(LogLevel.Error, "{MethodName} failed.")]
+    private partial void LogInvocationFailed(string methodName, Exception error);
+}
