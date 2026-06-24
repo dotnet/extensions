@@ -900,14 +900,10 @@ public partial class AcceptanceTests
             services => services
             .AddLogging(builder =>
             {
-                // enable Microsoft.AspNetCore.Routing.Matching.DfaMatcher debug logs
-                // which are produced by ASP.NET Core within HTTP context.
-                // This is what is going to be buffered and tested.
-                builder.AddFilter("Microsoft.AspNetCore.Routing.Matching.DfaMatcher", LogLevel.Debug);
-
-                // Disable logs from HTTP logging middleware, otherwise even though they are not buffered,
-                // they will be logged as usual and contaminate test results:
-                builder.AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.None);
+                // Disable logs from all ASP.NET Core infrastructure, otherwise they
+                // will contaminate test results:
+                builder.AddFilter("Microsoft.AspNetCore", LogLevel.None);
+                builder.AddFilter("Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware", LogLevel.None);
 
                 builder.AddPerIncomingRequestBuffer(options =>
                 {
@@ -944,10 +940,10 @@ public partial class AcceptanceTests
                 logger.LogTrace($"This is a  huge log message 3, {hugeState}");
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
 
-                // 1st log record is from DfaMatcher,
-                // 2, 3, 4th are from our "test" category
-                // and 5 and 6th are logs from the /logatrequest endpoint
-                Assert.Equal(6, logCollector.Count);
+                // 1st is the flushed Trace from "test" category
+                // 2nd and 3rd are logs emitted by the /logatrequest endpoint
+                // and 4th and 5th are unbuffered logs from our "test" category
+                Assert.Equal(5, logCollector.Count);
                 Assert.Equal(LogLevel.Trace, logCollector.LatestRecord.Level);
                 Assert.Equal("test", logCollector.LatestRecord.Category);
             });

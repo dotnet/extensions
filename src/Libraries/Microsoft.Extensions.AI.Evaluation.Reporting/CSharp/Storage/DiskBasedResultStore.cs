@@ -56,6 +56,9 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         string? iterationName = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        PathValidation.ValidatePathSegment(executionName, nameof(executionName));
+        PathValidation.ValidatePathSegment(scenarioName, nameof(scenarioName));
+        PathValidation.ValidatePathSegment(iterationName, nameof(iterationName));
         IEnumerable<FileInfo> resultFiles =
             EnumerateResultFiles(executionName, scenarioName, iterationName, cancellationToken);
 
@@ -89,8 +92,14 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            PathValidation.ValidatePathSegment(result.ExecutionName, nameof(result.ExecutionName));
+            PathValidation.ValidatePathSegment(result.ScenarioName, nameof(result.ScenarioName));
+            PathValidation.ValidatePathSegment(result.IterationName, nameof(result.IterationName));
+
             var resultDir =
-                new DirectoryInfo(Path.Combine(_resultsRootPath, result.ExecutionName, result.ScenarioName));
+                new DirectoryInfo(PathValidation.EnsureWithinRoot(
+                    _resultsRootPath,
+                    Path.Combine(_resultsRootPath, result.ExecutionName, result.ScenarioName)));
 
             resultDir.Create();
 
@@ -113,6 +122,10 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         string? iterationName = null,
         CancellationToken cancellationToken = default)
     {
+        PathValidation.ValidatePathSegment(executionName, nameof(executionName));
+        PathValidation.ValidatePathSegment(scenarioName, nameof(scenarioName));
+        PathValidation.ValidatePathSegment(iterationName, nameof(iterationName));
+
         if (executionName is null && scenarioName is null && iterationName is null)
         {
             Directory.Delete(_resultsRootPath, recursive: true);
@@ -120,7 +133,10 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         }
         else if (executionName is not null && scenarioName is null && iterationName is null)
         {
-            var executionDir = new DirectoryInfo(Path.Combine(_resultsRootPath, executionName));
+            var executionDir = new DirectoryInfo(
+                PathValidation.EnsureWithinRoot(
+                    _resultsRootPath,
+                    Path.Combine(_resultsRootPath, executionName)));
 
             if (executionDir.Exists)
             {
@@ -130,7 +146,10 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         else if (executionName is not null && scenarioName is not null && iterationName is null)
         {
             var scenarioDir =
-                new DirectoryInfo(Path.Combine(_resultsRootPath, executionName, scenarioName));
+                new DirectoryInfo(
+                    PathValidation.EnsureWithinRoot(
+                        _resultsRootPath,
+                        Path.Combine(_resultsRootPath, executionName, scenarioName)));
 
             if (scenarioDir.Exists)
             {
@@ -140,7 +159,10 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         else if (executionName is not null && scenarioName is not null && iterationName is not null)
         {
             var resultFile =
-                new FileInfo(Path.Combine(_resultsRootPath, executionName, scenarioName, $"{iterationName}.json"));
+                new FileInfo(
+                    PathValidation.EnsureWithinRoot(
+                        _resultsRootPath,
+                        Path.Combine(_resultsRootPath, executionName, scenarioName, $"{iterationName}.json")));
 
             if (resultFile.Exists)
             {
@@ -206,6 +228,8 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         string executionName,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        PathValidation.ValidatePathSegment(executionName, nameof(executionName));
+
         IEnumerable<DirectoryInfo> executionDirs = EnumerateExecutionDirs(executionName, cancellationToken);
 
         IEnumerable<DirectoryInfo> scenarioDirs =
@@ -225,6 +249,9 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         string scenarioName,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        PathValidation.ValidatePathSegment(executionName, nameof(executionName));
+        PathValidation.ValidatePathSegment(scenarioName, nameof(scenarioName));
+
         IEnumerable<FileInfo> resultFiles =
             EnumerateResultFiles(executionName, scenarioName, cancellationToken: cancellationToken);
 
@@ -260,7 +287,10 @@ public sealed class DiskBasedResultStore : IEvaluationResultStore
         }
         else
         {
-            var executionDir = new DirectoryInfo(Path.Combine(_resultsRootPath, executionName));
+            var executionDir = new DirectoryInfo(
+                PathValidation.EnsureWithinRoot(
+                    _resultsRootPath,
+                    Path.Combine(_resultsRootPath, executionName)));
             if (executionDir.Exists)
             {
                 yield return executionDir;

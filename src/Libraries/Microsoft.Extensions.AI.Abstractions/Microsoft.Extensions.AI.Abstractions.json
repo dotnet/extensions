@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.AI.Abstractions, Version=10.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.AI.Abstractions, Version=10.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.AI.AdditionalPropertiesDictionary : Microsoft.Extensions.AI.AdditionalPropertiesDictionary<object?>",
@@ -729,11 +729,11 @@
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.ApprovalRequiredAIFunction : Microsoft.Extensions.AI.DelegatingAIFunction",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ApprovalRequiredAIFunction.ApprovalRequiredAIFunction(Microsoft.Extensions.AI.AIFunction innerFunction);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -1013,7 +1013,7 @@
         },
         {
           "Member": "bool? Microsoft.Extensions.AI.ChatOptions.AllowBackgroundResponses { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "bool? Microsoft.Extensions.AI.ChatOptions.AllowMultipleToolCalls { get; set; }",
@@ -1021,7 +1021,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatOptions.ContinuationToken { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatOptions.ConversationId { get; set; }",
@@ -1121,7 +1121,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponse.ContinuationToken { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponse.ConversationId { get; set; }",
@@ -1301,7 +1301,7 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken? Microsoft.Extensions.AI.ChatResponseUpdate.ContinuationToken { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ChatResponseUpdate.ConversationId { get; set; }",
@@ -1476,41 +1476,101 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolCallContent.CodeInterpreterToolCallContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolCallContent.Inputs { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolResultContent.CodeInterpreterToolResultContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolResultContent.Outputs { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.CreateConversationItemRealtimeClientMessage : Microsoft.Extensions.AI.RealtimeClientMessage",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolCallContent.CodeInterpreterToolCallContent();",
+          "Member": "Microsoft.Extensions.AI.CreateConversationItemRealtimeClientMessage.CreateConversationItemRealtimeClientMessage(Microsoft.Extensions.AI.RealtimeConversationItem item);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.AI.CodeInterpreterToolCallContent.CallId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolCallContent.Inputs { get; set; }",
+          "Member": "Microsoft.Extensions.AI.RealtimeConversationItem Microsoft.Extensions.AI.CreateConversationItemRealtimeClientMessage.Item { get; set; }",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.CodeInterpreterToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage : Microsoft.Extensions.AI.RealtimeClientMessage",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.CodeInterpreterToolResultContent.CodeInterpreterToolResultContent();",
+          "Member": "Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.CreateResponseRealtimeClientMessage();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.AI.CodeInterpreterToolResultContent.CallId { get; set; }",
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.AdditionalProperties { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.CodeInterpreterToolResultContent.Outputs { get; set; }",
+          "Member": "bool? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.ExcludeFromConversation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.Instructions { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.RealtimeConversationItem>? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.Items { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.MaxOutputTokens { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeAudioFormat? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.OutputAudioOptions { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.OutputModalities { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.OutputVoice { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatToolMode? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.ToolMode { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AITool>? Microsoft.Extensions.AI.CreateResponseRealtimeClientMessage.Tools { get; set; }",
           "Stage": "Experimental"
         }
       ]
@@ -1696,6 +1756,54 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.DelegatingHostedFileClient : Microsoft.Extensions.AI.IHostedFileClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DelegatingHostedFileClient.DelegatingHostedFileClient(Microsoft.Extensions.AI.IHostedFileClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<bool> Microsoft.Extensions.AI.DelegatingHostedFileClient.DeleteAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DelegatingHostedFileClient.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.DelegatingHostedFileClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileDownloadStream> Microsoft.Extensions.AI.DelegatingHostedFileClient.DownloadAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent?> Microsoft.Extensions.AI.DelegatingHostedFileClient.GetFileInfoAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingHostedFileClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.DelegatingHostedFileClient.ListFilesAsync(Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.DelegatingHostedFileClient.UploadAsync(System.IO.Stream content, string? mediaType = null, string? fileName = null, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.IHostedFileClient Microsoft.Extensions.AI.DelegatingHostedFileClient.InnerClient { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.DelegatingImageGenerator : Microsoft.Extensions.AI.IImageGenerator, System.IDisposable",
       "Stage": "Experimental",
       "Methods": [
@@ -1723,6 +1831,38 @@
       "Properties": [
         {
           "Member": "Microsoft.Extensions.AI.IImageGenerator Microsoft.Extensions.AI.DelegatingImageGenerator.InnerGenerator { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.DelegatingRealtimeClient : Microsoft.Extensions.AI.IRealtimeClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DelegatingRealtimeClient.DelegatingRealtimeClient(Microsoft.Extensions.AI.IRealtimeClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.IRealtimeClientSession> Microsoft.Extensions.AI.DelegatingRealtimeClient.CreateSessionAsync(Microsoft.Extensions.AI.RealtimeSessionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DelegatingRealtimeClient.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.DelegatingRealtimeClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingRealtimeClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.IRealtimeClient Microsoft.Extensions.AI.DelegatingRealtimeClient.InnerClient { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -1759,6 +1899,42 @@
       "Properties": [
         {
           "Member": "Microsoft.Extensions.AI.ISpeechToTextClient Microsoft.Extensions.AI.DelegatingSpeechToTextClient.InnerClient { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.DelegatingTextToSpeechClient : Microsoft.Extensions.AI.ITextToSpeechClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DelegatingTextToSpeechClient.DelegatingTextToSpeechClient(Microsoft.Extensions.AI.ITextToSpeechClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DelegatingTextToSpeechClient.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.DelegatingTextToSpeechClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.TextToSpeechResponse> Microsoft.Extensions.AI.DelegatingTextToSpeechClient.GetAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingTextToSpeechClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.TextToSpeechResponseUpdate> Microsoft.Extensions.AI.DelegatingTextToSpeechClient.GetStreamingAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.ITextToSpeechClient Microsoft.Extensions.AI.DelegatingTextToSpeechClient.InnerClient { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -1930,51 +2106,27 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionApprovalRequestContent : Microsoft.Extensions.AI.UserInputRequestContent",
+      "Type": "class Microsoft.Extensions.AI.ErrorRealtimeServerMessage : Microsoft.Extensions.AI.RealtimeServerMessage",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.FunctionApprovalRequestContent.FunctionApprovalRequestContent(string id, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionApprovalResponseContent Microsoft.Extensions.AI.FunctionApprovalRequestContent.CreateResponse(bool approved, string? reason = null);",
+          "Member": "Microsoft.Extensions.AI.ErrorRealtimeServerMessage.ErrorRealtimeServerMessage();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.AI.FunctionCallContent Microsoft.Extensions.AI.FunctionApprovalRequestContent.FunctionCall { get; }",
+          "Member": "Microsoft.Extensions.AI.ErrorContent? Microsoft.Extensions.AI.ErrorRealtimeServerMessage.Error { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ErrorRealtimeServerMessage.OriginatingMessageId { get; set; }",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.FunctionApprovalResponseContent : Microsoft.Extensions.AI.UserInputResponseContent",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionApprovalResponseContent.FunctionApprovalResponseContent(string id, bool approved, Microsoft.Extensions.AI.FunctionCallContent functionCall);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.AI.FunctionApprovalResponseContent.Approved { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.FunctionCallContent Microsoft.Extensions.AI.FunctionApprovalResponseContent.FunctionCall { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.FunctionApprovalResponseContent.Reason { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionCallContent : Microsoft.Extensions.AI.ToolCallContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -1992,10 +2144,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.FunctionCallContent.CallId { get; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "System.Exception? Microsoft.Extensions.AI.FunctionCallContent.Exception { get; set; }",
           "Stage": "Stable"
         },
@@ -2010,7 +2158,7 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.FunctionResultContent : Microsoft.Extensions.AI.ToolResultContent",
       "Stage": "Stable",
       "Methods": [
         {
@@ -2019,10 +2167,6 @@
         }
       ],
       "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.AI.FunctionResultContent.CallId { get; }",
-          "Stage": "Stable"
-        },
         {
           "Member": "System.Exception? Microsoft.Extensions.AI.FunctionResultContent.Exception { get; set; }",
           "Stage": "Stable"
@@ -2138,6 +2282,108 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.AI.HostedFileClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DataContent> Microsoft.Extensions.AI.HostedFileClientExtensions.DownloadAsDataContentAsync(this Microsoft.Extensions.AI.IHostedFileClient client, string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileDownloadStream> Microsoft.Extensions.AI.HostedFileClientExtensions.DownloadAsync(this Microsoft.Extensions.AI.IHostedFileClient client, Microsoft.Extensions.AI.HostedFileContent hostedFile, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<string> Microsoft.Extensions.AI.HostedFileClientExtensions.DownloadToAsync(this Microsoft.Extensions.AI.IHostedFileClient client, string fileId, string destinationPath, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.HostedFileClientMetadata? Microsoft.Extensions.AI.HostedFileClientExtensions.GetMetadata(this Microsoft.Extensions.AI.IHostedFileClient client);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static object Microsoft.Extensions.AI.HostedFileClientExtensions.GetRequiredService(this Microsoft.Extensions.AI.IHostedFileClient client, System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService Microsoft.Extensions.AI.HostedFileClientExtensions.GetRequiredService<TService>(this Microsoft.Extensions.AI.IHostedFileClient client, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService? Microsoft.Extensions.AI.HostedFileClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.IHostedFileClient client, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.HostedFileClientExtensions.UploadAsync(this Microsoft.Extensions.AI.IHostedFileClient client, Microsoft.Extensions.AI.DataContent content, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.HostedFileClientExtensions.UploadAsync(this Microsoft.Extensions.AI.IHostedFileClient client, string filePath, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.HostedFileClientMetadata",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileClientMetadata.HostedFileClientMetadata(string? providerName = null, System.Uri? providerUri = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileClientMetadata.ProviderName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Uri? Microsoft.Extensions.AI.HostedFileClientMetadata.ProviderUri { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.HostedFileClientOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileClientOptions.HostedFileClientOptions();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileClientOptions.HostedFileClientOptions(Microsoft.Extensions.AI.HostedFileClientOptions? other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.HostedFileClientOptions Microsoft.Extensions.AI.HostedFileClientOptions.Clone();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.HostedFileClientOptions.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.HostedFileClientOptions.Limit { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileClientOptions.Purpose { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.IHostedFileClient, object?>? Microsoft.Extensions.AI.HostedFileClientOptions.RawRepresentationFactory { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileClientOptions.Scope { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.HostedFileContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
@@ -2152,6 +2398,10 @@
       ],
       "Properties": [
         {
+          "Member": "System.DateTimeOffset? Microsoft.Extensions.AI.HostedFileContent.CreatedAt { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "string Microsoft.Extensions.AI.HostedFileContent.FileId { get; set; }",
           "Stage": "Stable"
         },
@@ -2162,6 +2412,78 @@
         {
           "Member": "string? Microsoft.Extensions.AI.HostedFileContent.Name { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.Purpose { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedFileContent.Scope { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.HostedFileContent.SizeInBytes { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.HostedFileDownloadStream : System.IO.Stream",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedFileDownloadStream.HostedFileDownloadStream();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.IAsyncResult Microsoft.Extensions.AI.HostedFileDownloadStream.BeginWrite(byte[] buffer, int offset, int count, System.AsyncCallback? callback, object? state);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.HostedFileDownloadStream.EndWrite(System.IAsyncResult asyncResult);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.HostedFileDownloadStream.SetLength(long value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.DataContent> Microsoft.Extensions.AI.HostedFileDownloadStream.ToDataContentAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.HostedFileDownloadStream.Write(byte[] buffer, int offset, int count);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.HostedFileDownloadStream.Write(System.ReadOnlySpan<byte> buffer);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task Microsoft.Extensions.AI.HostedFileDownloadStream.WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.HostedFileDownloadStream.WriteAsync(System.ReadOnlyMemory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.HostedFileDownloadStream.WriteByte(byte value);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override bool Microsoft.Extensions.AI.HostedFileDownloadStream.CanWrite { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual string? Microsoft.Extensions.AI.HostedFileDownloadStream.FileName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual string? Microsoft.Extensions.AI.HostedFileDownloadStream.MediaType { get; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -2199,172 +2521,204 @@
     },
     {
       "Type": "class Microsoft.Extensions.AI.HostedImageGenerationTool : Microsoft.Extensions.AI.AITool",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedImageGenerationTool.HostedImageGenerationTool();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.HostedImageGenerationTool.HostedImageGenerationTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedImageGenerationTool.AdditionalProperties { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override string Microsoft.Extensions.AI.HostedImageGenerationTool.Name { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationOptions? Microsoft.Extensions.AI.HostedImageGenerationTool.Options { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "class Microsoft.Extensions.AI.HostedMcpServerTool : Microsoft.Extensions.AI.AITool",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, string serverAddress);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, string serverAddress, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, System.Uri serverUrl);",
-          "Stage": "Experimental"
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, System.Uri serverAddress);",
+          "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, System.Uri serverUrl, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
-          "Stage": "Experimental"
+          "Member": "Microsoft.Extensions.AI.HostedMcpServerTool.HostedMcpServerTool(string serverName, System.Uri serverAddress, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedMcpServerTool.AdditionalProperties { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerTool.AllowedTools { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode? Microsoft.Extensions.AI.HostedMcpServerTool.ApprovalMode { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.HostedMcpServerTool.AuthorizationToken { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IDictionary<string, string> Microsoft.Extensions.AI.HostedMcpServerTool.Headers { get; }",
-          "Stage": "Experimental"
+          "Member": "System.Collections.Generic.IDictionary<string, string>? Microsoft.Extensions.AI.HostedMcpServerTool.Headers { get; set; }",
+          "Stage": "Stable"
         },
         {
           "Member": "override string Microsoft.Extensions.AI.HostedMcpServerTool.Name { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string Microsoft.Extensions.AI.HostedMcpServerTool.ServerAddress { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.HostedMcpServerTool.ServerDescription { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string Microsoft.Extensions.AI.HostedMcpServerTool.ServerName { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode : Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode.HostedMcpServerToolAlwaysRequireApprovalMode();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override bool Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode.Equals(object? obj);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override int Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode.GetHashCode();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "class Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.RequireSpecific(System.Collections.Generic.IList<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.IList<string>? neverRequireApprovalToolNames);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolAlwaysRequireApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.AlwaysRequire { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode.NeverRequire { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode : Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode.HostedMcpServerToolNeverRequireApprovalMode();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override bool Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode.Equals(object? obj);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override int Microsoft.Extensions.AI.HostedMcpServerToolNeverRequireApprovalMode.GetHashCode();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode : Microsoft.Extensions.AI.HostedMcpServerToolApprovalMode",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.HostedMcpServerToolRequireSpecificApprovalMode(System.Collections.Generic.IList<string>? alwaysRequireApprovalToolNames, System.Collections.Generic.IList<string>? neverRequireApprovalToolNames);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override bool Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.Equals(object? obj);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override int Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.GetHashCode();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.AlwaysRequireApprovalToolNames { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedMcpServerToolRequireSpecificApprovalMode.NeverRequireApprovalToolNames { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.HostedToolSearchTool : Microsoft.Extensions.AI.AITool",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.HostedToolSearchTool.HostedToolSearchTool();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.HostedToolSearchTool.HostedToolSearchTool(System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.AI.HostedToolSearchTool.AdditionalProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.HostedToolSearchTool.DeferredTools { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.HostedToolSearchTool.Name { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedToolSearchTool.Namespace { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.HostedToolSearchTool.NamespaceDescription { get; set; }",
           "Stage": "Experimental"
         }
       ]
@@ -2458,6 +2812,36 @@
       ]
     },
     {
+      "Type": "interface Microsoft.Extensions.AI.IHostedFileClient : System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.Task<bool> Microsoft.Extensions.AI.IHostedFileClient.DeleteAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileDownloadStream> Microsoft.Extensions.AI.IHostedFileClient.DownloadAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent?> Microsoft.Extensions.AI.IHostedFileClient.GetFileInfoAsync(string fileId, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.IHostedFileClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.IHostedFileClient.ListFilesAsync(Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.HostedFileContent> Microsoft.Extensions.AI.IHostedFileClient.UploadAsync(System.IO.Stream content, string? mediaType = null, string? fileName = null, Microsoft.Extensions.AI.HostedFileClientOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "interface Microsoft.Extensions.AI.IImageGenerator : System.IDisposable",
       "Stage": "Experimental",
       "Methods": [
@@ -2473,53 +2857,53 @@
     },
     {
       "Type": "class Microsoft.Extensions.AI.ImageGenerationOptions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationOptions.ImageGenerationOptions();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationOptions.ImageGenerationOptions(Microsoft.Extensions.AI.ImageGenerationOptions? other);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "virtual Microsoft.Extensions.AI.ImageGenerationOptions Microsoft.Extensions.AI.ImageGenerationOptions.Clone();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.ImageGenerationOptions.AdditionalProperties { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "int? Microsoft.Extensions.AI.ImageGenerationOptions.Count { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Drawing.Size? Microsoft.Extensions.AI.ImageGenerationOptions.ImageSize { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ImageGenerationOptions.MediaType { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.ImageGenerationOptions.ModelId { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Func<Microsoft.Extensions.AI.IImageGenerator, object?>? Microsoft.Extensions.AI.ImageGenerationOptions.RawRepresentationFactory { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationResponseFormat? Microsoft.Extensions.AI.ImageGenerationOptions.ResponseFormat { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "int? Microsoft.Extensions.AI.ImageGenerationOptions.StreamingCount { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -2581,17 +2965,17 @@
     },
     {
       "Type": "enum Microsoft.Extensions.AI.ImageGenerationResponseFormat",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ImageGenerationResponseFormat.ImageGenerationResponseFormat();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Fields": [
         {
           "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Data",
-          "Stage": "Experimental",
+          "Stage": "Stable",
           "Value": "1"
         },
         {
@@ -2601,44 +2985,34 @@
         },
         {
           "Member": "const Microsoft.Extensions.AI.ImageGenerationResponseFormat Microsoft.Extensions.AI.ImageGenerationResponseFormat.Uri",
-          "Stage": "Experimental",
+          "Stage": "Stable",
           "Value": "0"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolCallContent : Microsoft.Extensions.AI.AIContent",
-      "Stage": "Experimental",
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
+      "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageGenerationToolCallContent();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string? Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageId { get; set; }",
-          "Stage": "Experimental"
+          "Member": "Microsoft.Extensions.AI.ImageGenerationToolCallContent.ImageGenerationToolCallContent(string callId);",
+          "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolResultContent : Microsoft.Extensions.AI.AIContent",
-      "Stage": "Experimental",
+      "Type": "sealed class Microsoft.Extensions.AI.ImageGenerationToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
+      "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageGenerationToolResultContent();",
-          "Stage": "Experimental"
+          "Member": "Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageGenerationToolResultContent(string callId);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.AI.ImageGenerationToolResultContent.ImageId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.ImageGenerationToolResultContent.Outputs { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -2701,6 +3075,134 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.InputAudioBufferAppendRealtimeClientMessage : Microsoft.Extensions.AI.RealtimeClientMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.InputAudioBufferAppendRealtimeClientMessage.InputAudioBufferAppendRealtimeClientMessage(Microsoft.Extensions.AI.DataContent audioContent);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.DataContent Microsoft.Extensions.AI.InputAudioBufferAppendRealtimeClientMessage.Content { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.InputAudioBufferCommitRealtimeClientMessage : Microsoft.Extensions.AI.RealtimeClientMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.InputAudioBufferCommitRealtimeClientMessage.InputAudioBufferCommitRealtimeClientMessage();",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.InputAudioTranscriptionRealtimeServerMessage : Microsoft.Extensions.AI.RealtimeServerMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.InputAudioTranscriptionRealtimeServerMessage.InputAudioTranscriptionRealtimeServerMessage(Microsoft.Extensions.AI.RealtimeServerMessageType type);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int? Microsoft.Extensions.AI.InputAudioTranscriptionRealtimeServerMessage.ContentIndex { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ErrorContent? Microsoft.Extensions.AI.InputAudioTranscriptionRealtimeServerMessage.Error { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.InputAudioTranscriptionRealtimeServerMessage.ItemId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.InputAudioTranscriptionRealtimeServerMessage.Transcription { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.UsageDetails? Microsoft.Extensions.AI.InputAudioTranscriptionRealtimeServerMessage.Usage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.InputRequestContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.InputRequestContent.InputRequestContent(string requestId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.InputRequestContent.RequestId { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.InputResponseContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.InputResponseContent.InputResponseContent(string requestId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.InputResponseContent.RequestId { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AI.IRealtimeClient : System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.IRealtimeClientSession> Microsoft.Extensions.AI.IRealtimeClient.CreateSessionAsync(Microsoft.Extensions.AI.RealtimeSessionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.IRealtimeClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AI.IRealtimeClientSession : System.IAsyncDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "object? Microsoft.Extensions.AI.IRealtimeClientSession.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.RealtimeServerMessage> Microsoft.Extensions.AI.IRealtimeClientSession.GetStreamingResponseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.AI.IRealtimeClientSession.SendAsync(Microsoft.Extensions.AI.RealtimeClientMessage message, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionOptions? Microsoft.Extensions.AI.IRealtimeClientSession.Options { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "interface Microsoft.Extensions.AI.ISpeechToTextClient : System.IDisposable",
       "Stage": "Experimental",
       "Methods": [
@@ -2719,96 +3221,60 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.AI.IToolReductionStrategy",
+      "Type": "interface Microsoft.Extensions.AI.ITextToSpeechClient : System.IDisposable",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AITool>> Microsoft.Extensions.AI.IToolReductionStrategy.SelectToolsForRequestAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolApprovalRequestContent : Microsoft.Extensions.AI.UserInputRequestContent",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.McpServerToolApprovalRequestContent.McpServerToolApprovalRequestContent(string id, Microsoft.Extensions.AI.McpServerToolCallContent toolCall);",
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.TextToSpeechResponse> Microsoft.Extensions.AI.ITextToSpeechClient.GetAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.AI.McpServerToolApprovalResponseContent Microsoft.Extensions.AI.McpServerToolApprovalRequestContent.CreateResponse(bool approved);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent Microsoft.Extensions.AI.McpServerToolApprovalRequestContent.ToolCall { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolApprovalResponseContent : Microsoft.Extensions.AI.UserInputResponseContent",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.McpServerToolApprovalResponseContent.McpServerToolApprovalResponseContent(string id, bool approved);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.AI.McpServerToolApprovalResponseContent.Approved { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolCallContent : Microsoft.Extensions.AI.AIContent",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string toolName, string? serverName);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object?>? Microsoft.Extensions.AI.McpServerToolCallContent.Arguments { get; set; }",
+          "Member": "object? Microsoft.Extensions.AI.ITextToSpeechClient.GetService(System.Type serviceType, object? serviceKey = null);",
           "Stage": "Experimental"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.CallId { get; }",
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.TextToSpeechResponseUpdate> Microsoft.Extensions.AI.ITextToSpeechClient.GetStreamingAudioAsync(string text, Microsoft.Extensions.AI.TextToSpeechOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.McpServerToolCallContent.McpServerToolCallContent(string callId, string name, string? serverName);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, object?>? Microsoft.Extensions.AI.McpServerToolCallContent.Arguments { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.Name { get; }",
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.AI.McpServerToolCallContent.ServerName { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.McpServerToolCallContent.ToolName { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolResultContent : Microsoft.Extensions.AI.AIContent",
-      "Stage": "Experimental",
+      "Type": "sealed class Microsoft.Extensions.AI.McpServerToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.McpServerToolResultContent.McpServerToolResultContent(string callId);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.McpServerToolResultContent.CallId { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.McpServerToolResultContent.Output { get; set; }",
-          "Stage": "Experimental"
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.McpServerToolResultContent.Outputs { get; set; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -2827,6 +3293,420 @@
         {
           "Member": "override int Microsoft.Extensions.AI.NoneChatToolMode.GetHashCode();",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage : Microsoft.Extensions.AI.RealtimeServerMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage.OutputTextAudioRealtimeServerMessage(Microsoft.Extensions.AI.RealtimeServerMessageType type);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage.Audio { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage.ContentIndex { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage.ItemId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage.OutputIndex { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage.ResponseId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.OutputTextAudioRealtimeServerMessage.Text { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.RealtimeAudioFormat",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeAudioFormat.RealtimeAudioFormat(string mediaType, int sampleRate);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.RealtimeAudioFormat.MediaType { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.RealtimeAudioFormat.SampleRate { get; init; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.RealtimeClientMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeClientMessage.RealtimeClientMessage();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.RealtimeClientMessage.MessageId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.RealtimeClientMessage.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.RealtimeConversationItem",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeConversationItem.RealtimeConversationItem(System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> contents, string? id = null, Microsoft.Extensions.AI.ChatRole? role = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.RealtimeConversationItem.Contents { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.RealtimeConversationItem.Id { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.RealtimeConversationItem.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatRole? Microsoft.Extensions.AI.RealtimeConversationItem.Role { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.RealtimeResponseStatus",
+      "Stage": "Experimental",
+      "Properties": [
+        {
+          "Member": "static string Microsoft.Extensions.AI.RealtimeResponseStatus.Cancelled { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.RealtimeResponseStatus.Completed { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.RealtimeResponseStatus.Failed { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.AI.RealtimeResponseStatus.Incomplete { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.RealtimeServerMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeServerMessage.RealtimeServerMessage();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.RealtimeServerMessage.MessageId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.RealtimeServerMessage.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessage.Type { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.AI.RealtimeServerMessageType : System.IEquatable<Microsoft.Extensions.AI.RealtimeServerMessageType>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeServerMessageType.RealtimeServerMessageType(string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeServerMessageType.RealtimeServerMessageType();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.RealtimeServerMessageType.Equals(object? obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.RealtimeServerMessageType.Equals(Microsoft.Extensions.AI.RealtimeServerMessageType other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.RealtimeServerMessageType.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.RealtimeServerMessageType.operator ==(Microsoft.Extensions.AI.RealtimeServerMessageType left, Microsoft.Extensions.AI.RealtimeServerMessageType right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.RealtimeServerMessageType.operator !=(Microsoft.Extensions.AI.RealtimeServerMessageType left, Microsoft.Extensions.AI.RealtimeServerMessageType right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.RealtimeServerMessageType.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.ConversationItemAdded { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.ConversationItemDone { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.Error { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.InputAudioTranscriptionCompleted { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.InputAudioTranscriptionDelta { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.InputAudioTranscriptionFailed { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.OutputAudioDelta { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.OutputAudioDone { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.OutputAudioTranscriptionDelta { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.OutputAudioTranscriptionDone { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.OutputTextDelta { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.OutputTextDone { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.RawContentOnly { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.ResponseCreated { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.ResponseDone { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.ResponseOutputItemAdded { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.ResponseOutputItemDone { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.RealtimeServerMessageType.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.RealtimeServerMessageType.Converter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeServerMessageType.Converter.Converter();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override Microsoft.Extensions.AI.RealtimeServerMessageType Microsoft.Extensions.AI.RealtimeServerMessageType.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.RealtimeServerMessageType.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.RealtimeServerMessageType value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.AI.RealtimeSessionKind : System.IEquatable<Microsoft.Extensions.AI.RealtimeSessionKind>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionKind.RealtimeSessionKind(string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionKind.RealtimeSessionKind();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.RealtimeSessionKind.Equals(object? obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.RealtimeSessionKind.Equals(Microsoft.Extensions.AI.RealtimeSessionKind other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.RealtimeSessionKind.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.RealtimeSessionKind.operator ==(Microsoft.Extensions.AI.RealtimeSessionKind left, Microsoft.Extensions.AI.RealtimeSessionKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.RealtimeSessionKind.operator !=(Microsoft.Extensions.AI.RealtimeSessionKind left, Microsoft.Extensions.AI.RealtimeSessionKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.RealtimeSessionKind.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeSessionKind Microsoft.Extensions.AI.RealtimeSessionKind.Conversation { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RealtimeSessionKind Microsoft.Extensions.AI.RealtimeSessionKind.Transcription { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.RealtimeSessionKind.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.RealtimeSessionKind.Converter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionKind.Converter.Converter();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override Microsoft.Extensions.AI.RealtimeSessionKind Microsoft.Extensions.AI.RealtimeSessionKind.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.RealtimeSessionKind.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.RealtimeSessionKind value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.RealtimeSessionOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionOptions.RealtimeSessionOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeAudioFormat? Microsoft.Extensions.AI.RealtimeSessionOptions.InputAudioFormat { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.RealtimeSessionOptions.Instructions { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.RealtimeSessionOptions.MaxOutputTokens { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.RealtimeSessionOptions.Model { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeAudioFormat? Microsoft.Extensions.AI.RealtimeSessionOptions.OutputAudioFormat { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string>? Microsoft.Extensions.AI.RealtimeSessionOptions.OutputModalities { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<object?>? Microsoft.Extensions.AI.RealtimeSessionOptions.RawRepresentationFactory { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionKind Microsoft.Extensions.AI.RealtimeSessionOptions.SessionKind { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatToolMode? Microsoft.Extensions.AI.RealtimeSessionOptions.ToolMode { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.AITool>? Microsoft.Extensions.AI.RealtimeSessionOptions.Tools { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TranscriptionOptions? Microsoft.Extensions.AI.RealtimeSessionOptions.TranscriptionOptions { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.RealtimeSessionOptions.Voice { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.VoiceActivityDetectionOptions? Microsoft.Extensions.AI.RealtimeSessionOptions.VoiceActivityDetection { get; init; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -2940,40 +3820,132 @@
     },
     {
       "Type": "class Microsoft.Extensions.AI.ResponseContinuationToken",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.ResponseContinuationToken(System.ReadOnlyMemory<byte> bytes);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.FromBytes(System.ReadOnlyMemory<byte> bytes);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "virtual System.ReadOnlyMemory<byte> Microsoft.Extensions.AI.ResponseContinuationToken.ToBytes();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.AI.ResponseContinuationToken.Converter",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Converter();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override Microsoft.Extensions.AI.ResponseContinuationToken Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "override void Microsoft.Extensions.AI.ResponseContinuationToken.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.ResponseContinuationToken value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage : Microsoft.Extensions.AI.RealtimeServerMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.ResponseCreatedRealtimeServerMessage(Microsoft.Extensions.AI.RealtimeServerMessageType type);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ErrorContent? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.Error { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.RealtimeConversationItem>? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.Items { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.MaxOutputTokens { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeAudioFormat? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.OutputAudioOptions { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.OutputModalities { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.OutputVoice { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.ResponseId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.Status { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.UsageDetails? Microsoft.Extensions.AI.ResponseCreatedRealtimeServerMessage.Usage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ResponseOutputItemRealtimeServerMessage : Microsoft.Extensions.AI.RealtimeServerMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ResponseOutputItemRealtimeServerMessage.ResponseOutputItemRealtimeServerMessage(Microsoft.Extensions.AI.RealtimeServerMessageType type);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeConversationItem? Microsoft.Extensions.AI.ResponseOutputItemRealtimeServerMessage.Item { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.ResponseOutputItemRealtimeServerMessage.OutputIndex { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ResponseOutputItemRealtimeServerMessage.ResponseId { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.SessionUpdateRealtimeClientMessage : Microsoft.Extensions.AI.RealtimeClientMessage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.SessionUpdateRealtimeClientMessage.SessionUpdateRealtimeClientMessage(Microsoft.Extensions.AI.RealtimeSessionOptions options);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.RealtimeSessionOptions Microsoft.Extensions.AI.SessionUpdateRealtimeClientMessage.Options { get; set; }",
           "Stage": "Experimental"
         }
       ]
@@ -3349,15 +4321,389 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.AI.TextToSpeechClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static TService? Microsoft.Extensions.AI.TextToSpeechClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.ITextToSpeechClient client, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.TextToSpeechClientMetadata",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechClientMetadata.TextToSpeechClientMetadata(string? providerName = null, System.Uri? providerUri = null, string? defaultModelId = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechClientMetadata.DefaultModelId { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechClientMetadata.ProviderName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Uri? Microsoft.Extensions.AI.TextToSpeechClientMetadata.ProviderUri { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.TextToSpeechOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechOptions.TextToSpeechOptions();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechOptions.TextToSpeechOptions(Microsoft.Extensions.AI.TextToSpeechOptions? other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.TextToSpeechOptions Microsoft.Extensions.AI.TextToSpeechOptions.Clone();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.TextToSpeechOptions.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechOptions.AudioFormat { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechOptions.Language { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechOptions.ModelId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float? Microsoft.Extensions.AI.TextToSpeechOptions.Pitch { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.ITextToSpeechClient, object?>? Microsoft.Extensions.AI.TextToSpeechOptions.RawRepresentationFactory { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float? Microsoft.Extensions.AI.TextToSpeechOptions.Speed { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechOptions.VoiceId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float? Microsoft.Extensions.AI.TextToSpeechOptions.Volume { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.TextToSpeechResponse",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponse.TextToSpeechResponse();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponse.TextToSpeechResponse(System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> contents);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponseUpdate[] Microsoft.Extensions.AI.TextToSpeechResponse.ToTextToSpeechResponseUpdates();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.TextToSpeechResponse.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.TextToSpeechResponse.Contents { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechResponse.ModelId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.TextToSpeechResponse.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechResponse.ResponseId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.UsageDetails? Microsoft.Extensions.AI.TextToSpeechResponse.Usage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.TextToSpeechResponseUpdate",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponseUpdate.TextToSpeechResponseUpdate();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponseUpdate.TextToSpeechResponseUpdate(System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> contents);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.TextToSpeechResponseUpdate.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent> Microsoft.Extensions.AI.TextToSpeechResponseUpdate.Contents { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind Microsoft.Extensions.AI.TextToSpeechResponseUpdate.Kind { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechResponseUpdate.ModelId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.TextToSpeechResponseUpdate.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TextToSpeechResponseUpdate.ResponseId { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.TextToSpeechResponseUpdateExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechResponse Microsoft.Extensions.AI.TextToSpeechResponseUpdateExtensions.ToTextToSpeechResponse(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.TextToSpeechResponseUpdate> updates);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.TextToSpeechResponse> Microsoft.Extensions.AI.TextToSpeechResponseUpdateExtensions.ToTextToSpeechResponseAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.TextToSpeechResponseUpdate> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind : System.IEquatable<Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.TextToSpeechResponseUpdateKind(string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.TextToSpeechResponseUpdateKind();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Equals(object? obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Equals(Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.operator ==(Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind left, Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.operator !=(Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind left, Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.AudioUpdated { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.AudioUpdating { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Error { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.SessionClose { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.SessionOpen { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Converter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Converter.Converter();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.TextToSpeechResponseUpdateKind value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ToolApprovalRequestContent : Microsoft.Extensions.AI.InputRequestContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolApprovalRequestContent(string requestId, Microsoft.Extensions.AI.ToolCallContent toolCall);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent Microsoft.Extensions.AI.ToolApprovalRequestContent.CreateResponse(bool approved, string? reason = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.ToolApprovalRequestContent.RequiresConfirmation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent Microsoft.Extensions.AI.ToolApprovalRequestContent.ToolCall { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.ToolApprovalResponseContent : Microsoft.Extensions.AI.InputResponseContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolApprovalResponseContent(string requestId, bool approved, Microsoft.Extensions.AI.ToolCallContent toolCall);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.ToolApprovalResponseContent.Approved { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.ToolApprovalResponseContent.Reason { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent Microsoft.Extensions.AI.ToolApprovalResponseContent.ToolCall { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ToolCallContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolCallContent.ToolCallContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.ToolCallContent.CallId { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.ToolResultContent : Microsoft.Extensions.AI.AIContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ToolResultContent.ToolResultContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.ToolResultContent.CallId { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.TranscriptionOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.TranscriptionOptions.TranscriptionOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.TranscriptionOptions.ModelId { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TranscriptionOptions.Prompt { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.TranscriptionOptions.SpeechLanguage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.UriContent : Microsoft.Extensions.AI.AIContent",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(string uri, string mediaType);",
+          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(string uri, string? mediaType = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(System.Uri uri, string mediaType);",
+          "Member": "Microsoft.Extensions.AI.UriContent.UriContent(System.Uri uri, string? mediaType = null);",
           "Stage": "Stable"
         },
         {
@@ -3419,8 +4765,24 @@
           "Stage": "Stable"
         },
         {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.InputAudioTokenCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.InputTextTokenCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "long? Microsoft.Extensions.AI.UsageDetails.InputTokenCount { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.OutputAudioTokenCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.AI.UsageDetails.OutputTextTokenCount { get; set; }",
+          "Stage": "Experimental"
         },
         {
           "Member": "long? Microsoft.Extensions.AI.UsageDetails.OutputTokenCount { get; set; }",
@@ -3437,34 +4799,54 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.UserInputRequestContent : Microsoft.Extensions.AI.AIContent",
+      "Type": "class Microsoft.Extensions.AI.VoiceActivityDetectionOptions",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.UserInputRequestContent.UserInputRequestContent(string id);",
+          "Member": "Microsoft.Extensions.AI.VoiceActivityDetectionOptions.VoiceActivityDetectionOptions();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.UserInputRequestContent.Id { get; }",
+          "Member": "bool Microsoft.Extensions.AI.VoiceActivityDetectionOptions.AllowInterruption { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.VoiceActivityDetectionOptions.Enabled { get; set; }",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.UserInputResponseContent : Microsoft.Extensions.AI.AIContent",
-      "Stage": "Experimental",
+      "Type": "sealed class Microsoft.Extensions.AI.WebSearchToolCallContent : Microsoft.Extensions.AI.ToolCallContent",
+      "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.UserInputResponseContent.UserInputResponseContent(string id);",
-          "Stage": "Experimental"
+          "Member": "Microsoft.Extensions.AI.WebSearchToolCallContent.WebSearchToolCallContent(string callId);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.AI.UserInputResponseContent.Id { get; }",
-          "Stage": "Experimental"
+          "Member": "System.Collections.Generic.IList<string>? Microsoft.Extensions.AI.WebSearchToolCallContent.Queries { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.WebSearchToolResultContent : Microsoft.Extensions.AI.ToolResultContent",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.WebSearchToolResultContent.WebSearchToolResultContent(string callId);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.AI.AIContent>? Microsoft.Extensions.AI.WebSearchToolResultContent.Outputs { get; set; }",
+          "Stage": "Stable"
         }
       ]
     }

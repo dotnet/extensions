@@ -90,6 +90,22 @@ public class MetricAttributeTests
     }
 
     [Fact]
+    public void TestGaugeAttributeT()
+    {
+        var attribute = new GaugeAttribute<int>("d1", "d2", "d3");
+        Assert.NotNull(attribute);
+        Assert.Null(attribute.Name);
+        Assert.Null(attribute.Type);
+        Assert.Null(attribute.Unit);
+        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
+
+        attribute.Name = MyMetric;
+        Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
+    }
+
+    [Fact]
     public void TestStrongTypeCounterAttribute()
     {
         var attribute = new CounterAttribute(typeof(TagNameTest));
@@ -161,6 +177,23 @@ public class MetricAttributeTests
     public void TestStrongTypeGaugeAttribute()
     {
         var attribute = new GaugeAttribute(typeof(TagNameTest));
+
+        Assert.NotNull(attribute);
+        Assert.Null(attribute.Name);
+        Assert.Null(attribute.TagNames);
+        Assert.Null(attribute.Unit);
+        Assert.Equal(typeof(TagNameTest), attribute.Type);
+
+        attribute.Name = MyMetric;
+        Assert.Equal(MyMetric, attribute.Name);
+        attribute.Unit = "items";
+        Assert.Equal("items", attribute.Unit);
+    }
+
+    [Fact]
+    public void TestStrongTypeGaugeAttributeT()
+    {
+        var attribute = new GaugeAttribute<byte>(typeof(TagNameTest));
 
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);

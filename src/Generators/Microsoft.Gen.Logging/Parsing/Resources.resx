@@ -153,11 +153,11 @@
   <data name="LoggingMethodMustBePartialMessage" xml:space="preserve">
     <value>Logging methods must be partial</value>
   </data>
-  <data name="LoggingMethodIsGenericTitle" xml:space="preserve">
-    <value>Logging methods can't be generic</value>
+  <data name="LoggingMethodHasAllowsRefStructConstraintTitle" xml:space="preserve">
+    <value>Logging methods can't use the 'allows ref struct' constraint</value>
   </data>
-  <data name="LoggingMethodIsGenericMessage" xml:space="preserve">
-    <value>Logging methods can't be generic</value>
+  <data name="LoggingMethodHasAllowsRefStructConstraintMessage" xml:space="preserve">
+    <value>Logging methods can't use the 'allows ref struct' constraint</value>
   </data>
   <data name="ShouldntMentionExceptionInMessageMessage" xml:space="preserve">
     <value>Don't include a template for parameter "{0}" in the logging message, exceptions are automatically delivered without being listed in the logging message</value>
@@ -350,5 +350,11 @@
   </data>
   <data name="PrimaryConstructorParameterLoggerHiddenMessage" xml:space="preserve">
     <value>Class '{0}' has a primary constructor parameter of type Microsoft.Extensions.Logging.ILogger that is hidden by a field in the class or a base class, preventing its use</value>
+  </data>
+  <data name="LoggingMethodParameterParamsMessage" xml:space="preserve">
+    <value>Logging method parameter "{0}" has an unsupported modifier ("params" or "scoped")</value>
+  </data>
+  <data name="LoggingMethodParameterParamsTitle" xml:space="preserve">
+    <value>Logging method parameters can't have the "params" or "scoped" modifier</value>
   </data>
 </root>
