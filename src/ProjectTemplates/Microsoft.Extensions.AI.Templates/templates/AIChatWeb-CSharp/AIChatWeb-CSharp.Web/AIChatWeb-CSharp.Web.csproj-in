@@ -54,6 +54,7 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.Qdrant}" />
 <!--#elif (IsLocalVectorStore)-->
     <PackageReference Include="CommunityToolkit.VectorData.SqliteVec" Version="${PackageVersion:CommunityToolkit.VectorData.SqliteVec}" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="${PackageVersion:SQLitePCLRaw.bundle_e_sqlite3}" />
 <!--#endif -->
   </ItemGroup>
 <!--#if (IsAspire) -->

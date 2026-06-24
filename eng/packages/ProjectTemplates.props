@@ -29,6 +29,8 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.67.1-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.67.1-preview" />
     <PackageVersion Include="CommunityToolkit.VectorData.SqliteVec" Version="1.0.0-preview.3" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+    <PackageVersion Include="System.Linq.AsyncEnumerable" Version="10.0.6" />
     <PackageVersion Include="ModelContextProtocol" Version="1.2.0" />
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
     <PackageVersion Include="OllamaSharp" Version="5.4.12" />
