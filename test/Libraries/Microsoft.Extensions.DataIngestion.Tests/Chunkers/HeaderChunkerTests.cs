@@ -10,8 +10,11 @@ using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests;
 
-public class HeaderChunkerTests
+public class HeaderChunkerTests : DocumentChunkerTests
 {
+    protected override IngestionChunker CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        => new HeaderChunker(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = maxTokensPerChunk });
+
     [Fact]
     public async Task CanChunkNonTrivialDocument()
     {
@@ -37,20 +40,20 @@ public class HeaderChunkerTests
         });
 
         HeaderChunker chunker = new(new(TiktokenTokenizer.CreateForModel("gpt-4")));
-        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+        IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
         Assert.Equal(5, chunks.Count);
 
         Assert.Equal("Header 1 Header 1_1", chunks[0].Context);
-        Assert.Equal($"Header 1 Header 1_1\nParagraph 1_1_1", chunks[0].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_1\nParagraph 1_1_1", GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_1 Header 1_1_1", chunks[1].Context);
-        Assert.Equal($"Header 1 Header 1_1 Header 1_1_1\nParagraph 1_1_1_1\nParagraph 1_1_1_2", chunks[1].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_1 Header 1_1_1\nParagraph 1_1_1_1\nParagraph 1_1_1_2", GetText(chunks[1]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_1 Header 1_1_2", chunks[2].Context);
-        Assert.Equal($"Header 1 Header 1_1 Header 1_1_2\nParagraph 1_1_2_1\nParagraph 1_1_2_2", chunks[2].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_1 Header 1_1_2\nParagraph 1_1_2_1\nParagraph 1_1_2_2", GetText(chunks[2]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_2", chunks[3].Context);
-        Assert.Equal($"Header 1 Header 1_2\nParagraph 1_2_1", chunks[3].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_2\nParagraph 1_2_1", GetText(chunks[3]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header 1 Header 1_2 Header 1_2_1", chunks[4].Context);
-        Assert.Equal($"Header 1 Header 1_2 Header 1_2_1\nParagraph 1_2_1_1", chunks[4].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header 1 Header 1_2 Header 1_2_1\nParagraph 1_2_1_1", GetText(chunks[4]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -69,13 +72,13 @@ public class HeaderChunkerTests
         });
 
         HeaderChunker chunker = new(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = 13 });
-        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+        IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
         Assert.Equal(2, chunks.Count);
         Assert.Equal("Header A Header B Header C", chunks[0].Context);
-        Assert.Equal($"Header A Header B Header C\nThis is a very long text.", chunks[0].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header A Header B Header C\nThis is a very long text.", GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header A Header B Header C", chunks[1].Context);
-        Assert.Equal($"Header A Header B Header C\n It's expressed with plenty of tokens", chunks[1].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header A Header B Header C\n It's expressed with plenty of tokens", GetText(chunks[1]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -117,14 +120,14 @@ public class HeaderChunkerTests
         });
 
         HeaderChunker chunker = new(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = 30 });
-        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+        IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
         Assert.Equal(2, chunks.Count);
         Assert.Equal("Header A Header B Header C", chunks[0].Context);
         Assert.Equal($"Header A Header B Header C\nThis is a very long text. It's expressed with plenty of tokens. And it contains a new line.\n",
-            chunks[0].Content, ignoreLineEndingDifferences: true);
+            GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("Header A Header B Header C", chunks[1].Context);
-        Assert.Equal($"Header A Header B Header C\nWith some text after the new line.\nAnd following paragraph.", chunks[1].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal($"Header A Header B Header C\nWith some text after the new line.\nAnd following paragraph.", GetText(chunks[1]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -144,7 +147,7 @@ public class HeaderChunkerTests
         IngestionDocument document = CreateDocumentWithLargeTable();
 
         HeaderChunker chunker = new(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = 100 });
-        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(document).ToListAsync();
+        IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(document).ToListAsync();
 
         Assert.Equal(2, chunks.Count);
         Assert.All(chunks, chunk => Assert.Equal("Header A", chunk.Context));
@@ -156,7 +159,7 @@ public class HeaderChunkerTests
             | 0 | 1 | 2 | 3 | 4 |
             | 5 | 6 | 7 | 8 | 9 |
             | 10 | 11 | 12 | 13 | 14 |
-            """, chunks[0].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
@@ -164,7 +167,7 @@ public class HeaderChunkerTests
             | 15 | 16 | 17 | 18 | 19 |
             | 20 | 21 | 22 | 23 | 24 |
             And some follow up.
-            """, chunks[1].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[1]), ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -174,47 +177,47 @@ public class HeaderChunkerTests
 
         Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
         HeaderChunker chunker = new(new(tokenizer) { MaxTokensPerChunk = 50 });
-        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(document).ToListAsync();
+        IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(document).ToListAsync();
 
         Assert.Equal(6, chunks.Count);
         Assert.All(chunks, chunk => Assert.Equal("Header A", chunk.Context));
-        Assert.All(chunks, chunk => Assert.InRange(tokenizer.CountTokens(chunk.Content), 1, 50));
+        Assert.All(chunks, chunk => Assert.InRange(tokenizer.CountTokens(GetText(chunk)), 1, 50));
 
         Assert.Equal("""
             Header A
             This is some text that describes why we need the following table.
-            """, chunks[0].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[0]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 0 | 1 | 2 | 3 | 4 |
-            """, chunks[1].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[1]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 5 | 6 | 7 | 8 | 9 |
-            """, chunks[2].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[2]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 10 | 11 | 12 | 13 | 14 |
-            """, chunks[3].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[3]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 15 | 16 | 17 | 18 | 19 |
-            """, chunks[4].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[4]), ignoreLineEndingDifferences: true);
         Assert.Equal("""
             Header A
             | one | two | three | four | five |
             | --- | --- | --- | --- | --- |
             | 20 | 21 | 22 | 23 | 24 |
             And some follow up.
-            """, chunks[5].Content, ignoreLineEndingDifferences: true);
+            """, GetText(chunks[5]), ignoreLineEndingDifferences: true);
     }
 
     private static IngestionDocument CreateDocumentWithLargeTable()
@@ -286,15 +289,15 @@ public class HeaderChunkerTests
 
         Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
         HeaderChunker chunker = new(new(tokenizer));
-        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+        IReadOnlyList<IngestionChunk> chunks = await chunker.ProcessAsync(doc).ToListAsync();
 
-        foreach (IngestionChunk<string> chunk in chunks)
+        foreach (IngestionChunk chunk in chunks)
         {
             // Verify that TokenCount property is set and greater than zero
             Assert.True(chunk.TokenCount > 0);
 
             // Verify that TokenCount matches actual token count of content
-            int actualTokenCount = tokenizer.CountTokens(chunk.Content, considerNormalization: false);
+            int actualTokenCount = tokenizer.CountTokens(GetText(chunk), considerNormalization: false);
             Assert.Equal(actualTokenCount, chunk.TokenCount);
         }
     }

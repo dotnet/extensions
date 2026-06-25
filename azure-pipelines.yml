@@ -7,7 +7,6 @@ trigger:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
       - validation/*
@@ -31,7 +30,6 @@ pr:
   branches:
     include:
       - main
-      - dev
       - release/*
       - internal/release/*
       - data-ingestion-preview2
@@ -132,11 +130,11 @@ variables:
   - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
     - name: enableSourceIndex
       value: true
-    - name: sourceIndexBuildCommand
-      value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
   - ${{ else }}:
     - name: enableSourceIndex
       value: false
+  - name: sourceIndexBuildCommand
+    value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
 
 resources:
   repositories:
@@ -149,7 +147,7 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     settings:
-      networkIsolationPolicy: Permissive,CFSClean2
+      networkIsolationPolicy: Permissive, CFSClean, CFSClean2
     featureFlags:
       binskimScanAllExtensions: true
     sdl:
@@ -158,7 +156,7 @@ extends:
         exclusionsFile: $(Build.SourcesDirectory)\.config\PoliCheckExclusions.xml
       sourceAnalysisPool:
         name: NetCore1ESPool-Internal
-        image: windows.vs2022preview.amd64
+        image: windows.vs2022.amd64
         os: windows
       tsa:
         enabled: true
@@ -180,6 +178,8 @@ extends:
           enableMicrobuild: true
           enableTelemetry: true
           enableSourceIndex: ${{ variables['enableSourceIndex'] }}
+          sourceIndexParams:
+            sourceIndexBuildCommand: ${{ variables['sourceIndexBuildCommand'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish test logs
           enablePublishTestResults: true
@@ -199,7 +199,7 @@ extends:
             testResultsFormat: VSTest
             pool:
               name: NetCore1ESPool-Internal
-              image: windows.vs2022preview.amd64
+              image: windows.vs2022.amd64
               os: windows
 
             variables:
@@ -245,7 +245,7 @@ extends:
             testResultsFormat: VSTest
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             variables:
@@ -297,7 +297,7 @@ extends:
 
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             preSteps:
@@ -338,7 +338,7 @@ extends:
             pool:
               ${{ if eq(variables['runAsPublic'], 'true') }}:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             variables:

@@ -35,7 +35,9 @@ public class ImageGenerationOptionsTests
     {
         ImageGenerationOptions options = new();
 
+#pragma warning disable MEAI001 // IImageGenerator is experimental
         Func<IImageGenerator, object?> factory = generator => new { Representation = "raw data" };
+#pragma warning restore MEAI001
 
         options.ResponseFormat = ImageGenerationResponseFormat.Data;
         options.Count = 5;
@@ -72,9 +74,9 @@ public class ImageGenerationOptionsTests
             ModelId = "test-model",
         };
 
-        string json = JsonSerializer.Serialize(options, TestJsonSerializerContext.Default.ImageGenerationOptions);
+        string json = JsonSerializer.Serialize(options, AIJsonUtilities.DefaultOptions);
 
-        ImageGenerationOptions? deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageGenerationOptions);
+        ImageGenerationOptions? deserialized = JsonSerializer.Deserialize<ImageGenerationOptions>(json, AIJsonUtilities.DefaultOptions);
         Assert.NotNull(deserialized);
 
         Assert.Equal(ImageGenerationResponseFormat.Data, deserialized.ResponseFormat);
@@ -116,7 +118,9 @@ public class ImageGenerationOptionsTests
     [Theory]
     [InlineData(ImageGenerationResponseFormat.Uri)]
     [InlineData(ImageGenerationResponseFormat.Data)]
+#pragma warning disable MEAI001 // ImageGenerationResponseFormat.Hosted is experimental
     [InlineData(ImageGenerationResponseFormat.Hosted)]
+#pragma warning restore MEAI001
     public void ImageGenerationResponseFormat_Values_AreValid(ImageGenerationResponseFormat responseFormat)
     {
         Assert.True(Enum.IsDefined(typeof(ImageGenerationResponseFormat), responseFormat));
@@ -127,8 +131,8 @@ public class ImageGenerationOptionsTests
     {
         foreach (ImageGenerationResponseFormat responseFormat in Enum.GetValues(typeof(ImageGenerationResponseFormat)))
         {
-            string json = JsonSerializer.Serialize(responseFormat, TestJsonSerializerContext.Default.ImageGenerationResponseFormat);
-            ImageGenerationResponseFormat deserialized = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.ImageGenerationResponseFormat);
+            string json = JsonSerializer.Serialize(responseFormat, AIJsonUtilities.DefaultOptions);
+            ImageGenerationResponseFormat deserialized = JsonSerializer.Deserialize<ImageGenerationResponseFormat>(json, AIJsonUtilities.DefaultOptions);
             Assert.Equal(responseFormat, deserialized);
         }
     }
@@ -197,5 +201,38 @@ public class ImageGenerationOptionsTests
             : base(null)
         {
         }
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "count": 2,
+              "imageSize": {
+                "width": 1024,
+                "height": 768
+              },
+              "mediaType": "image/png",
+              "modelId": "dall-e-3",
+              "responseFormat": "Uri",
+              "streamingCount": 3,
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        ImageGenerationOptions? result = JsonSerializer.Deserialize<ImageGenerationOptions>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new Size(1024, 768), result.ImageSize);
+        Assert.Equal("image/png", result.MediaType);
+        Assert.Equal("dall-e-3", result.ModelId);
+        Assert.Equal(ImageGenerationResponseFormat.Uri, result.ResponseFormat);
+        Assert.Equal(3, result.StreamingCount);
+        Assert.NotNull(result.AdditionalProperties);
+        Assert.Equal("val", result.AdditionalProperties["key"]?.ToString());
     }
 }

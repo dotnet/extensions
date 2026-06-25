@@ -20,10 +20,26 @@
 
   <ItemGroup>
     <None Remove="Resources\audio001.mp3" />
+    <None Remove="Resources\audio001.wav" />
+    <None Remove="Resources\audio001.m4a" />
+    <None Remove="Resources\audio001.webm" />
+    <None Remove="Resources\audio001_noid3.mp3" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\audio001.mp3">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\audio001.wav">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\audio001.m4a">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\audio001.webm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\audio001_noid3.mp3">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="..\..\Shared\ImageDataUri\dotnet.png" Link="Resources\dotnet.png" />
@@ -37,6 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.Memory" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
@@ -44,6 +61,8 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageReference Include="OpenTelemetry.Api" />
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
     <PackageReference Include="PdfPig" />
   </ItemGroup>

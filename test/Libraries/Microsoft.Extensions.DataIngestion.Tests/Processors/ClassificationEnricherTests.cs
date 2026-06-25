@@ -88,7 +88,7 @@ public class ClassificationEnricherTests
         };
         ClassificationEnricher sut = new(new(chatClient), ["AI", "Animals", "Sports"], fallbackClass: "UFO");
 
-        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(CreateChunks().ToAsyncEnumerable()).ToListAsync();
+        IReadOnlyList<IngestionChunk> got = await sut.ProcessAsync(CreateChunks().ToAsyncEnumerable()).ToListAsync();
 
         Assert.Equal(3, got.Count);
         Assert.Equal("AI", got[0].Metadata[ClassificationEnricher.MetadataKey]);
@@ -107,9 +107,9 @@ public class ClassificationEnricherTests
         };
 
         ClassificationEnricher sut = new(new(chatClient) { LoggerFactory = loggerFactory }, ["AI", "Other"]);
-        List<IngestionChunk<string>> chunks = CreateChunks();
+        List<IngestionChunk> chunks = CreateChunks();
 
-        IReadOnlyList<IngestionChunk<string>> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
+        IReadOnlyList<IngestionChunk> got = await sut.ProcessAsync(chunks.ToAsyncEnumerable()).ToListAsync();
 
         Assert.Equal(chunks.Count, got.Count);
         Assert.All(chunks, chunk => Assert.False(chunk.HasMetadata));
@@ -118,7 +118,7 @@ public class ClassificationEnricherTests
         Assert.IsType<ExpectedException>(collector.LatestRecord.Exception);
     }
 
-    private static List<IngestionChunk<string>> CreateChunks() =>
+    private static List<IngestionChunk> CreateChunks() =>
     [
         TestChunkFactory.CreateChunk(".NET developers need to integrate and interact with a growing variety of artificial intelligence (AI) services in their apps. " +
             "The Microsoft.Extensions.AI libraries provide a unified approach for representing generative AI components, and enable seamless" +

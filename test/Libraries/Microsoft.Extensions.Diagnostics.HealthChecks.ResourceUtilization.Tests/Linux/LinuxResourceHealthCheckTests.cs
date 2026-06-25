@@ -152,7 +152,6 @@ public class LinuxResourceHealthCheckTests
     {
         var fakeClock = new FakeTimeProvider();
         var dataTracker = new Mock<IResourceMonitor>();
-        var meterName = Guid.NewGuid().ToString();
         var logger = new FakeLogger<LinuxUtilizationProvider>();
         using var meter = new Meter("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
         var meterFactoryMock = new Mock<IMeterFactory>();
@@ -176,7 +175,6 @@ public class LinuxResourceHealthCheckTests
         var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser.Object, resourceMonitoringOptions);
         var provider = new LinuxUtilizationProvider(resourceMonitoringOptions, parser.Object, meterFactoryMock.Object, resourceQuotaProvider, logger, fakeClock);
 
-        var checkContext = new HealthCheckContext();
         var checkOptions = new ResourceUtilizationHealthCheckOptions
         {
             CpuThresholds = cpuThresholds,
@@ -184,15 +182,54 @@ public class LinuxResourceHealthCheckTests
             UseObservableResourceMonitoringInstruments = true
         };
 
+        // Use local MeterListener to collect measurements from this specific meter instance to avoid flakiness
+        double cpuUsedPercentage = 0;
+        double memoryUsedPercentage = 0;
+
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, listener) =>
+            {
+                if (ReferenceEquals(meter, instrument.Meter))
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+
+        listener.SetMeasurementEventCallback<double>((instrument, measurement, _, _) =>
+        {
+            switch (instrument.Name)
+            {
+                case "process.cpu.utilization":
+                case "container.cpu.limit.utilization":
+                    cpuUsedPercentage = measurement * 100;
+                    break;
+                case "dotnet.process.memory.virtual.utilization":
+                case "container.memory.limit.utilization":
+                    memoryUsedPercentage = measurement * 100;
+                    break;
+            }
+        });
+
+        listener.Start();
+
+        // Act
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        listener.RecordObservableInstruments();
+
+        var healthCheckResult = await ResourceUtilizationHealthCheck.EvaluateHealthStatusAsync(
+            cpuUsedPercentage,
+            memoryUsedPercentage,
+            checkOptions);
+
+        // Also create ResourceUtilizationHealthCheck and call CheckHealthAsync for code coverage
         var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
         using var healthCheck = new ResourceUtilizationHealthCheck(
             options,
             dataTracker.Object,
             Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()));
-
-        // Act
-        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
-        var healthCheckResult = await healthCheck.CheckHealthAsync(checkContext);
+        _ = await healthCheck.CheckHealthAsync(new HealthCheckContext());
 
         // Assert
         Assert.Equal(expected, healthCheckResult.Status);

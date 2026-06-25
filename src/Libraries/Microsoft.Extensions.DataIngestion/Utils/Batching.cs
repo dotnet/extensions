@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DataIngestion;
 
 internal static class Batching
 {
-    internal static async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync<TMetadata>(IAsyncEnumerable<IngestionChunk<string>> chunks,
+    internal static async IAsyncEnumerable<IngestionChunk> ProcessAsync<TMetadata>(IAsyncEnumerable<IngestionChunk> chunks,
         EnricherOptions options,
         string metadataKey,
         ChatMessage systemPrompt,
@@ -30,7 +30,7 @@ internal static class Batching
             List<AIContent> contents = new(batch.Length);
             foreach (var chunk in batch)
             {
-                contents.Add(new TextContent(chunk.Content));
+                contents.Add(chunk.Content);
             }
 
             try

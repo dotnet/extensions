@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -27,6 +28,19 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
+/// <remarks>
+/// <para>
+/// The <see cref="AIFunctionFactory"/> class creates <see cref="AIFunction"/> instances that wrap .NET methods
+/// (specified as <see cref="Delegate"/> or <see cref="MethodInfo"/>). As part of this process, JSON schemas are
+/// automatically derived for both the function's input parameters (exposed via <see cref="AIFunctionDeclaration.JsonSchema"/>)
+/// and, by default, the function's return type (exposed via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>).
+/// These schemas are produced using the <see cref="AIFunctionFactoryOptions.SerializerOptions"/> and
+/// <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>, and enable AI services to understand and
+/// interact with the function. Return value serialization and schema derivation behavior can be customized
+/// via <see cref="AIFunctionFactoryOptions.MarshalResult"/> and <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+/// respectively.
+/// </para>
+/// </remarks>
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/use-function-calling">Invoke .NET functions using an AI model.</related>
 public static partial class AIFunctionFactory
 {
@@ -98,7 +112,14 @@ public static partial class AIFunctionFactory
     /// special-cased and are not serialized: the created function returns the original instance(s) directly to enable
     /// callers (such as an <c>IChatClient</c>) to perform type tests and implement specialized handling. If
     /// <see cref="AIFunctionFactoryOptions.MarshalResult"/> is supplied, that delegate governs the behavior instead.
-    /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// </para>
+    /// <para>
+    /// In addition to the parameter schema, a JSON schema is also derived from the method's return type and exposed via the
+    /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
+    /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -168,6 +189,11 @@ public static partial class AIFunctionFactory
     /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
     /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized;
     /// they are returned as-is to facilitate specialized handling.
+    /// </para>
+    /// <para>
+    /// A JSON schema is also derived from the method's return type and exposed via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>.
+    /// For methods returning <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced.
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the unwrapped result type.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -255,6 +281,14 @@ public static partial class AIFunctionFactory
     /// any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized and are instead returned directly.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
+    /// <para>
+    /// In addition to the parameter schema, a JSON schema is also derived from the method's return type and exposed via the
+    /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
+    /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
+    /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> represents an instance method but <paramref name="target"/> is null.</exception>
@@ -333,6 +367,11 @@ public static partial class AIFunctionFactory
     /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
     /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are returned
     /// without serialization to enable specialized handling.
+    /// </para>
+    /// <para>
+    /// A JSON schema is also derived from the method's return type and exposed via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>.
+    /// For methods returning <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced.
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the unwrapped result type.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -432,6 +471,14 @@ public static partial class AIFunctionFactory
     /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or any type
     /// assignable from <see cref="IEnumerable{AIContent}"/> are returned directly without serialization.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// </para>
+    /// <para>
+    /// In addition to the parameter schema, a JSON schema is also derived from the method's return type and exposed via the
+    /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
+    /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -581,6 +628,49 @@ public static partial class AIFunctionFactory
                 var paramMarshallers = FunctionDescriptor.ParameterMarshallers;
                 object?[] args = paramMarshallers.Length != 0 ? new object?[paramMarshallers.Length] : [];
 
+                // If the configured serializer options request strict handling of unmapped members,
+                // verify that every argument key corresponds to a declared parameter name. This mirrors
+                // JsonSerializerOptions.UnmappedMemberHandling behavior for object deserialization by
+                // applying the same policy to top-level AIFunction argument binding. Argument name matching
+                // honors the comparer of the supplied AIFunctionArguments dictionary (ordinal by default).
+                //
+                // Validation is skipped when custom ParameterBindingOptions.BindParameter callbacks are in
+                // use, since those may legitimately source values from argument keys that do not correspond
+                // to the .NET parameter names.
+                if (FunctionDescriptor.JsonSerializerOptions.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow &&
+                    arguments.Count > 0 &&
+                    !FunctionDescriptor.HasCustomParameterBinding)
+                {
+                    HashSet<string> expectedNames = FunctionDescriptor.ExpectedArgumentNames;
+                    int matched = 0;
+                    foreach (string name in expectedNames)
+                    {
+                        if (arguments.ContainsKey(name))
+                        {
+                            matched++;
+                        }
+                    }
+
+                    if (matched != arguments.Count)
+                    {
+                        foreach (KeyValuePair<string, object?> kvp in arguments)
+                        {
+                            if (!expectedNames.Contains(kvp.Key))
+                            {
+                                Throw.ArgumentException(
+                                    nameof(arguments),
+                                    $"The arguments dictionary contains an unexpected key '{kvp.Key}' that does not correspond to any parameter of '{Name}'.");
+                            }
+                        }
+
+                        // Fallback for comparer mismatches (e.g. case-insensitive arguments dictionary
+                        // with duplicate-casing keys aliasing to the same parameter).
+                        Throw.ArgumentException(
+                            nameof(arguments),
+                            $"The arguments dictionary contains keys that do not correspond to any parameter of '{Name}'.");
+                    }
+                }
+
                 for (int i = 0; i < args.Length; i++)
                 {
                     args[i] = paramMarshallers[i](arguments, cancellationToken);
@@ -687,6 +777,8 @@ public static partial class AIFunctionFactory
 
             // Get marshaling delegates for parameters.
             ParameterMarshallers = parameters.Length > 0 ? new Func<AIFunctionArguments, CancellationToken, object?>[parameters.Length] : [];
+            HashSet<string> expectedArgumentNames = new(StringComparer.Ordinal);
+            bool hasCustomParameterBinding = false;
             for (int i = 0; i < parameters.Length; i++)
             {
                 if (boundParameters?.TryGetValue(parameters[i], out AIFunctionFactoryOptions.ParameterBindingOptions options) is not true)
@@ -695,7 +787,31 @@ public static partial class AIFunctionFactory
                 }
 
                 ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
+
+                if (options.BindParameter is not null)
+                {
+                    // Custom BindParameter callbacks can legally source their value from arbitrary keys in the
+                    // AIFunctionArguments dictionary, so we cannot know in advance which keys are "expected".
+                    // Note this down so that strict unmapped-member validation is skipped in InvokeCoreAsync.
+                    hasCustomParameterBinding = true;
+                }
+
+                // Collect the set of parameter names that are potentially sourced from the arguments dictionary.
+                // Infrastructure parameters (CancellationToken, AIFunctionArguments, IServiceProvider) are always
+                // bound from dedicated sources and are never resolved by argument name, so they are excluded from
+                // the permitted set.
+                Type pType = parameters[i].ParameterType;
+                if (pType != typeof(CancellationToken) &&
+                    pType != typeof(AIFunctionArguments) &&
+                    pType != typeof(IServiceProvider) &&
+                    !string.IsNullOrEmpty(parameters[i].Name))
+                {
+                    _ = expectedArgumentNames.Add(parameters[i].Name!);
+                }
             }
+
+            ExpectedArgumentNames = expectedArgumentNames;
+            HasCustomParameterBinding = hasCustomParameterBinding;
 
             ReturnParameterMarshaller = GetReturnParameterMarshaller(key, serializerOptions, out Type? returnType);
             Method = key.Method;
@@ -724,6 +840,8 @@ public static partial class AIFunctionFactory
         public JsonElement? ReturnJsonSchema { get; }
         public Func<AIFunctionArguments, CancellationToken, object?>[] ParameterMarshallers { get; }
         public Func<object?, CancellationToken, ValueTask<object?>> ReturnParameterMarshaller { get; }
+        public HashSet<string> ExpectedArgumentNames { get; }
+        public bool HasCustomParameterBinding { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
         private static string GetFunctionName(MethodInfo method)

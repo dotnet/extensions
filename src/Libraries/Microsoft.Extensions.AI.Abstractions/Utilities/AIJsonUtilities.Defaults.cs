@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -47,20 +47,6 @@ public static partial class AIJsonUtilities
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         };
-
-        // Temporary workaround: these types are [Experimental] and can't be added as [JsonDerivedType] on AIContent yet,
-        // or else consuming assemblies that used source generation with AIContent would implicitly reference them.
-        // Once they're no longer [Experimental] and added as [JsonDerivedType] on AIContent, these lines should be removed.
-        AddAIContentType(options, typeof(FunctionApprovalRequestContent), typeDiscriminatorId: "functionApprovalRequest", checkBuiltIn: false);
-        AddAIContentType(options, typeof(FunctionApprovalResponseContent), typeDiscriminatorId: "functionApprovalResponse", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolCallContent), typeDiscriminatorId: "mcpServerToolCall", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolResultContent), typeDiscriminatorId: "mcpServerToolResult", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalRequestContent), typeDiscriminatorId: "mcpServerToolApprovalRequest", checkBuiltIn: false);
-        AddAIContentType(options, typeof(McpServerToolApprovalResponseContent), typeDiscriminatorId: "mcpServerToolApprovalResponse", checkBuiltIn: false);
-        AddAIContentType(options, typeof(CodeInterpreterToolCallContent), typeDiscriminatorId: "codeInterpreterToolCall", checkBuiltIn: false);
-        AddAIContentType(options, typeof(CodeInterpreterToolResultContent), typeDiscriminatorId: "codeInterpreterToolResult", checkBuiltIn: false);
-        AddAIContentType(options, typeof(ImageGenerationToolCallContent), typeDiscriminatorId: "imageGenerationToolCall", checkBuiltIn: false);
-        AddAIContentType(options, typeof(ImageGenerationToolResultContent), typeDiscriminatorId: "imageGenerationToolResult", checkBuiltIn: false);
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
@@ -123,22 +109,6 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(AIContent))]
     [JsonSerializable(typeof(IEnumerable<AIContent>))]
 
-    // Temporary workaround: These should be implicitly added in once they're no longer [Experimental]
-    // and are included via [JsonDerivedType] on AIContent.
-    [JsonSerializable(typeof(UserInputRequestContent))]
-    [JsonSerializable(typeof(UserInputResponseContent))]
-    [JsonSerializable(typeof(FunctionApprovalRequestContent))]
-    [JsonSerializable(typeof(FunctionApprovalResponseContent))]
-    [JsonSerializable(typeof(McpServerToolCallContent))]
-    [JsonSerializable(typeof(McpServerToolResultContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalRequestContent))]
-    [JsonSerializable(typeof(McpServerToolApprovalResponseContent))]
-    [JsonSerializable(typeof(CodeInterpreterToolCallContent))]
-    [JsonSerializable(typeof(CodeInterpreterToolResultContent))]
-    [JsonSerializable(typeof(ImageGenerationToolCallContent))]
-    [JsonSerializable(typeof(ImageGenerationToolResultContent))]
-    [JsonSerializable(typeof(ResponseContinuationToken))]
-
     // IEmbeddingGenerator
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]
     [JsonSerializable(typeof(EmbeddingGeneratorMetadata))]
@@ -158,9 +128,20 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(SpeechToTextResponseUpdate))]
     [JsonSerializable(typeof(IReadOnlyList<SpeechToTextResponseUpdate>))]
 
+    // ITextToSpeechClient
+    [JsonSerializable(typeof(TextToSpeechOptions))]
+    [JsonSerializable(typeof(TextToSpeechClientMetadata))]
+    [JsonSerializable(typeof(TextToSpeechResponse))]
+    [JsonSerializable(typeof(TextToSpeechResponseUpdate))]
+    [JsonSerializable(typeof(IReadOnlyList<TextToSpeechResponseUpdate>))]
+
     // IImageGenerator
     [JsonSerializable(typeof(ImageGenerationOptions))]
     [JsonSerializable(typeof(ImageGenerationResponse))]
+
+    // IHostedFileClient
+    [JsonSerializable(typeof(HostedFileClientOptions))]
+    [JsonSerializable(typeof(HostedFileClientMetadata))]
 
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
     private sealed partial class JsonContext : JsonSerializerContext;

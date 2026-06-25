@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -9,6 +9,9 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using OpenTelemetry.Trace;
 using Xunit;
 
@@ -45,6 +48,7 @@ public class OpenTelemetryChatClientTests
                         OutputTokenCount = 20,
                         TotalTokenCount = 42,
                         CachedInputTokenCount = 5,
+                        ReasoningTokenCount = 8,
                     },
                     AdditionalProperties = new()
                     {
@@ -86,6 +90,7 @@ public class OpenTelemetryChatClientTests
                     OutputTokenCount = 20,
                     TotalTokenCount = 42,
                     CachedInputTokenCount = 5,
+                    ReasoningTokenCount = 8,
                 })],
                 AdditionalProperties = new()
                 {
@@ -167,6 +172,7 @@ public class OpenTelemetryChatClientTests
         Assert.Equal("testservice", activity.GetTagItem("gen_ai.provider.name"));
 
         Assert.Equal("replacementmodel", activity.GetTagItem("gen_ai.request.model"));
+        Assert.Equal(streaming ? (object?)true : null, activity.GetTagItem("gen_ai.request.stream"));
         Assert.Equal(3.0f, activity.GetTagItem("gen_ai.request.frequency_penalty"));
         Assert.Equal(4.0f, activity.GetTagItem("gen_ai.request.top_p"));
         Assert.Equal(5.0f, activity.GetTagItem("gen_ai.request.presence_penalty"));
@@ -183,8 +189,19 @@ public class OpenTelemetryChatClientTests
         Assert.Equal(10, activity.GetTagItem("gen_ai.usage.input_tokens"));
         Assert.Equal(20, activity.GetTagItem("gen_ai.usage.output_tokens"));
         Assert.Equal(5, activity.GetTagItem("gen_ai.usage.cache_read.input_tokens"));
+        Assert.Equal(8, activity.GetTagItem("gen_ai.usage.reasoning.output_tokens"));
         Assert.Equal(enableSensitiveData ? "abcdefgh" : null, activity.GetTagItem("system_fingerprint"));
         Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("AndSomethingElse"));
+
+        if (streaming)
+        {
+            var timeToFirstChunk = Assert.IsType<double>(activity.GetTagItem("gen_ai.response.time_to_first_chunk"));
+            Assert.True(timeToFirstChunk >= 0);
+        }
+        else
+        {
+            Assert.Null(activity.GetTagItem("gen_ai.response.time_to_first_chunk"));
+        }
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
 
@@ -297,16 +314,20 @@ public class OpenTelemetryChatClientTests
                     }
                   },
                   {
-                    "type": "web_search"
+                    "type": "web_search",
+                    "name": "web_search"
                   },
                   {
-                    "type": "file_search"
+                    "type": "file_search",
+                    "name": "file_search"
                   },
                   {
-                    "type": "code_interpreter"
+                    "type": "code_interpreter",
+                    "name": "code_interpreter"
                   },
                   {
-                    "type": "mcp"
+                    "type": "mcp",
+                    "name": "mcp"
                   },
                   {
                     "type": "function",
@@ -332,7 +353,34 @@ public class OpenTelemetryChatClientTests
             Assert.False(tags.ContainsKey("gen_ai.input.messages"));
             Assert.False(tags.ContainsKey("gen_ai.output.messages"));
             Assert.False(tags.ContainsKey("gen_ai.system_instructions"));
-            Assert.False(tags.ContainsKey("gen_ai.tool.definitions"));
+            Assert.Equal(ReplaceWhitespace("""
+                [
+                  {
+                    "type": "function",
+                    "name": "GetPersonAge"
+                  },
+                  {
+                    "type": "web_search",
+                    "name": "web_search"
+                  },
+                  {
+                    "type": "file_search",
+                    "name": "file_search"
+                  },
+                  {
+                    "type": "code_interpreter",
+                    "name": "code_interpreter"
+                  },
+                  {
+                    "type": "mcp",
+                    "name": "mcp"
+                  },
+                  {
+                    "type": "function",
+                    "name": "GetCurrentWeather"
+                  }
+                ]
+                """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
         }
     }
 
@@ -610,12 +658,12 @@ public class OpenTelemetryChatClientTests
                 return new ChatResponse(new ChatMessage(ChatRole.Assistant,
                 [
                     new TextContent("Processing with tools..."),
-                    new CodeInterpreterToolCallContent { CallId = "ci-call-1", Inputs = [new TextContent("print('hello')")] },
-                    new CodeInterpreterToolResultContent { CallId = "ci-call-1", Outputs = [new TextContent("hello")] },
-                    new ImageGenerationToolCallContent { ImageId = "img-123" },
-                    new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] },
+                    new CodeInterpreterToolCallContent("ci-call-1") { Inputs = [new TextContent("print('hello')")] },
+                    new CodeInterpreterToolResultContent("ci-call-1") { Outputs = [new TextContent("hello")] },
+                    new ImageGenerationToolCallContent("img-123"),
+                    new ImageGenerationToolResultContent("img-123") { Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] },
                     new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } },
-                    new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] },
+                    new McpServerToolResultContent("mcp-call-1") { Outputs = [new TextContent("Tool result")] },
                 ]));
             },
             GetStreamingResponseAsyncCallback = CallbackAsync,
@@ -626,12 +674,21 @@ public class OpenTelemetryChatClientTests
         {
             await Task.Yield();
             yield return new(ChatRole.Assistant, "Processing with tools...");
-            yield return new() { Contents = [new CodeInterpreterToolCallContent { CallId = "ci-call-1", Inputs = [new TextContent("print('hello')")] }] };
-            yield return new() { Contents = [new CodeInterpreterToolResultContent { CallId = "ci-call-1", Outputs = [new TextContent("hello")] }] };
-            yield return new() { Contents = [new ImageGenerationToolCallContent { ImageId = "img-123" }] };
-            yield return new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img-123", Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")] }] };
+            yield return new() { Contents = [new CodeInterpreterToolCallContent("ci-call-1") { Inputs = [new TextContent("print('hello')")] }] };
+            yield return new() { Contents = [new CodeInterpreterToolResultContent("ci-call-1") { Outputs = [new TextContent("hello")] }] };
+            yield return new() { Contents = [new ImageGenerationToolCallContent("img-123")] };
+            yield return new()
+            {
+                Contents =
+                [
+                    new ImageGenerationToolResultContent("img-123")
+                    {
+                        Outputs = [new UriContent(new Uri("https://example.com/image.png"), "image/png")]
+                    }
+                ]
+            };
             yield return new() { Contents = [new McpServerToolCallContent("mcp-call-1", "myTool", "myServer") { Arguments = new Dictionary<string, object?> { ["param1"] = "value1" } }] };
-            yield return new() { Contents = [new McpServerToolResultContent("mcp-call-1") { Output = [new TextContent("Tool result")] }] };
+            yield return new() { Contents = [new McpServerToolResultContent("mcp-call-1") { Outputs = [new TextContent("Tool result")] }] };
         }
 
         using var chatClient = innerClient
@@ -785,11 +842,11 @@ public class OpenTelemetryChatClientTests
         [
             new(ChatRole.Assistant,
             [
-                new McpServerToolApprovalRequestContent("approval-1", toolCall),
+                new ToolApprovalRequestContent("approval-1", toolCall),
             ]),
             new(ChatRole.User,
             [
-                new McpServerToolApprovalResponseContent("approval-1", true),
+                new ToolApprovalResponseContent("approval-1", true, toolCall),
             ]),
         ];
 
@@ -835,7 +892,219 @@ public class OpenTelemetryChatClientTests
             """), ReplaceWhitespace(inputMessages));
     }
 
+    [Fact]
+    public async Task StreamingChunkMetrics_RecordedForStreamingCalls()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = CallbackAsync,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testprovider", new Uri("http://localhost:5000/api"), "testmodel") :
+                null,
+        };
+
+        async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "First") { ResponseId = "id1", ModelId = "responsemodel" };
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Second") { ResponseId = "id1" };
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Third") { ResponseId = "id1" };
+        }
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        using var timeToFirstChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_to_first_chunk");
+        using var timePerOutputChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_per_output_chunk");
+
+        await foreach (var update in chatClient.GetStreamingResponseAsync([new(ChatRole.User, "Hello")], new ChatOptions { ModelId = "mymodel" }))
+        {
+            // consume all updates
+        }
+
+        // time_to_first_chunk: exactly 1 measurement for the first chunk
+        var ttfcMeasurements = timeToFirstChunkCollector.GetMeasurementSnapshot();
+        Assert.Single(ttfcMeasurements);
+        Assert.True(ttfcMeasurements[0].Value > 0);
+        Assert.True(ttfcMeasurements[0].ContainsTags(
+            new KeyValuePair<string, object?>("gen_ai.operation.name", "chat"),
+            new KeyValuePair<string, object?>("gen_ai.request.model", "mymodel"),
+            new KeyValuePair<string, object?>("gen_ai.response.model", "responsemodel"),
+            new KeyValuePair<string, object?>("gen_ai.provider.name", "testprovider"),
+            new KeyValuePair<string, object?>("server.address", "localhost"),
+            new KeyValuePair<string, object?>("server.port", 5000)));
+
+        // time_per_output_chunk: one measurement for each chunk after the first (2 chunks)
+        var tpocMeasurements = timePerOutputChunkCollector.GetMeasurementSnapshot();
+        Assert.Equal(2, tpocMeasurements.Count);
+        foreach (var measurement in tpocMeasurements)
+        {
+            Assert.True(measurement.Value > 0);
+            Assert.True(measurement.ContainsTags(
+                new KeyValuePair<string, object?>("gen_ai.operation.name", "chat"),
+                new KeyValuePair<string, object?>("gen_ai.request.model", "mymodel"),
+                new KeyValuePair<string, object?>("gen_ai.response.model", "responsemodel"),
+                new KeyValuePair<string, object?>("gen_ai.provider.name", "testprovider"),
+                new KeyValuePair<string, object?>("server.address", "localhost"),
+                new KeyValuePair<string, object?>("server.port", 5000)));
+        }
+    }
+
+    [Fact]
+    public async Task StreamingChunkMetrics_NotRecordedForNonStreamingCalls()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Response"));
+            },
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(null, sourceName)
+            .Build();
+
+        using var timeToFirstChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_to_first_chunk");
+        using var timePerOutputChunkCollector = new MetricCollector<double>(null, sourceName, "gen_ai.client.operation.time_per_output_chunk");
+
+        await chatClient.GetResponseAsync([new(ChatRole.User, "Hello")]);
+
+        Assert.Empty(timeToFirstChunkCollector.GetMeasurementSnapshot());
+        Assert.Empty(timePerOutputChunkCollector.GetMeasurementSnapshot());
+    }
+
     private sealed class NonSerializableAIContent : AIContent;
 
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExceptionLogged_Async(bool streaming)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var collector = new FakeLogCollector();
+        using var loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
+        var expectedException = new InvalidOperationException("test exception message");
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) => throw expectedException,
+            GetStreamingResponseAsyncCallback = (messages, options, cancellationToken) => throw expectedException,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testservice", new Uri("http://localhost:12345"), "testmodel") :
+                null,
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(loggerFactory, sourceName)
+            .Build();
+
+        if (streaming)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await foreach (var update in chatClient.GetStreamingResponseAsync([new(ChatRole.User, "Hello")]))
+                {
+                    _ = update;
+                }
+            });
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                chatClient.GetResponseAsync([new(ChatRole.User, "Hello")]));
+        }
+
+        var activity = Assert.Single(activities);
+
+        // Existing error behavior is preserved
+        Assert.Equal(expectedException.GetType().FullName, activity.GetTagItem("error.type"));
+        Assert.Equal(ActivityStatusCode.Error, activity.Status);
+
+        // Exception is logged via ILogger
+        var logEntry = Assert.Single(collector.GetSnapshot());
+        Assert.Equal("gen_ai.client.operation.exception", logEntry.Id.Name);
+        Assert.Equal(LogLevel.Warning, logEntry.Level);
+        Assert.Same(expectedException, logEntry.Exception);
+    }
+
+    [Fact]
+    public async Task Streaming_NoListeners_PreservesActivityCurrent()
+    {
+        // When no listener is registered for the ActivitySource, the activity will be null.
+        // Activity.Current should NOT be set to null during streaming in that case.
+        using var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = CallbackAsync,
+        };
+
+        // Deliberately do NOT register any listener for the source name.
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry()
+            .Build();
+
+        // Create an existing activity that should be preserved.
+        using var parentSource = new ActivitySource(Guid.NewGuid().ToString());
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source == parentSource,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using var parentActivity = parentSource.StartActivity("parent");
+        Assert.NotNull(parentActivity);
+        Assert.Same(parentActivity, Activity.Current);
+
+        await foreach (var update in chatClient.GetStreamingResponseAsync([new(ChatRole.User, "Hello")]))
+        {
+            // Activity.Current should still be the parent activity after each yield return.
+            Assert.Same(parentActivity, Activity.Current);
+        }
+
+        // Activity.Current should still be preserved after the stream completes.
+        Assert.Same(parentActivity, Activity.Current);
+
+        async static IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
+            IEnumerable<ChatMessage> messages, ChatOptions? options, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "chunk1");
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "chunk2");
+        }
+    }
 }
+

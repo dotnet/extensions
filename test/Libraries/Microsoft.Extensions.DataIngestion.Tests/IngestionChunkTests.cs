@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.AI;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Tests;
@@ -12,7 +13,7 @@ public class IngestionChunkTests
     public void Constructor_SetsTokenCountProperty()
     {
         IngestionDocument document = new("test");
-        IngestionChunk<string> chunk = new("test content", document, 42);
+        IngestionChunk chunk = new(new TextContent("test content"), document, 42);
 
         Assert.Equal(42, chunk.TokenCount);
     }
@@ -23,7 +24,7 @@ public class IngestionChunkTests
         IngestionDocument document = new("test");
 
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IngestionChunk<string>("test content", document, -1));
+            () => new IngestionChunk(new TextContent("test content"), document, -1));
 
         Assert.Equal("tokenCount", exception.ParamName);
     }
@@ -34,7 +35,7 @@ public class IngestionChunkTests
         IngestionDocument document = new("test");
 
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(
-            () => new IngestionChunk<string>("test content", document, 0));
+            () => new IngestionChunk(new TextContent("test content"), document, 0));
 
         Assert.Equal("tokenCount", exception.ParamName);
     }

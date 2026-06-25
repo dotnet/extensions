@@ -848,7 +848,45 @@ public static partial class AIJsonUtilities
             return true;
         }
 
+        // Handle parameters that are optional but don't have a declared default value,
+        // e.g. F# optional parameters declared using the ?param syntax, or COM interop parameters
+        // annotated with [Optional]. These should be treated as having a null default value.
+        if (parameterInfo.IsOptional || IsFSharpOptionalParameter(parameterInfo))
+        {
+            defaultValue = null;
+            return true;
+        }
+
         defaultValue = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Checks whether a parameter is an F# optional parameter declared with the ?param syntax.
+    /// F# optional parameters are annotated with Microsoft.FSharp.Core.OptionalArgumentAttribute
+    /// but do not have the ParameterAttributes.Optional flag set, so ParameterInfo.IsOptional returns false.
+    /// The parameter type is always FSharpOption&lt;T&gt; so we use fast pre-checks to avoid
+    /// scanning attributes for non-F# parameters.
+    /// </summary>
+    private static bool IsFSharpOptionalParameter(ParameterInfo parameterInfo)
+    {
+        // F# optional parameters are always typed as Microsoft.FSharp.Core.FSharpOption`1<T>.
+        // Use fast pre-checks to avoid attribute scanning and string allocation for non-F# parameters.
+        Type paramType = parameterInfo.ParameterType;
+        if (!paramType.IsGenericType ||
+            paramType.GetGenericTypeDefinition().FullName != "Microsoft.FSharp.Core.FSharpOption`1")
+        {
+            return false;
+        }
+
+        foreach (object attr in parameterInfo.GetCustomAttributes(inherit: true))
+        {
+            if (attr.GetType().FullName == "Microsoft.FSharp.Core.OptionalArgumentAttribute")
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 

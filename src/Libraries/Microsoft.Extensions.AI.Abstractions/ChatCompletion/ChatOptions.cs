@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -187,8 +185,6 @@ public class ChatOptions
     /// If the implementation does not support background responses, this property will be ignored.
     /// </para>
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
-    [JsonIgnore]
     public bool? AllowBackgroundResponses { get; set; }
 
     /// <summary>Gets or sets the continuation token for resuming and getting the result of the chat response identified by this token.</summary>
@@ -202,8 +198,6 @@ public class ChatOptions
     /// can be polled for completion by obtaining the token from the <see cref="ChatResponse.ContinuationToken"/> property
     /// and passing it to this property on subsequent calls to <see cref="IChatClient.GetResponseAsync"/>.
     /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.AIResponseContinuations, UrlFormat = DiagnosticIds.UrlFormat)]
-    [JsonIgnore]
     public ResponseContinuationToken? ContinuationToken { get; set; }
 
     /// <summary>
