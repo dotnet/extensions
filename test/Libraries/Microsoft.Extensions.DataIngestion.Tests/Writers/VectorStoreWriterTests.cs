@@ -284,5 +284,27 @@ public abstract class VectorStoreWriterTests
         Assert.Contains(records, r => ((TextContent)r.Content!).Text == "updated chunk 2");
     }
 
+    [Fact]
+    public async Task ThrowsWhenChunksFromMultipleDocuments()
+    {
+        using TestEmbeddingGenerator<AIContent> testEmbeddingGenerator = new();
+        using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
+
+        VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection = vectorStore.GetIngestionRecordCollection<IngestionChunkVectorRecord>(
+            "chunks-multi-doc", TestEmbeddingGenerator<AIContent>.DimensionCount);
+
+        using VectorStoreWriter<IngestionChunkVectorRecord> writer = new(collection);
+
+        IngestionDocument document1 = new("doc1");
+        IngestionDocument document2 = new("doc2");
+
+        IngestionChunk chunk1 = TestChunkFactory.CreateChunk("chunk from doc1", document1);
+        IngestionChunk chunk2 = TestChunkFactory.CreateChunk("chunk from doc2", document2);
+
+        List<IngestionChunk> chunks = [chunk1, chunk2];
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.WriteAsync(chunks.ToAsyncEnumerable()));
+    }
+
     protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<AIContent> testEmbeddingGenerator);
 }

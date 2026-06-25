@@ -49,9 +49,19 @@ public class VectorStoreWriter<TRecord> : IngestionChunkWriter
         IReadOnlyList<Guid>? preExistingKeys = null;
         List<TRecord>? batch = null;
         long currentBatchTokenCount = 0;
+        IngestionDocument? document = null;
 
         await foreach (IngestionChunk chunk in chunks.WithCancellation(cancellationToken))
         {
+            if (document is null)
+            {
+                document = chunk.Document;
+            }
+            else if (!ReferenceEquals(document, chunk.Document))
+            {
+                Throw.InvalidOperationException("All chunks passed to WriteAsync must belong to the same document.");
+            }
+
             if (!_collectionEnsured)
             {
                 await VectorStoreCollection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
@@ -61,7 +71,7 @@ public class VectorStoreWriter<TRecord> : IngestionChunkWriter
             // We obtain the IDs of the pre-existing chunks for given document,
             // and delete them after we finish inserting the new chunks,
             // to avoid a situation where we delete the chunks and then fail to insert the new ones.
-            preExistingKeys ??= await GetPreExistingChunksIdsAsync(chunk.Document, cancellationToken).ConfigureAwait(false);
+            preExistingKeys ??= await GetPreExistingChunksIdsAsync(document!, cancellationToken).ConfigureAwait(false);
 
             TRecord record = new()
             {
