@@ -65,7 +65,7 @@ await writer.WriteAsync(chunks);
 To process documents from the file system, create an `IngestionPipeline` and pass a reader to the `ProcessAsync` method:
 
 ```csharp
-using IngestionPipeline<string> pipeline = new(chunker, writer);
+using IngestionPipeline pipeline = new(chunker, writer);
 
 IngestionDocumentReader reader = new MarkdownReader();
 await foreach (IngestionResult result in pipeline.ProcessAsync(reader, directory, "*.md"))
@@ -79,7 +79,7 @@ await foreach (IngestionResult result in pipeline.ProcessAsync(reader, directory
 The `IngestionPipeline` can also process documents that are already in memory, without requiring a reader:
 
 ```csharp
-using IngestionPipeline<string> pipeline = new(chunker, writer);
+using IngestionPipeline pipeline = new(chunker, writer);
 
 IngestionDocument document = new("my-document-id");
 IngestionDocumentSection section = new("Main");
