@@ -1,7 +1,11 @@
-#if (IsGHModels || IsOpenAI || (IsAzureOpenAI && !IsManagedIdentity))
+#if (IsGHModels || IsOpenAI || IsFoundryLocal || (IsAzureOpenAI && !IsManagedIdentity))
 using System.ClientModel;
 #elif (IsAzureOpenAI && IsManagedIdentity)
 using System.ClientModel.Primitives;
+#endif
+#if (IsFoundryLocal)
+using Microsoft.AI.Foundry.Local;
+using Microsoft.Extensions.Logging.Abstractions;
 #endif
 #if (IsAzureAISearch && !IsManagedIdentity)
 using Azure;
@@ -11,7 +15,7 @@ using Azure.Identity;
 using Microsoft.Extensions.AI;
 #if (IsOllama)
 using OllamaSharp;
-#elif (IsGHModels || IsOpenAI || IsAzureOpenAI)
+#elif (IsGHModels || IsOpenAI || IsFoundryLocal || IsAzureOpenAI)
 using OpenAI;
 #endif
 using AIChatWeb_CSharp.Web.Components;
@@ -40,6 +44,47 @@ IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"),
     "llama3.2");
 IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApiClient(new Uri("http://localhost:11434"),
     "all-minilm");
+#elif (IsFoundryLocal)
+var chatAlias = builder.Configuration["FoundryLocal:ChatModel"] ?? "qwen3-4b";
+var embeddingAlias = builder.Configuration["FoundryLocal:EmbeddingModel"] ?? "qwen3-embedding-0.6b";
+var foundryServiceUrl = builder.Configuration["FoundryLocal:ServiceUrl"] ?? "http://127.0.0.1:5273";
+
+await FoundryLocalManager.CreateAsync(new Configuration
+{
+    AppName = "AIChatWeb-CSharp",
+    Web = new Configuration.WebService { Urls = foundryServiceUrl }
+}, NullLogger.Instance);
+var foundryManager = FoundryLocalManager.Instance;
+await foundryManager.StartWebServiceAsync();
+var foundryCatalog = await foundryManager.GetCatalogAsync();
+
+async Task<string> EnsureFoundryModelAsync(string alias)
+{
+    var model = await foundryCatalog.GetModelAsync(alias)
+        ?? throw new InvalidOperationException(
+            $"Foundry Local model '{alias}' was not found in the catalog. Run 'foundry model list' to see available models.");
+    if (!await model.IsCachedAsync())
+    {
+        Console.WriteLine($"Foundry Local: downloading model '{alias}' (first run only)...");
+        await model.DownloadAsync(_ => { });
+    }
+    if (!await model.IsLoadedAsync())
+    {
+        await model.LoadAsync();
+    }
+    return model.Id;
+}
+
+var chatModelId = await EnsureFoundryModelAsync(chatAlias);
+var embeddingModelId = await EnsureFoundryModelAsync(embeddingAlias);
+
+var foundryEndpointUrl = foundryManager.Urls?.FirstOrDefault() ?? foundryServiceUrl;
+var foundryEndpoint = new Uri($"{foundryEndpointUrl.TrimEnd('/')}/v1");
+var foundryClient = new OpenAIClient(
+    new ApiKeyCredential("unused"),
+    new OpenAIClientOptions { Endpoint = foundryEndpoint });
+var chatClient = foundryClient.GetChatClient(chatModelId).AsIChatClient();
+var embeddingGenerator = foundryClient.GetEmbeddingClient(embeddingModelId).AsIEmbeddingGenerator();
 #elif (IsOpenAI)
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
