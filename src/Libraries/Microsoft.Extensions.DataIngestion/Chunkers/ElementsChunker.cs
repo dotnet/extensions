@@ -37,6 +37,7 @@ internal sealed class ElementsChunker
     {
         // Not using yield return here as we use ref structs.
         List<IngestionChunk> chunks = [];
+        Dictionary<string, object>? accumulatedMetadata = null;
 
         int contextTokenCount = CountTokens(context.AsSpan());
         int totalTokenCount = contextTokenCount;
@@ -71,12 +72,15 @@ internal sealed class ElementsChunker
             int elementTokenCount = CountTokens(semanticContent.AsSpan());
             if (elementTokenCount + totalTokenCount <= _maxTokensPerChunk)
             {
+                // Element fits in the current chunk — accumulate its metadata here.
+                AccumulateMetadata(element, ref accumulatedMetadata);
                 totalTokenCount += elementTokenCount;
                 AppendNewLineAndSpan(_currentChunk, semanticContent.AsSpan());
             }
             else if (element is IngestionDocumentTable table)
             {
                 ValueStringBuilder tableBuilder = new(initialCapacity: 8000);
+                bool tableMetadataAccumulated = false;
 
                 try
                 {
@@ -114,6 +118,13 @@ internal sealed class ElementsChunker
                             // We append the table as long as it's not just the header.
                             if (rowIndex != 1)
                             {
+                                // Accumulate metadata before first table content append.
+                                if (!tableMetadataAccumulated)
+                                {
+                                    AccumulateMetadata(element, ref accumulatedMetadata);
+                                    tableMetadataAccumulated = true;
+                                }
+
                                 AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
                             }
 
@@ -138,6 +149,13 @@ internal sealed class ElementsChunker
                         totalTokenCount += lastRowTokens;
                     }
 
+                    // Accumulate metadata before appending remaining table content.
+                    if (!tableMetadataAccumulated)
+                    {
+                        AccumulateMetadata(element, ref accumulatedMetadata);
+                        tableMetadataAccumulated = true;
+                    }
+
                     AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
                 }
                 finally
@@ -148,6 +166,7 @@ internal sealed class ElementsChunker
             else
             {
                 ReadOnlySpan<char> remainingContent = semanticContent.AsSpan();
+                bool elementMetadataAccumulated = false;
 
                 while (!remainingContent.IsEmpty)
                 {
@@ -169,6 +188,13 @@ internal sealed class ElementsChunker
                         {
                             index = newLineIndex + 1; // We want to include the new line character (works for "\r\n" as well).
                             tokenCount = CountTokens(remainingContent.Slice(0, index));
+                        }
+
+                        // Accumulate metadata the first time this (large) element contributes content.
+                        if (!elementMetadataAccumulated)
+                        {
+                            AccumulateMetadata(element, ref accumulatedMetadata);
+                            elementMetadataAccumulated = true;
                         }
 
                         totalTokenCount += tokenCount;
@@ -197,20 +223,36 @@ internal sealed class ElementsChunker
 
         if (totalTokenCount > contextTokenCount)
         {
-            string chunkContent = _currentChunk.ToString();
-            int chunkTokenCount = CountTokens(chunkContent.AsSpan());
-            chunks.Add(new(new TextContent(chunkContent), document, chunkTokenCount, context));
+            chunks.Add(BuildChunk());
         }
 
         _currentChunk.Clear();
 
         return chunks;
 
-        void Commit()
+        IngestionChunk BuildChunk()
         {
             string chunkContent = _currentChunk.ToString();
             int chunkTokenCount = CountTokens(chunkContent.AsSpan());
-            chunks.Add(new(new TextContent(chunkContent), document, chunkTokenCount, context));
+            IngestionChunk chunk = new(new TextContent(chunkContent), document, chunkTokenCount, context);
+
+            // Propagate accumulated element metadata onto the chunk, then reset for the next chunk.
+            if (accumulatedMetadata is { Count: > 0 })
+            {
+                foreach (var kvp in accumulatedMetadata)
+                {
+                    chunk.Metadata[kvp.Key] = kvp.Value;
+                }
+
+                accumulatedMetadata = null;
+            }
+
+            return chunk;
+        }
+
+        void Commit()
+        {
+            chunks.Add(BuildChunk());
 
             // We keep the context in the current chunk as it's the same for all elements.
             _currentChunk.Remove(
@@ -275,4 +317,28 @@ internal sealed class ElementsChunker
 
     private int CountTokens(ReadOnlySpan<char> input)
         => _tokenizer.CountTokens(input, considerNormalization: false);
+
+    private static void AccumulateMetadata(IngestionDocumentElement element, ref Dictionary<string, object>? accumulated)
+    {
+        if (!element.HasMetadata)
+        {
+            return;
+        }
+
+        accumulated ??= [];
+        foreach (var kvp in element.Metadata)
+        {
+            if (kvp.Value is not null)
+            {
+#if NET
+                accumulated.TryAdd(kvp.Key, kvp.Value);
+#else
+                if (!accumulated.ContainsKey(kvp.Key))
+                {
+                    accumulated[kvp.Key] = kvp.Value;
+                }
+#endif
+            }
+        }
+    }
 }
