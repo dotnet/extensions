@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DataIngestion;
 using Microsoft.Extensions.DataIngestion.Chunkers;
 using Microsoft.Extensions.VectorData;
@@ -10,17 +10,17 @@ public class DataIngestor(
     ILogger<DataIngestor> logger,
     ILoggerFactory loggerFactory,
     VectorStoreCollection<Guid, IngestedChunk> vectorCollection,
-    IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator)
+    IEmbeddingGenerator<TextContent, Embedding<float>> embeddingGenerator)
 {
     public async Task IngestDataAsync(DirectoryInfo directory, string searchPattern)
     {
-        using var writer = new VectorStoreWriter<string, IngestedChunk>(vectorCollection, new()
+        using var writer = new VectorStoreWriter<IngestedChunk>(vectorCollection, new()
         {
             IncrementalIngestion = false,
         });
 
         DocumentReader reader = new(directory);
-        using var pipeline = new IngestionPipeline<string>(
+        using var pipeline = new IngestionPipeline(
             chunker: new SemanticSimilarityChunker(embeddingGenerator, new(TiktokenTokenizer.CreateForModel("gpt-4o"))),
             writer: writer,
             loggerFactory: loggerFactory);
