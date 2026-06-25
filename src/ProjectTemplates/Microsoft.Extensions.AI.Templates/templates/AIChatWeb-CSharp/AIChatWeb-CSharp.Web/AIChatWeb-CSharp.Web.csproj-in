@@ -48,10 +48,10 @@
     <PackageReference Include="Azure.Search.Documents" Version="${PackageVersion:Azure.Search.Documents}" />
 #endif -->
 <!--#if (IsAzureAISearch)
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.AzureAISearch}" />
+    <PackageReference Include="CommunityToolkit.VectorData.AzureAISearch" Version="${PackageVersion:CommunityToolkit.VectorData.AzureAISearch}" />
 #elif (IsQdrant)-->
     <PackageReference Include="Aspire.Qdrant.Client" Version="${PackageVersion:Aspire.Qdrant.Client}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="${PackageVersion:Microsoft.SemanticKernel.Connectors.Qdrant}" />
+    <PackageReference Include="CommunityToolkit.VectorData.Qdrant" Version="${PackageVersion:CommunityToolkit.VectorData.Qdrant}" />
 <!--#elif (IsLocalVectorStore)-->
     <PackageReference Include="CommunityToolkit.VectorData.SqliteVec" Version="${PackageVersion:CommunityToolkit.VectorData.SqliteVec}" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="${PackageVersion:SQLitePCLRaw.bundle_e_sqlite3}" />

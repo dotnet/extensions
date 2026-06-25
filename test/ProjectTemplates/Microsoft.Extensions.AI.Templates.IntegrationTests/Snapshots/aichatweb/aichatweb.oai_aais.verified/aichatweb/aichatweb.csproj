@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="{VERSION}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="{VERSION}" />
     <PackageReference Include="Azure.Search.Documents" Version="{VERSION}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="{VERSION}" />
+    <PackageReference Include="CommunityToolkit.VectorData.AzureAISearch" Version="{VERSION}" />
   </ItemGroup>
 
 </Project>
