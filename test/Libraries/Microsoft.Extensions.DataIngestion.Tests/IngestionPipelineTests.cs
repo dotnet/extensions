@@ -90,9 +90,8 @@ public sealed class IngestionPipelineTests : IDisposable
             "chunks", TestEmbeddingGenerator<AIContent>.DimensionCount);
         using VectorStoreWriter<IngestionChunkVectorRecord> vectorStoreWriter = new(collection);
 
-        IngestionDocumentReader reader = CreateReader();
         using IngestionPipeline pipeline = new(CreateChunker(), vectorStoreWriter);
-        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(reader, _sampleFiles).ToListAsync();
+        List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(CreateReader(), _sampleFiles).ToListAsync();
 
         Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
         AssertAllIngestionsSucceeded(ingestionResults);
@@ -108,6 +107,7 @@ public sealed class IngestionPipelineTests : IDisposable
         {
             Assert.NotEqual(Guid.Empty, retrieved[i].Key);
             Assert.NotEmpty(retrieved[i].SerializedContent!);
+            Assert.NotNull(retrieved[i].Content);
             Assert.Contains(retrieved[i].DocumentId, _sampleFiles.Select(info => info.FullName));
         }
 
@@ -146,6 +146,7 @@ public sealed class IngestionPipelineTests : IDisposable
         {
             Assert.NotEqual(Guid.Empty, retrieved[i].Key);
             Assert.NotEmpty(retrieved[i].SerializedContent!);
+            Assert.NotNull(retrieved[i].Content);
             Assert.StartsWith(directory.FullName, retrieved[i].DocumentId);
         }
 
