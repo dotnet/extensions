@@ -173,6 +173,12 @@ internal static class OpenTelemetryConsts
             public const string OutputAudioTokens = "gen_ai.usage.output_audio_tokens";
             public const string OutputTextTokens = "gen_ai.usage.output_text_tokens";
             public const string ReasoningOutputTokens = "gen_ai.usage.reasoning.output_tokens";
+
+            /// <summary>
+            /// Number of document pages processed by an OCR request.
+            /// This attribute is NOT part of the OpenTelemetry GenAI semantic conventions (as of v1.41).
+            /// </summary>
+            public const string PagesProcessed = "gen_ai.usage.pages_processed"; // Non-standard
         }
 
         /// <summary>
