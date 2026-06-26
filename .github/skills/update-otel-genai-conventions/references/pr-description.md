@@ -42,4 +42,26 @@ For each row, describe the compensating change made, or explain why no change wa
 
 When the PR includes catch-up work whose source PRs live in the consolidated `open-telemetry/semantic-conventions` repo (earlier `area:gen-ai` work, before these conventions moved), link to those PRs explicitly using the `open-telemetry/semantic-conventions#NNN` form so reviewers can disambiguate them from `semantic-conventions-genai` PR numbers.
 
+### Upstream scan tracking tables
+
+A recurring **upstream-scan tracking PR** (the kind that carries the `otel-genai-tracking` state block) lists every merged `Unreleased` change and every open upstream PR, each with its applicability to this repo. Use **one consistent column set for both the merged-changes table and the in-flight (open-PR) table** so they read the same way:
+
+```markdown
+| Upstream PR | Area | Change | Applicability | Status |
+|---|---|---|:---:|---|
+| [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `gen-ai` | `gen_ai.example.attribute` | 🔴 | Implemented in `OpenTelemetryChatClient`. |
+| [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `gen-ai` | `top_k` type change | ✅ | Already aligned (`ChatOptions.TopK` is `int?`). |
+| [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `gen-ai` | `document` modality | 🟡 | Watch (additive message serialization). |
+| [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `mcp` | tool.call.arguments opt-in | 🟢 | No MCP instrumentation. |
+```
+
+Keep the **Applicability** column to the color symbol only, and put the explanatory text in the separate **Status** column. The merged-changes table and the in-flight (open-PR) table share these columns exactly; in the in-flight table, **Status** describes what would change *if the PR merged*.
+
+Applicability legend (symbol-only in the Applicability column):
+
+- 🔴 implemented here
+- ✅ already aligned (no change needed)
+- 🟡 watch / deferred
+- 🟢 not applicable (no client / docs-only / other repo)
+
 Keep release-specific findings in the PR description or implementation summary; do not add them to the skill references unless they are durable cross-release guidance.
