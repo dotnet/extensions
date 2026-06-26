@@ -35,20 +35,33 @@ Implications for this skill:
 - **Primary input source** is the new repo. The old repo is a **fallback**
   for catch-up audits, historical context, and any in-flight PR that
   started there before the migration.
-- **No `area:gen-ai` label** exists in the new repo — every PR is in scope
-  by definition. The label still applies for old-repo catch-up work.
+- **No `area:gen-ai` label** exists in the new repo, so every PR is in
+  scope by definition (the `area:gen-ai` label still applies for old-repo
+  catch-up work). The new repo does use more granular `area:*` labels (for
+  example `area:mcp`, `area:inference`, `area:tools`, `area:embeddings`),
+  which can help triage but are not required for scoping.
 - **No releases yet** in the new repo.
   <!-- TODO: remove the "no releases yet" framing once semantic-conventions-genai ships its first release -->
   The `CHANGELOG.md` `Unreleased` section is the most reliable "what's new"
   view; pin a snapshot via commit SHA / ref for reproducible audits.
-- **GenAI version is now independent** of core semconv. The schema URL
-  `https://opentelemetry.io/schemas/gen-ai/X.Y.Z` carries the gen-ai
-  version; core semconv tracks its own separate version line and is
-  declared as a dependency in the new repo's `versions.env`.
-- **Spec URL `https://opentelemetry.io/docs/specs/semconv/gen-ai/` is
-  unchanged** — the published page still resolves and renders the gen-ai
-  spec from the new repo, so the `<see href>` in dotnet/extensions source
-  files does not need to change.
+- **GenAI version is now independent** of core semconv: it tracks its own
+  version line, while core semconv is declared as a dependency in the new
+  repo's `versions.env`. The schema URL
+  `https://opentelemetry.io/schemas/gen-ai/X.Y.Z` is intended to carry the
+  gen-ai version, but is **not published yet** (the new repo's `README.md`
+  `## Schema URL` section is `TODO`). Until it is, derive the GenAI version
+  from the `CHANGELOG.md` release header or `versions.env`.
+- **Spec URL `https://opentelemetry.io/docs/specs/semconv/gen-ai/`
+  currently resolves to a "Moved" stub** that states the GenAI
+  conventions have moved to the new repo and is no longer maintained; it
+  no longer renders the spec content. The `<see href>` in dotnet/extensions
+  source files still points at this URL, so leave it for now but revisit
+  retargeting it once OpenTelemetry publishes a canonical URL for the new
+  repo (the new repo's `README.md` `## Schema URL` section is currently
+  `TODO`).
+  <!-- TODO: once open-telemetry/semantic-conventions-genai publishes its
+       canonical spec/schema URL, retarget the OpenTelemetry* doc-comment
+       `<see href>` from the old /docs/specs/semconv/gen-ai/ stub to that URL. -->
 - **PR numbering** is not interchangeable across repos. Always
   disambiguate with `open-telemetry/semantic-conventions#NNN` or
   `open-telemetry/semantic-conventions-genai#NNN` when there is any risk
@@ -150,7 +163,7 @@ The new repo hosts conventions for several areas, all of which this skill
 covers (with placement guidance in
 [references/implementation-patterns.md](references/implementation-patterns.md)):
 
-| Upstream area (`model/<area>/`) | Maps to in dotnet/extensions |
+| Upstream area | Maps to in dotnet/extensions |
 |---|---|
 | `gen-ai`, `gen-ai/agent` | `Microsoft.Extensions.AI` core (e.g. `OpenTelemetryChatClient`) |
 | `mcp` | Currently no instrumentation; forward-looking — flag as a watch-list item if changes appear |
@@ -159,9 +172,14 @@ covers (with placement guidance in
 | `aws-bedrock` | Out of scope for `dotnet/extensions` today (no provider package). Implications land in the `BedrockRuntime` service library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net) — apply this skill there per [Cross-repo applicability](#cross-repo-applicability). |
 | `azure-ai-inference` | Corresponding provider package, if/when one exists in this repo; otherwise out of scope |
 
-When classifying a change, identify its area from the path under
-`model/<area>/` in the new repo (or from the doc page under
-`docs/<area>/`).
+When classifying a change, identify its area as follows. `gen-ai`,
+`mcp`, `openai`, and `aws-bedrock` each have a YAML registry under
+`model/<area>/`, so use that path. `anthropic` and `azure-ai-inference`
+do **not** have a `model/` registry today; they are documented only as
+provider pages under `docs/gen-ai/<provider>.md`. All human-readable
+docs live under `docs/gen-ai/` (for example `docs/gen-ai/openai.md`,
+`docs/gen-ai/mcp.md`, `docs/gen-ai/anthropic.md`), not under
+`docs/<area>/`.
 
 ### Existing dotnet/extensions PR Preflight
 
@@ -194,7 +212,8 @@ Audit the current gen-ai semantic conventions implementation against the latest 
 1. Complete the **Existing dotnet/extensions PR Preflight** above. If a matching open PR exists, report it and stop.
 2. **Determine the current implemented version**: Read the version reference from `OpenTelemetryChatClient.cs` doc comment to identify which convention version the codebase claims to implement
 3. **Check for version drift**: Verify every file with a gen-ai semantic conventions version reference uses the same version. Use the search command from [references/file-inventory.md](references/file-inventory.md#version-references). If files reference different versions, flag that as a critical gap requiring investigation.
-4. **Fetch the latest convention spec**: Read the current conventions from the [published spec](https://opentelemetry.io/docs/specs/semconv/gen-ai/) (rendered from the new repo) and cross-check against the source of truth in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) — `docs/<area>/` for human-readable docs, `model/<area>/` for the YAML registry, and `schema-snapshot/` plus `README.md` for the current schema URL (e.g. `opentelemetry.io/schemas/gen-ai/X.Y.Z`). The new repo's gen-ai version is independent of core semconv, so verify both. Until releases exist in the new repo, use the latest `Unreleased` `CHANGELOG.md` entries or recently merged PRs as the "latest release notes" equivalent.
+4. **Fetch the latest convention spec**: Read the current conventions from the source of truth in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai): `docs/gen-ai/` for human-readable docs (for example `docs/gen-ai/gen-ai-spans.md`, `docs/gen-ai/openai.md`) and `model/<area>/` for the YAML registry (`gen-ai`, `mcp`, `openai`, `aws-bedrock`). Note the published page at `https://opentelemetry.io/docs/specs/semconv/gen-ai/` is currently a "Moved" stub and no longer renders the spec. There is no `schema-snapshot/` directory, and the schema URL (`opentelemetry.io/schemas/gen-ai/X.Y.Z`) is not published yet (the repo `README.md` `## Schema URL` section is `TODO`); until it is, derive the GenAI version from the `CHANGELOG.md` release header or `versions.env` rather than from the schema URL. The new repo's gen-ai version is independent of core semconv, so verify both. Until releases exist in the new repo, use the latest `Unreleased` `CHANGELOG.md` entries or recently merged PRs as the "latest release notes" equivalent.
+<!-- TODO: once open-telemetry/semantic-conventions-genai publishes its schema URL (README ## Schema URL is currently TODO), switch the GenAI version source to that schema URL. -->
 5. **Read all current source files** listed in [references/file-inventory.md](references/file-inventory.md) to understand what is actually implemented
 6. **Cross-reference**: For each attribute, metric, event, and operation name defined in the conventions:
    - Is the constant defined in `OpenTelemetryConsts.cs`?

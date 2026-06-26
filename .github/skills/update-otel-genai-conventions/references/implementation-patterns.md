@@ -6,7 +6,7 @@ Code patterns for common convention update change types. Use these as templates 
 
 ## Area placement guidance
 
-The new conventions repo ([`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)) hosts multiple areas. Pick the right dotnet/extensions location based on the upstream `model/<area>/` path of the change:
+The new conventions repo ([`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)) hosts multiple areas. Pick the right dotnet/extensions location based on the upstream area of the change — its `model/<area>/` registry path for `gen-ai`, `mcp`, `openai`, and `aws-bedrock`, or its `docs/gen-ai/<provider>.md` page for `anthropic` and `azure-ai-inference` (which have no `model/` registry today):
 
 | Upstream area | dotnet/extensions location | Notes |
 |---|---|---|

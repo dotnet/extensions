@@ -4,7 +4,7 @@ Taxonomy for classifying GenAI semantic-conventions changes from PRs, CHANGELOG 
 
 ## Areas
 
-The new repo hosts conventions for several areas. Identify the **area** of each change from its path under `model/<area>/` or `docs/<area>/` in the new repo:
+The new repo hosts conventions for several areas. Identify the **area** of each change from its path in the new repo: `gen-ai`, `mcp`, `openai`, and `aws-bedrock` have a YAML registry under `model/<area>/`; `anthropic` and `azure-ai-inference` have no `model/` registry today and exist only as provider doc pages under `docs/gen-ai/<provider>.md`. All human-readable docs live under `docs/gen-ai/`, not `docs/<area>/`:
 
 | Area | dotnet/extensions location |
 |---|---|
