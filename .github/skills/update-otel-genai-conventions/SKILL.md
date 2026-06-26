@@ -37,13 +37,14 @@ Implications for this skill:
   started there before the migration.
 - **No `area:gen-ai` label** exists in the new repo — every PR is in scope
   by definition. The label still applies for old-repo catch-up work.
-- **No releases yet** in the new repo (as of this writing). The
-  `CHANGELOG.md` `Unreleased` section is the most reliable "what's new"
+- **No releases yet** in the new repo.
+  <!-- TODO: remove the "no releases yet" framing once semantic-conventions-genai ships its first release -->
+  The `CHANGELOG.md` `Unreleased` section is the most reliable "what's new"
   view; pin a snapshot via commit SHA / ref for reproducible audits.
 - **GenAI version is now independent** of core semconv. The schema URL
   `https://opentelemetry.io/schemas/gen-ai/X.Y.Z` carries the gen-ai
-  version (e.g. `1.42.0`); core semconv (`v1.41.0` at the time of writing)
-  is a separate dependency declared in the new repo's `versions.env`.
+  version; core semconv tracks its own separate version line and is
+  declared as a dependency in the new repo's `versions.env`.
 - **Spec URL `https://opentelemetry.io/docs/specs/semconv/gen-ai/` is
   unchanged** — the published page still resolves and renders the gen-ai
   spec from the new repo, so the `<see href>` in dotnet/extensions source
