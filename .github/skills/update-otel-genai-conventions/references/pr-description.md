@@ -57,6 +57,8 @@ A recurring **upstream-scan tracking PR** (the kind that carries the `otel-genai
 
 Keep the **Applicability** column to the color symbol only, and put the explanatory text in the separate **Status** column. The merged-changes table and the in-flight (open-PR) table share these columns exactly; in the in-flight table, **Status** describes what would change *if the PR merged*.
 
+Keep the **Change** text wrappable so the table fits the screen: browsers do not break long `/`-separated runs (e.g. `entity/identity/finish_reason/...`), and such a run forces the column -- and the whole table -- wider than the viewport. Write multi-segment descriptions with break opportunities (`', '` or `' / '` with surrounding spaces) so the cell can wrap.
+
 Applicability legend (symbol-only in the Applicability column):
 
 - 🔴 implemented here
