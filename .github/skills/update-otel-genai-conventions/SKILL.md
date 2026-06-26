@@ -19,7 +19,7 @@ tools: ['github/*', 'sql']
 
 # Update OTel Gen-AI Conventions
 
-Analyze OpenTelemetry GenAI semantic-conventions changes — PRs, `CHANGELOG.md` snapshots, date ranges, or releases — primarily from [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), and produce compensating updates in `dotnet/extensions`. See the [Migration Note](#migration-note) below for context, including where these conventions were previously managed.
+Analyze OpenTelemetry GenAI semantic-conventions changes — PRs, changelog snapshots, date ranges, or releases — primarily from [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), and produce compensating updates in `dotnet/extensions`. See the [Migration Note](#migration-note) below for context, including where these conventions were previously managed.
 
 ## Migration Note
 
@@ -47,8 +47,12 @@ Implications for this skill:
   required for scoping.
 - **No releases yet** in `semantic-conventions-genai`.
   <!-- TODO: remove the "no releases yet" framing once semantic-conventions-genai ships its first release -->
-  The `CHANGELOG.md` `Unreleased` section is the most reliable "what's new"
-  view; pin a snapshot via commit SHA / ref for reproducible audits.
+  The repo manages its changelog with **Towncrier**: the `CHANGELOG.md`
+  `Unreleased` section is intentionally empty (fragments are compiled into
+  it only at release time), so the live "what's new" view is the set of
+  news fragments under `changelog.d/`, each named `<upstream-PR>.<type>.md`
+  (types include `enhancement`, `bugfix`, `breaking`, `clarification`). Pin
+  a snapshot via commit SHA / ref for reproducible audits.
 - **GenAI version is now independent** of core semconv: it tracks its own
   version line. The schema URL
   `https://opentelemetry.io/schemas/gen-ai/X.Y.Z` is intended to carry the
@@ -58,8 +62,8 @@ Implications for this skill:
   `v1.42.0`) and the Weaver toolchain version — it does **not** carry the
   GenAI convention version, so do not treat `SEMCONV_VERSION` as the GenAI
   version. Until a GenAI release or schema URL exists, there is no
-  published GenAI version number; identify the update by its `Unreleased`
-  `CHANGELOG.md` snapshot, pinned to a commit SHA / ref / date.
+  published GenAI version number; identify the update by its `changelog.d/`
+  fragment snapshot, pinned to a commit SHA / ref / date.
 - **Spec URL `https://opentelemetry.io/docs/specs/semconv/gen-ai/`
   currently resolves to a "Moved" stub** that states the GenAI
   conventions have moved to `semantic-conventions-genai` and is no longer
@@ -145,9 +149,11 @@ the user typically provides one of:
 - **PR references** in `semantic-conventions-genai` — full URL, `#NNN`, or
   `open-telemetry/semantic-conventions-genai#NNN` form. (No `area:` label
   filter is needed: the repo is gen-ai-focused by definition.)
-- **A `CHANGELOG.md` snapshot** — a commit SHA, branch ref, or a
-  `https://github.com/open-telemetry/semantic-conventions-genai/blob/{ref}/CHANGELOG.md`
-  URL pinning the `Unreleased` section at a point in time.
+- **A `changelog.d/` snapshot** — a commit SHA, branch ref, or a
+  `https://github.com/open-telemetry/semantic-conventions-genai/tree/{ref}/changelog.d`
+  URL pinning the Towncrier news fragments at a point in time. (The
+  `CHANGELOG.md` `Unreleased` section stays empty until release, so use the
+  fragments — not `CHANGELOG.md` — for unreleased work.)
 - **A date range or "since last update"** — list of PRs merged to
   `semantic-conventions-genai`'s `main` between two refs / dates.
 - **A release version or release URL** — once releases exist
@@ -224,7 +230,7 @@ Audit the current gen-ai semantic conventions implementation against the latest 
 1. Complete the **Existing dotnet/extensions PR Preflight** above. If a matching open PR exists, report it and stop.
 2. **Determine the current implemented version**: Read the version reference from `OpenTelemetryChatClient.cs` doc comment to identify which convention version the codebase claims to implement
 3. **Check for version drift**: Verify every file with a gen-ai semantic conventions version reference uses the same version. Use the search command from [references/file-inventory.md](references/file-inventory.md#version-references). If files reference different versions, flag that as a critical gap requiring investigation.
-4. **Fetch the latest convention spec**: Read the current conventions from the source of truth in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai): `docs/gen-ai/` for human-readable docs (for example `docs/gen-ai/gen-ai-spans.md`, `docs/gen-ai/openai.md`) and `model/<area>/` for the YAML registry (`gen-ai`, `mcp`, `openai`, `aws-bedrock`). Note the published page at `https://opentelemetry.io/docs/specs/semconv/gen-ai/` is currently a "Moved" stub and no longer renders the spec. There is no `schema-snapshot/` directory, and the schema URL (`opentelemetry.io/schemas/gen-ai/X.Y.Z`) is not published yet (the repo `README.md` `## Schema URL` section is `TODO`). The repo's `versions.env` holds only the core semconv dependency (`SEMCONV_VERSION`) and the Weaver version — not a GenAI version — so do not treat `SEMCONV_VERSION` as the GenAI version. Until a GenAI release or schema URL exists, there is no published GenAI version number; identify the update by its `Unreleased` `CHANGELOG.md` snapshot (commit SHA / ref / date). The GenAI convention version is independent of core semconv. Until releases exist in `semantic-conventions-genai`, use the latest `Unreleased` `CHANGELOG.md` entries or recently merged PRs as the "latest release notes" equivalent.
+4. **Fetch the latest convention spec**: Read the current conventions from the source of truth in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai): `docs/gen-ai/` for human-readable docs (for example `docs/gen-ai/gen-ai-spans.md`, `docs/gen-ai/openai.md`) and `model/<area>/` for the YAML registry (`gen-ai`, `mcp`, `openai`, `aws-bedrock`). Note the published page at `https://opentelemetry.io/docs/specs/semconv/gen-ai/` is currently a "Moved" stub and no longer renders the spec. There is no `schema-snapshot/` directory, and the schema URL (`opentelemetry.io/schemas/gen-ai/X.Y.Z`) is not published yet (the repo `README.md` `## Schema URL` section is `TODO`). The repo's `versions.env` holds only the core semconv dependency (`SEMCONV_VERSION`) and the Weaver version — not a GenAI version — so do not treat `SEMCONV_VERSION` as the GenAI version. Until a GenAI release or schema URL exists, there is no published GenAI version number; identify the update by its `changelog.d/` fragment snapshot (commit SHA / ref / date). The GenAI convention version is independent of core semconv. Until releases exist in `semantic-conventions-genai`, use the latest `changelog.d/` news fragments or recently merged PRs as the "latest release notes" equivalent.
 <!-- TODO: once open-telemetry/semantic-conventions-genai publishes its schema URL (README ## Schema URL is currently TODO), switch the GenAI version source to that schema URL. -->
 5. **Read all current source files** listed in [references/file-inventory.md](references/file-inventory.md) to understand what is actually implemented
 6. **Cross-reference**: For each attribute, metric, event, and operation name defined in the conventions:
@@ -300,7 +306,7 @@ Generate a plan and (after user review/approval) implement it. Best when the use
 
 **Phase A: Plan** —
 
-1. Resolve the user's input to one of: a release, PR identifiers, a `CHANGELOG.md` snapshot (commit SHA / ref), or a date range in `semantic-conventions-genai` (`open-telemetry/semantic-conventions-genai`). For catch-up work, accept upstream PRs from the consolidated `open-telemetry/semantic-conventions` repo with `area:gen-ai`
+1. Resolve the user's input to one of: a release, PR identifiers, a `changelog.d/` fragment snapshot (commit SHA / ref), or a date range in `semantic-conventions-genai` (`open-telemetry/semantic-conventions-genai`). For catch-up work, accept upstream PRs from the consolidated `open-telemetry/semantic-conventions` repo with `area:gen-ai`
 2. Complete the **Existing dotnet/extensions PR Preflight** above. If a matching open PR exists, report it and stop without creating a plan.
 3. Complete the **Analyzing the Release / PRs** analysis above
 4. Create `plan.md` with a problem statement linking to the upstream input (release URL, CHANGELOG snapshot ref, date range, or list of PR URLs — whichever applies), a changes audit table, and a numbered list of work items. Each work item should call out the file(s) to modify, what code/constants/attributes to add, and which tests to update.

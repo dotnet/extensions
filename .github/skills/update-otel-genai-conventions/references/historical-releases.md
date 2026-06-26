@@ -6,7 +6,7 @@ Mapping of OpenTelemetry GenAI semantic-conventions releases to dotnet/extension
 >
 > **Point-in-time reference**: This file is not intended to be kept up to date with every new release. It provides context for how past convention updates were handled. For current activity, consult:
 >
-> - The [`semantic-conventions-genai` `CHANGELOG.md`](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/CHANGELOG.md) (`Unreleased` section is the live "what's new" view until releases land).
+> - The [`semantic-conventions-genai` `changelog.d/` fragments](https://github.com/open-telemetry/semantic-conventions-genai/tree/main/changelog.d) (Towncrier news fragments are the live "what's new" view until releases land; the `CHANGELOG.md` `Unreleased` section stays empty until release).
 > - The [`semantic-conventions-genai` releases page](https://github.com/open-telemetry/semantic-conventions-genai/releases) (empty as of this writing).
 > - The [`semantic-conventions-genai` pull request history](https://github.com/open-telemetry/semantic-conventions-genai/pulls?q=is%3Apr).
 > - The dotnet/extensions PR history.

@@ -4,7 +4,7 @@ Template for generating a structured prompt suitable for delegating convention u
 
 ## Template
 
-Fill in the bracketed sections based on the analysis of the upstream input — a release, PR set, `CHANGELOG.md` snapshot, or date range from [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) (or, for catch-up work, from the consolidated `open-telemetry/semantic-conventions` repo).
+Fill in the bracketed sections based on the analysis of the upstream input — a release, PR set, `changelog.d/` snapshot, or date range from [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) (or, for catch-up work, from the consolidated `open-telemetry/semantic-conventions` repo).
 
 ---
 
@@ -14,9 +14,9 @@ Fill in the bracketed sections based on the analysis of the upstream input — a
 The OpenTelemetry GenAI semantic conventions changes summarized below
 require compensating updates in dotnet/extensions.
 
-Source of changes: {ONE_OF: release URL | CHANGELOG.md ref URL | PR set | date range}
+Source of changes: {ONE_OF: release URL | changelog.d/ ref URL | PR set | date range}
 {IF_RELEASE} Release notes: {RELEASE_URL}
-{IF_CHANGELOG_SNAPSHOT} CHANGELOG snapshot: {CHANGELOG_REF_URL} (Unreleased section at the time of audit)
+{IF_CHANGELOG_SNAPSHOT} changelog.d/ snapshot: {CHANGELOG_REF_URL} (Towncrier news fragments at the time of audit)
 {IF_DATE_RANGE} Date range: PRs merged to `open-telemetry/semantic-conventions-genai` `main` between {START} and {END}
 
 > The GenAI conventions are maintained in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), which also covers `mcp`, `openai`, `anthropic`, `aws-bedrock`, and `azure-ai-inference` areas (they were previously managed in the consolidated `semantic-conventions` repo); see the skill's Migration Note for context. Compensating changes for `anthropic` land in [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp); for `aws-bedrock` they land in the `BedrockRuntime` service library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net) — flag both as out-of-scope here and open follow-ups there. See the skill's [Cross-repo applicability](https://github.com/dotnet/extensions/blob/main/.github/skills/update-otel-genai-conventions/SKILL.md#cross-repo-applicability) section.

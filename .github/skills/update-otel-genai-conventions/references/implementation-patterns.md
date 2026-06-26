@@ -150,7 +150,7 @@ When bumping the convention version (e.g. an upcoming GenAI version bump), updat
 /// Semantic Conventions for Generative AI systems v1.39,
 ```
 
-**Target wording** (after migration to the standalone repo, using a GenAI-namespaced version `vX.Y.Z` taken from the `CHANGELOG.md` snapshot you audited — not from `versions.env`'s `SEMCONV_VERSION`, which is the core semconv dependency):
+**Target wording** (after migration to the standalone repo, using a GenAI-namespaced version `vX.Y.Z` taken from the `changelog.d/` fragment snapshot you audited — not from `versions.env`'s `SEMCONV_VERSION`, which is the core semconv dependency):
 
 ```csharp
 /// GenAI Semantic Conventions vX.Y.Z,

@@ -71,7 +71,7 @@ The reference today still reads (carried over from when conventions lived in the
 
 ### Target wording (post-migration)
 
-After the GenAI conventions moved to [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), the doc comment should call out the standalone repo and use a GenAI-namespaced version (`vX.Y.Z`). Until `semantic-conventions-genai` publishes a release or schema URL, take that version from the `Unreleased` `CHANGELOG.md` snapshot you audited — not from `versions.env` (whose `SEMCONV_VERSION` is the core semconv dependency, not the GenAI version):
+After the GenAI conventions moved to [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), the doc comment should call out the standalone repo and use a GenAI-namespaced version (`vX.Y.Z`). Until `semantic-conventions-genai` publishes a release or schema URL, take that version from the `changelog.d/` fragment snapshot you audited — not from `versions.env` (whose `SEMCONV_VERSION` is the core semconv dependency, not the GenAI version):
 
 ```csharp
 /// This class provides an implementation of the GenAI Semantic Conventions vX.Y.Z,
