@@ -42,22 +42,66 @@ For each row, describe the compensating change made, or explain why no change wa
 
 When the PR includes catch-up work whose source PRs live in the consolidated `open-telemetry/semantic-conventions` repo (earlier `area:gen-ai` work, before these conventions moved), link to those PRs explicitly using the `open-telemetry/semantic-conventions#NNN` form so reviewers can disambiguate them from `semantic-conventions-genai` PR numbers.
 
-### Upstream scan tracking tables
+Keep release-specific findings in the PR description or implementation summary; do not add them to the skill references unless they are durable cross-release guidance.
 
-A recurring **upstream-scan tracking PR** (the kind that carries the `otel-genai-tracking` state block) lists every merged `Unreleased` change and every open upstream PR, each with its applicability to this repo. Use **one consistent column set for both the merged-changes table and the in-flight (open-PR) table** so they read the same way:
+## Upstream-scan tracking PR body template
+
+A recurring **upstream-scan tracking PR** records the state of the last upstream scan and lists every merged `Unreleased` change and every open upstream PR with its applicability to this repo. This skill is responsible for producing that PR's full title and body. Assemble the body in the order below, and **keep the machine-readable tracking state and the refresh instructions at the very bottom** so the human-facing content (what shipped, then the applicability tables) leads.
+
+### 1. Status note (optional)
+
+While `semantic-conventions-genai` is unreleased, lead with a short blockquote noting the PR is draft pending the first release and that both conventions are Development stability:
 
 ```markdown
+> **Draft** pending the first release of
+> [open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai).
+> Both conventions are **Development** stability and **unreleased**. Merge once they ship in a tagged release.
+```
+
+### 2. What this PR implements
+
+A compact table of the convention changes this PR actually implements, with the upstream PR link and the compensating change, followed by a one-line **Validation** summary (build TFMs + warning count, test counts, public-API-surface impact, and the doc-comment version reference state):
+
+```markdown
+## What this PR implements
+
+| Area | Convention | Upstream | Compensating change |
+|---|---|---|---|
+| `gen-ai` | `gen_ai.example.attribute` | [semantic-conventions-genai#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | Emit on chat spans in `OpenTelemetryChatClient`. |
+
+Validation: build clean (net8.0/net9.0/net10.0, 0 warnings); N tests pass. No public API surface change; doc-comment version reference left at `vX.Y`.
+```
+
+### 3. Upstream scan tracking tables
+
+Two tables -- merged `Unreleased` changes and in-flight open PRs -- using **one consistent column set** so they read the same way:
+
+```markdown
+## Upstream scan tracking
+
+Legend: 🔴 implemented here · ✅ already aligned · 🟡 watch/deferred · 🟢 not applicable (no client / docs-only)
+
+### Merged upstream changes (Unreleased) -- applicability to dotnet/extensions
+
 | Upstream PR | Area | Change | Applicability | Status |
 |---|---|---|:---:|---|
 | [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `gen-ai` | `gen_ai.example.attribute` | 🔴 | Implemented in `OpenTelemetryChatClient`. |
 | [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `gen-ai` | `top_k` type change | ✅ | Already aligned (`ChatOptions.TopK` is `int?`). |
+
+### In-flight upstream changes (open PRs) -- applicability if merged
+
+Filter: open PRs proposing convention changes (exclude pure dependency / CI / chore PRs; list the excluded numbers).
+
+| Upstream PR | Area | Change | Applicability | Status |
+|---|---|---|:---:|---|
 | [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `gen-ai` | `document` modality | 🟡 | Watch (additive message serialization). |
 | [#NNN](https://github.com/open-telemetry/semantic-conventions-genai/pull/NNN) | `mcp` | tool.call.arguments opt-in | 🟢 | No MCP instrumentation. |
 ```
 
-Keep the **Applicability** column to the color symbol only, and put the explanatory text in the separate **Status** column. The merged-changes table and the in-flight (open-PR) table share these columns exactly; in the in-flight table, **Status** describes what would change *if the PR merged*.
+Column rules for both tables:
 
-Keep the **Change** text wrappable so the table fits the screen: browsers do not break long `/`-separated runs (e.g. `entity/identity/finish_reason/...`), and such a run forces the column -- and the whole table -- wider than the viewport. Write multi-segment descriptions with break opportunities (`', '` or `' / '` with surrounding spaces) so the cell can wrap.
+- Keep the **Applicability** column to the color symbol only, and put the explanatory text in the separate **Status** column. The merged-changes table and the in-flight (open-PR) table share these columns exactly; in the in-flight table, **Status** describes what would change *if the PR merged*.
+- Keep the **Change** text wrappable so the table fits the screen: browsers do not break long `/`-separated runs (e.g. `entity/identity/finish_reason/...`), and such a run forces the column -- and the whole table -- wider than the viewport. Write multi-segment descriptions with break opportunities (`', '` or `' / '` with surrounding spaces) so the cell can wrap.
 
 Applicability legend (symbol-only in the Applicability column):
 
@@ -66,4 +110,32 @@ Applicability legend (symbol-only in the Applicability column):
 - 🟡 watch / deferred
 - 🟢 not applicable (no client / docs-only / other repo)
 
-Keep release-specific findings in the PR description or implementation summary; do not add them to the skill references unless they are durable cross-release guidance.
+### 4. Tracking state -- very bottom
+
+Place the machine-readable scan state at the **very bottom** of the body, after the applicability tables. The body **ends with this block** -- do not append a refresh procedure or any other section after it. The state lives in an HTML-comment-delimited block so the next run can parse it:
+
+````markdown
+## Tracking state
+
+<!-- otel-genai-tracking:begin -->
+```yaml
+Upstream-Repo: open-telemetry/semantic-conventions-genai
+Upstream-Scan-Ref: <commit-sha>            # optional inline note on what changed since the prior ref
+Upstream-Scan-Date: <ISO-8601 UTC>
+Upstream-Release: none                      # Unreleased; Towncrier fragments under changelog.d/
+Core-Semconv-Dependency: vX.Y.Z             # versions.env SEMCONV_VERSION (core dep, NOT the GenAI version)
+DotnetExtensions-Implemented-Version: vX.Y  # doc-comment version reference currently in source
+```
+<!-- otel-genai-tracking:end -->
+````
+
+## Refreshing the tracking PR
+
+The PR body carries only the tracking state block; the refresh logic lives in **this skill**, not in the PR body. During the skill's **Existing dotnet/extensions PR Preflight**, treat the tracking PR as the **scan record** -- not a blocking duplicate -- and refresh it as follows:
+
+1. Invoke the skill in **Mode 1: Audit** -- the skill owns this PR's title and body.
+2. Read the `otel-genai-tracking` state block; take `Upstream-Scan-Ref` as the prior scan point.
+3. Per the skill's **Input Handling**, run `git log Upstream-Scan-Ref..main` on `open-telemetry/semantic-conventions-genai` and re-list the `changelog.d/` fragments and the open PRs.
+4. Classify each new or changed item with the [change-classification](change-classification.md) framework against the current `Microsoft.Extensions.AI` instrumentation, and update both applicability tables.
+5. Advance `Upstream-Scan-Ref` / `Upstream-Scan-Date` (and `Core-Semconv-Dependency` / `DotnetExtensions-Implemented-Version` if they moved) in the state block.
+6. If the GenAI repo cut a release, follow the skill's version-reference migration (Gotchas + [file-inventory.md §Version References](file-inventory.md#version-references)) to bump and migrate the doc-comment version in lockstep.

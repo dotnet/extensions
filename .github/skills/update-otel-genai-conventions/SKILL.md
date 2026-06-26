@@ -207,6 +207,8 @@ Search using the requested release version, CHANGELOG ref, date range, or upstre
 
 Do not silently ignore search failures. If GitHub search/listing is unavailable, report the problem and ask the user whether to proceed without the preflight.
 
+A standing **upstream-scan tracking PR** (one carrying the `otel-genai-tracking` state block) is the exception: it is the durable scan record, not a blocking duplicate. When the preflight surfaces it, refresh it per **Refreshing the tracking PR** in [references/pr-description.md](references/pr-description.md#refreshing-the-tracking-pr) instead of stopping.
+
 ### Analyzing the Release / PRs
 
 1. **Fetch the release notes** or PR descriptions and identify all gen-ai changes
@@ -219,7 +221,7 @@ For Step 4, read the source files listed in [references/file-inventory.md](refer
 
 ### PR Title and Description Guidance
 
-When creating or updating a PR after implementing GenAI semantic-conventions changes (from either repo), follow [references/pr-description.md](references/pr-description.md) for the title format and the changes-table shape.
+When creating or updating a PR after implementing GenAI semantic-conventions changes (from either repo), follow [references/pr-description.md](references/pr-description.md) for the title format and the changes-table shape. For a recurring **upstream-scan tracking PR** (the kind carrying the `otel-genai-tracking` state block), that reference also defines the full body template -- the implemented-changes table, the merged and in-flight applicability tables, and, at the very bottom, the machine-readable tracking state block (the body ends there). The refresh procedure for that PR lives in the skill itself, not in the PR body.
 
 ---
 
