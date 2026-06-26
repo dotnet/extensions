@@ -150,10 +150,10 @@ When bumping the convention version (e.g. an upcoming GenAI version bump), updat
 /// Semantic Conventions for Generative AI systems v1.39,
 ```
 
-**Target wording** (after migration to the standalone repo, with GenAI-namespaced version matching the schema URL `opentelemetry.io/schemas/gen-ai/X.Y.Z`):
+**Target wording** (after migration to the standalone repo, using a GenAI-namespaced version `vX.Y.Z` taken from the `CHANGELOG.md` snapshot you audited — not from `versions.env`'s `SEMCONV_VERSION`, which is the core semconv dependency):
 
 ```csharp
-/// GenAI Semantic Conventions v1.42.0,
+/// GenAI Semantic Conventions vX.Y.Z,
 ```
 
 The next convention-update PR should migrate every matched file from the pre-migration wording to the target wording in one shot. Do not leave files in a half-migrated state.

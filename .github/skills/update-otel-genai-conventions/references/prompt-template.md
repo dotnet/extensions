@@ -4,7 +4,7 @@ Template for generating a structured prompt suitable for delegating convention u
 
 ## Template
 
-Fill in the bracketed sections based on the analysis of the upstream input — a release, PR set, `CHANGELOG.md` snapshot, or date range from [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) (or, for catch-up work, from the old `open-telemetry/semantic-conventions` repo).
+Fill in the bracketed sections based on the analysis of the upstream input — a release, PR set, `CHANGELOG.md` snapshot, or date range from [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) (or, for catch-up work, from the consolidated `open-telemetry/semantic-conventions` repo).
 
 ---
 
@@ -19,7 +19,7 @@ Source of changes: {ONE_OF: release URL | CHANGELOG.md ref URL | PR set | date r
 {IF_CHANGELOG_SNAPSHOT} CHANGELOG snapshot: {CHANGELOG_REF_URL} (Unreleased section at the time of audit)
 {IF_DATE_RANGE} Date range: PRs merged to `open-telemetry/semantic-conventions-genai` `main` between {START} and {END}
 
-> The GenAI conventions live in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai) (recently moved from the core `semantic-conventions` repo). The new repo also covers `mcp`, `openai`, `anthropic`, `aws-bedrock`, and `azure-ai-inference` areas; see the skill's Migration Note for context. Compensating changes for `anthropic` land in [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp); for `aws-bedrock` they land in the `BedrockRuntime` service library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net) — flag both as out-of-scope here and open follow-ups there. See the skill's [Cross-repo applicability](https://github.com/dotnet/extensions/blob/main/.github/skills/update-otel-genai-conventions/SKILL.md#cross-repo-applicability) section.
+> The GenAI conventions are maintained in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), which also covers `mcp`, `openai`, `anthropic`, `aws-bedrock`, and `azure-ai-inference` areas (they were previously managed in the consolidated `semantic-conventions` repo); see the skill's Migration Note for context. Compensating changes for `anthropic` land in [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp); for `aws-bedrock` they land in the `BedrockRuntime` service library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net) — flag both as out-of-scope here and open follow-ups there. See the skill's [Cross-repo applicability](https://github.com/dotnet/extensions/blob/main/.github/skills/update-otel-genai-conventions/SKILL.md#cross-repo-applicability) section.
 
 Key upstream PRs:
 {FOR_EACH_UPSTREAM_PR}
@@ -115,7 +115,7 @@ After implementing changes:
 
 ## Prompt Quality Guidelines
 
-Based on analysis of successful CCA prompts (PRs #7379, #7382, #7322 — all from the pre-migration era against the old `semantic-conventions` repo, but the prompt-shape lessons still apply):
+Based on analysis of successful CCA prompts (PRs #7379, #7382, #7322 — all predate the move, from when these conventions were managed in the consolidated `semantic-conventions` repo, but the prompt-shape lessons still apply):
 
 ### What makes a good prompt
 

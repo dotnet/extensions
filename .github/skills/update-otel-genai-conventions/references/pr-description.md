@@ -8,7 +8,7 @@ When asked to create or update a PR after implementing GenAI semantic-convention
 Update OpenTelemetry GenAI conventions to v{version}
 ```
 
-Use the target **GenAI** version for `{version}` — taken from the schema URL the new repo publishes (e.g. `opentelemetry.io/schemas/gen-ai/1.42.0` → `v1.42.0`) or from the CHANGELOG release header. The GenAI version is independent of core semconv (which has its own version line); do not conflate the two. If the PR also includes catch-up work from earlier convention versions or from the old `open-telemetry/semantic-conventions` repo, keep the title focused on the target GenAI version and explain the catch-up work in the description.
+Use the target **GenAI** version for `{version}`. The GenAI version is independent of core semconv (which has its own version line); do not conflate the two, and do not use `versions.env`'s `SEMCONV_VERSION` (that is the core semconv dependency). Until `semantic-conventions-genai` publishes a release or schema URL (`opentelemetry.io/schemas/gen-ai/X.Y.Z`), take the version from the `CHANGELOG.md` release header; while only an `Unreleased` section exists, identify the update by its CHANGELOG snapshot (commit / ref / date) instead of a version number. If the PR also includes catch-up work from earlier convention versions or from the consolidated `open-telemetry/semantic-conventions` repo, keep the title focused on the target GenAI version and explain the catch-up work in the description.
 
 ## Description
 
@@ -32,6 +32,6 @@ Use this table shape (the **Area** column makes it obvious which package each ro
 
 For each row, describe the compensating change made, or explain why no change was made (already implemented, no local source, no client exists, server-side only, documentation only, etc.).
 
-When the PR includes catch-up work whose source PRs live in the **old** `open-telemetry/semantic-conventions` repo (pre-migration `area:gen-ai` work), link to those old-repo PRs explicitly using the `open-telemetry/semantic-conventions#NNN` form so reviewers can disambiguate them from new-repo PR numbers.
+When the PR includes catch-up work whose source PRs live in the consolidated `open-telemetry/semantic-conventions` repo (earlier `area:gen-ai` work, before these conventions moved), link to those PRs explicitly using the `open-telemetry/semantic-conventions#NNN` form so reviewers can disambiguate them from `semantic-conventions-genai` PR numbers.
 
 Keep release-specific findings in the PR description or implementation summary; do not add them to the skill references unless they are durable cross-release guidance.

@@ -1,10 +1,10 @@
 # Change Classification
 
-Taxonomy for classifying GenAI semantic-conventions changes from PRs, CHANGELOG snapshots, date ranges, or releases (when they exist) in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai). Old-repo `area:gen-ai` PRs (pre-migration) classify the same way. Use this to assess each change's impact on dotnet/extensions.
+Taxonomy for classifying GenAI semantic-conventions changes from PRs, CHANGELOG snapshots, date ranges, or releases (when they exist) in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai). `area:gen-ai` PRs from the consolidated `semantic-conventions` repo (where these conventions were previously managed) classify the same way. Use this to assess each change's impact on dotnet/extensions.
 
 ## Areas
 
-The new repo hosts conventions for several areas. Identify the **area** of each change from its path in the new repo: `gen-ai`, `mcp`, `openai`, and `aws-bedrock` have a YAML registry under `model/<area>/`; `anthropic` and `azure-ai-inference` have no `model/` registry today and exist only as provider doc pages under `docs/gen-ai/<provider>.md`. All human-readable docs live under `docs/gen-ai/`, not `docs/<area>/`:
+The `semantic-conventions-genai` repo hosts conventions for several areas. Identify the **area** of each change from its path: `gen-ai`, `mcp`, `openai`, and `aws-bedrock` have a YAML registry under `model/<area>/`; `anthropic` and `azure-ai-inference` have no `model/` registry today and exist only as provider doc pages under `docs/gen-ai/<provider>.md`. All human-readable docs live under `docs/gen-ai/`, not `docs/<area>/`:
 
 | Area | dotnet/extensions location |
 |---|---|

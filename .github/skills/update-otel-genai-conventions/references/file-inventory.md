@@ -71,14 +71,14 @@ The reference today still reads (carried over from when conventions lived in the
 
 ### Target wording (post-migration)
 
-After the GenAI conventions moved to [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), the doc comment should call out the standalone repo and use the GenAI-namespaced version (matching the schema URL `opentelemetry.io/schemas/gen-ai/X.Y.Z`):
+After the GenAI conventions moved to [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), the doc comment should call out the standalone repo and use a GenAI-namespaced version (`vX.Y.Z`). Until `semantic-conventions-genai` publishes a release or schema URL, take that version from the `Unreleased` `CHANGELOG.md` snapshot you audited — not from `versions.env` (whose `SEMCONV_VERSION` is the core semconv dependency, not the GenAI version):
 
 ```csharp
 /// This class provides an implementation of the GenAI Semantic Conventions vX.Y.Z,
 /// defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 ```
 
-The `<see href>` URL is unchanged — the published spec page still resolves and renders the gen-ai spec from the new repo.
+The `<see href>` URL is kept for now: the published page at `https://opentelemetry.io/docs/specs/semconv/gen-ai/` currently resolves only to a "Moved" stub that points at `semantic-conventions-genai` and no longer renders the spec. Leave the URL in place until OpenTelemetry publishes a canonical URL for the conventions (the `semantic-conventions-genai` `README.md` `## Schema URL` section is `TODO`), then retarget it. Do not use that page as the spec source — read `docs/gen-ai/` and `model/<area>/` in `semantic-conventions-genai` instead.
 
 ### Wording migration
 
