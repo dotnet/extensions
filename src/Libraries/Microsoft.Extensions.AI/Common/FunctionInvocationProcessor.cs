@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ internal sealed class FunctionInvocationProcessor
 {
     private readonly ILogger _logger;
     private readonly ActivitySource? _activitySource;
+    private readonly Histogram<double>? _executeToolDurationHistogram;
     private readonly Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> _invokeFunction;
     private readonly Func<Activity?, bool> _isSensitiveDataEnabled;
 
@@ -36,16 +38,19 @@ internal sealed class FunctionInvocationProcessor
     /// Receives the invoke agent activity (or null if not in agent context).
     /// Returns true if sensitive data should be logged/tagged, false otherwise.
     /// </param>
+    /// <param name="executeToolDurationHistogram">The optional <c>gen_ai.execute_tool.duration</c> histogram to record tool execution durations on.</param>
     public FunctionInvocationProcessor(
         ILogger logger,
         ActivitySource? activitySource,
         Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> invokeFunction,
-        Func<Activity?, bool>? isSensitiveDataEnabled = null)
+        Func<Activity?, bool>? isSensitiveDataEnabled = null,
+        Histogram<double>? executeToolDurationHistogram = null)
     {
         _logger = logger;
         _activitySource = activitySource;
         _invokeFunction = invokeFunction;
         _isSensitiveDataEnabled = isSensitiveDataEnabled ?? (_ => false);
+        _executeToolDurationHistogram = executeToolDurationHistogram;
     }
 
     /// <summary>
@@ -199,15 +204,18 @@ internal sealed class FunctionInvocationProcessor
         }
 
         object? result = null;
+        string? errorType = null;
         try
         {
             result = await _invokeFunction(context, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {
+            errorType = e.GetType().FullName;
+
             if (activity is not null)
             {
-                _ = activity.SetTag(OpenTelemetryConsts.Error.Type, e.GetType().FullName)
+                _ = activity.SetTag(OpenTelemetryConsts.Error.Type, errorType)
                             .SetStatus(ActivityStatusCode.Error, e.Message);
             }
 
@@ -224,6 +232,19 @@ internal sealed class FunctionInvocationProcessor
         }
         finally
         {
+            if (_executeToolDurationHistogram is { Enabled: true } executeToolDurationHistogram)
+            {
+                TagList tags = default;
+                tags.Add(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name);
+                tags.Add(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction);
+                if (errorType is not null)
+                {
+                    tags.Add(OpenTelemetryConsts.Error.Type, errorType);
+                }
+
+                executeToolDurationHistogram.Record(FunctionInvocationHelpers.GetElapsedTime(startingTimestamp).TotalSeconds, tags);
+            }
+
             bool loggedResult = false;
             if (enableSensitiveData || traceLoggingEnabled)
             {

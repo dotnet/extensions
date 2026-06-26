@@ -129,6 +129,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType == typeof(ActivitySource) ? _activitySource :
+        serviceType == typeof(Meter) ? _meter :
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
@@ -326,6 +327,24 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     if (options.PresencePenalty is float presencePenalty)
                     {
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
+                    }
+
+                    if (options.Reasoning?.Effort is ReasoningEffort reasoningEffort)
+                    {
+                        // The spec recommends emitting the exact string sent to the provider; the provider-agnostic
+                        // layer only has the abstract ReasoningEffort, so emit a normalized token for it. A provider
+                        // package can override with its exact wire value (e.g. OpenAI sends "xhigh" for ExtraHigh).
+                        string reasoningLevel = reasoningEffort switch
+                        {
+                            ReasoningEffort.None => "none",
+                            ReasoningEffort.Low => "low",
+                            ReasoningEffort.Medium => "medium",
+                            ReasoningEffort.High => "high",
+                            ReasoningEffort.ExtraHigh => "extra_high",
+                            _ => reasoningEffort.ToString().ToLowerInvariant(),
+                        };
+
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.ReasoningLevel, reasoningLevel);
                     }
 
                     if (options.Seed is long seed)

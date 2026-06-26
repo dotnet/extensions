@@ -126,6 +126,7 @@ internal static class OpenTelemetryConsts
             public const string Model = "gen_ai.request.model";
             public const string MaxTokens = "gen_ai.request.max_tokens";
             public const string PresencePenalty = "gen_ai.request.presence_penalty";
+            public const string ReasoningLevel = "gen_ai.request.reasoning.level";
             public const string Seed = "gen_ai.request.seed";
             public const string StopSequences = "gen_ai.request.stop_sequences";
             public const string Stream = "gen_ai.request.stream";
@@ -160,6 +161,16 @@ internal static class OpenTelemetryConsts
                 public const string Id = "gen_ai.tool.call.id";
                 public const string Arguments = "gen_ai.tool.call.arguments";
                 public const string Result = "gen_ai.tool.call.result";
+            }
+        }
+
+        public static class ExecuteTool
+        {
+            public static class Duration
+            {
+                public const string Description = "Measures the duration of a tool execution.";
+                public const string Name = "gen_ai.execute_tool.duration";
+                public static readonly double[] ExplicitBucketBoundaries = [0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92];
             }
         }
 
