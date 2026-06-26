@@ -4,15 +4,23 @@ When asked to create or update a PR after implementing GenAI semantic-convention
 
 ## Title
 
+When a target **GenAI** version number is known (a release or published schema URL exists):
+
 ```text
 Update OpenTelemetry GenAI conventions to v{version}
 ```
 
-Use the target **GenAI** version for `{version}`. The GenAI version is independent of core semconv (which has its own version line); do not conflate the two, and do not use `versions.env`'s `SEMCONV_VERSION` (that is the core semconv dependency). Until `semantic-conventions-genai` publishes a release or schema URL (`opentelemetry.io/schemas/gen-ai/X.Y.Z`), take the version from the `CHANGELOG.md` release header (Towncrier compiles the `changelog.d/` fragments into it at release time); while unreleased, identify the update by its `changelog.d/` fragment snapshot (commit / ref / date) instead of a version number. If the PR also includes catch-up work from earlier convention versions or from the consolidated `open-telemetry/semantic-conventions` repo, keep the title focused on the target GenAI version and explain the catch-up work in the description.
+When no GenAI version number is determined yet -- the common case while `semantic-conventions-genai` is unreleased (no release and no published schema URL) -- use `latest` in place of a version number:
+
+```text
+Update OpenTelemetry GenAI conventions to latest
+```
+
+The GenAI version is independent of core semconv (which has its own version line); do not conflate the two, and do not use `versions.env`'s `SEMCONV_VERSION` (that is the core semconv dependency) as the title version. When a version exists, take `{version}` from the `CHANGELOG.md` release header (Towncrier compiles the `changelog.d/` fragments into it at release time) or the published schema URL (`opentelemetry.io/schemas/gen-ai/X.Y.Z`). While unreleased, keep the title as `latest` and identify the update by its `changelog.d/` fragment snapshot (commit / ref / date) in the body instead of a version number. If the PR also includes catch-up work from earlier convention versions or from the consolidated `open-telemetry/semantic-conventions` repo, keep the title focused on the target (the GenAI version or `latest`) and explain the catch-up work in the description.
 
 ## Description
 
-The description should include a changes table derived from the audit table and [change-classification.md](change-classification.md). Group or sort rows by GenAI version and include every analyzed change, not only the rows that produced code changes. Use the same red/yellow/green indicators as the classification guide:
+The description should include a changes table derived from the audit table and [change-classification.md](change-classification.md). Group or sort rows by GenAI version and include every analyzed change, not only the rows that produced code changes. When no GenAI version number is determined yet, use `latest` in the **Version** column and record the `changelog.d/` fragment snapshot (commit / ref / date) you audited in the description. Use the same red/yellow/green indicators as the classification guide:
 
 - 🟢 for no action required
 - 🟡 for minor action required
