@@ -1,6 +1,7 @@
 ﻿using System.ClientModel;
 using Azure.Identity;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DataIngestion;
 using OpenAI;
 using aichatweb.Components;
 using aichatweb.Services;
@@ -17,8 +18,8 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 var openAIClient = new OpenAIClient(
     new ApiKeyCredential(builder.Configuration["OpenAI:Key"] ?? throw new InvalidOperationException("Missing configuration: OpenAI:Key. See the README for details.")));
 
-#pragma warning disable OPENAI001 // GetResponsesClient(string) is experimental and subject to change or removal in future updates.
-var chatClient = openAIClient.GetResponsesClient("gpt-4o-mini").AsIChatClient();
+#pragma warning disable OPENAI001 // GetResponsesClient() is experimental and subject to change or removal in future updates.
+var chatClient = openAIClient.GetResponsesClient().AsIChatClient("gpt-4o-mini");
 #pragma warning restore OPENAI001
 
 var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
@@ -37,7 +38,7 @@ builder.Services.AddSingleton<DataIngestor>();
 builder.Services.AddSingleton<SemanticSearch>();
 builder.Services.AddKeyedSingleton("ingestion_directory", new DirectoryInfo(Path.Combine(builder.Environment.WebRootPath, "Data")));
 builder.Services.AddChatClient(chatClient).UseFunctionInvocation().UseLogging();
-builder.Services.AddEmbeddingGenerator(embeddingGenerator);
+builder.Services.AddEmbeddingGenerator(embeddingGenerator.AsTextContentEmbeddingGenerator());
 
 var app = builder.Build();
 

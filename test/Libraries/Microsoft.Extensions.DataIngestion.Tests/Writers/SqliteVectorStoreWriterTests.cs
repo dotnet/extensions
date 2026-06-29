@@ -3,8 +3,9 @@
 
 using System;
 using System.IO;
+using CommunityToolkit.VectorData.SqliteVec;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
@@ -14,6 +15,6 @@ public sealed class SqliteVectorStoreWriterTests : VectorStoreWriterTests, IDisp
 
     public void Dispose() => File.Delete(_tempFile);
 
-    protected override VectorStore CreateVectorStore(TestEmbeddingGenerator<string> testEmbeddingGenerator)
+    protected override VectorStore CreateVectorStore(TestEmbeddingGenerator<AIContent> testEmbeddingGenerator)
         => new SqliteVectorStore($"Data Source={_tempFile};Pooling=false", new() { EmbeddingGenerator = testEmbeddingGenerator });
 }

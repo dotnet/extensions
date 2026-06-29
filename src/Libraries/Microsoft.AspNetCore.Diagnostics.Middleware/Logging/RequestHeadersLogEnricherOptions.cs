@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
@@ -22,6 +20,5 @@ public class RequestHeadersLogEnricherOptions
     /// Default value is an empty dictionary.
     /// </remarks>
     [Required]
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public IDictionary<string, DataClassification> HeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
 }

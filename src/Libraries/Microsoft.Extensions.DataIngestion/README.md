@@ -4,7 +4,7 @@
 
 ## The packages
 
-The [Microsoft.Extensions.DataIngestion.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.DataIngestion.Abstractions) package provides the core exchange types, including [`IngestionDocument`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestiondocument), [`IngestionChunker<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunker-1), [`IngestionChunkProcessor<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkprocessor-1), and [`IngestionChunkWriter<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkwriter-1). Any .NET library that provides document processing capabilities can implement these abstractions to enable seamless integration with consuming code.
+The [Microsoft.Extensions.DataIngestion.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.DataIngestion.Abstractions) package provides the core exchange types, including [`IngestionDocument`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestiondocument), [`IngestionChunker`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunker-1), [`IngestionChunkProcessor`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkprocessor-1), and [`IngestionChunkWriter`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.ingestionchunkwriter-1). Any .NET library that provides document processing capabilities can implement these abstractions to enable seamless integration with consuming code.
 
 The [Microsoft.Extensions.DataIngestion](https://www.nuget.org/packages/Microsoft.Extensions.DataIngestion) package has an implicit dependency on the `Microsoft.Extensions.DataIngestion.Abstractions` package. This package enables you to easily integrate components such as enrichment processors, vector storage writers, and telemetry into your applications using familiar dependency injection and pipeline patterns. For example, it provides the [`SentimentEnricher`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.sentimentenricher), [`KeywordEnricher`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.keywordenricher), and [`SummaryEnricher`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dataingestion.summaryenricher) processors that can be chained together in ingestion pipelines.
 
@@ -31,34 +31,48 @@ Or directly in the C# project file:
 
 ## Writing chunks to a vector store
 
+### Configuring the vector store
+
+The vector store must be configured with an embedding generator that accepts `AIContent` (or a type that derives from `AIContent`) inputs. This allows the ingestion pipeline to pass the original chunked content directly for embedding generation:
+
+```csharp
+IEmbeddingGenerator<TextContent, Embedding<float>> textContentEmbeddingGenerator =
+    stringEmbeddingGenerator.AsTextContentEmbeddingGenerator();
+
+using VectorStore vectorStore = new InMemoryVectorStore(new()
+{
+    EmbeddingGenerator = textContentEmbeddingGenerator
+});
+```
+
 ### Basic usage
 
 The simplest way to store ingestion chunks in a vector store is to use the `GetIngestionRecordCollection` extension method to create a collection, and then pass it to a `VectorStoreWriter`:
 
 ```csharp
-VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
+VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection =
     vectorStore.GetIngestionRecordCollection("chunks", dimensionCount: 1536);
 
-using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
+using VectorStoreWriter<IngestionChunkVectorRecord> writer = new(collection);
 
 await writer.WriteAsync(chunks);
 ```
 
 ### Custom metadata
 
-To store custom metadata alongside each chunk, create a type derived from `IngestionChunkVectorRecord<TChunk>` with additional properties, and a `VectorStoreWriter` subclass that overrides `SetMetadata`:
+To store custom metadata alongside each chunk, create a type derived from `IngestionChunkVectorRecord` with additional properties, and a `VectorStoreWriter` subclass that overrides `SetMetadata`:
 
 ```csharp
-public class ChunkWithMetadata : IngestionChunkVectorRecord<string>
+public class ChunkWithMetadata : IngestionChunkVectorRecord
 {
     [VectorStoreVector(1536)]
-    public override string? Embedding => Content;
+    public override AIContent? Embedding => Content;
 
     [VectorStoreData(StorageName = "classification")]
     public string? Classification { get; set; }
 }
 
-public class MetadataWriter : VectorStoreWriter<string, ChunkWithMetadata>
+public class MetadataWriter : VectorStoreWriter<ChunkWithMetadata>
 {
     public MetadataWriter(VectorStoreCollection<Guid, ChunkWithMetadata> collection)
         : base(collection) { }
@@ -86,22 +100,22 @@ VectorStoreCollectionDefinition definition = new()
 {
     Properties =
     {
-        new VectorStoreKeyProperty(nameof(IngestionChunkVectorRecord<string>.Key), typeof(Guid))
+        new VectorStoreKeyProperty(nameof(IngestionChunkVectorRecord.Key), typeof(Guid))
             { StorageName = "my_key" },
-        new VectorStoreVectorProperty(nameof(IngestionChunkVectorRecord<string>.Embedding), typeof(string), 1536)
+        new VectorStoreVectorProperty<AIContent>(nameof(IngestionChunkVectorRecord.Embedding), 1536)
             { StorageName = "my_embedding" },
-        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord<string>.Content), typeof(string))
+        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord.SerializedContent), typeof(string))
             { StorageName = "my_content" },
-        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord<string>.Context), typeof(string))
+        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord.Context), typeof(string))
             { StorageName = "my_context" },
-        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord<string>.DocumentId), typeof(string))
+        new VectorStoreDataProperty(nameof(IngestionChunkVectorRecord.DocumentId), typeof(string))
             { StorageName = "my_documentid", IsIndexed = true },
     },
 };
 
-VectorStoreCollection<Guid, IngestionChunkVectorRecord<string>> collection =
-    vectorStore.GetCollection<Guid, IngestionChunkVectorRecord<string>>("chunks", definition);
-using VectorStoreWriter<string, IngestionChunkVectorRecord<string>> writer = new(collection);
+VectorStoreCollection<Guid, IngestionChunkVectorRecord> collection =
+    vectorStore.GetCollection<Guid, IngestionChunkVectorRecord>("chunks", definition);
+using VectorStoreWriter<IngestionChunkVectorRecord> writer = new(collection);
 ```
 
 ## Using the ingestion pipeline

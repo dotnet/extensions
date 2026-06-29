@@ -6,6 +6,7 @@ using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -1170,7 +1171,7 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
-    public async Task UnavailableBuiltInFunctionCall_NonStreaming()
+    public async Task HostedWebSearchTool_MapsToWebSearchOptions_NonStreaming()
     {
         const string Input = """
             {
@@ -1180,7 +1181,8 @@ public class OpenAIChatClientTests
                         "content": "What day is it?"
                     }
                 ],
-                "model": "gpt-4o-mini"
+                "model": "gpt-4o-mini",
+                "web_search_options": {}
             }
             """;
 
@@ -1696,9 +1698,9 @@ public class OpenAIChatClientTests
                 "temperature":0.5,
                 "messages":[{"role":"user","content":"hello"}],
                 "model":"gpt-4o",
+                "max_completion_tokens":20,
                 "stream":true,
-                "stream_options":{"include_usage":true},
-                "max_completion_tokens":20
+                "stream_options":{"include_usage":true}
             }
             """;
 
@@ -1819,10 +1821,11 @@ public class OpenAIChatClientTests
     }
 
     [Theory]
+    [InlineData(ReasoningEffort.None, "none")]
     [InlineData(ReasoningEffort.Low, "low")]
     [InlineData(ReasoningEffort.Medium, "medium")]
     [InlineData(ReasoningEffort.High, "high")]
-    [InlineData(ReasoningEffort.ExtraHigh, "high")] // ExtraHigh maps to high in OpenAI
+    [InlineData(ReasoningEffort.ExtraHigh, "xhigh")]
     public async Task ReasoningOptions_Effort_ProducesExpectedJson(ReasoningEffort effort, string expectedEffortString)
     {
         string input = $$"""
@@ -1862,49 +1865,6 @@ public class OpenAIChatClientTests
         Assert.NotNull(await client.GetResponseAsync("hello", new()
         {
             Reasoning = new ReasoningOptions { Effort = effort }
-        }));
-    }
-
-    [Fact]
-    public async Task ReasoningOptions_None_ProducesNoReasoningEffortInJson()
-    {
-        const string Input = """
-            {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "hello"
-                    }
-                ],
-                "model": "gpt-4o-mini"
-            }
-            """;
-
-        const string Output = """
-            {
-              "id": "chatcmpl-test",
-              "object": "chat.completion",
-              "model": "gpt-4o-mini",
-              "choices": [
-                {
-                  "message": {
-                    "role": "assistant",
-                    "content": "Hello!"
-                  },
-                  "finish_reason": "stop"
-                }
-              ]
-            }
-            """;
-
-        using VerbatimHttpHandler handler = new(Input, Output);
-        using HttpClient httpClient = new(handler);
-        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
-
-        // None effort should not include reasoning_effort in the request
-        Assert.NotNull(await client.GetResponseAsync("hello", new()
-        {
-            Reasoning = new ReasoningOptions { Effort = ReasoningEffort.None }
         }));
     }
 
@@ -2009,5 +1969,82 @@ public class OpenAIChatClientTests
 
         // Verify regular content was also captured from the content deltas
         Assert.Equal("9.8 is larger.", string.Concat(updates.Select(u => u.Text)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OpenAIApiTypeTag_SetToChatCompletions(bool streaming)
+    {
+        const string NonStreamingOutput = """
+            {
+              "id": "chatcmpl-test",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello!"
+                  },
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 8,
+                "completion_tokens": 2,
+                "total_tokens": 10
+              },
+              "service_tier": "default",
+              "system_fingerprint": "fp_test"
+            }
+            """;
+
+        const string StreamingOutput = """
+            data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":1727888631,"model":"gpt-4o-mini-2024-07-18","service_tier":"default","system_fingerprint":"fp_test","choices":[{"index":0,"delta":{"role":"assistant","content":"Hello!"},"finish_reason":null}]}
+
+            data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":1727888631,"model":"gpt-4o-mini-2024-07-18","service_tier":"default","system_fingerprint":"fp_test","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":8,"completion_tokens":2,"total_tokens":10}}
+
+            data: [DONE]
+
+            """;
+
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == sourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = activity => activities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), streaming ? StreamingOutput : NonStreamingOutput);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
+            .GetChatClient("gpt-4o-mini")
+            .AsIChatClient()
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName)
+            .Build();
+
+        if (streaming)
+        {
+            await foreach (var update in client.GetStreamingResponseAsync("hello"))
+            {
+                // Drain the stream.
+            }
+        }
+        else
+        {
+            await client.GetResponseAsync("hello");
+        }
+
+        var activity = Assert.Single(activities);
+        Assert.Equal("chat_completions", activity.GetTagItem("openai.api.type"));
+        Assert.Equal("default", activity.GetTagItem("openai.response.service_tier"));
+        Assert.Equal("fp_test", activity.GetTagItem("openai.response.system_fingerprint"));
     }
 }

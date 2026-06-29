@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using System.Text;
@@ -15,10 +16,13 @@ using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
 using OpenAI.Chat;
+using OpenAI.Containers;
 using OpenAI.Embeddings;
+using OpenAI.Files;
 using OpenAI.Images;
 using OpenAI.Responses;
 
+#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
@@ -118,11 +122,12 @@ public static class OpenAIClientExtensions
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="ResponsesClient"/>.</summary>
     /// <param name="responseClient">The client.</param>
+    /// <param name="defaultModelId">The default model ID to use for the chat client.</param>
     /// <returns>An <see cref="IChatClient"/> that can be used to converse via the <see cref="ResponsesClient"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseClient"/> is <see langword="null"/>.</exception>
     [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
-    public static IChatClient AsIChatClient(this ResponsesClient responseClient) =>
-        new OpenAIResponsesChatClient(responseClient);
+    public static IChatClient AsIChatClient(this ResponsesClient responseClient, string? defaultModelId = null) =>
+        new OpenAIResponsesChatClient(responseClient, defaultModelId);
 
     /// <summary>Gets an <see cref="IChatClient"/> for use with this <see cref="AssistantClient"/>.</summary>
     /// <param name="assistantClient">The <see cref="AssistantClient"/> instance to be accessed as an <see cref="IChatClient"/>.</param>
@@ -163,6 +168,14 @@ public static class OpenAIClientExtensions
     public static ISpeechToTextClient AsISpeechToTextClient(this AudioClient audioClient) =>
         new OpenAISpeechToTextClient(audioClient);
 
+    /// <summary>Gets an <see cref="ITextToSpeechClient"/> for use with this <see cref="AudioClient"/>.</summary>
+    /// <param name="audioClient">The client.</param>
+    /// <returns>An <see cref="ITextToSpeechClient"/> that can be used to generate speech via the <see cref="AudioClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="audioClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AITextToSpeech, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static ITextToSpeechClient AsITextToSpeechClient(this AudioClient audioClient) =>
+        new OpenAITextToSpeechClient(audioClient);
+
     /// <summary>Gets an <see cref="IImageGenerator"/> for use with this <see cref="ImageClient"/>.</summary>
     /// <param name="imageClient">The client.</param>
     /// <returns>An <see cref="IImageGenerator"/> that can be used to generate images via the <see cref="ImageClient"/>.</returns>
@@ -178,6 +191,44 @@ public static class OpenAIClientExtensions
     /// <exception cref="ArgumentNullException"><paramref name="embeddingClient"/> is <see langword="null"/>.</exception>
     public static IEmbeddingGenerator<string, Embedding<float>> AsIEmbeddingGenerator(this EmbeddingClient embeddingClient, int? defaultModelDimensions = null) =>
         new OpenAIEmbeddingGenerator(embeddingClient, defaultModelDimensions);
+
+    /// <summary>Gets an <see cref="IHostedFileClient"/> for use with this <see cref="OpenAIClient"/>.</summary>
+    /// <param name="openAIClient">The client.</param>
+    /// <returns>An <see cref="IHostedFileClient"/> that can be used to manage files via the <see cref="OpenAIClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="openAIClient"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// The returned <see cref="IHostedFileClient"/> supports both the standard Files API and container files
+    /// (used for code interpreter outputs). To download a container file, specify the container ID
+    /// in the <see cref="HostedFileClientOptions.Scope"/> property.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHostedFileClient AsIHostedFileClient(this OpenAIClient openAIClient) =>
+        new OpenAIHostedFileClient(openAIClient);
+
+    /// <summary>Gets an <see cref="IHostedFileClient"/> for use with this <see cref="OpenAIFileClient"/>.</summary>
+    /// <param name="fileClient">The client.</param>
+    /// <returns>An <see cref="IHostedFileClient"/> that can be used to manage files via the <see cref="OpenAIFileClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="fileClient"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// The returned <see cref="IHostedFileClient"/> supports only the standard Files API.
+    /// Operations requiring container access (via <c>Scope</c>) will throw <see cref="InvalidOperationException"/>.
+    /// To access container files, use <see cref="AsIHostedFileClient(ContainerClient, string?)"/> or <see cref="AsIHostedFileClient(OpenAIClient)"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHostedFileClient AsIHostedFileClient(this OpenAIFileClient fileClient) =>
+        new OpenAIHostedFileClient(fileClient);
+
+    /// <summary>Gets an <see cref="IHostedFileClient"/> for use with this <see cref="ContainerClient"/>.</summary>
+    /// <param name="containerClient">The client.</param>
+    /// <param name="defaultScope">
+    /// The default container ID for operations. If not specified, a container ID must be
+    /// provided via the <c>Scope</c> property on per-call options.
+    /// </param>
+    /// <returns>An <see cref="IHostedFileClient"/> that can be used to manage files within containers via the <see cref="ContainerClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="containerClient"/> is <see langword="null"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIFiles, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHostedFileClient AsIHostedFileClient(this ContainerClient containerClient, string? defaultScope = null) =>
+        new OpenAIHostedFileClient(containerClient, defaultScope);
 
     /// <summary>Gets whether the properties specify that strict schema handling is desired.</summary>
     internal static bool? HasStrict(IReadOnlyDictionary<string, object?>? additionalProperties) =>
@@ -264,6 +315,8 @@ public static class OpenAIClientExtensions
     /// <summary>Used to create the JSON payload for an OpenAI tool description.</summary>
     internal sealed class ToolJson
     {
+        private static readonly JsonElement _falseElement = JsonElement.Parse("false"u8);
+
         [JsonPropertyName("type")]
         public string Type { get; set; } = "object";
 
@@ -274,9 +327,132 @@ public static class OpenAIClientExtensions
         public Dictionary<string, JsonElement> Properties { get; set; } = [];
 
         [JsonPropertyName("additionalProperties")]
-        public bool AdditionalProperties { get; set; }
+        public JsonElement AdditionalProperties { get; set; } = _falseElement;
 
         [JsonExtensionData]
         public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+    }
+
+    /// <summary>The "openai.api.type" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
+    internal const string OpenAIApiTypeTag = "openai.api.type";
+
+    /// <summary>The "openai.response.service_tier" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
+    internal const string OpenAIResponseServiceTierTag = "openai.response.service_tier";
+
+    /// <summary>The "openai.response.system_fingerprint" tag name per the OpenTelemetry semantic conventions for OpenAI.</summary>
+    internal const string OpenAIResponseSystemFingerprintTag = "openai.response.system_fingerprint";
+
+    /// <summary>The "chat_completions" value for the "openai.api.type" tag.</summary>
+    internal const string OpenAIApiTypeChatCompletions = "chat_completions";
+
+    /// <summary>The "responses" value for the "openai.api.type" tag.</summary>
+    internal const string OpenAIApiTypeResponses = "responses";
+
+    /// <summary>The "chat" operation name used by the OpenTelemetry chat client.</summary>
+    private const string ChatOperationName = "chat";
+
+    /// <summary>
+    /// If the current <see cref="Activity"/> represents a "chat" operation span,
+    /// adds the "openai.api.type" tag with the specified value.
+    /// </summary>
+    internal static void AddOpenAIApiType(string apiType)
+    {
+        if (GetCurrentChatActivity() is { } activity)
+        {
+            _ = activity.AddTag(OpenAIApiTypeTag, apiType);
+        }
+    }
+
+    /// <summary>
+    /// If the current <see cref="Activity"/> represents a "chat" operation span,
+    /// adds OpenAI-specific response tags with the specified values.
+    /// </summary>
+    internal static void AddOpenAIResponseAttributes(string? serviceTier, string? systemFingerprint)
+    {
+        if (GetCurrentChatActivity() is { } activity)
+        {
+            if (!string.IsNullOrWhiteSpace(serviceTier))
+            {
+                _ = activity.SetTag(OpenAIResponseServiceTierTag, serviceTier);
+            }
+
+            if (!string.IsNullOrWhiteSpace(systemFingerprint))
+            {
+                _ = activity.SetTag(OpenAIResponseSystemFingerprintTag, systemFingerprint);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Streaming-friendly overload of <see cref="AddOpenAIResponseAttributes(string?, string?)"/>
+    /// that records each tag at most once per stream. Once a non-null value has been written for
+    /// either tag, subsequent calls short-circuit without performing the activity lookup or the
+    /// per-tag <see cref="Activity.SetTag(string, object?)"/> call.
+    /// </summary>
+    /// <remarks>
+    /// Each tag is gated independently so a stream that never reports one of the two values still
+    /// captures the other on its first non-null arrival.
+    /// </remarks>
+    /// <param name="serviceTier">The service tier value from the current update, if any.</param>
+    /// <param name="systemFingerprint">The system fingerprint value from the current update, if any.</param>
+    /// <param name="capturedServiceTier">
+    /// A per-stream cache of the value already written for <c>openai.response.service_tier</c>.
+    /// Initialize to <see langword="null"/> at the start of the stream.
+    /// </param>
+    /// <param name="capturedSystemFingerprint">
+    /// A per-stream cache of the value already written for <c>openai.response.system_fingerprint</c>.
+    /// Initialize to <see langword="null"/> at the start of the stream.
+    /// </param>
+    internal static void AddOpenAIResponseAttributes(
+        string? serviceTier,
+        string? systemFingerprint,
+        ref string? capturedServiceTier,
+        ref string? capturedSystemFingerprint)
+    {
+        bool needsServiceTier = capturedServiceTier is null && !string.IsNullOrWhiteSpace(serviceTier);
+        bool needsSystemFingerprint = capturedSystemFingerprint is null && !string.IsNullOrWhiteSpace(systemFingerprint);
+
+        if (!needsServiceTier && !needsSystemFingerprint)
+        {
+            return;
+        }
+
+        if (GetCurrentChatActivity() is { } activity)
+        {
+            if (needsServiceTier)
+            {
+                capturedServiceTier = serviceTier;
+                _ = activity.SetTag(OpenAIResponseServiceTierTag, serviceTier);
+            }
+
+            if (needsSystemFingerprint)
+            {
+                capturedSystemFingerprint = systemFingerprint;
+                _ = activity.SetTag(OpenAIResponseSystemFingerprintTag, systemFingerprint);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns <see cref="Activity.Current"/> if it has data requested and its
+    /// <see cref="Activity.DisplayName"/> represents a gen_ai "chat" span
+    /// (the name is "chat" or "chat {name}"); otherwise <see langword="null"/>.
+    /// </summary>
+    private static Activity? GetCurrentChatActivity()
+    {
+        Activity? activity = Activity.Current;
+        if (activity is { IsAllDataRequested: true })
+        {
+            // Recognize an activity name of "chat" or "chat {name}".
+            string name = activity.DisplayName;
+
+            if (name.StartsWith(ChatOperationName, StringComparison.Ordinal) &&
+                (name.Length == ChatOperationName.Length || name[ChatOperationName.Length] == ' '))
+            {
+                return activity;
+            }
+        }
+
+        return null;
     }
 }

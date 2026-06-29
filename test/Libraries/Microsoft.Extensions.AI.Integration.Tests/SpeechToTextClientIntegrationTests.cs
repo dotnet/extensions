@@ -59,6 +59,23 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
         Assert.Contains("gym", responseText, StringComparison.OrdinalIgnoreCase);
     }
 
+    [ConditionalTheory]
+    [InlineData("audio001.mp3")]
+    [InlineData("audio001_noid3.mp3")]
+    [InlineData("audio001.wav")]
+    [InlineData("audio001.m4a")]
+    [InlineData("audio001.webm")]
+    public virtual async Task GetTextAsync_AutoDetectsAudioFormat(string fileName)
+    {
+        SkipIfNotEnabled();
+
+        using var audioSpeechStream = GetAudioStream(fileName);
+        var response = await _client.GetTextAsync(audioSpeechStream);
+
+        Assert.NotNull(response);
+        Assert.Contains("gym", response.Text, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static Stream GetAudioStream(string fileName)
     {
         using Stream? s = typeof(SpeechToTextClientIntegrationTests).Assembly.GetManifestResourceStream($"Microsoft.Extensions.AI.Resources.{fileName}");

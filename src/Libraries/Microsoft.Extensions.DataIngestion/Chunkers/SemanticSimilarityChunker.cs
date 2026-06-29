@@ -15,10 +15,10 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers;
 /// <summary>
 /// Splits a <see cref="IngestionDocument"/> into chunks based on semantic similarity between its elements based on cosine distance of their embeddings.
 /// </summary>
-public sealed class SemanticSimilarityChunker : IngestionChunker<string>
+public sealed class SemanticSimilarityChunker : IngestionChunker
 {
     private readonly ElementsChunker _elementsChunker;
-    private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
+    private readonly IEmbeddingGenerator<TextContent, Embedding<float>> _embeddingGenerator;
     private readonly float _thresholdPercentile;
 
     /// <summary>
@@ -28,7 +28,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     /// <param name="options">The options for the chunker.</param>
     /// <param name="thresholdPercentile">Threshold percentile to consider the chunks to be sufficiently similar. 95th percentile will be used if not specified.</param>
     public SemanticSimilarityChunker(
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+        IEmbeddingGenerator<TextContent, Embedding<float>> embeddingGenerator,
         IngestionChunkerOptions options,
         float? thresholdPercentile = null)
     {
@@ -44,7 +44,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(IngestionDocument document,
+    public override async IAsyncEnumerable<IngestionChunk> ProcessAsync(IngestionDocument document,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(document);
@@ -59,7 +59,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
     private async Task<List<(IngestionDocumentElement element, float distance)>> CalculateDistancesAsync(IngestionDocument documents, CancellationToken cancellationToken)
     {
         List<(IngestionDocumentElement element, float distance)> elementDistances = [];
-        List<string> semanticContents = [];
+        List<TextContent> semanticContents = [];
 
         foreach (IngestionDocumentElement element in documents.EnumerateContent())
         {
@@ -70,7 +70,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
             if (!string.IsNullOrEmpty(semanticContent))
             {
                 elementDistances.Add((element, default));
-                semanticContents.Add(semanticContent!);
+                semanticContents.Add(new TextContent(semanticContent!));
             }
         }
 
@@ -93,7 +93,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker<string>
         return elementDistances;
     }
 
-    private IEnumerable<IngestionChunk<string>> MakeChunks(IngestionDocument document, List<(IngestionDocumentElement element, float distance)> elementDistances)
+    private IEnumerable<IngestionChunk> MakeChunks(IngestionDocument document, List<(IngestionDocumentElement element, float distance)> elementDistances)
     {
         float distanceThreshold = Percentile(elementDistances);
 

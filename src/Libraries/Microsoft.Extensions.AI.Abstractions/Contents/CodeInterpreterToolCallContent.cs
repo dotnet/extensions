@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -14,20 +12,16 @@ namespace Microsoft.Extensions.AI;
 /// This content type represents when a hosted AI service invokes a code interpreter tool.
 /// It is informational only and represents the call itself, not the result.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.AICodeInterpreter, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class CodeInterpreterToolCallContent : AIContent
+public sealed class CodeInterpreterToolCallContent : ToolCallContent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeInterpreterToolCallContent"/> class.
     /// </summary>
-    public CodeInterpreterToolCallContent()
+    /// <param name="callId">The tool call ID.</param>
+    public CodeInterpreterToolCallContent(string callId)
+        : base(callId)
     {
     }
-
-    /// <summary>
-    /// Gets or sets the tool call ID.
-    /// </summary>
-    public string? CallId { get; set; }
 
     /// <summary>
     /// Gets or sets the inputs to the code interpreter tool.

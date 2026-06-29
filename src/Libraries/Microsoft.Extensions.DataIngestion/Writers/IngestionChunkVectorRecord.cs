@@ -2,23 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.Extensions.DataIngestion;
 
 /// <summary>
-/// Represents the base record type used by <see cref="VectorStoreWriter{TChunk, TRecord}"/> to store ingested chunks in a vector store.
+/// Represents the base record type used by <see cref="VectorStoreWriter{TRecord}"/> to store ingested chunks in a vector store.
 /// </summary>
-/// <typeparam name="TChunk">The type of the chunk content.</typeparam>
 /// <remarks>
 /// When the vector dimension count is not known at compile time,
-/// use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord, TChunk}(VectorStore, string, int, string?, string?)"/>
-/// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> and pass it to the <see cref="VectorStoreWriter{TChunk, TRecord}"/> constructor.
+/// use the <see cref="VectorStoreExtensions.GetIngestionRecordCollection{TRecord}(VectorStore, string, int, string?, string?)"/>
+/// helper to create a <see cref="VectorStoreCollection{TKey, TRecord}"/> and pass it to the <see cref="VectorStoreWriter{TRecord}"/> constructor.
 /// When the vector dimension count is known at compile time, derive from this class and add
 /// the <see cref="VectorStoreVectorAttribute"/> to the <see cref="Embedding"/> property.
 /// </remarks>
-public class IngestionChunkVectorRecord<TChunk>
+public class IngestionChunkVectorRecord
 {
+    private AIContent? _content;
+
     /// <summary>
     /// Gets or sets the unique key for this record.
     /// </summary>
@@ -32,10 +36,39 @@ public class IngestionChunkVectorRecord<TChunk>
     public virtual string DocumentId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the content of the chunk.
+    /// Gets or sets the JSON-serialized content of the chunk, used for storage and retrieval.
     /// </summary>
     [VectorStoreData]
-    public virtual TChunk? Content { get; set; }
+    public virtual string? SerializedContent { get; set; }
+
+    private static readonly JsonTypeInfo<AIContent> _aiContentTypeInfo =
+        (JsonTypeInfo<AIContent>)AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(AIContent));
+
+    /// <summary>
+    /// Gets or sets the content of the chunk.
+    /// </summary>
+    public virtual AIContent? Content
+    {
+        get
+        {
+            if (_content is not null)
+            {
+                return _content;
+            }
+
+            if (string.IsNullOrEmpty(SerializedContent))
+            {
+                return null;
+            }
+
+            return _content = JsonSerializer.Deserialize(SerializedContent!, _aiContentTypeInfo);
+        }
+        set
+        {
+            _content = value;
+            SerializedContent = value is not null ? JsonSerializer.Serialize(value, _aiContentTypeInfo) : null;
+        }
+    }
 
     /// <summary>
     /// Gets or sets additional context for the chunk.
@@ -51,5 +84,5 @@ public class IngestionChunkVectorRecord<TChunk>
     /// will convert this to a vector. Override this property in derived classes to add
     /// the <see cref="VectorStoreVectorAttribute"/> with the appropriate dimension count.
     /// </remarks>
-    public virtual TChunk? Embedding => Content;
+    public virtual AIContent? Embedding => Content;
 }

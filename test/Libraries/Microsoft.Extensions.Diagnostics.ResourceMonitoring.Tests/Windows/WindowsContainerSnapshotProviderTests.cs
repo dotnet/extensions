@@ -44,7 +44,8 @@ public sealed class WindowsContainerSnapshotProviderTests
         _meterFactory.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
 
-        _logger = new FakeLogger<WindowsContainerSnapshotProvider>();
+        _logger = new FakeLogger<WindowsContainerSnapshotProvider>(
+            FakeLogCollector.Create(new FakeLogCollectorOptions { TimeProvider = new FakeTimeProvider() }));
 
         _memStatus.TotalPhys = 3000UL;
         _memoryInfoMock.Setup(m => m.GetMemoryStatus())

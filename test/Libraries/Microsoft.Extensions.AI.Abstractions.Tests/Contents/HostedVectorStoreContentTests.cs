@@ -62,4 +62,26 @@ public class HostedVectorStoreContentTests
         Assert.NotNull(deserializedContent);
         Assert.Equal(content.VectorStoreId, deserializedContent.VectorStoreId);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "hostedVectorStore",
+              "vectorStoreId": "vs-abc123",
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var vectorStore = Assert.IsType<HostedVectorStoreContent>(result);
+        Assert.Equal("vs-abc123", vectorStore.VectorStoreId);
+        Assert.NotNull(vectorStore.AdditionalProperties);
+        Assert.Equal("val", vectorStore.AdditionalProperties["key"]?.ToString());
+    }
 }

@@ -21,9 +21,14 @@ internal static class OpenTelemetryConsts
     public const string TypeText = "text";
     public const string TypeJson = "json";
     public const string TypeImage = "image";
+    public const string TypeAudio = "audio";
 
     public const string TokenTypeInput = "input";
     public const string TokenTypeOutput = "output";
+    public const string TokenTypeInputAudio = "input_audio";
+    public const string TokenTypeInputText = "input_text";
+    public const string TokenTypeOutputAudio = "output_audio";
+    public const string TokenTypeOutputText = "output_text";
 
     public static class Error
     {
@@ -36,8 +41,16 @@ internal static class OpenTelemetryConsts
         public const string EmbeddingsName = "embeddings";
         public const string ExecuteToolName = "execute_tool";
         public const string InvokeAgentName = "invoke_agent";
+        public const string InvokeWorkflowName = "invoke_workflow";
         public const string OrchestrateToolsName = "orchestrate_tools"; // Non-standard
         public const string GenerateContentName = "generate_content";
+
+        /// <summary>
+        /// Operation name for realtime sessions.
+        /// This is a custom extension not part of the OpenTelemetry GenAI semantic conventions.
+        /// The spec allows using custom values for <c>gen_ai.operation.name</c> when standard values don't apply.
+        /// </summary>
+        public const string RealtimeName = "realtime";
 
         public const string SystemInstructions = "gen_ai.system_instructions";
 
@@ -55,6 +68,20 @@ internal static class OpenTelemetryConsts
                 public const string Description = "Measures number of input and output tokens used";
                 public const string Name = "gen_ai.client.token.usage";
                 public static readonly int[] ExplicitBucketBoundaries = [1, 4, 16, 64, 256, 1_024, 4_096, 16_384, 65_536, 262_144, 1_048_576, 4_194_304, 16_777_216, 67_108_864];
+            }
+
+            public static class TimeToFirstChunk
+            {
+                public const string Description = "Measures the time to receive the first chunk in a streaming operation";
+                public const string Name = "gen_ai.client.operation.time_to_first_chunk";
+                public static readonly double[] ExplicitBucketBoundaries = OperationDuration.ExplicitBucketBoundaries;
+            }
+
+            public static class TimePerOutputChunk
+            {
+                public const string Description = "Measures the time per output chunk in a streaming operation";
+                public const string Name = "gen_ai.client.operation.time_per_output_chunk";
+                public static readonly double[] ExplicitBucketBoundaries = OperationDuration.ExplicitBucketBoundaries;
             }
         }
 
@@ -101,6 +128,7 @@ internal static class OpenTelemetryConsts
             public const string PresencePenalty = "gen_ai.request.presence_penalty";
             public const string Seed = "gen_ai.request.seed";
             public const string StopSequences = "gen_ai.request.stop_sequences";
+            public const string Stream = "gen_ai.request.stream";
             public const string Temperature = "gen_ai.request.temperature";
             public const string TopK = "gen_ai.request.top_k";
             public const string TopP = "gen_ai.request.top_p";
@@ -111,6 +139,7 @@ internal static class OpenTelemetryConsts
             public const string FinishReasons = "gen_ai.response.finish_reasons";
             public const string Id = "gen_ai.response.id";
             public const string Model = "gen_ai.response.model";
+            public const string TimeToFirstChunk = "gen_ai.response.time_to_first_chunk";
         }
 
         public static class Token
@@ -139,7 +168,50 @@ internal static class OpenTelemetryConsts
             public const string InputTokens = "gen_ai.usage.input_tokens";
             public const string OutputTokens = "gen_ai.usage.output_tokens";
             public const string CacheReadInputTokens = "gen_ai.usage.cache_read.input_tokens";
+            public const string InputAudioTokens = "gen_ai.usage.input_audio_tokens";
+            public const string InputTextTokens = "gen_ai.usage.input_text_tokens";
+            public const string OutputAudioTokens = "gen_ai.usage.output_audio_tokens";
+            public const string OutputTextTokens = "gen_ai.usage.output_text_tokens";
+            public const string ReasoningOutputTokens = "gen_ai.usage.reasoning.output_tokens";
         }
+
+        /// <summary>
+        /// Custom attributes for realtime sessions.
+        /// These attributes are NOT part of the OpenTelemetry GenAI semantic conventions (as of v1.41).
+        /// They are custom extensions to capture realtime session-specific configuration.
+        /// </summary>
+        public static class Realtime
+        {
+            /// <summary>
+            /// The voice used for audio output in a realtime session.
+            /// Custom attribute: "gen_ai.realtime.voice".
+            /// </summary>
+            public const string Voice = "gen_ai.realtime.voice";
+
+            /// <summary>
+            /// The output modalities configured for a realtime session (e.g., "Text", "Audio").
+            /// Custom attribute: "gen_ai.realtime.output_modalities".
+            /// </summary>
+            public const string OutputModalities = "gen_ai.realtime.output_modalities";
+
+            /// <summary>
+            /// The kind/type of realtime session (e.g., "TextInTextOut", "AudioInAudioOut").
+            /// Custom attribute: "gen_ai.realtime.session_kind".
+            /// </summary>
+            public const string SessionKind = "gen_ai.realtime.session_kind";
+
+            /// <summary>
+            /// The modalities actually received in a realtime response (e.g., "text", "audio", "transcription").
+            /// Custom attribute: "gen_ai.realtime.received_modalities".
+            /// </summary>
+            public const string ReceivedModalities = "gen_ai.realtime.received_modalities";
+        }
+    }
+
+    public static class File
+    {
+        public const string Name = "file.name";
+        public const string Size = "file.size";
     }
 
     public static class Server
