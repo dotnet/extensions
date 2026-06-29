@@ -30,7 +30,7 @@ using Microsoft.Extensions.DataIngestion;
 IngestionDocumentReader reader =
     new MarkItDownReader(new FileInfo(@"pathToMarkItDown.exe"), extractImages: true);
 
-using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+using IngestionPipeline pipeline = new(CreateChunker(), CreateWriter());
 
 await foreach (IngestionResult result in pipeline.ProcessAsync(reader, directory, "*.pdf"))
 {
@@ -49,7 +49,7 @@ using Microsoft.Extensions.DataIngestion;
 IngestionDocumentReader reader =
     new MarkItDownMcpReader(new Uri("http://localhost:3001/mcp"));
 
-using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+using IngestionPipeline pipeline = new(CreateChunker(), CreateWriter());
 
 await foreach (IngestionResult result in pipeline.ProcessAsync(reader, directory, "*.*"))
 {

@@ -120,7 +120,7 @@ using VectorStoreWriter<IngestionChunkVectorRecord> writer = new(collection);
 
 ## Using the ingestion pipeline
 
-The `IngestionPipeline<T>` orchestrates document reading, chunking, optional processing, and writing. It can accept documents directly or read them from the file system using an `IngestionDocumentReader`.
+The `IngestionPipeline` orchestrates document reading, chunking, optional processing, and writing. It can accept documents directly or read them from the file system using an `IngestionDocumentReader`.
 
 ### Processing documents from the file system
 
@@ -129,7 +129,7 @@ Create a pipeline, then call `ProcessAsync` with an `IngestionDocumentReader` an
 ```csharp
 IngestionDocumentReader reader = new MarkdownReader();
 
-using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+using IngestionPipeline pipeline = new(CreateChunker(), CreateWriter());
 
 await foreach (IngestionResult result in pipeline.ProcessAsync(reader, new DirectoryInfo("docs"), "*.md"))
 {
@@ -142,7 +142,7 @@ await foreach (IngestionResult result in pipeline.ProcessAsync(reader, new Direc
 You can also supply `IngestionDocument` instances directly, without any file-system dependency:
 
 ```csharp
-using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+using IngestionPipeline pipeline = new(CreateChunker(), CreateWriter());
 
 IngestionDocument document = new("my-doc-id");
 document.Sections.Add(new IngestionDocumentSection());

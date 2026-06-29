@@ -27,7 +27,7 @@ using Microsoft.Extensions.DataIngestion;
 
 IngestionDocumentReader reader = new MarkdownReader();
 
-using IngestionPipeline<string> pipeline = new(CreateChunker(), CreateWriter());
+using IngestionPipeline pipeline = new(CreateChunker(), CreateWriter());
 
 await foreach (IngestionResult result in pipeline.ProcessAsync(reader, directory, "*.md"))
 {
