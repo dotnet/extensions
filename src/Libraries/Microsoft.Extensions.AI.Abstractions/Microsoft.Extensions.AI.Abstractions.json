@@ -3333,6 +3333,22 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.ParameterNameAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ParameterNameAttribute.ParameterNameAttribute(string name);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.ParameterNameAttribute.Name { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.RealtimeAudioFormat",
       "Stage": "Experimental",
       "Methods": [

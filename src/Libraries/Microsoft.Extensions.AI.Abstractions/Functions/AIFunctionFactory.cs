@@ -806,7 +806,7 @@ public static partial class AIFunctionFactory
                     pType != typeof(IServiceProvider) &&
                     !string.IsNullOrEmpty(parameters[i].Name))
                 {
-                    _ = expectedArgumentNames.Add(parameters[i].Name!);
+                    _ = expectedArgumentNames.Add(AIJsonUtilities.GetParameterSchemaName(parameters[i]));
                 }
             }
 
@@ -949,10 +949,12 @@ public static partial class AIFunctionFactory
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             JsonTypeInfo? typeInfo = serializerOptions.GetTypeInfo(parameterType);
             bool hasDefaultValue = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out object? effectiveDefaultValue);
+
+            string argumentName = AIJsonUtilities.GetParameterSchemaName(parameter);
             return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
-                if (arguments.TryGetValue(parameter.Name, out object? value))
+                if (arguments.TryGetValue(argumentName, out object? value))
                 {
                     return value switch
                     {
@@ -999,7 +1001,7 @@ public static partial class AIFunctionFactory
                 // If the parameter is required and there's no argument specified for it, throw.
                 if (!hasDefaultValue)
                 {
-                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{parameter.Name}'.");
+                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{argumentName}'.");
                 }
 
                 // Otherwise, use the optional parameter's default value.

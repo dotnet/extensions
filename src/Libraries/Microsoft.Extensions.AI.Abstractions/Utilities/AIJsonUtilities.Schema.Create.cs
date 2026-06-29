@@ -128,14 +128,15 @@ public static partial class AIJsonUtilities
                 serializerOptions,
                 inferenceOptions);
 
-            parameterSchemas.Add(parameter.Name, parameterSchema);
+            string parameterSchemaName = GetParameterSchemaName(parameter);
+            parameterSchemas.Add(parameterSchemaName, parameterSchema);
             bool isRequired = !parameter.IsOptional && !hasDefaultValue;
 #if NET || NETFRAMEWORK
             isRequired = isRequired || parameter.GetCustomAttribute<RequiredAttribute>(inherit: true) is not null;
 #endif
             if (isRequired)
             {
-                (requiredProperties ??= []).Add((JsonNode)parameter.Name);
+                (requiredProperties ??= []).Add((JsonNode)parameterSchemaName);
             }
         }
 
@@ -283,11 +284,12 @@ public static partial class AIJsonUtilities
                 if (parameter?.Name is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
                 {
                     // Fix up any $ref URIs to match the path from the root document.
+                    string parameterSchemaName = GetParameterSchemaName(parameter);
                     string refUri = paramName!.GetValue<string>();
                     Debug.Assert(refUri is "#" || refUri.StartsWith("#/", StringComparison.Ordinal), $"Expected {nameof(refUri)} to be either # or start with #/, got {refUri}");
                     refUri = refUri == "#"
-                        ? $"#/{PropertiesPropertyName}/{parameter.Name}"
-                        : $"#/{PropertiesPropertyName}/{parameter.Name}/{refUri.AsMemory("#/".Length)}";
+                        ? $"#/{PropertiesPropertyName}/{parameterSchemaName}"
+                        : $"#/{PropertiesPropertyName}/{parameterSchemaName}/{refUri.AsMemory("#/".Length)}";
 
                     objSchema[RefPropertyName] = (JsonNode)refUri;
                 }
@@ -860,6 +862,9 @@ public static partial class AIJsonUtilities
         defaultValue = null;
         return false;
     }
+
+    internal static string GetParameterSchemaName(ParameterInfo parameter) =>
+        parameter.GetCustomAttribute<ParameterNameAttribute>(inherit: true)?.Name ?? parameter.Name!;
 
     /// <summary>
     /// Checks whether a parameter is an F# optional parameter declared with the ?param syntax.
