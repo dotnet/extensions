@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
@@ -283,8 +284,9 @@ public static partial class AIJsonUtilities
                 // to accommodate the fact that they're being nested inside of a higher-level schema.
                 if (parameter?.Name is not null && objSchema.TryGetPropertyValue(RefPropertyName, out JsonNode? paramName))
                 {
-                    // Fix up any $ref URIs to match the path from the root document.
-                    string parameterSchemaName = GetParameterSchemaName(parameter);
+                    // Fix up any $ref URIs to match the path from the root document. The schema name becomes a
+                    // JSON Pointer segment, so escape it per RFC 6901 ('~' => "~0", '/' => "~1").
+                    string parameterSchemaName = EscapeJsonPointerSegment(GetParameterSchemaName(parameter));
                     string refUri = paramName!.GetValue<string>();
                     Debug.Assert(refUri is "#" || refUri.StartsWith("#/", StringComparison.Ordinal), $"Expected {nameof(refUri)} to be either # or start with #/, got {refUri}");
                     refUri = refUri == "#"
@@ -865,6 +867,28 @@ public static partial class AIJsonUtilities
 
     internal static string GetParameterSchemaName(ParameterInfo parameter) =>
         parameter.GetCustomAttribute<AINameAttribute>(inherit: true)?.Name ?? parameter.Name!;
+
+    // Escapes a string for use as a single JSON Pointer reference token per RFC 6901 ('~' => "~0", '/' => "~1").
+    private static string EscapeJsonPointerSegment(string segment)
+    {
+        if (segment.IndexOfAny(['~', '/']) < 0)
+        {
+            return segment;
+        }
+
+        StringBuilder sb = new(segment.Length + 2);
+        foreach (char c in segment)
+        {
+            _ = c switch
+            {
+                '~' => sb.Append("~0"),
+                '/' => sb.Append("~1"),
+                _ => sb.Append(c),
+            };
+        }
+
+        return sb.ToString();
+    }
 
     /// <summary>
     /// Checks whether a parameter is an F# optional parameter declared with the ?param syntax.

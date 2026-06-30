@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -171,6 +172,21 @@ public class AINameAttributeTest
         Assert.Throws<ArgumentException>("name", () => new AINameAttribute("   "));
     }
 
+    [Fact]
+    public void EscapesNameInJsonPointerRef()
+    {
+        JsonSerializerOptions options = new() { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
+
+        AIFunction func = AIFunctionFactory.Create(
+            ([AIName("a/b~c")] RecursiveNode node) => node.ToString(),
+            new AIFunctionFactoryOptions { SerializerOptions = options });
+
+        string schema = func.JsonSchema.ToString();
+
+        Assert.Contains("#/properties/a~1b~0c", schema);
+        Assert.DoesNotContain("#/properties/a/b~c", schema);
+    }
+
     private abstract class MyBaseType
     {
         public abstract string Method([AIName("my_param")] string myParam);
@@ -179,5 +195,10 @@ public class AINameAttributeTest
     private sealed class MyDerivedType : MyBaseType
     {
         public override string Method(string myParam) => $"param='{myParam}'";
+    }
+
+    private sealed class RecursiveNode
+    {
+        public RecursiveNode? Next { get; set; }
     }
 }
