@@ -151,8 +151,6 @@ if ([string]::IsNullOrWhiteSpace($projects)) {
   }
 }
 
-$properties += '/graph'
-
 . $PSScriptRoot/common/build.ps1 `
        -configuration $configuration `
        -platform $platform `
