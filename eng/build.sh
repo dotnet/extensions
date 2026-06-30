@@ -133,7 +133,7 @@ if [[ "$hasWarnAsError" == false ]]; then
   properties="$properties --warnAsError false"
 fi
 
-"$DIR/common/build.sh" /graph $properties
+"$DIR/common/build.sh" $properties
 
 
 # Perform code coverage as the last operation, this enables the following scenarios:
