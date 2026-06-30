@@ -18,6 +18,7 @@ using Xunit;
 #pragma warning disable IDE0004 // Remove Unnecessary Cast
 #pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S107 // Methods should not have too many parameters
+#pragma warning disable S1144 // Unused private types or members should be removed (override methods are invoked via reflection)
 #pragma warning disable S2760 // Sequential tests should not check the same condition
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
@@ -1066,6 +1067,40 @@ public partial class AIFunctionFactoryTest
 
         [return: Description("The summed result")]
         static int Add(int a, int b) => a + b;
+    }
+
+    [Fact]
+    public void AIFunctionFactory_InheritedDescriptionAttributes_OnOverride()
+    {
+        MethodInfo overrideMethod = typeof(DerivedDescribed).GetMethod(nameof(DerivedDescribed.Compute))!;
+        AIFunction f = AIFunctionFactory.Create(overrideMethod, new DerivedDescribed());
+
+        Assert.Equal("The compute method", f.Description);
+
+        JsonElement valueParam = f.JsonSchema.GetProperty("properties").GetProperty("value");
+        Assert.Equal("The input value", valueParam.GetProperty("description").GetString());
+
+        Assert.NotNull(f.ReturnJsonSchema);
+        Assert.Equal("integer", f.ReturnJsonSchema!.Value.GetProperty("type").GetString());
+#if NET
+        // On modern .NET the return-parameter inheritance walk is fixed, so the inherited description is read.
+        Assert.Equal("The computed result", f.ReturnJsonSchema!.Value.GetProperty("description").GetString());
+#else
+        // On .NET Framework the inherited return-parameter description cannot be read and is silently dropped.
+        Assert.False(f.ReturnJsonSchema!.Value.TryGetProperty("description", out _));
+#endif
+    }
+
+    private abstract class BaseDescribed
+    {
+        [Description("The compute method")]
+        [return: Description("The computed result")]
+        public abstract int Compute([Description("The input value")] int value);
+    }
+
+    private sealed class DerivedDescribed : BaseDescribed
+    {
+        public override int Compute(int value) => value;
     }
 
     [Fact]

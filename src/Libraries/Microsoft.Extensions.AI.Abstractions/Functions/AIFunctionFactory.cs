@@ -1003,7 +1003,7 @@ public static partial class AIFunctionFactory
                 // If the parameter is required and there's no argument specified for it, throw.
                 if (!hasDefaultValue)
                 {
-                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{parameter.Name}'.");
+                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{argumentName}'.");
                 }
 
                 // Otherwise, use the optional parameter's default value.
@@ -1221,9 +1221,11 @@ public static partial class AIFunctionFactory
             {
                 return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
             }
-            catch (Exception e) when (e is ArgumentNullException or NullReferenceException)
+            catch (Exception e) when (e is ArgumentNullException or NullReferenceException or IndexOutOfRangeException)
             {
-                // DynamicMethod return parameters don't support GetCustomAttribute.
+                // DynamicMethod return parameters don't support GetCustomAttribute. Additionally, on .NET Framework,
+                // querying inherited attributes on the return parameter of an overriding method can throw
+                // IndexOutOfRangeException. In either case, treat the description as absent.
                 return null;
             }
         }
