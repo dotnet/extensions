@@ -30,7 +30,7 @@ public sealed class ToolApprovalResponseContent : InputResponseContent
     }
 
     /// <summary>
-    /// Gets a value indicating whether the tool call was approved for execution.
+    /// Gets a value that indicates whether the tool call was approved for execution.
     /// </summary>
     public bool Approved { get; }
 

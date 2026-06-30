@@ -88,7 +88,7 @@ public class FunctionInvocationContext
     public bool Terminate { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the function invocation is occurring as part of a
+    /// Gets or sets a value that indicates whether the function invocation is occurring as part of a
     /// <see cref="IChatClient.GetStreamingResponseAsync"/> call as opposed to a <see cref="IChatClient.GetResponseAsync"/> call.
     /// </summary>
     public bool IsStreaming { get; set; }

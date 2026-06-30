@@ -34,12 +34,12 @@ public readonly struct AIJsonSchemaTransformContext
     public string? PropertyName => Path is [.., "properties", string name] ? name : null;
 
     /// <summary>
-    /// Gets a value indicating whether the current schema is a collection element.
+    /// Gets a value that indicates whether the current schema is a collection element.
     /// </summary>
     public bool IsCollectionElementSchema => Path is [.., "items"];
 
     /// <summary>
-    /// Gets a value indicating whether the current schema is a dictionary value.
+    /// Gets a value that indicates whether the current schema is a dictionary value.
     /// </summary>
     public bool IsDictionaryValueSchema => Path is [.., "additionalProperties"];
 }
