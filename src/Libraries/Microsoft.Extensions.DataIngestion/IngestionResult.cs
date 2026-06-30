@@ -27,7 +27,7 @@ public sealed class IngestionResult
     public Exception? Exception { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the ingestion succeeded.
+    /// Gets a value that indicates whether the ingestion succeeded.
     /// </summary>
     public bool Succeeded => Exception is null;
 

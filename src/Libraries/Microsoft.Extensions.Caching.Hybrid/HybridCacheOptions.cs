@@ -21,7 +21,7 @@ public class HybridCacheOptions
     public HybridCacheEntryOptions? DefaultEntryOptions { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether compression for this <see cref="HybridCache"/> instance is disabled.
+    /// Gets or sets a value that indicates whether compression for this <see cref="HybridCache"/> instance is disabled.
     /// </summary>
     public bool DisableCompression { get; set; }
 

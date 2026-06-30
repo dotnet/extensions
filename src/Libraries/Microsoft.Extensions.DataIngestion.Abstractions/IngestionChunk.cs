@@ -60,7 +60,7 @@ public sealed class IngestionChunk<T>
     public string? Context { get; }
 
     /// <summary>
-    /// Gets a value indicating whether this chunk has metadata.
+    /// Gets a value that indicates whether this chunk has metadata.
     /// </summary>
     public bool HasMetadata => _metadata?.Count > 0;
 

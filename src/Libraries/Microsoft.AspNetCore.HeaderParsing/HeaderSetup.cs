@@ -31,7 +31,7 @@ public class HeaderSetup<THeader>
     public HeaderParser<THeader>? ParserInstance { get; }
 
     /// <summary>
-    /// Gets a value indicating whether this header's parsed values can and/or should be cached.
+    /// Gets a value that indicates whether this header's parsed values can and/or should be cached.
     /// </summary>
     public bool Cacheable { get; }
 

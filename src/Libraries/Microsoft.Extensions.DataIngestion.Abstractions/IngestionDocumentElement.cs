@@ -55,7 +55,7 @@ public abstract class IngestionDocumentElement
     public int? PageNumber { get; set; }
 
     /// <summary>
-    /// Gets a value indicating whether this element has metadata.
+    /// Gets a value that indicates whether this element has metadata.
     /// </summary>
     public bool HasMetadata => _metadata?.Count > 0;
 
