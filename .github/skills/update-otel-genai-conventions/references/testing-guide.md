@@ -142,6 +142,26 @@ Test that attributes are omitted (not set to empty/default) when the source data
 
 When an attribute appears on both spans and metrics, ensure tests verify both emission points.
 
+## Per-area test files
+
+When a single instrumented client consumes attributes from multiple
+upstream areas in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)
+(e.g. `OpenTelemetryChatClient` consumes `gen-ai/*` plus, in some
+provider packages, `openai/*`), the test file still lives **with the
+client**. Do not split tests by upstream area — keep all assertions for a
+given client in that client's test file.
+
+Provider-specific attributes (`openai.*`, `anthropic.*`,
+`aws-bedrock.*`, `azure-ai-inference.*`) are tested in the corresponding
+provider package's test project (e.g.
+`test/Libraries/Microsoft.Extensions.AI.OpenAI.Tests/` for `openai.*`).
+For `anthropic.*` and `aws-bedrock.*` the corresponding provider
+package — and therefore its test project — lives in another dotnet SDK
+repo we contribute to: [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp)
+and the `BedrockRuntime` library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net),
+respectively (see [SKILL.md §Cross-repo applicability](../SKILL.md#cross-repo-applicability));
+follow that repo's own test layout when running this skill there.
+
 ## Build and Test Commands
 
 See [build-commands.md](build-commands.md) for the canonical Windows and Linux/macOS forms, including the faster `dotnet test --filter` invocation for inner-loop iteration.
