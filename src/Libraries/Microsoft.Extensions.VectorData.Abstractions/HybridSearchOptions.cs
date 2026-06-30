@@ -5,6 +5,8 @@ using System;
 using System.Linq.Expressions;
 using Microsoft.Shared.Diagnostics;
 
+#warning Synthetic warning for public pipeline validation
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
