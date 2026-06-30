@@ -29,7 +29,10 @@ public class DnsServiceEndpointProviderOptions
     public double RetryBackOffFactor { get; set; } = 2;
 
     /// <summary>
-    /// Gets or sets a delegate used to determine whether to apply host name metadata to each resolved endpoint. Defaults to <c>false</c>.
+    /// Gets or sets a delegate used to determine whether to apply host name metadata to each resolved endpoint.
     /// </summary>
+    /// <remarks>
+    /// The default delegate returns <see langword="false"/>.
+    /// </remarks>
     public Func<ServiceEndpoint, bool> ShouldApplyHostNameMetadata { get; set; } = _ => false;
 }
