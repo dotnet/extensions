@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.Extensions.DataIngestion;
 
 /// <summary>
@@ -25,19 +23,15 @@ internal static class IngestionDocumentElementExtensions
         if (element is IngestionDocumentImage image)
         {
             string? description = image.AlternativeText ?? image.Text;
-            if (!string.IsNullOrEmpty(description) && image.Address is not null)
+            if (!string.IsNullOrEmpty(description))
             {
-                return $"![{description}]({image.Address.OriginalString})";
-            }
+                if (image.Address is not null)
+                {
+                    return $"![{description}]({image.Address.OriginalString})";
+                }
 
-            string? markdown = element.GetMarkdown();
-            if (string.IsNullOrEmpty(description) && image.Address is null
-                && markdown is not null && markdown.Contains("data:", StringComparison.Ordinal))
-            {
                 return description;
             }
-
-            return markdown;
         }
 
         return element.GetMarkdown();
