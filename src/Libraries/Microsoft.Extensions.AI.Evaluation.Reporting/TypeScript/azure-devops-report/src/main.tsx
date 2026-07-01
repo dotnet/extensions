@@ -53,7 +53,7 @@ const getReportData = async (client: BuildRestClient, project: string, buildId: 
 
 const run = async () => {
 
-  await init();
+  await init({ applyTheme: true });
   await ready();
 
   const config = getConfiguration();
@@ -69,13 +69,11 @@ const run = async () => {
       const scoreSummary = createScoreSummary(dataset);
 
       createRoot(document.getElementById('root')!).render(
-        <FluentProvider theme={webLightTheme}>
-          <StrictMode>
-            <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
-              <App />
-            </ReportContextProvider>
-          </StrictMode>
-        </FluentProvider>
+        <StrictMode>
+          <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary} persistKey={String(build.id)}>
+            <App heightStrategy="auto-grow" themeSource="host" />
+          </ReportContextProvider>
+        </StrictMode>
       );
 
     } catch (e) {

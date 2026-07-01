@@ -4,7 +4,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from '../../components/App.tsx'
-import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { createScoreSummary } from '../../components/Summary.ts';
 import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
@@ -29,11 +28,9 @@ if (!import.meta.env.PROD) {
 const scoreSummary = createScoreSummary(dataset);
 
 createRoot(rootElement).render(
-  <FluentProvider theme={webLightTheme}>
-    <StrictMode>
-      <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
-        <App />
-      </ReportContextProvider>
-    </StrictMode>
-  </FluentProvider>,
+  <StrictMode>
+    <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
+      <App heightStrategy="fill-viewport" themeSource="toggle" />
+    </ReportContextProvider>
+  </StrictMode>,
 )

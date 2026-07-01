@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import uFuzzy from "@leeoniya/ufuzzy";
+import { isLeafFailed } from "./viewModels";
 
 export enum ScoreNodeType {
     Group,
@@ -15,6 +16,7 @@ export type ScoreSummary = {
     executionHistory: Map<string, ScoreNode>;
     nodesByKey: Map<string, Map<string, ScoreNode>>;
     reverseTextIndex: ReverseTextIndex
+    reverseTextIndexByExecution: Map<string, ReverseTextIndex>
 };
 
 export class ScoreNode {
@@ -92,14 +94,7 @@ export class ScoreNode {
 
         if (this.isLeafNode) {
 
-            this.failed = false;
-            for (const metric of Object.values(this.scenario?.evaluationResult.metrics ?? [])) {
-                if ((metric.interpretation && metric.interpretation.failed) ||
-                    (metric.diagnostics && metric.diagnostics.some(d => d.severity === "error"))) {
-                    this.failed = true;
-                    break;
-                }
-            }
+            this.failed = this.scenario ? isLeafFailed(this.scenario) : false;
 
             this.numPassingIterations = this.failed ? 0 : 1;
             this.numFailingIterations = this.failed ? 1 : 0;
@@ -221,27 +216,14 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
     const [primaryResult] = executionHistory.values();
     primaryResult.collapseSingleChildNodes();
 
-    const reverseTextIndex = new ReverseTextIndex();
-
-    // build the reverse text index from searchable strings in the data
-    for (const node of primaryResult.flattenedNodes) {
-        reverseTextIndex.addText(node.nodeKey, node.scenario?.scenarioName);
-        reverseTextIndex.addText(node.nodeKey, node.scenario?.iterationName);
-        for (const message of node.scenario?.messages ?? []) {
-            for (const content of message.contents) {
-                if (isTextContent(content)) {
-                    reverseTextIndex.addText(node.nodeKey, content.text);
-                }
-            }
-        }
-        for (const message of node.scenario?.modelResponse?.messages ?? []) {
-            for (const content of message.contents) {
-                if (isTextContent(content)) {
-                    reverseTextIndex.addText(node.nodeKey, content.text);
-                }
-            }
-        }
+    const reverseTextIndexByExecution = new Map<string, ReverseTextIndex>();
+    for (const [executionName, scoreNode] of executionHistory.entries()) {
+        const index = new ReverseTextIndex();
+        buildReverseTextIndex(index, scoreNode);
+        reverseTextIndexByExecution.set(executionName, index);
     }
+
+    const reverseTextIndex = reverseTextIndexByExecution.get(primaryResult.executionName)!;
 
     return {
         primaryResult,
@@ -249,7 +231,29 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
         executionHistory,
         nodesByKey,
         reverseTextIndex,
+        reverseTextIndexByExecution,
     } as ScoreSummary;
+};
+
+const buildReverseTextIndex = (index: ReverseTextIndex, root: ScoreNode): void => {
+    for (const node of root.flattenedNodes) {
+        index.addText(node.nodeKey, node.scenario?.scenarioName);
+        index.addText(node.nodeKey, node.scenario?.iterationName);
+        for (const message of node.scenario?.messages ?? []) {
+            for (const content of message.contents) {
+                if (isTextContent(content)) {
+                    index.addText(node.nodeKey, content.text);
+                }
+            }
+        }
+        for (const message of node.scenario?.modelResponse?.messages ?? []) {
+            for (const content of message.contents) {
+                if (isTextContent(content)) {
+                    index.addText(node.nodeKey, content.text);
+                }
+            }
+        }
+    }
 };
 
 export const getScoreHistory = (scoreSummary: ScoreSummary, scenario: ScenarioRunResult): Map<string, ScenarioRunResult> => {

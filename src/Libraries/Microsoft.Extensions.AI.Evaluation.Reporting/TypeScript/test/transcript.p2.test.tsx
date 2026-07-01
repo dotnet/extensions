@@ -1,0 +1,70 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+import React from 'react';
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { ReportContextProvider } from '../components/ReportContext';
+import { createScoreSummary, getConversationDisplay } from '../components/Summary';
+import { TranscriptBlock } from '../components/TranscriptBlock';
+import { toolCallDataset, toolCallScenario } from './fixtures/richDataset';
+
+const renderTranscript = (messages: ChatMessage[], modelResponse?: ChatResponse) => {
+    const scoreSummary = createScoreSummary(toolCallDataset);
+    const { messages: display } = getConversationDisplay(messages, modelResponse);
+    return render(
+        <ReportContextProvider dataset={toolCallDataset} scoreSummary={scoreSummary}>
+            <TranscriptBlock messages={display} />
+        </ReportContextProvider>,
+    );
+};
+
+describe('TranscriptBlock — functionCall / functionResult discrimination', () => {
+    it('renders a "Tool call" section with the function name and arguments', () => {
+        renderTranscript(toolCallScenario.messages, toolCallScenario.modelResponse);
+
+        expect(screen.getByText('Tool call')).toBeInTheDocument();
+        expect(screen.getByText('get_current_weather')).toBeInTheDocument();
+        expect(screen.getByText(/Seattle, WA/)).toBeInTheDocument();
+    });
+
+    it('renders a "Tool result" section with the result payload', () => {
+        renderTranscript(toolCallScenario.messages, toolCallScenario.modelResponse);
+
+        expect(screen.getByText('Tool result')).toBeInTheDocument();
+        expect(screen.getByText(/Partly cloudy/)).toBeInTheDocument();
+    });
+
+    it('still renders ordinary text content alongside tool blocks', () => {
+        renderTranscript(toolCallScenario.messages, toolCallScenario.modelResponse);
+
+        expect(screen.getByText(/Let me look that up for you\./)).toBeInTheDocument();
+        expect(screen.getByText(/What is the weather in Seattle right now\?/)).toBeInTheDocument();
+    });
+});
+
+describe('TranscriptBlock — unknown $type degrades gracefully', () => {
+    const mysteryContent = {
+        $type: 'mysteryWidget',
+        payload: { sentinel: 'UNKNOWN_TYPE_SENTINEL', nested: [1, 2, 3] },
+    } as unknown as AIContent;
+
+    const mysteryMessages: ChatMessage[] = [
+        { role: 'user', contents: [{ $type: 'text', text: 'Trigger the mystery.' } as unknown as AIContent] },
+        { role: 'assistant', authorName: 'gpt-4o', contents: [mysteryContent] },
+    ];
+
+    it('does not throw when rendering an unknown content type', () => {
+        expect(() => renderTranscript(mysteryMessages)).not.toThrow();
+    });
+
+    it('serializes the unknown content so its data is still visible', () => {
+        renderTranscript(mysteryMessages);
+        expect(screen.getByText(/UNKNOWN_TYPE_SENTINEL/)).toBeInTheDocument();
+    });
+
+    it('renders the transcript shell (header) even with only unknown content', () => {
+        renderTranscript(mysteryMessages);
+        expect(screen.getByText('Transcript')).toBeInTheDocument();
+    });
+});
