@@ -49,6 +49,7 @@ internal static class DiagnosticIds
         // All AI experiments share a diagnostic ID but have different
         // constants to manage which experiment each API belongs to.
         internal const string AIImageGeneration = AIExperiments;
+        internal const string AIVideoGeneration = AIExperiments;
         internal const string AISpeechToText = AIExperiments;
         internal const string AITextToSpeech = AIExperiments;
         internal const string AIMcpServers = AIExperiments;
@@ -67,6 +68,7 @@ internal static class DiagnosticIds
         internal const string AIOpenAIResponses = "OPENAI001";
         internal const string AIOpenAIAssistants = "OPENAI001";
         internal const string AIOpenAIImageClient = "OPENAI001";
+        internal const string AIOpenAIVideoClient = "OPENAI001";
         internal const string AIOpenAIAudio = "OPENAI001";
         internal const string AIOpenAIReasoning = "OPENAI001";
         internal const string AIOpenAIRealtime = "OPENAI002";

@@ -11,7 +11,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Assistants;
 using OpenAI.Audio;
@@ -21,6 +24,7 @@ using OpenAI.Embeddings;
 using OpenAI.Files;
 using OpenAI.Images;
 using OpenAI.Responses;
+using OpenAI.Videos;
 
 #pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
@@ -183,6 +187,84 @@ public static class OpenAIClientExtensions
     [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
         new OpenAIImageGenerator(imageClient);
+
+    /// <summary>Gets an <see cref="IVideoGenerator"/> for use with this <see cref="VideoClient"/>.</summary>
+    /// <param name="videoClient">The client.</param>
+    /// <param name="modelId">The model ID to use for video generation (e.g. "sora-2").</param>
+    /// <returns>An <see cref="IVideoGenerator"/> that can be used to generate videos via the <see cref="VideoClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="videoClient"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// <para>
+    /// The returned <see cref="IVideoGenerator"/> submits video generation jobs and returns
+    /// <see cref="OpenAIVideoGenerationOperation"/> instances. The endpoint is chosen based on the
+    /// <see cref="VideoGenerationRequest.OperationKind"/> and <see cref="VideoGenerationRequest.SourceVideoId"/>:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>
+    /// <b>Text-to-video</b> (<see cref="VideoOperationKind.Create"/>): Generates a new video from
+    /// the text prompt via <c>POST /videos</c>.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Image-to-video</b> (<see cref="VideoOperationKind.Create"/>): When
+    /// <see cref="VideoGenerationRequest.StartFrame"/> contains image content, uses it as an
+    /// <c>input_reference</c> via <c>POST /videos</c>.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Edit by video ID</b> (<see cref="VideoOperationKind.Edit"/>): When
+    /// <see cref="VideoGenerationRequest.SourceVideoId"/> is set, edits the video via
+    /// <c>POST /videos/edits</c>.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Edit by upload</b> (<see cref="VideoOperationKind.Edit"/>): When
+    /// <see cref="VideoGenerationRequest.SourceVideo"/> contains video content and no
+    /// <see cref="VideoGenerationRequest.SourceVideoId"/> is set, uploads the video for editing.
+    /// </description></item>
+    /// <item><description>
+    /// <b>Extend</b> (<see cref="VideoOperationKind.Extend"/>): When
+    /// <see cref="VideoGenerationRequest.SourceVideoId"/> is set, extends the video via
+    /// <c>POST /videos/extensions</c>.
+    /// </description></item>
+    /// </list>
+    /// <para>
+    /// Character IDs can be included in the create request by passing a <c>characters</c> key
+    /// in <see cref="VideoGenerationOptions.AdditionalProperties"/> as a JSON array. Characters
+    /// can also be uploaded via <see cref="UploadVideoCharacterAsync"/>.
+    /// </para>
+    /// <para>
+    /// Any keys in <see cref="VideoGenerationOptions.AdditionalProperties"/> are forwarded
+    /// as-is to the OpenAI API request body.
+    /// </para>
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIVideoGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IVideoGenerator AsIVideoGenerator(this VideoClient videoClient, string? modelId = null) =>
+        new OpenAIVideoGenerator(videoClient, modelId);
+
+    /// <summary>
+    /// Uploads a character asset from a video for use in subsequent video generation requests.
+    /// </summary>
+    /// <param name="generator">The video generator backed by an OpenAI <see cref="VideoClient"/>.</param>
+    /// <param name="name">The name of the character.</param>
+    /// <param name="videoContent">The video content containing the character.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>The provider-specific character ID that can be passed in
+    /// <see cref="VideoGenerationOptions.AdditionalProperties"/> under the <c>"characters"</c> key.</returns>
+    /// <exception cref="InvalidOperationException">The <paramref name="generator"/> is not
+    /// backed by an OpenAI <see cref="VideoClient"/>.</exception>
+    [Experimental(DiagnosticIds.Experiments.AIVideoGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static Task<string> UploadVideoCharacterAsync(
+        this IVideoGenerator generator,
+        string name,
+        DataContent videoContent,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(generator);
+        _ = Throw.IfNull(videoContent);
+
+        OpenAIVideoGenerator openAIGenerator = generator.GetService<OpenAIVideoGenerator>()
+            ?? throw new InvalidOperationException("The video generator is not backed by an OpenAI VideoClient.");
+
+        return openAIGenerator.UploadVideoCharacterAsync(name, videoContent, cancellationToken);
+    }
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
