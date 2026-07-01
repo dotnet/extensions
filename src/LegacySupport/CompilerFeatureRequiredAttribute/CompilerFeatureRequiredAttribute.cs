@@ -22,7 +22,7 @@ internal sealed class CompilerFeatureRequiredAttribute : Attribute
     public string FeatureName { get; }
 
     /// <summary>
-    /// Gets or initializes a value that indicates whether the compiler can choose to allow access to the location where this attribute is applied if it does not understand <see cref="FeatureName"/>.
+    /// Gets a value that indicates whether the compiler can choose to allow access to the location where this attribute is applied if it does not understand <see cref="FeatureName"/>.
     /// </summary>
     public bool IsOptional { get; init; }
 
