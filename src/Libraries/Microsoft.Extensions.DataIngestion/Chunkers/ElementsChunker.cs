@@ -238,7 +238,7 @@ internal sealed class ElementsChunker
             string? cellContent = table.Cells[rowIndex, columnIndex] switch
             {
                 null => null,
-                IngestionDocumentElement element => element.GetMarkdown()
+                IngestionDocumentElement element => element.GetSemanticContent()
             };
             vsb.Append(cellContent);
             vsb.Append(' ');

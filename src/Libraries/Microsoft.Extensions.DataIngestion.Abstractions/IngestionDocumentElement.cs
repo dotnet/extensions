@@ -211,6 +211,10 @@ public sealed class IngestionDocumentImage : IngestionDocumentElement
     /// <summary>
     /// Gets or sets the address (URL) of the image.
     /// </summary>
+    /// <remarks>
+    /// When provided, chunkers compose full markdown image references (e.g., <c>![alt](url)</c>)
+    /// so that downstream LLMs can present the original image to end users in RAG scenarios.
+    /// </remarks>
     public Uri? Address { get; set; }
 
     /// <summary>
@@ -231,7 +235,6 @@ public sealed class IngestionDocumentImage : IngestionDocumentElement
     /// This property can be used when generating the embedding for the image that is part of larger chunk.
     /// </remarks>
     public string? AlternativeText { get; set; }
-
 }
 
 #pragma warning restore SA1402 // File may only contain a single type
