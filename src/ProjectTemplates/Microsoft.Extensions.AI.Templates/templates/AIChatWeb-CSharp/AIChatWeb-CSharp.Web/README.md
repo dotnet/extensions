@@ -93,6 +93,34 @@ ollama pull all-minilm
 Once the models are installed, you can start using them in your application. Refer to the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/README.md) for detailed instructions on how to explore models locally.
 
 #### ---#endif
+#### ---#if (IsFoundryLocal)
+## Setting up a local environment using Foundry Local
+This project is configured to use Foundry Local, which runs models on your workstation through a local OpenAI-compatible endpoint. It does not need an API key.
+
+### 1. Install Foundry Local
+Install Foundry Local for your operating system by following the [Foundry Local documentation](https://learn.microsoft.com/azure/ai-foundry/foundry-local/).
+
+### 2. Run the app
+The app starts the Foundry Local service for you. On first run, it downloads the configured models, then loads them into the local service.
+
+The default chat model alias is `qwen3-4b`. The default embedding model alias is `qwen3-embedding-0.6b`.
+
+### 3. Override model aliases or the service URL
+You can change the defaults in `appsettings.json`, `appsettings.Development.json`, or user secrets:
+
+```json
+{
+  "FoundryLocal": {
+    "ChatModel": "qwen3-4b",
+    "EmbeddingModel": "qwen3-embedding-0.6b",
+    "ServiceUrl": "http://127.0.0.1:5273"
+  }
+}
+```
+
+Use `FoundryLocal:ServiceUrl` if another local process already uses the default port.
+
+#### ---#endif
 #### ---#if (IsAzureOpenAI)
 ## Using Azure OpenAI
 
