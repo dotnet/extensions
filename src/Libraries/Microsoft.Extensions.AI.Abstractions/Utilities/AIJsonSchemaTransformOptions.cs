@@ -17,27 +17,27 @@ public sealed record class AIJsonSchemaTransformOptions
     public Func<AIJsonSchemaTransformContext, JsonNode, JsonNode>? TransformSchemaNode { get; init; }
 
     /// <summary>
-    /// Gets or initializes a value that indicates whether to convert boolean schemas to equivalent object-based representations.
+    /// Gets a value that indicates whether to convert boolean schemas to equivalent object-based representations.
     /// </summary>
     public bool ConvertBooleanSchemas { get; init; }
 
     /// <summary>
-    /// Gets or initializes a value that indicates whether to generate schemas with the additionalProperties set to false for .NET objects.
+    /// Gets a value that indicates whether to generate schemas with the additionalProperties set to false for .NET objects.
     /// </summary>
     public bool DisallowAdditionalProperties { get; init; }
 
     /// <summary>
-    /// Gets or initializes a value that indicates whether to mark all properties as required in the schema.
+    /// Gets a value that indicates whether to mark all properties as required in the schema.
     /// </summary>
     public bool RequireAllProperties { get; init; }
 
     /// <summary>
-    /// Gets or initializes a value that indicates whether to substitute nullable "type" keywords with OpenAPI 3.0 style "nullable" keywords in the schema.
+    /// Gets a value that indicates whether to substitute nullable "type" keywords with OpenAPI 3.0 style "nullable" keywords in the schema.
     /// </summary>
     public bool UseNullableKeyword { get; init; }
 
     /// <summary>
-    /// Gets or initializes a value that indicates whether to move the default keyword to the description field in the schema.
+    /// Gets a value that indicates whether to move the default keyword to the description field in the schema.
     /// </summary>
     public bool MoveDefaultKeywordToDescription { get; init; }
 
