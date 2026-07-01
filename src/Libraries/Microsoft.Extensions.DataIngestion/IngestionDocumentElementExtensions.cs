@@ -15,10 +15,6 @@ internal static class IngestionDocumentElementExtensions
     /// <returns>The semantic content suitable for embedding generation.</returns>
     internal static string? GetSemanticContent(this IngestionDocumentElement element)
     {
-        return element switch
-        {
-            IngestionDocumentImage image => image.AlternativeText ?? image.Text,
-            _ => element.GetMarkdown()
-        };
+        return element.GetMarkdown();
     }
 }
