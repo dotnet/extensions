@@ -65,7 +65,7 @@ public class HttpLatencyLogEnricherTests
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
         enricher.Enrich(mockEnrichmentPropertyBag.Object, context);
 
-        mockEnrichmentPropertyBag.Verify(m => m.Add(It.Is<string>(s => s.Equals("latencyInfo", StringComparison.Ordinal)), It.Is<string>(s => s.Contains(ld.PerfPanelString)
+        mockEnrichmentPropertyBag.Verify(m => m.Add(It.Is<string>(s => s.Equals("latencyInfo", StringComparison.Ordinal)), It.Is<string>(s => s.Contains(ld.SerializedLatencyData)
         && s.Contains(HttpLatencyLogEnricher.DataVersion))), Times.Once);
     }
 
@@ -87,7 +87,7 @@ public class HttpLatencyLogEnricherTests
         enricher.Enrich(mockEnrichmentPropertyBag.Object, context);
 
         mockEnrichmentPropertyBag.Verify(m => m.Add(It.Is<string>(s => s.Equals("latencyInfo", StringComparison.Ordinal)),
-            It.Is<string>(s => s.Contains(ld.PerfPanelString) && s.Contains(headerName))), Times.Once);
+            It.Is<string>(s => s.Contains(ld.SerializedLatencyData) && s.Contains(headerName))), Times.Once);
     }
 
     private class MockLatencyData
@@ -119,7 +119,7 @@ public class HttpLatencyLogEnricherTests
 
             LatencyData = new LatencyData(_tags, _checkpoints, _measures, 20, 1000);
 
-            PerfPanelString = string.Format(CultureInfo.InvariantCulture, "{0}/,{1}/,{2}/,{3}/,{4}/,{5}/,{6}",
+            SerializedLatencyData = string.Format(CultureInfo.InvariantCulture, "{0}/,{1}/,{2}/,{3}/,{4}/,{5}/,{6}",
                 string.Join("/", _tags.Select(a => a.Name.Replace('/', '_'))),
                 string.Join("/", _tags.Select(a => a.Value.Replace('/', '_'))),
                 string.Join("/", _checkpoints.Select(a => a.Name.Replace('/', '_'))),
@@ -129,7 +129,7 @@ public class HttpLatencyLogEnricherTests
                 (long)Math.Round(((double)LatencyData.DurationTimestamp / LatencyData.DurationTimestampFrequency) * MillisecondsPerSecond));
         }
 
-        public string PerfPanelString { get; private set; }
+        public string SerializedLatencyData { get; private set; }
 
         public LatencyData LatencyData { get; private set; }
     }
