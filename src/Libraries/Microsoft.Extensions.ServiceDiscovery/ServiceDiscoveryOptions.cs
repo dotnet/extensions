@@ -15,8 +15,7 @@ public sealed class ServiceDiscoveryOptions
     /// Gets or sets a value that indicates whether all URI schemes for URIs resolved by the service discovery system are allowed.
     /// </summary>
     /// <value>
-    /// <see langword="true"/> if all URI schemes are allowed; otherwise, <see langword="false"/>.
-    /// <see langword="false"/> if only the schemes specified in <see cref="AllowedSchemes"/> are allowed.
+    /// <see langword="true"/> to allow all URI schemes; <see langword="false"/> to allow only schemes specified in <see cref="AllowedSchemes"/>.
     /// </value>
     public bool AllowAllSchemes { get; set; } = true;
 
