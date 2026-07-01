@@ -63,7 +63,7 @@ public abstract class PropertyModel(string modelName, Type type)
     public Dictionary<string, object?>? ProviderAnnotations { get; set; }
 
     /// <summary>
-    /// Gets a value that indicates whether the property type is nullable.
+    /// Gets a value indicating whether the property type is nullable.
     /// </summary>
     /// <remarks>
     /// For value types, this is <see langword="true"/> when the type is <see cref="Nullable{T}"/>.

@@ -440,7 +440,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
         private readonly IList<VectorStoreDataProperty> _defaultDataProperties;
 
         /// <summary>
-        /// Gets a value that indicates whether the collection is recreated while testing instead of deleting the records.
+        /// Gets a value indicating whether the collection is recreated while testing instead of deleting the records.
         /// </summary>
         /// <remarks>
         /// This is necessary for InMemory, where the .NET type mapped on the collection cannot be changed.

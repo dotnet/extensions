@@ -242,7 +242,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
             };
 
         /// <summary>
-        /// Gets a value that indicates whether the collection is recreated while testing instead of deleting the records.
+        /// Gets a value indicating whether the collection is recreated while testing instead of deleting the records.
         /// </summary>
         /// <remarks>
         /// This is necessary for InMemory, where the .NET type mapped on the collection cannot be changed.
@@ -250,7 +250,7 @@ public abstract class EmbeddingTypeTests<TKey>(EmbeddingTypeTests<TKey>.Fixture 
         public virtual bool RecreateCollection => false;
 
         /// <summary>
-        /// Gets a value that indicates whether to assert that no vectors were loaded when embedding generation is used.
+        /// Gets a value indicating whether to assert that no vectors were loaded when embedding generation is used.
         /// </summary>
         /// <remarks>
         /// Asserting that no vectors were loaded is necessary for InMemory, which returns the same object that was inserted and therefore contains
