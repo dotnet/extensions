@@ -1,0 +1,31 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
+
+namespace Microsoft.Extensions.AI;
+
+/// <summary>Represents an image or figure extracted from a page during OCR.</summary>
+/// <remarks>
+/// Populated when <see cref="OcrOptions.IncludeImages"/> is requested and the engine supports it. Every
+/// member is optional so each implementer fills what it can provide: document-native engines (for
+/// example Mistral OCR inline images, or Azure Document Intelligence figures) populate <see cref="Content"/>
+/// with the rendered image bytes, whereas a vision-LLM transcriber that cannot emit bytes may instead
+/// populate only <see cref="Caption"/>. This lets one shape serve both provider archetypes.
+/// </remarks>
+[Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
+public sealed class OcrImage
+{
+    /// <summary>Gets or sets the rendered image bytes, when the engine returns them.</summary>
+    public DataContent? Content { get; set; }
+
+    /// <summary>Gets or sets the region of the page the image occupies, when the engine provides geometry.</summary>
+    public OcrBoundingRegion? BoundingRegion { get; set; }
+
+    /// <summary>Gets or sets a caption or description of the image, when available.</summary>
+    public string? Caption { get; set; }
+
+    /// <summary>Gets or sets the confidence for the image in the range [0, 1], when available.</summary>
+    public double? Confidence { get; set; }
+}

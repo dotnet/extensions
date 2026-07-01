@@ -34,6 +34,9 @@ public sealed class OcrPage
     /// <summary>Gets or sets the layout blocks with bounding regions and confidence, when the engine provides them.</summary>
     public IReadOnlyList<OcrBlock> Blocks { get; set; } = [];
 
+    /// <summary>Gets or sets the images or figures extracted from this page, when requested and the engine provides them.</summary>
+    public IReadOnlyList<OcrImage> Images { get; set; } = [];
+
     /// <summary>Gets or sets the page-level confidence in the range [0, 1], when available.</summary>
     public double? Confidence { get; set; }
 
