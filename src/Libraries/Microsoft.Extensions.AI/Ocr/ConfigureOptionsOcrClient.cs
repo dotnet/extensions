@@ -36,14 +36,14 @@ public sealed class ConfigureOptionsOcrClient : DelegatingOcrClient
     }
 
     /// <inheritdoc/>
-    public override async Task<OcrResult> GetTextAsync(
+    public override async Task<OcrResult> ExtractAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
         IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        return await base.GetTextAsync(document, mediaType, Configure(options), progress, cancellationToken);
+        return await base.ExtractAsync(document, mediaType, Configure(options), progress, cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="OcrOptions"/> to pass along to the inner client.</summary>

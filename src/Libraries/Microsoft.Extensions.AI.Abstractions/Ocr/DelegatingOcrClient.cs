@@ -39,14 +39,14 @@ public class DelegatingOcrClient : IOcrClient
     }
 
     /// <inheritdoc />
-    public virtual Task<OcrResult> GetTextAsync(
+    public virtual Task<OcrResult> ExtractAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
         IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        return InnerClient.GetTextAsync(document, mediaType, options, progress, cancellationToken);
+        return InnerClient.ExtractAsync(document, mediaType, options, progress, cancellationToken);
     }
 
     /// <inheritdoc />

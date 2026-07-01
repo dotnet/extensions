@@ -27,9 +27,9 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// Unless otherwise specified, all members of <see cref="IOcrClient"/> are thread-safe for concurrent
-/// use. Implementations might mutate the <see cref="OcrOptions"/> supplied to <see cref="GetTextAsync"/>;
+/// use. Implementations might mutate the <see cref="OcrOptions"/> supplied to <see cref="ExtractAsync"/>;
 /// consumers should avoid sharing a single options instance across concurrent invocations when that is a
-/// concern. The document stream passed to <see cref="GetTextAsync"/> is not disposed by the implementation.
+/// concern. The document stream passed to <see cref="ExtractAsync"/> is not disposed by the implementation.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -47,7 +47,7 @@ public interface IOcrClient : IDisposable
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The structured OCR result.</returns>
-    Task<OcrResult> GetTextAsync(
+    Task<OcrResult> ExtractAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,

@@ -96,7 +96,7 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>
-    public override async Task<OcrResult> GetTextAsync(
+    public override async Task<OcrResult> ExtractAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
@@ -113,7 +113,7 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         Exception? error = null;
         try
         {
-            response = await base.GetTextAsync(document, mediaType, options, progress, cancellationToken);
+            response = await base.ExtractAsync(document, mediaType, options, progress, cancellationToken);
             return response;
         }
         catch (Exception ex)

@@ -53,7 +53,7 @@ public partial class LoggingOcrClient : DelegatingOcrClient
     }
 
     /// <inheritdoc/>
-    public override async Task<OcrResult> GetTextAsync(
+    public override async Task<OcrResult> ExtractAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
@@ -64,27 +64,27 @@ public partial class LoggingOcrClient : DelegatingOcrClient
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(GetTextAsync), mediaType, AsJson(options), AsJson(this.GetService<OcrClientMetadata>()));
+                LogInvokedSensitive(nameof(ExtractAsync), mediaType, AsJson(options), AsJson(this.GetService<OcrClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(GetTextAsync));
+                LogInvoked(nameof(ExtractAsync));
             }
         }
 
         try
         {
-            var result = await base.GetTextAsync(document, mediaType, options, progress, cancellationToken);
+            var result = await base.ExtractAsync(document, mediaType, options, progress, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogCompletedSensitive(nameof(GetTextAsync), AsJson(result));
+                    LogCompletedSensitive(nameof(ExtractAsync), AsJson(result));
                 }
                 else
                 {
-                    LogCompleted(nameof(GetTextAsync));
+                    LogCompleted(nameof(ExtractAsync));
                 }
             }
 
@@ -92,12 +92,12 @@ public partial class LoggingOcrClient : DelegatingOcrClient
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(GetTextAsync));
+            LogInvocationCanceled(nameof(ExtractAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(GetTextAsync), ex);
+            LogInvocationFailed(nameof(ExtractAsync), ex);
             throw;
         }
     }

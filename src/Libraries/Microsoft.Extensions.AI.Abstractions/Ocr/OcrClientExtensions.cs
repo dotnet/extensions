@@ -41,7 +41,7 @@ public static class OcrClientExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The structured OCR result.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="document"/> is <see langword="null"/>.</exception>
-    public static Task<OcrResult> GetTextAsync(
+    public static Task<OcrResult> ExtractAsync(
         this IOcrClient client,
         DataContent document,
         OcrOptions? options = null,
@@ -55,7 +55,7 @@ public static class OcrClientExtensions
             new MemoryStream(array.Array!, array.Offset, array.Count) :
             new MemoryStream(document.Data.ToArray());
 
-        return client.GetTextAsync(documentStream, document.MediaType, options, progress, cancellationToken);
+        return client.ExtractAsync(documentStream, document.MediaType, options, progress, cancellationToken);
     }
 
     /// <summary>Runs OCR over a single document referenced by a <see cref="UriContent"/>.</summary>
@@ -76,7 +76,7 @@ public static class OcrClientExtensions
     /// For those, read the bytes yourself and pass a <see cref="Stream"/> or <see cref="DataContent"/>, or
     /// use an engine that accepts a URL directly.
     /// </remarks>
-    public static Task<OcrResult> GetTextAsync(
+    public static Task<OcrResult> ExtractAsync(
         this IOcrClient client,
         UriContent document,
         OcrOptions? options = null,
@@ -90,7 +90,7 @@ public static class OcrClientExtensions
         if (uri.IsAbsoluteUri && string.Equals(uri.Scheme, "data", StringComparison.OrdinalIgnoreCase))
         {
             // Reuse DataContent's data: URI parsing, then defer to the DataContent overload.
-            return client.GetTextAsync(new DataContent(uri), options, progress, cancellationToken);
+            return client.ExtractAsync(new DataContent(uri), options, progress, cancellationToken);
         }
 
         throw new NotSupportedException(
