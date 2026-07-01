@@ -124,29 +124,36 @@ internal static class MarkdownParser
             result.AlternativeText = literal.Content.ToString();
         }
 
-        if (link.Url is not null && link.Url.StartsWith("data:image/", StringComparison.Ordinal))
+        if (link.Url is not null)
         {
-            // Parse the data URL format: data:image/{type};base64,{data}
-            ReadOnlySpan<char> url = link.Url.AsSpan("data:".Length);
-
-            // Find the semicolon that separates media type from encoding
-            int semicolonIndex = url.IndexOf(';');
-            if (semicolonIndex > 0)
+            if (link.Url.StartsWith("data:image/", StringComparison.Ordinal))
             {
-                ReadOnlySpan<char> mediaType = url.Slice(0, semicolonIndex);
+                // Parse the data URL format: data:image/{type};base64,{data}
+                ReadOnlySpan<char> url = link.Url.AsSpan("data:".Length);
 
-                // Find the comma that separates encoding from data
-                int commaIndex = url.IndexOf(',');
-                if (commaIndex > semicolonIndex)
+                // Find the semicolon that separates media type from encoding
+                int semicolonIndex = url.IndexOf(';');
+                if (semicolonIndex > 0)
                 {
-                    // Check if it's base64 encoded
-                    ReadOnlySpan<char> encoding = url.Slice(semicolonIndex + 1, commaIndex - semicolonIndex - 1);
-                    if (encoding.SequenceEqual("base64".AsSpan()))
+                    ReadOnlySpan<char> mediaType = url.Slice(0, semicolonIndex);
+
+                    // Find the comma that separates encoding from data
+                    int commaIndex = url.IndexOf(',');
+                    if (commaIndex > semicolonIndex)
                     {
-                        result.Content = Convert.FromBase64String(url.Slice(commaIndex + 1).ToString());
-                        result.MediaType = mediaType.ToString();
+                        // Check if it's base64 encoded
+                        ReadOnlySpan<char> encoding = url.Slice(semicolonIndex + 1, commaIndex - semicolonIndex - 1);
+                        if (encoding.SequenceEqual("base64".AsSpan()))
+                        {
+                            result.Content = Convert.FromBase64String(url.Slice(commaIndex + 1).ToString());
+                            result.MediaType = mediaType.ToString();
+                        }
                     }
                 }
+            }
+            else
+            {
+                result.Address = new Uri(link.Url, UriKind.RelativeOrAbsolute);
             }
         }
 

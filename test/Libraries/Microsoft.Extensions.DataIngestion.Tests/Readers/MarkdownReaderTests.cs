@@ -134,12 +134,52 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.Equal(contentType1, images[0].MediaType);
         Assert.Equal(imageBytes1, images[0].Content?.ToArray());
         Assert.Equal("One", images[0].AlternativeText);
+        Assert.Null(images[0].Address);
         Assert.Equal(contentType2, images[1].MediaType);
         Assert.Equal(imageBytes2, images[1].Content?.ToArray());
         Assert.Equal("Two", images[1].AlternativeText);
+        Assert.Null(images[1].Address);
         Assert.Equal(contentType3, images[2].MediaType);
         Assert.Equal(imageBytes3, images[2].Content?.ToArray());
         Assert.Equal("Three", images[2].AlternativeText);
+        Assert.Null(images[2].Address);
+    }
+
+    [ConditionalFact]
+    public async Task SupportsImagesWithUrl()
+    {
+        string markdownContent = """
+        # Images with URLs
+
+        ![A smiling octocat](https://myoctocat.com/assets/images/base-octocat.svg)
+
+        ![](relative/path/image.png)
+
+        ![Logo](https://example.com/logo.png)
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        Assert.NotNull(document);
+        var images = document.EnumerateContent().OfType<IngestionDocumentImage>().ToArray();
+        Assert.Equal(3, images.Length);
+
+        // Image with absolute URL and alt text
+        Assert.Equal("A smiling octocat", images[0].AlternativeText);
+        Assert.Equal(new Uri("https://myoctocat.com/assets/images/base-octocat.svg"), images[0].Address);
+        Assert.Null(images[0].Content);
+        Assert.Null(images[0].MediaType);
+        Assert.Equal("![A smiling octocat](https://myoctocat.com/assets/images/base-octocat.svg)", images[0].GetMarkdown());
+
+        // Image with relative URL and no alt text
+        Assert.Null(images[1].AlternativeText);
+        Assert.Equal(new Uri("relative/path/image.png", UriKind.Relative), images[1].Address);
+        Assert.Null(images[1].Content);
+
+        // Image with absolute URL and alt text
+        Assert.Equal("Logo", images[2].AlternativeText);
+        Assert.Equal(new Uri("https://example.com/logo.png"), images[2].Address);
+        Assert.Equal("![Logo](https://example.com/logo.png)", images[2].GetMarkdown());
     }
 
     [ConditionalFact]

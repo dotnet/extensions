@@ -211,7 +211,7 @@ public sealed class IngestionDocumentImage : IngestionDocumentElement
     /// <summary>
     /// Gets or sets the address (URL) of the image.
     /// </summary>
-    public string? Address { get; set; }
+    public Uri? Address { get; set; }
 
     /// <summary>
     /// Gets or sets the binary content of the image.
@@ -243,7 +243,7 @@ public sealed class IngestionDocumentImage : IngestionDocumentElement
 
         if (Address is not null)
         {
-            return $"![{description}]({Address})";
+            return $"![{description}]({Address.OriginalString})";
         }
 
         return description;
