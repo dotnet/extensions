@@ -54,7 +54,7 @@ public sealed record class AIJsonSchemaCreateOptions
     public AIJsonSchemaTransformOptions? TransformOptions { get; init; }
 
     /// <summary>
-    /// Gets a value that indicates whether to include the $schema keyword in created schemas.
+    /// Gets a value indicating whether to include the $schema keyword in created schemas.
     /// </summary>
     public bool IncludeSchemaKeyword { get; init; }
 }
