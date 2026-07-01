@@ -50,6 +50,7 @@ steps:
             -configuration ${{ parameters.buildConfig }}
             -warnAsError ${{ parameters.warnAsError }}
             /bl:${{ parameters.repoLogPath }}/build.binlog
+            /graph
             $(_OfficialBuildIdArgs)
     displayName: Build
 
