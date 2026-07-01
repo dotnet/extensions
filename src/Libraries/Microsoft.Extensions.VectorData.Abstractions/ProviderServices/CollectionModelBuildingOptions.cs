@@ -14,17 +14,17 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 public sealed class CollectionModelBuildingOptions
 {
     /// <summary>
-    /// Gets a value that indicates whether multiple vector properties are supported.
+    /// Gets a value indicating whether multiple vector properties are supported.
     /// </summary>
     public required bool SupportsMultipleVectors { get; init; }
 
     /// <summary>
-    /// Gets a value that indicates whether at least one vector property is required.
+    /// Gets a value indicating whether at least one vector property is required.
     /// </summary>
     public required bool RequiresAtLeastOneVector { get; init; }
 
     /// <summary>
-    /// Gets a value that indicates whether an external serializer will be used (for example, System.Text.Json).
+    /// Gets a value indicating whether an external serializer will be used (for example, System.Text.Json).
     /// </summary>
     public bool UsesExternalSerializer { get; init; }
 

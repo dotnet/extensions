@@ -16,13 +16,13 @@ public abstract class TestStore
     private VectorStore? _defaultVectorStore;
 
     /// <summary>
-    /// Gets a value that indicates whether vectors returned from the database can be
+    /// Gets a value indicating whether vectors returned from the database can be
     /// compared with the original vectors.
     /// </summary>
     public virtual bool VectorsComparable => true;
 
     /// <summary>
-    /// Gets a value that indicates whether the database supports filtering by score threshold in vector search.
+    /// Gets a value indicating whether the database supports filtering by score threshold in vector search.
     /// </summary>
     public virtual bool SupportsScoreThreshold => true;
 
