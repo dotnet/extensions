@@ -23,15 +23,12 @@ internal static class IngestionDocumentElementExtensions
         if (element is IngestionDocumentImage image)
         {
             string? description = image.AlternativeText ?? image.Text;
-            if (!string.IsNullOrEmpty(description))
+            if (!string.IsNullOrEmpty(description) && image.Address is not null)
             {
-                if (image.Address is not null)
-                {
-                    return $"![{description}]({image.Address.OriginalString})";
-                }
-
-                return description;
+                return $"![{description}]({image.Address.OriginalString})";
             }
+
+            return description;
         }
 
         return element.GetMarkdown();
