@@ -63,7 +63,7 @@ public sealed class SemanticSimilarityChunker : IngestionChunker
 
         foreach (IngestionDocumentElement element in documents.EnumerateContent())
         {
-            string? semanticContent = element.GetMarkdown();
+            string? semanticContent = element.GetSemanticContent();
 
             if (!string.IsNullOrEmpty(semanticContent))
             {

@@ -52,7 +52,7 @@ internal sealed class ElementsChunker
         for (int elementIndex = 0; elementIndex < elements.Count; elementIndex++)
         {
             IngestionDocumentElement element = elements[elementIndex];
-            string? semanticContent = element.GetMarkdown();
+            string? semanticContent = element.GetSemanticContent();
 
             if (string.IsNullOrEmpty(semanticContent))
             {

@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
             foreach (IngestionDocumentElement element in document.EnumerateContent())
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                string? elementContent = element.GetMarkdown();
+                string? elementContent = element.GetSemanticContent();
                 if (string.IsNullOrEmpty(elementContent))
                 {
                     continue;

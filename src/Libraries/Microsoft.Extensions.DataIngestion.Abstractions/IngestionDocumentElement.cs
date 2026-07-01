@@ -232,22 +232,6 @@ public sealed class IngestionDocumentImage : IngestionDocumentElement
     /// </remarks>
     public string? AlternativeText { get; set; }
 
-    /// <inheritdoc/>
-    public override string GetMarkdown()
-    {
-        string? description = AlternativeText ?? Text;
-        if (description is null)
-        {
-            return _markdown;
-        }
-
-        if (Address is not null)
-        {
-            return $"![{description}]({Address.OriginalString})";
-        }
-
-        return description;
-    }
 }
 
 #pragma warning restore SA1402 // File may only contain a single type
