@@ -34,7 +34,7 @@ internal readonly struct HttpRouteParameter
     public string Value { get; }
 
     /// <summary>
-    /// Gets a value that indicates whether the parameter value is redacted.
+    /// Gets a value indicating whether the parameter value is redacted.
     /// </summary>
     public bool IsRedacted { get; }
 }

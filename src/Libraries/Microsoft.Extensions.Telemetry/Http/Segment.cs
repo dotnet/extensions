@@ -54,7 +54,7 @@ internal readonly struct Segment
     public string Content { get; } = string.Empty;
 
     /// <summary>
-    /// Gets a value that indicates whether the segment is a parameter.
+    /// Gets a value indicating whether the segment is a parameter.
     /// </summary>
     public bool IsParam { get; }
 
@@ -69,7 +69,7 @@ internal readonly struct Segment
     public string DefaultValue { get; } = string.Empty;
 
     /// <summary>
-    /// Gets a value that indicates whether the segment is a catch-all parameter.
+    /// Gets a value indicating whether the segment is a catch-all parameter.
     /// </summary>
     public bool IsCatchAll { get; }
 

@@ -112,7 +112,7 @@ public class FakeLogRecord
     public string? Category { get; }
 
     /// <summary>
-    /// Gets a value that indicates whether the log level was enabled or disabled when this record was collected.
+    /// Gets a value indicating whether the log level was enabled or disabled when this record was collected.
     /// </summary>
     public bool LevelEnabled { get; }
 
