@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Logging.Internal;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
@@ -65,7 +66,10 @@ public static class HttpClientLoggingServiceCollectionExtensions
 
         _ = services
             .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
-            .Bind(section);
+            .Services.AddSingleton<IConfigureOptions<LoggingOptions>>(
+                new LoggingOptionsConfigureOptions(section))
+            .AddSingleton<IOptionsChangeTokenSource<LoggingOptions>>(
+                new ConfigurationChangeTokenSource<LoggingOptions>(section));
 
         return services.AddExtendedHttpClientLogging();
     }
