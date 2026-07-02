@@ -187,6 +187,18 @@ public class AINameAttributeTest
         Assert.DoesNotContain("#/properties/a/b~c", schema);
     }
 
+    [Fact]
+    public void DuplicateNames_Throw()
+    {
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
+            ([AIName("dup")] string first, [AIName("dup")] string second) => first + second));
+        Assert.Contains("dup", ex.Message);
+
+        ArgumentException ex2 = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
+            ([AIName("filter")] string select, string filter) => select + filter));
+        Assert.Contains("filter", ex2.Message);
+    }
+
     private abstract class MyBaseType
     {
         public abstract string Method([AIName("my_param")] string myParam);

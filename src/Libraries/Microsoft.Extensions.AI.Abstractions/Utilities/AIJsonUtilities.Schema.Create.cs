@@ -130,6 +130,11 @@ public static partial class AIJsonUtilities
                 inferenceOptions);
 
             string parameterSchemaName = GetParameterSchemaName(parameter);
+            if (parameterSchemas.ContainsKey(parameterSchemaName))
+            {
+                Throw.ArgumentException(nameof(method), $"Multiple parameters are mapped to the same name '{parameterSchemaName}'. Ensure that any {nameof(AINameAttribute)} values do not collide with each other or with other parameter names.");
+            }
+
             parameterSchemas.Add(parameterSchemaName, parameterSchema);
             bool isRequired = !parameter.IsOptional && !hasDefaultValue;
 #if NET || NETFRAMEWORK
