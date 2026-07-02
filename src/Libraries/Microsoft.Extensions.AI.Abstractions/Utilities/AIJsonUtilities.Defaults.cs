@@ -139,6 +139,12 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(ImageGenerationOptions))]
     [JsonSerializable(typeof(ImageGenerationResponse))]
 
+    // IOcrClient
+    [JsonSerializable(typeof(OcrOptions))]
+    [JsonSerializable(typeof(OcrClientMetadata))]
+    [JsonSerializable(typeof(OcrResult))]
+    [JsonSerializable(typeof(OcrProgress))]
+
     // IHostedFileClient
     [JsonSerializable(typeof(HostedFileClientOptions))]
     [JsonSerializable(typeof(HostedFileClientMetadata))]
