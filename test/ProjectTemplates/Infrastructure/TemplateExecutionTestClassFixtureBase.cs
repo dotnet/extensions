@@ -159,6 +159,8 @@ public abstract class TemplateExecutionTestClassFixtureBase : IAsyncLifetime
 
     public ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
+
         // Only here to implement IAsyncLifetime. Not currently used.
         return ValueTask.CompletedTask;
     }
