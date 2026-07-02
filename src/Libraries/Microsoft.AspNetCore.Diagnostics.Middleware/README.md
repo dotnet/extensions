@@ -108,6 +108,35 @@ app.UseRequestCheckpoint();
 app.UseRequestLatencyTelemetry();
 ```
 
+#### Enriching HTTP Request Logs with Latency Data
+
+This enricher appends the latency data collected for an incoming request (checkpoints, tags, measures, and total duration) to that request's HTTP log. It reads the per-request latency context populated by `AddRequestLatencyTelemetry`, so register the latency telemetry services and middleware as shown above.
+
+This API is only available for ASP.NET Core 8+.
+
+The enricher can be registered using the following method:
+
+```csharp
+public static IServiceCollection AddHttpLatencyTelemetry(this IServiceCollection services)
+```
+
+For example:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRequestLatencyTelemetry();
+builder.Services.AddRequestCheckpoint();
+builder.Services.AddHttpLatencyTelemetry();
+builder.Services.AddHttpLoggingRedaction();
+
+var app = builder.Build();
+
+app.UseRequestCheckpoint();
+app.UseHttpLogging();
+app.UseRequestLatencyTelemetry();
+```
+
 ### HTTP Request Logs Enrichment and Redaction
 
 These components enable enriching and redacting ASP.NET Core's [HTTP request logs](https://learn.microsoft.com/aspnet/core/fundamentals/http-logging/).
