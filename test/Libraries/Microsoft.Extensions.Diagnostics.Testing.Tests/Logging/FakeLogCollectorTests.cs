@@ -1,11 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Globalization;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing.Test.Logging;
 
@@ -14,6 +13,15 @@ public partial class FakeLogCollectorTests
     private class Output : ITestOutputHelper
     {
         public string Last { get; private set; } = string.Empty;
+        public string Output1 => Last;
+        string ITestOutputHelper.Output => Output1;
+
+        public void Write(string message)
+        {
+            Last += message;
+        }
+
+        public void Write(string format, params object[] args) => Write(string.Format(CultureInfo.InvariantCulture, format, args));
 
         public void WriteLine(string message)
         {

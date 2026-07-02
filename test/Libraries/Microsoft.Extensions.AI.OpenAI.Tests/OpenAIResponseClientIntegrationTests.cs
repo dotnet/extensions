@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
 using OpenAI.Responses;
 using Xunit;
 
@@ -31,7 +30,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     // Test structure doesn't make sense with Responses.
     public override Task Caching_AfterFunctionInvocation_FunctionOutputUnchangedAsync() => Task.CompletedTask;
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseCodeInterpreter_ProducesCodeExecutionResults()
     {
         SkipIfNotEnabled();
@@ -75,7 +74,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseWebSearch_AnnotationsReflectResults()
     {
         SkipIfNotEnabled();
@@ -134,7 +133,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         });
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false, "gpt-image-1-mini")]
     [InlineData(true, "gpt-image-2")]
     public async Task UseImageGeneration_ProducesImageContent(bool streaming, string imageModel)
@@ -143,7 +142,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Image generation tool requires gpt-5.4 or later.");
+            Assert.Skip("Image generation tool requires gpt-5.4 or later.");
         }
 
         var chatOptions = new ChatOptions
@@ -187,7 +186,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         File.WriteAllBytes(tempPath, imageContent.Data.ToArray());
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task RemoteMCP_ListTools()
     {
         SkipIfNotEnabled();
@@ -204,7 +203,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("ask_question", response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task RemoteMCP_CallTool_ApprovalNeverRequired()
     {
         SkipIfNotEnabled();
@@ -242,7 +241,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task RemoteMCP_CallTool_ApprovalRequired()
     {
         SkipIfNotEnabled();
@@ -311,14 +310,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task RemoteMCP_DeferLoadingTools()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+            Assert.Skip("Tool search requires gpt-5.4 or later.");
         }
 
         var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
@@ -355,7 +354,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task GetResponseAsync_BackgroundResponses()
     {
         SkipIfNotEnabled();
@@ -383,7 +382,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("whale", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task GetResponseAsync_BackgroundResponses_WithFunction()
     {
         SkipIfNotEnabled();
@@ -418,7 +417,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Equal(1, callCount);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task GetStreamingResponseAsync_BackgroundResponses()
     {
         SkipIfNotEnabled();
@@ -439,7 +438,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("Paris", responseText, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task GetStreamingResponseAsync_BackgroundResponses_StreamResumption()
     {
         SkipIfNotEnabled();
@@ -477,7 +476,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("Paris", responseText, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task GetStreamingResponseAsync_BackgroundResponses_WithFunction()
     {
         SkipIfNotEnabled();
@@ -503,14 +502,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Equal(1, callCount);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task RemoteMCP_Connector()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["RemoteMCP:ConnectorAccessToken"] is not string { Length: > 0 } accessToken)
         {
-            throw new SkipTestException(
+            Assert.Skip(
                 "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
                 "You can obtain one by following https://platform.openai.com/docs/guides/tools-connectors-mcp?quickstart-panels=connector#authorizing-a-connector.");
         }
@@ -563,7 +562,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task ToolCallResult_TextContent()
     {
         SkipIfNotEnabled();
@@ -583,7 +582,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("42", response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task ToolCallResult_MultipleAIContents()
     {
         SkipIfNotEnabled();
@@ -611,7 +610,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("72", response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task ToolCallResult_ImageDataContent()
     {
         SkipIfNotEnabled();
@@ -636,7 +635,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             $"Expected response to mention logo or colors, but got: {response.Text}");
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task ToolCallResult_PdfDataContent()
     {
         SkipIfNotEnabled();
@@ -656,7 +655,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("Hello World", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task ToolCallResult_MixedContentWithImage()
     {
         SkipIfNotEnabled();
@@ -688,7 +687,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             $"Expected response to mention analysis or image content, but got: {response.Text}");
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task ReasoningContent_NonStreaming_RoundtripsEncryptedContent()
     {
         SkipIfNotEnabled();
@@ -768,7 +767,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task ReasoningContent_Streaming_RoundtripsEncryptedContent()
     {
         // This test requires a reasoning model with encrypted content support.
@@ -854,14 +853,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains("encrypted", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseToolSearch_WithDeferredFunctions()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+            Assert.Skip("Tool search requires gpt-5.4 or later.");
         }
 
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
@@ -893,14 +892,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseToolSearch_OnlyToolSearchNoFunctions_Throws()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+            Assert.Skip("Tool search requires gpt-5.4 or later.");
         }
 
         // HostedToolSearchTool with no deferred tools — the API rejects this with 400
@@ -914,14 +913,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 }));
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseToolSearch_WithNonDeferredFunctionsOnly_Throws()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+            Assert.Skip("Tool search requires gpt-5.4 or later.");
         }
 
         // HostedToolSearchTool with DeferredTools explicitly set to empty — no tools are deferred.
@@ -941,14 +940,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 }));
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseToolSearch_DeferLoadingOnNonDeferrableTool_Throws()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+            Assert.Skip("Tool search requires gpt-5.4 or later.");
         }
 
         // Force defer_loading on a code_interpreter tool via Patch — the API should reject this.
@@ -970,14 +969,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
                 }));
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseToolSearch_NamespaceWithDescription_RoundTrips()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+            Assert.Skip("Tool search requires gpt-5.4 or later.");
         }
 
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
@@ -1015,14 +1014,14 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
         Assert.Contains(rawJsons, json => json.Contains("\"type\":\"tool_search_output\"") || json.Contains("\"type\": \"tool_search_output\""));
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseToolSearch_TwoNamespacesWithDescriptions_RoundTrips()
     {
         SkipIfNotEnabled();
 
         if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
         {
-            throw new SkipTestException("Tool search requires gpt-5.4 or later.");
+            Assert.Skip("Tool search requires gpt-5.4 or later.");
         }
 
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");

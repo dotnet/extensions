@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
 using Xunit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
@@ -111,7 +110,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         }
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)] // Non-streaming
     [InlineData(true)]  // Streaming
     public virtual async Task GenerateImage_CallsGenerateFunction_ReturnsDataContent(bool useStreaming)
@@ -147,7 +146,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.False(imageContent.Data.IsEmpty);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)] // Non-streaming
     [InlineData(true)]  // Streaming
     public virtual async Task EditImage_WithImageInSameRequest_PassesExactDataContent(bool useStreaming)
@@ -178,7 +177,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal("original.png", originalImageContent.Name);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)] // Non-streaming
     [InlineData(true)]  // Streaming
     public virtual async Task GenerateThenEdit_FromChatHistory_EditsGeneratedImage(bool useStreaming)
@@ -228,7 +227,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Contains("generated_image_1", editedImage.Name);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)] // Non-streaming
     [InlineData(true)]  // Streaming
     public virtual async Task MultipleEdits_EditsLatestImage(bool useStreaming)
@@ -273,7 +272,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal(secondImage, lastImageToEdit);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)] // Non-streaming
     [InlineData(true)]  // Streaming
     public virtual async Task MultipleEdits_EditsFirstImage(bool useStreaming)
@@ -318,7 +317,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal(firstGeneratedImage, lastImageToEdit);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)] // Non-streaming
     [InlineData(true)]  // Streaming
     public virtual async Task ImageGeneration_WithOptions_PassesOptionsToGenerator(bool useStreaming)
@@ -350,7 +349,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
         Assert.Equal(new System.Drawing.Size(512, 512), options.ImageSize);
     }
 
-    [ConditionalTheory]
+    [Theory]
     [InlineData(false)] // Non-streaming
     [InlineData(true)]  // Streaming
     public virtual async Task ImageContentHandling_AllImages_ReplacesImagesWithPlaceholders(bool useStreaming)
@@ -442,7 +441,7 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
 
         if (skipIntegration is not null || ChatClient is null)
         {
-            throw new SkipTestException("Client is not enabled.");
+            Assert.Skip("Client is not enabled.");
         }
     }
 }

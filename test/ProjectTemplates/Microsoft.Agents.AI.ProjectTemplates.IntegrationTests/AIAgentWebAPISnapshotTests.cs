@@ -7,7 +7,6 @@ using Microsoft.Shared.ProjectTemplates.Tests;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.Shared.ProjectTemplates.Tests.TemplateTestUtilities;
 
 namespace Microsoft.Agents.AI.ProjectTemplates.Tests;

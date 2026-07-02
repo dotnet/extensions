@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 

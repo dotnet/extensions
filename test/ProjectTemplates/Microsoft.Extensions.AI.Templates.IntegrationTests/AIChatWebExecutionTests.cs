@@ -1,12 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Shared.ProjectTemplates.Tests;
-using Microsoft.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.Shared.ProjectTemplates.Tests.TemplateTestUtilities;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
@@ -105,7 +103,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     /// Set the environment variable <c>AI_TEMPLATES_TEST_PROJECT_NAMES</c> to "true" or "1"
     /// to enable it.
     /// </remarks>
-    [ConditionalTheory]
+    [Theory]
     [EnvironmentVariableCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
     [InlineData("dot.name")]
     [InlineData("project.123")]

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.AI.Evaluation.Reporting.Tests</RootNamespace>
@@ -16,8 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting.Azure\Microsoft.Extensions.AI.Evaluation.Reporting.Azure.csproj" />
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj" />
-    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
-  </ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj" />  </ItemGroup>
 
 </Project>

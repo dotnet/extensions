@@ -5,19 +5,22 @@ using System;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
 [SupportedOSPlatform("windows")]
-[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public class WindowsDiskIoTimePerfCounterTests
 {
+    public WindowsDiskIoTimePerfCounterTests()
+    {
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Linux/macOS");
+    }
+
     private const string CategoryName = "LogicalDisk";
 
-    [ConditionalFact]
+    [Fact]
     public void DiskReadsPerfCounter_Per60Seconds()
     {
         const string CounterName = WindowsDiskPerfCounterNames.DiskReadsCounter;

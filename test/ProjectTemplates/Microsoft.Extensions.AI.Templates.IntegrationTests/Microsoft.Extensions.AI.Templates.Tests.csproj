@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Tests for Microsoft.Extensions.AI.Templates.</Description>
@@ -17,10 +17,6 @@
     <PackageReference Include="NuGet.Packaging" />
     <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
     <PackageReference Include="NuGet.Protocol" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
