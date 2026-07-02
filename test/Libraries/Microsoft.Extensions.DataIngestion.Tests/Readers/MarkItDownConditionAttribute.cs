@@ -16,7 +16,7 @@ public class MarkItDownConditionAttribute : Attribute
 {
     internal static readonly Lazy<bool> IsInstalled = new(CanInvokeMarkItDown);
 
-    public string SkipReason => "MarkItDown is not installed or not accessible.";
+    public static string SkipReason => "MarkItDown is not installed or not accessible.";
 
     private static bool CanInvokeMarkItDown()
     {

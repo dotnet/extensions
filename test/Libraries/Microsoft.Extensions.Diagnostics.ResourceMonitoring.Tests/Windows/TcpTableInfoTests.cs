@@ -15,7 +15,10 @@ public sealed class TcpTableInfoTests
 {
     public TcpTableInfoTests()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Linux/macOS");
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Skipped on Linux/macOS");
+        }
     }
 
     public static readonly TimeSpan DefaultTimeSpan = TimeSpan.FromSeconds(5);

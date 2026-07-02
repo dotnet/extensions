@@ -27,7 +27,10 @@ public class FakeCertificateFactoryTests
     [InlineData(true)]
     public void GenerateRsa_RunsOnWindows_GeneratesRsa(bool runsOnWindows)
     {
-        if (OperatingSystem.IsLinux()) Assert.Skip("Skipped on Linux");
+        if (OperatingSystem.IsLinux())
+        {
+            Assert.Skip("Skipped on Linux");
+        }
 
         Assert.NotNull(FakeSslCertificateFactory.GenerateRsa(runsOnWindows));
     }
@@ -35,7 +38,10 @@ public class FakeCertificateFactoryTests
     [Fact]
     public void GenerateRsa_DoesNotRunOnWindows_GeneratesRsa()
     {
-        if (OperatingSystem.IsWindows()) Assert.Skip("Skipped on Windows");
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("Skipped on Windows");
+        }
 
         Assert.NotNull(FakeSslCertificateFactory.GenerateRsa(runsOnWindows: false));
     }

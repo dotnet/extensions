@@ -16,7 +16,10 @@ public class WindowsNetworkMetricsTests
 {
     public WindowsNetworkMetricsTests()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Linux/macOS");
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Skipped on Linux/macOS");
+        }
     }
 
     [Fact]

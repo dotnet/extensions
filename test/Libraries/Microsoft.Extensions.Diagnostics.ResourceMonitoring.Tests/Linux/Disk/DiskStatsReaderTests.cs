@@ -14,7 +14,10 @@ public class DiskStatsReaderTests
 {
     public DiskStatsReaderTests()
     {
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Windows/macOS");
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Skipped on Windows/macOS");
+        }
     }
 
     private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };

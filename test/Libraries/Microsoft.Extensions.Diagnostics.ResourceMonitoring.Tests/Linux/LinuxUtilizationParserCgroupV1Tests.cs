@@ -17,7 +17,10 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
 {
     public LinuxUtilizationParserCgroupV1Tests()
     {
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Windows/macOS");
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Skipped on Windows/macOS");
+        }
     }
 
     [Theory]

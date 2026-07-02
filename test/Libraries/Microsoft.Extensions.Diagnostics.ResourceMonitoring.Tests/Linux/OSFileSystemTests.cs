@@ -14,7 +14,10 @@ public sealed class OSFileSystemTests
 {
     public OSFileSystemTests()
     {
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Windows/macOS");
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Skipped on Windows/macOS");
+        }
     }
 
     [Fact]

@@ -225,7 +225,10 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
         // including this data for visibility when tests fail - ETW subsystem can be ... weird
         log.WriteLine($".NET {Environment.Version} on {Environment.OSVersion}, {IntPtr.Size * 8}-bit");
 
-        if (!(listener.Source.IsEnabled())) Assert.Skip("Event source not enabled");
+        if (!listener.Source.IsEnabled())
+        {
+            Assert.Skip("Event source not enabled");
+        }
     }
 
     private async Task AssertCountersAsync()
@@ -240,6 +243,9 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
         // fundamentally working. We're not meant to be testing that
         // the counters system *itself* works!
 
-        if (count == 0) Assert.Skip("No counters received");
+        if (count == 0)
+        {
+            Assert.Skip("No counters received");
+        }
     }
 }

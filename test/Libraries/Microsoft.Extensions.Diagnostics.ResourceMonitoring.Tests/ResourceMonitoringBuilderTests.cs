@@ -13,7 +13,10 @@ public sealed class ResourceMonitoringBuilderTests
 {
     public ResourceMonitoringBuilderTests()
     {
-        if (OperatingSystem.IsMacOS()) Assert.Skip("Skipped on macOS");
+        if (OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Skipped on macOS");
+        }
     }
 
     [Fact(Skip = "Not supported on MacOs.")]

@@ -15,7 +15,10 @@ public class WindowsDiskIoTimePerfCounterTests
 {
     public WindowsDiskIoTimePerfCounterTests()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Linux/macOS");
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Skipped on Linux/macOS");
+        }
     }
 
     private const string CategoryName = "LogicalDisk";

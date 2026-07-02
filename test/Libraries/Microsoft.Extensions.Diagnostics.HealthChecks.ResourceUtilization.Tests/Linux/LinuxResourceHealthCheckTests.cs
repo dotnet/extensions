@@ -148,7 +148,10 @@ public class LinuxResourceHealthCheckTests
         ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,
         string expectedDescription)
     {
-        if ((OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())) Assert.Skip("Linux-specific test.");
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            Assert.Skip("Linux-specific test.");
+        }
 
         var fakeClock = new FakeTimeProvider();
         var dataTracker = new Mock<IResourceMonitor>();
