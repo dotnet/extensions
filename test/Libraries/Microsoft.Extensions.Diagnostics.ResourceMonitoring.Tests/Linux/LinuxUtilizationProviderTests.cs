@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -11,20 +11,22 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Moq;
 using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public sealed class LinuxUtilizationProviderTests
 {
+    public LinuxUtilizationProviderTests()
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+    }
+
     private const string VerifiedDataDirectory = "Verified";
 
-    [ConditionalFact]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -108,8 +110,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [ConditionalFact]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments_CgroupV2()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -182,7 +183,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
-    [ConditionalFact]
+    [Fact]
     public Task Provider_EmitsLogRecord()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -229,8 +230,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 
-    [ConditionalFact]
-    [CombinatorialData]
+    [Fact]
     public void Provider_Registers_Instruments_CgroupV2_WithoutHostCpu()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -436,7 +436,7 @@ public sealed class LinuxUtilizationProviderTests
         parserMock.Verify(p => p.GetMemoryUsageInBytes(), Times.Exactly(5));
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Provider_WithZeroToOneRangeFalse_AndCalculationV1_ReturnsHundredBasedValues()
     {
         var logger = new FakeLogger<LinuxUtilizationProvider>();
@@ -513,7 +513,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(1_048_576, memoryUsage);
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Provider_WithZeroToOneRangeTrue_AndCalculationV1_ReturnsNormalizedValues()
     {
         var logger = new FakeLogger<LinuxUtilizationProvider>();
@@ -590,7 +590,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.Equal(1_048_576, memoryUsage);
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Provider_WithZeroToOneRangeFalse_AndCalculationV2_ReturnsHundredBasedValues()
     {
         var logger = new FakeLogger<LinuxUtilizationProvider>();
@@ -663,7 +663,7 @@ public sealed class LinuxUtilizationProviderTests
         }
     }
 
-    [ConditionalFact]
+    [Fact]
     public void Provider_WithZeroToOneRangeTrue_AndCalculationV2_ReturnsNormalizedValues()
     {
         var logger = new FakeLogger<LinuxUtilizationProvider>();

@@ -9,7 +9,6 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
@@ -142,14 +141,15 @@ public class LinuxResourceHealthCheckTests
             },
         };
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(Data))]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux-specific test.")]
     public async Task TestCpuAndMemoryChecks_WithMetrics(
         HealthStatus expected, double utilization, ulong memoryUsed, ulong totalMemory,
         ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,
         string expectedDescription)
     {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux-specific test.");
+
         var fakeClock = new FakeTimeProvider();
         var dataTracker = new Mock<IResourceMonitor>();
         var logger = new FakeLogger<LinuxUtilizationProvider>();

@@ -33,11 +33,8 @@
     <PackageVersion Include="SharpFuzz" Version="2.1.1" />
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
-    <PackageVersion Include="Verify.Xunit" Version="28.15.0" />
-    <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
-    <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
-    <PackageVersion Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
-    <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageVersion Include="Verify.XunitV3" Version="31.20.0" />
+    <PackageVersion Include="Xunit.Combinatorial" Version="2.0.24" />
   </ItemGroup>
 
   <ItemGroup Label="IntegrationTestReferences">
@@ -64,7 +61,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)' OR '$(TargetFramework)' == ''">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingNet10Version)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostNet10Version)" />
   </ItemGroup>

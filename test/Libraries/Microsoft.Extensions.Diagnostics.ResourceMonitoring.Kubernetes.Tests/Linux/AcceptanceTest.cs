@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -10,15 +10,18 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Linux;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public class AcceptanceTest
 {
+    public AcceptanceTest()
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+    }
+
     [Fact]
     public async Task LinuxUtilizationProvider_MeasuredWithKubernetesMetadata()
     {

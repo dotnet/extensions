@@ -1,6 +1,11 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
+  <PropertyGroup>
+    <XUnitCoreSettingsFile>$(MSBuildThisFileDirectory)\..\eng\xunit.runner.json</XUnitCoreSettingsFile>
+    <XUnitDesktopSettingsFile>$(MSBuildThisFileDirectory)\..\eng\xunit.runner.json</XUnitDesktopSettingsFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoFixture.AutoMoq" />
     <PackageReference Include="autofixture" />
@@ -8,10 +13,8 @@
     <PackageReference Include="Moq.AutoMock" />
     <PackageReference Include="Moq" />
     <PackageReference Include="StrongNamer" Condition="'$(SignArtifacts)' == 'true' " />
-    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Xunit.Combinatorial" />
-
-    <Content Include="$(MSBuildThisFileDirectory)\..\eng\xunit.runner.json" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
 </Project>

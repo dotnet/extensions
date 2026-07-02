@@ -22,10 +22,11 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
         return path;
     }
 
-    public Task InitializeAsync() => Task.CompletedTask;
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         foreach (string path in _tempStorage)
         {
             try
@@ -40,7 +41,7 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
             }
         }
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     internal override bool IsConfigured => true;

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -10,13 +10,11 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public class LinuxNetworkMetricsTests
 {
     private readonly Mock<ITcpStateInfoProvider> _tcpStateInfoProvider = new();
@@ -25,6 +23,8 @@ public class LinuxNetworkMetricsTests
 
     public LinuxNetworkMetricsTests()
     {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+
         _timeProvider = new FakeTimeProvider(_startTime);
 
         _tcpStateInfoProvider.Setup(p => p.GetIpV4TcpStateInfo()).Returns(new TcpStateInfo());

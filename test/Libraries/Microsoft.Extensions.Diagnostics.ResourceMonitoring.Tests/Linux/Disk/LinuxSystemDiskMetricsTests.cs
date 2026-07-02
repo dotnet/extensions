@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -11,15 +11,18 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
 public class LinuxSystemDiskMetricsTests
 {
+    public LinuxSystemDiskMetricsTests()
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+    }
+
     private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };
     private readonly FakeLogger<LinuxSystemDiskMetrics> _fakeLogger = new();
 

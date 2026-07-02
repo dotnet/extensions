@@ -216,15 +216,10 @@
     <!-- Compatibility with VS 17.8/.NET SDK 8.0.1xx -->
     <MicrosoftCodeAnalysisVersion>4.8.0</MicrosoftCodeAnalysisVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
-    <!--
-      xUnit version is configured by the Arcade SDK.
-      https://github.com/dotnet/arcade/blob/f5a7c5d5c56197b09715dece7541ca06beb94eb0/src/Microsoft.DotNet.Arcade.Sdk/tools/XUnit/XUnit.targets#L9
-     -->
-    <XUnitVersion>2.9.3</XUnitVersion>
-    <!--
-      Starting with 3.0.0, xunit.runner.visualstudio only supports net472, but we target net462
-     -->
-    <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
+    <!-- xUnit v3 version is configured by the Arcade SDK (TestRunnerName=XUnitV3). -->
+    <XUnitV3Version>3.2.2</XUnitV3Version>
+    <XUnitRunnerVisualStudioVersion>3.1.5</XUnitRunnerVisualStudioVersion>
+    <MicrosoftTestingPlatformVersion>1.9.1</MicrosoftTestingPlatformVersion>
     <!-- MEVD is still part of the Semantic Kernel repo -->
     <MicrosoftExtensionsVectorDataAbstractionsVersion>9.7.0</MicrosoftExtensionsVectorDataAbstractionsVersion>
     <MarkdigSignedVersion>0.43.0</MarkdigSignedVersion>

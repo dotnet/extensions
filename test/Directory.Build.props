@@ -2,7 +2,11 @@
   <PropertyGroup>
     <!-- Do not generate documentation, and do not warn about enabling /doc for tests. -->
     <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)' == ''">false</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);RT0000</NoWarn>
+    <NoWarn>$(NoWarn);RT0000;xUnit1051</NoWarn>
+    <!-- Use xUnit v3 test runner -->
+    <TestRunnerName>XUnitV3</TestRunnerName>
+    <!-- xUnit v3 requires test projects to be executable -->
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />

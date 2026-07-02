@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -11,17 +11,17 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
 public sealed class ResourceMonitoringExtensionsTests
 {
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void Throw_Null_When_Registration_Ingredients_Null()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         var services = new ServiceCollection();
 
         Assert.Throws<ArgumentNullException>(() => ((IResourceMonitorBuilder)null!).ConfigureMonitor(_ => { }));
@@ -30,10 +30,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Throws<ArgumentNullException>(() => services.AddResourceMonitoring((b) => b.ConfigureMonitor((Action<ResourceMonitoringOptions>)null!)));
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void AddsResourceMonitoringService_ToServicesCollection()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         using var provider = new ServiceCollection()
             .AddLogging()
             .AddSingleton<TimeProvider>(TimeProvider.System)
@@ -51,10 +52,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void AddsResourceMonitoringService_ToServicesCollection_NoArgs()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         using var provider = new ServiceCollection()
             .AddLogging()
             .AddSingleton<TimeProvider>(TimeProvider.System)
@@ -68,10 +70,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void AddsResourceMonitoringService_AsHostedService()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         using var provider = new ServiceCollection()
             .AddLogging()
             .AddSingleton<TimeProvider>(TimeProvider.System)
@@ -90,10 +93,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void ConfigureResourceUtilization_InitializeTrackerProperly()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         using var host = FakeHost.CreateBuilder()
             .ConfigureServices(services =>
             {
@@ -117,10 +121,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.NotNull(publisher);
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void ConfigureMonitor_GivenOptionsDelegate_InitializeTrackerWithOptionsProperly()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         const int SamplingWindowValue = 3;
         const int CalculationPeriodValue = 2;
 
@@ -146,10 +151,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Equal(TimeSpan.FromSeconds(CalculationPeriodValue), options!.Value.PublishingWindow);
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void ConfigureMonitor_GivenIConfigurationSection_InitializeTrackerWithOptionsProperly()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         const int SamplingWindowValue = 3;
         const int CalculationPeriod = 2;
         const int SamplingPeriodValue = 1;
@@ -188,10 +194,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Equal(TimeSpan.FromSeconds(CalculationPeriod), options!.Value.PublishingWindow);
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void Registering_Resource_Utilization_Adds_Only_One_Object_Of_Type_ResourceUtilizationService_To_DI_Container()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         using var host = FakeHost.CreateBuilder()
             .ConfigureServices(services =>
             {
@@ -212,10 +219,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Same(tracker as ResourceMonitorService, background as ResourceMonitorService);
     }
 
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows, SkipReason = "For MacOs only.")]
-    [ConditionalFact]
+    [Fact]
     public void AddResourceMonitoringInternal_WhenMacOs_ReturnsSameServiceCollection()
     {
+        Assert.SkipUnless(OperatingSystem.IsMacOS(), "For MacOs only.");
+
         var services = new ServiceCollection();
 
         // Act
@@ -226,10 +234,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.DoesNotContain(services, s => s.ServiceType == typeof(ISnapshotProvider));
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void AddResourceMonitoring_AddsISnapshotProvider()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         var services = new ServiceCollection();
 
         // Act
@@ -240,10 +249,11 @@ public sealed class ResourceMonitoringExtensionsTests
         Assert.Contains(services, s => s.ServiceType == typeof(ISnapshotProvider));
     }
 
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Not supported on MacOs.")]
-    [ConditionalFact]
+    [Fact]
     public void AddResourceMonitoringInternal_CallsConfigureDelegate()
     {
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+
         var services = new ServiceCollection();
         bool delegateCalled = false;
 
