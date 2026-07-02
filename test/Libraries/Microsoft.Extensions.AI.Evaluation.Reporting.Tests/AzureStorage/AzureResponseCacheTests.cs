@@ -35,9 +35,9 @@ public class AzureResponseCacheTests : ResponseCacheTester, IAsyncLifetime
         _dirClient = _fsClient?.GetDirectoryClient(Path.GetRandomFileName());
     }
 
-    public Task InitializeAsync() => Task.CompletedTask;
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (Settings.Current.Configured)
         {

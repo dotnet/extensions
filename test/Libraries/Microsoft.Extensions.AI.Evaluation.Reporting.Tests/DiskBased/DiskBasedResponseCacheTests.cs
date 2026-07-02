@@ -22,9 +22,9 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
         return path;
     }
 
-    public Task InitializeAsync() => Task.CompletedTask;
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         foreach (string path in _tempStorage)
         {
