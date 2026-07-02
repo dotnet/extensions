@@ -11,7 +11,7 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
 {
     // see notes in TestEventListener for context on fixture usage
 
-    [SkippableFact]
+    [Fact]
     public void MatchesNameAndGuid()
     {
         // Assert
