@@ -94,6 +94,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/memory/memory.stat", r.Message);
         Assert.Contains("total_inactive_file", r.Message);
@@ -121,6 +122,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/memory/memory.usage_in_bytes", r.Message);
     }
@@ -140,6 +142,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("lesser than", r.Message);
     }
@@ -166,6 +169,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostAvailableMemory());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/proc/meminfo", r.Message);
     }
@@ -240,6 +244,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/cpuset/cpuset.cpus", r.Message);
     }
@@ -261,6 +266,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/cpuset/cpuset.cpus", r.Message);
     }
@@ -289,6 +295,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/cpu/cpu.cfs_", r.Message);
     }
@@ -339,6 +346,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostCpuUsageInNanoseconds());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("proc/stat", r.Message);
     }
@@ -356,6 +364,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         var p = new LinuxUtilizationParserCgroupV1(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupRequestCpu());
 
+        Assert.NotNull(r);
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/cpu/cpu.shares", r.Message);
     }

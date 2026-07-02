@@ -98,6 +98,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -123,6 +124,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -157,6 +159,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetAvailableMemoryInBytes());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -172,6 +175,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices));
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -216,6 +220,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(inactive, total).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -241,6 +246,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostAvailableMemory());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(totalMemory).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -382,6 +388,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostCpuCount());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -397,6 +404,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -422,6 +430,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(quota, period).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -492,6 +501,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostCpuUsageInNanoseconds());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -509,6 +519,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupCpuUsageInNanoseconds());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(content, value).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -526,6 +537,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupCpuUsageInNanoseconds());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(value).UseDirectory(VerifiedDataDirectory);
     }
 
@@ -544,6 +556,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupRequestCpu());
 
+        Assert.NotNull(r);
         return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
