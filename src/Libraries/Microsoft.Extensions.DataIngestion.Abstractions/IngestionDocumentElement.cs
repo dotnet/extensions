@@ -209,6 +209,15 @@ public sealed class IngestionDocumentImage : IngestionDocumentElement
     }
 
     /// <summary>
+    /// Gets or sets the source (URL) of the image.
+    /// </summary>
+    /// <remarks>
+    /// When provided, chunkers compose full markdown image references (e.g., <c>![alt](url)</c>)
+    /// so that downstream LLMs can present the original image to end users in RAG scenarios.
+    /// </remarks>
+    public Uri? Source { get; set; }
+
+    /// <summary>
     /// Gets or sets the binary content of the image.
     /// </summary>
     public ReadOnlyMemory<byte>? Content { get; set; }

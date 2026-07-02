@@ -52,20 +52,11 @@ internal sealed class ElementsChunker
         for (int elementIndex = 0; elementIndex < elements.Count; elementIndex++)
         {
             IngestionDocumentElement element = elements[elementIndex];
-            string? semanticContent = element switch
-            {
-                // Image exposes:
-                // - Markdown: ![Alt Text](url) which is not very useful for embedding.
-                // - AlternativeText: usually a short description of the image, can be null or empty. It is usually less than 50 words.
-                // - Text: result of OCR, can be longer, but also can be null or empty. It can be several hundred words.
-                // We prefer  AlternativeText over Text, as it is usually more relevant.
-                IngestionDocumentImage image => image.AlternativeText ?? image.Text,
-                _ => element.GetMarkdown()
-            };
+            string? semanticContent = element.GetSemanticContent();
 
             if (string.IsNullOrEmpty(semanticContent))
             {
-                continue; // An image can come with Markdown, but no AlternativeText or Text.
+                continue;
             }
 
             int elementTokenCount = CountTokens(semanticContent.AsSpan());
@@ -247,8 +238,7 @@ internal sealed class ElementsChunker
             string? cellContent = table.Cells[rowIndex, columnIndex] switch
             {
                 null => null,
-                IngestionDocumentImage img => img.AlternativeText ?? img.Text,
-                IngestionDocumentElement other => other.GetMarkdown()
+                IngestionDocumentElement element => element.GetSemanticContent()
             };
             vsb.Append(cellContent);
             vsb.Append(' ');
