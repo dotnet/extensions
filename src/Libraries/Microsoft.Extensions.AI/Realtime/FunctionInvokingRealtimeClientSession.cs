@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,6 +68,10 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
     /// <remarks>This component does not own the instance and should not dispose it.</remarks>
     private readonly ActivitySource? _activitySource;
 
+    /// <summary>The <c>gen_ai.execute_tool.duration</c> histogram, or <see langword="null"/> if no <see cref="Meter"/> is available.</summary>
+    /// <remarks>This component does not own the underlying <see cref="Meter"/> and should not dispose it.</remarks>
+    private readonly Histogram<double>? _executeToolDurationHistogram;
+
     /// <summary>The inner session to delegate to.</summary>
     private readonly IRealtimeClientSession _innerSession;
 
@@ -86,6 +91,11 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
         _client = Throw.IfNull(client);
         _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingRealtimeClientSession>() ?? NullLogger.Instance;
         _activitySource = innerSession.GetService<ActivitySource>();
+        if (innerSession.GetService<Meter>() is Meter meter)
+        {
+            _executeToolDurationHistogram = OtelMetricHelpers.CreateGenAIExecuteToolDurationHistogram(meter);
+        }
+
         FunctionInvocationServices = functionInvocationServices;
     }
 
@@ -93,7 +103,8 @@ internal sealed class FunctionInvokingRealtimeClientSession : IRealtimeClientSes
     private FunctionInvocationProcessor Processor => field ??= new FunctionInvocationProcessor(
         _logger,
         _activitySource,
-        InvokeFunctionAsync);
+        InvokeFunctionAsync,
+        executeToolDurationHistogram: _executeToolDurationHistogram);
 
     /// <summary>
     /// Gets or sets the <see cref="FunctionInvocationContext"/> for the current function invocation.

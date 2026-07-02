@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using OpenTelemetry.Trace;
@@ -1162,6 +1163,39 @@ public class FunctionInvokingChatClientTests
                 Assert.Empty(activities);
             }
         }
+    }
+
+    [Fact]
+    public async Task ExecuteToolDurationMetricRecorded()
+    {
+        string sourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1", new Dictionary<string, object?> { ["arg1"] = "value1" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)));
+
+        using var executeToolDurationCollector = new MetricCollector<double>(null, sourceName, "gen_ai.execute_tool.duration");
+
+        await InvokeAndAssertAsync(options, plan, configurePipeline: configure);
+
+        var measurement = Assert.Single(executeToolDurationCollector.GetMeasurementSnapshot());
+        Assert.True(measurement.Value >= 0);
+        Assert.True(measurement.ContainsTags(
+            new KeyValuePair<string, object?>("gen_ai.tool.name", "Func1"),
+            new KeyValuePair<string, object?>("gen_ai.tool.type", "function")));
+        Assert.False(measurement.Tags.ContainsKey("error.type"));
     }
 
     [Fact]

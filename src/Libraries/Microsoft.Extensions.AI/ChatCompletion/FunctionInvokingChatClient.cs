@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -79,6 +80,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <remarks>This component does not own the instance and should not dispose it.</remarks>
     private readonly ActivitySource? _activitySource;
 
+    /// <summary>The <c>gen_ai.execute_tool.duration</c> histogram, or <see langword="null"/> if no <see cref="Meter"/> is available.</summary>
+    /// <remarks>This component does not own the underlying <see cref="Meter"/> and should not dispose it.</remarks>
+    private readonly Histogram<double>? _executeToolDurationHistogram;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
     /// </summary>
@@ -90,6 +95,11 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     {
         _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingChatClient>() ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
+        if (innerClient.GetService<Meter>() is Meter meter)
+        {
+            _executeToolDurationHistogram = OtelMetricHelpers.CreateGenAIExecuteToolDurationHistogram(meter);
+        }
+
         FunctionInvocationServices = functionInvocationServices;
     }
 
@@ -101,7 +111,8 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         invokeAgentActivity =>
             invokeAgentActivity is not null
                 ? invokeAgentActivity.GetCustomProperty(OpenTelemetryChatClient.SensitiveDataEnabledCustomKey) as string is OpenTelemetryChatClient.SensitiveDataEnabledTrueValue
-                : InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true);
+                : InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true,
+        _executeToolDurationHistogram);
 
     /// <summary>
     /// Gets or sets the <see cref="FunctionInvocationContext"/> for the current function invocation.
