@@ -40,7 +40,7 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
             }
         }
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     internal override bool IsConfigured => true;

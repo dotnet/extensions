@@ -18,11 +18,17 @@ public class OllamaSharpChatClientIntegrationTests : ChatClientIntegrationTests
             new OllamaApiClient(endpoint, "llama3.2") :
             null;
 
-    public override Task FunctionInvocation_RequireAny() =>
+    public override Task FunctionInvocation_RequireAny()
+    {
         Assert.Skip("Ollama does not currently support requiring function invocation.");
+        return Task.CompletedTask; // Unreachable
+    }
 
-    public override Task FunctionInvocation_RequireSpecific() =>
+    public override Task FunctionInvocation_RequireSpecific()
+    {
         Assert.Skip("Ollama does not currently support requiring function invocation.");
+        return Task.CompletedTask; // Unreachable
+    }
 
     protected override string? GetModel_MultiModal_DescribeImage() => "llava";
 

@@ -104,7 +104,6 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     /// to enable it.
     /// </remarks>
     [Theory]
-    [EnvironmentVariableCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
     [InlineData("dot.name")]
     [InlineData("project.123")]
     [InlineData("space name")]
@@ -115,6 +114,11 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     [InlineData("nomatch")]
     public async Task CreateRestoreAndBuild_AspireProjectName_Variants(string projectName)
     {
+        string? envValue = System.Environment.GetEnvironmentVariable("AI_TEMPLATES_TEST_PROJECT_NAMES");
+        Assert.SkipUnless(
+            string.Equals(envValue, "true", System.StringComparison.OrdinalIgnoreCase) || envValue == "1",
+            "Set the environment variable AI_TEMPLATES_TEST_PROJECT_NAMES to 'true' or '1' to enable this test.");
+
         await CreateRestoreAndBuild(projectName, ["--aspire", "--provider", "azureopenai"]);
     }
 }

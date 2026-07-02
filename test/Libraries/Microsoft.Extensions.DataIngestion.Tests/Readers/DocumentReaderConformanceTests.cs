@@ -172,6 +172,7 @@ public abstract class DocumentReaderConformanceTests
         catch (Exception ex)
         {
             Assert.Skip($"Unable to download the test file: '{ex.Message}'");
+            throw; // Unreachable, but needed to satisfy compiler return requirement.
         }
     }
 

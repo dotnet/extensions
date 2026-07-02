@@ -512,6 +512,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
             Assert.Skip(
                 "To run this test, set a value for RemoteMCP:ConnectorAccessToken. " +
                 "You can obtain one by following https://platform.openai.com/docs/guides/tools-connectors-mcp?quickstart-panels=connector#authorizing-a-connector.");
+            return; // Unreachable, but needed for definite assignment of 'accessToken'.
         }
 
         await RunAsync(false, false);

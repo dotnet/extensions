@@ -39,7 +39,7 @@ public class DiskBasedResultStoreTests : ResultStoreTester, IAsyncLifetime
             }
         }
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     public override bool IsConfigured => true;

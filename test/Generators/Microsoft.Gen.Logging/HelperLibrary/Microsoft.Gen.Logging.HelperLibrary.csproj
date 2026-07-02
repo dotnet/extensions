@@ -2,6 +2,9 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Gen.Logging.Test</RootNamespace>
     <Description>Test classes for Microsoft.Gen.Logging.Generated.Tests.</Description>
+    <!-- This is a helper library, not a test project -->
+    <OutputType>Library</OutputType>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <PropertyGroup>

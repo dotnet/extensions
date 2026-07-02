@@ -12,9 +12,14 @@ namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 public class MarkItDownReaderTests : DocumentReaderConformanceTests
 {
     protected override IngestionDocumentReader CreateDocumentReader(bool extractImages = false)
-        => MarkItDownConditionAttribute.IsInstalled.Value
-        ? new MarkItDownReader(extractImages: extractImages)
-        : Assert.Skip("MarkItDown is not installed");
+    {
+        if (!MarkItDownConditionAttribute.IsInstalled.Value)
+        {
+            Assert.Skip("MarkItDown is not installed");
+        }
+
+        return new MarkItDownReader(extractImages: extractImages);
+    }
 
     protected override void SimpleAsserts(IngestionDocument document, string source, string expectedId)
     {

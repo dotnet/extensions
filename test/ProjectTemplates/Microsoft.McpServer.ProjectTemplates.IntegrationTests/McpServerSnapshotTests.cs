@@ -17,7 +17,7 @@ public class McpServerSnapshotTests : TemplateSnapshotTestBase
     public McpServerSnapshotTests(ITestOutputHelper log)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
+        _log = new XunitLoggerProvider(new TestOutputHelperAdapter(log)).CreateLogger("TestRun");
 #pragma warning restore CA2000 // Dispose objects before losing scope
     }
 

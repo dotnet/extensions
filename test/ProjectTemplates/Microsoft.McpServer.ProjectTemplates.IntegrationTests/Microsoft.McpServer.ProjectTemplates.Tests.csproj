@@ -12,8 +12,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier">
-      <ExcludeAssets>build</ExcludeAssets>
+      <ExcludeAssets>build;buildTransitive</ExcludeAssets>
     </PackageReference>
+    <!-- Suppress xunit v2 types from TemplateVerifier transitive dependencies to avoid conflicts with v3 -->
     <PackageReference Include="xunit.core" ExcludeAssets="compile;runtime" PrivateAssets="all" />
     <PackageReference Include="xunit.extensibility.core" ExcludeAssets="compile;runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />

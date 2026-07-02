@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Shared.ProjectTemplates.Tests;
 

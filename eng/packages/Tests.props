@@ -35,9 +35,6 @@
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
     <PackageVersion Include="Verify.XunitV3" Version="31.20.0" />
     <PackageVersion Include="Xunit.Combinatorial" Version="2.0.24" />
-    <!-- Used only to suppress xunit v2 types from transitive dependencies -->
-    <PackageVersion Include="xunit.core" Version="2.9.3" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.9.3" />
   </ItemGroup>
 
   <ItemGroup Label="IntegrationTestReferences">
