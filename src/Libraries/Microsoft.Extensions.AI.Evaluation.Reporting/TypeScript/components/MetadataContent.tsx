@@ -29,7 +29,7 @@ export const MetadataContent = ({ metadata }: { metadata: { [K: string]: string 
     }
 
     return (
-        <div className={classes.tablesContainer}>
+        <div className={`${classes.tablesContainer} eval-meta-tables`}>
             {tables.map((tableData, tableIndex) => (
                 <div key={`table-${tableIndex}`} className={classes.tableWrapper}>
                     <div className={classes.tableContainer}>

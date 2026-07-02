@@ -1,497 +1,480 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useMemo, useState } from 'react';
-import {
-    makeStyles,
-    tokens,
-    Tab,
-    TabList,
-    Text,
-    Badge,
-    type SelectTabEventHandler,
-} from '@fluentui/react-components';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Card, mergeClasses } from '@fluentui/react-components';
 import { useReportContext } from './ReportContext';
-import { metricHistoryForScenario } from './viewModels';
-import { TrendChart } from './TrendChart';
+import { useReportStyles } from './reportStyles';
+import { metricHistoryForScenario, chronologicalExecutions } from './viewModels';
+import { TrendChart, type BandPoint, type MetricKind } from './TrendChart';
+import { DUMBBELL_D, DUMBBELL_RING, DUMBBELL_CONN } from './dumbbellGeometry';
 
-const useStyles = makeStyles({
-    root: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.5rem',
-    },
-    emptyState: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '3rem 2rem',
-        gap: '0.75rem',
-        color: tokens.colorNeutralForeground3,
-        textAlign: 'center',
-        border: `1px dashed ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusMedium,
-    },
-    emptyTitle: {
-        fontWeight: tokens.fontWeightSemibold,
-        fontSize: tokens.fontSizeBase400,
-        color: tokens.colorNeutralForeground2,
-    },
-    metricTabsLabel: {
-        fontSize: tokens.fontSizeBase200,
-        fontWeight: tokens.fontWeightSemibold,
-        color: tokens.colorNeutralForeground3,
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        marginBottom: '0.25rem',
-    },
-    chartCard: {
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusMedium,
-        padding: '1.25rem 1.25rem 1rem',
-        backgroundColor: tokens.colorNeutralBackground2,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-    },
-    chartCardHeader: {
-        display: 'flex',
-        alignItems: 'baseline',
-        gap: '0.5rem',
-        flexWrap: 'wrap',
-    },
-    chartCardTitle: {
-        fontWeight: tokens.fontWeightSemibold,
-        fontSize: tokens.fontSizeBase400,
-    },
-    chartCardSubtitle: {
-        fontSize: tokens.fontSizeBase200,
-        color: tokens.colorNeutralForeground3,
-    },
-    statsRow: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '0.75rem',
-    },
-    statCard: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.125rem',
-        padding: '0.625rem 0.875rem',
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        borderRadius: tokens.borderRadiusMedium,
-        backgroundColor: tokens.colorNeutralBackground1,
-        minWidth: '110px',
-    },
-    statLabel: {
-        fontSize: tokens.fontSizeBase100,
-        color: tokens.colorNeutralForeground3,
-        fontWeight: tokens.fontWeightSemibold,
-        textTransform: 'uppercase',
-        letterSpacing: '0.4px',
-    },
-    statValue: {
-        fontSize: tokens.fontSizeBase500,
-        fontWeight: tokens.fontWeightSemibold,
-        lineHeight: '1.2',
-    },
-    statValuePositive: {
-        color: tokens.colorStatusSuccessForeground1,
-    },
-    statValueNegative: {
-        color: tokens.colorStatusDangerForeground1,
-    },
-    statValueNeutral: {
-        color: tokens.colorNeutralForeground1,
-    },
-    runHistorySection: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5rem',
-    },
-    runHistoryTitle: {
-        fontWeight: tokens.fontWeightSemibold,
-        fontSize: tokens.fontSizeBase300,
-    },
-    runTable: {
-        width: '100%',
-        borderCollapse: 'collapse' as const,
-        fontSize: tokens.fontSizeBase200,
-    },
-    runTableHead: {
-        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    },
-    runTableHeadCell: {
-        fontSize: tokens.fontSizeBase100,
-        fontWeight: tokens.fontWeightSemibold,
-        color: tokens.colorNeutralForeground3,
-        textTransform: 'uppercase' as const,
-        letterSpacing: '0.4px',
-        padding: '0.25rem 0.5rem',
-        textAlign: 'left' as const,
-    },
-    runTableHeadCellRight: {
-        textAlign: 'right' as const,
-    },
-    runTableRow: {
-        borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    },
-    runTableCell: {
-        padding: '0.5rem 0.5rem',
-        color: tokens.colorNeutralForeground2,
-    },
-    runTableCellRight: {
-        textAlign: 'right' as const,
-        padding: '0.5rem 0.5rem',
-    },
-    deltaPositive: {
-        color: tokens.colorStatusSuccessForeground1,
-        fontWeight: tokens.fontWeightSemibold,
-    },
-    deltaNegative: {
-        color: tokens.colorStatusDangerForeground1,
-        fontWeight: tokens.fontWeightSemibold,
-    },
-    deltaBaseline: {
-        color: tokens.colorNeutralForeground3,
-        fontStyle: 'italic',
-    },
-    scenarioPickerLabel: {
-        fontSize: tokens.fontSizeBase200,
-        fontWeight: tokens.fontWeightSemibold,
-        color: tokens.colorNeutralForeground3,
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-    },
-    scenarioPicker: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '0.375rem',
-    },
-    scenarioChip: {
-        padding: '0.2rem 0.625rem',
-        borderRadius: '9999px',
-        border: `1px solid ${tokens.colorNeutralStroke2}`,
-        cursor: 'pointer',
-        fontSize: tokens.fontSizeBase200,
-        background: 'transparent',
-        color: tokens.colorNeutralForeground2,
-        fontFamily: 'inherit',
-        '&:hover': {
-            backgroundColor: tokens.colorSubtleBackgroundHover,
-        },
-    },
-    scenarioChipSelected: {
-        backgroundColor: tokens.colorBrandBackground,
-        color: tokens.colorNeutralForegroundOnBrand,
-        border: `1px solid ${tokens.colorBrandBackground}`,
-        '&:hover': {
-            backgroundColor: tokens.colorBrandBackgroundHover,
-        },
-    },
-});
-
-const formatValue = (v: number): string =>
-    Number.isInteger(v) ? v.toFixed(0) : v.toFixed(1);
-
-const formatDelta = (d: number): string => {
-    const sign = d > 0 ? '+' : '';
-    return `${sign}${Number.isInteger(d) ? d.toFixed(0) : d.toFixed(2)}`;
+// Infer a metric's axis kind the same way the mockup's metricKind() does:
+// prefer an explicit metadata hint, else fall back to value shape.
+const metricKindOf = (metric: BaseEvaluationMetric, sampleValue: number): MetricKind => {
+    const hint = metric.metadata?.kind;
+    if (hint === 'score' || hint === 'fraction' || hint === 'count') return hint;
+    if (sampleValue >= 0 && sampleValue <= 1) return 'fraction';
+    if (Number.isInteger(sampleValue) && sampleValue >= 1 && sampleValue <= 5) return 'score';
+    return 'score';
 };
 
-type StatCardProps = {
-    label: string;
-    value: string;
-    sentiment?: 'positive' | 'negative' | 'neutral';
+// "high" (default) means larger-is-better; "low" flips improvement direction;
+// "none" means no direction (neutral deltas).
+const metricBetterOf = (metric: BaseEvaluationMetric): 'high' | 'low' | 'none' => {
+    const b = metric.metadata?.better;
+    return b === 'low' || b === 'none' ? b : 'high';
 };
 
-const StatCard = ({ label, value, sentiment = 'neutral' }: StatCardProps) => {
-    const classes = useStyles();
-    const valueClass =
-        sentiment === 'positive'
-            ? classes.statValuePositive
-            : sentiment === 'negative'
-            ? classes.statValueNegative
-            : classes.statValueNeutral;
+const formatRaw = (v: number, kind: MetricKind): string => {
+    if (kind === 'fraction') return v.toFixed(3);
+    if (kind === 'score') return (v % 1 === 0 ? `${v}` : v.toFixed(1)) + '/5';
+    return v % 1 === 0 ? `${v}` : v.toFixed(1);
+};
 
-    return (
-        <div className={classes.statCard}>
-            <span className={classes.statLabel}>{label}</span>
-            <span className={`${classes.statValue} ${valueClass}`}>{value}</span>
-        </div>
-    );
+const deltaEpsilon = (kind: MetricKind): number =>
+    kind === 'fraction' ? 0.005 : kind === 'score' ? 0.05 : 0.5;
+
+const deltaMagnitude = (v: number, kind: MetricKind): string =>
+    v.toFixed(kind === 'fraction' ? 3 : kind === 'score' ? 1 : 0);
+
+// Full declared scale of a metric for absolute dumbbell positioning.
+const metricScale = (kind: MetricKind, peak: number): [number, number] =>
+    kind === 'fraction' ? [0, 1] : kind === 'score' ? [1, 5] : [0, Math.max(1, peak || 1)];
+
+const posOn = (v: number, min: number, max: number): number =>
+    max > min ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : 50;
+
+type StatusKind = 'success' | 'danger' | 'neutral';
+
+const statusSolid = (sk: StatusKind): string =>
+    sk === 'success'
+        ? 'var(--status-success-background-3)'
+        : sk === 'danger'
+            ? 'var(--status-danger-foreground-2)'
+            : 'var(--neutral-foreground-4)';
+
+const statusText = (sk: StatusKind): string =>
+    sk === 'success'
+        ? 'var(--status-success-foreground-1)'
+        : sk === 'danger'
+            ? 'var(--status-danger-foreground-1)'
+            : 'var(--neutral-foreground-4)';
+
+const spreadTint = (dir: number): string =>
+    dir > 0 ? 'var(--spread-tint-pos)' : dir < 0 ? 'var(--spread-tint-neg)' : 'var(--spread-tint-flat)';
+
+// Shared-domain dumbbell geometry: baseline = hollow dot at prevPos, current =
+// filled dot (status-colored) at currPos, joined by a same-color connector.
+// Mirrors the mockup's dumbbellStyles so History reads identically to Comparison.
+const dumbbellStyles = (
+    prevPos: number | null,
+    currPos: number,
+    dir: number,
+    hasDelta: boolean,
+): { sk: StatusKind; connector: React.CSSProperties; dotB: React.CSSProperties; dotA: React.CSSProperties } => {
+    const D = DUMBBELL_D;
+    const RING = DUMBBELL_RING;
+    const CONN = DUMBBELL_CONN;
+    const sk: StatusKind = dir > 0 ? 'success' : dir < 0 ? 'danger' : 'neutral';
+    const color = statusSolid(sk);
+    const halo = '0 0 0 2px var(--neutral-background-1)';
+    const hasPrev = prevPos !== null && prevPos !== undefined && Number.isFinite(prevPos);
+    const cur = Math.max(0, Math.min(100, currPos));
+    const prv = hasPrev ? Math.max(0, Math.min(100, prevPos!)) : cur;
+    const lo = Math.min(prv, cur);
+    const hi = Math.max(prv, cur);
+    // Clamp-collapse: once prev/cur are clamped to [0,100] their positions can
+    // coincide (or leave only a sub-pixel sliver) even when the raw delta was
+    // non-zero — e.g. both values pinned to the same domain edge. Treat that as
+    // "no visible delta" so we don't paint a hairline connector under the dots.
+    const connVisible = hasPrev && hasDelta && hi - lo > 0.01;
+    return {
+        sk,
+        connector: connVisible
+            ? { position: 'absolute', top: '50%', left: `${lo}%`, width: `${hi - lo}%`, height: `${CONN}px`, transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: color }
+            : { display: 'none' },
+        dotB: hasPrev
+            ? { position: 'absolute', top: '50%', left: `${prv}%`, width: `${D}px`, height: `${D}px`, boxSizing: 'border-box', transform: 'translate(-50%,-50%)', borderRadius: '50%', background: 'var(--neutral-background-1)', border: `${RING}px solid var(--neutral-foreground-3)`, boxShadow: halo }
+            : { display: 'none' },
+        dotA: { position: 'absolute', top: '50%', left: `${cur}%`, width: `${D}px`, height: `${D}px`, boxSizing: 'border-box', transform: 'translate(-50%,-50%)', borderRadius: '50%', background: color, boxShadow: halo },
+    };
+};
+
+const isNumeric = (m: BaseEvaluationMetric): m is NumericMetric =>
+    m.$type === 'numeric' && typeof (m as NumericMetric).value === 'number';
+
+// Aggregate a set of case values into the mean/median/min/max the band chart
+// and dumbbells need.
+const aggregate = (values: number[]): BandPoint | undefined => {
+    if (values.length === 0) return undefined;
+    const sorted = [...values].sort((a, b) => a - b);
+    const mean = sorted.reduce((s, v) => s + v, 0) / sorted.length;
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    return { mean, median, lo: sorted[0], hi: sorted[sorted.length - 1], n: sorted.length };
 };
 
 export const HistoryView = () => {
-    const classes = useStyles();
-    const { scoreSummary, dataset } = useReportContext();
+    const s = useReportStyles();
+    const { scoreSummary, dataset, selectedScenarioLevel } = useReportContext();
 
     const leafScenarios = useMemo(() => {
         const primaryRoot = [...scoreSummary.executionHistory.values()][0];
-        return primaryRoot
-            ? primaryRoot.flattenedNodes
-                  .filter((n) => n.isLeafNode && n.scenario != null)
-                  .map((n) => n.scenario!)
-            : [];
+        if (!primaryRoot) return [] as { scenario: ScenarioRunResult; nodeKey: string }[];
+        return primaryRoot.flattenedNodes
+            .filter((node) => node.isLeafNode && node.scenario != null)
+            .map((node) => ({ scenario: node.scenario!, nodeKey: node.nodeKey }));
     }, [scoreSummary]);
 
-    const [selectedScenarioKey, setSelectedScenarioKey] = useState<string | undefined>(undefined);
-
+    // History reflects the LEFT-SIDEBAR scenario selection (there is no in-panel
+    // scenario picker). The sidebar sets `selectedScenarioLevel` to a node key,
+    // which may be a group; resolve it to the first leaf scenario under it. When
+    // nothing is selected ("All scenarios") we show the first leaf.
     const selectedScenario = useMemo(() => {
-        if (!selectedScenarioKey) return leafScenarios[0] ?? undefined;
-        return (
-            leafScenarios.find(
-                (s) =>
-                    `${s.scenarioName}::${s.iterationName}::${s.executionName}` ===
-                    selectedScenarioKey,
-            ) ?? leafScenarios[0] ?? undefined
+        if (!selectedScenarioLevel) return leafScenarios[0]?.scenario;
+        const match = leafScenarios.find(
+            (l) => l.nodeKey === selectedScenarioLevel || l.nodeKey.startsWith(`${selectedScenarioLevel}.`),
         );
-    }, [leafScenarios, selectedScenarioKey]);
+        return (match ?? leafScenarios[0])?.scenario;
+    }, [leafScenarios, selectedScenarioLevel]);
 
     const allSeries = useMemo(
         () => (selectedScenario ? metricHistoryForScenario(scoreSummary, selectedScenario) : []),
         [scoreSummary, selectedScenario],
     );
 
-    const [selectedMetric, setSelectedMetric] = useState<string | undefined>(undefined);
-    const activeMetric = selectedMetric ?? allSeries[0]?.metricName;
+    const metricNames = useMemo(() => allSeries.map((series) => series.metricName), [allSeries]);
 
-    const onTabSelect: SelectTabEventHandler = (_ev, data) => {
-        setSelectedMetric(data.value as string);
-    };
+    const [selectedMetric, setSelectedMetric] = useState<string | undefined>(undefined);
+    const activeMetric =
+        selectedMetric && metricNames.includes(selectedMetric) ? selectedMetric : metricNames[0];
+
+    // Sliding white pill under the active segmented metric tab (pill mode: the
+    // indicator tracks the active button's box — translate + width + height).
+    // Mirrors AppShell's PivotBar underline slide, adapted for a filled pill.
+    const trackRef = useRef<HTMLDivElement | null>(null);
+    const indRef = useRef<HTMLSpanElement | null>(null);
+    const placedRef = useRef(false);
+
+    useLayoutEffect(() => {
+        const track = trackRef.current;
+        const ind = indRef.current;
+        if (!track || !ind) return;
+        let raf = 0;
+        const place = () => {
+            const btn = track.querySelector<HTMLElement>('[aria-selected="true"]');
+            if (!btn) { ind.style.opacity = '0'; return; }
+            const reduce =
+                typeof window.matchMedia === 'function' &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const first = !placedRef.current;
+            const prev = ind.style.transition;
+            if (first || reduce) ind.style.transition = 'none';
+            ind.style.opacity = '1';
+            const left = btn.offsetLeft;
+            const top = btn.offsetTop;
+            const w = btn.offsetWidth;
+            const h = btn.offsetHeight;
+            ind.style.transform = `translate(${left}px, ${top}px)`;
+            ind.style.width = `${w}px`;
+            ind.style.height = `${h}px`;
+            if (first && !reduce) {
+                void ind.offsetWidth;
+                requestAnimationFrame(() => { ind.style.transition = prev; });
+            }
+            placedRef.current = true;
+        };
+        place();
+        // ResizeObserver is a browser-only enhancement; guard it so non-DOM envs (tests/SSR) no-op gracefully.
+        let ro: ResizeObserver | undefined;
+        if (typeof ResizeObserver !== 'undefined') {
+            ro = new ResizeObserver(() => {
+                cancelAnimationFrame(raf);
+                raf = requestAnimationFrame(place);
+            });
+            ro.observe(track);
+        }
+        window.addEventListener('resize', place);
+        return () => {
+            cancelAnimationFrame(raf);
+            ro?.disconnect();
+            window.removeEventListener('resize', place);
+        };
+    }, [activeMetric, metricNames.length]);
 
     const hasTrend = allSeries.length > 0;
 
-    const scenarioPicker = useMemo(() => {
-        const seen = new Map<string, { key: string; label: string }>();
-        for (const s of leafScenarios) {
-            const k = `${s.scenarioName}::${s.iterationName}::${s.executionName}`;
-            const label =
-                s.iterationName && s.iterationName !== 'default'
-                    ? `${s.scenarioName} · ${s.iterationName}`
-                    : s.scenarioName;
-            if (!seen.has(k)) seen.set(k, { key: k, label });
+    // Ordered list of executions for this scenario (the band chart's X axis).
+    // metricHistoryForScenario preserves raw-results insertion order, which the
+    // data producers disagree on (dev data is newest-first). Sort ascending by
+    // creationTime via chronologicalExecutions so the ONE series that drives all
+    // three surfaces — the run-history dumbbell rows, the First/Last/Net stats,
+    // and the TrendChart X-axis — reads chronologically (oldest → newest),
+    // matching the v3.1 mockup. Executions missing from the chronological order
+    // fall to the end in their original relative order.
+    const activeSeriesPoints = useMemo(() => {
+        const points = activeMetric
+            ? allSeries.find((series) => series.metricName === activeMetric)?.points ?? []
+            : [];
+        if (points.length === 0) return points;
+        const order = chronologicalExecutions(dataset);
+        const rank = new Map(order.map((name, i) => [name, i]));
+        return points
+            .map((pt, i) => ({ pt, i }))
+            .sort((a, b) => {
+                const ra = rank.get(a.pt.executionName) ?? Number.MAX_SAFE_INTEGER;
+                const rb = rank.get(b.pt.executionName) ?? Number.MAX_SAFE_INTEGER;
+                return ra !== rb ? ra - rb : a.i - b.i;
+            })
+            .map((o) => o.pt);
+    }, [allSeries, activeMetric, dataset]);
+
+    // Per-execution {mean, median, lo, hi} across ALL CASES OF THE SCENARIO
+    // (every iterationName) for the active metric — derived client-side from
+    // dataset.scenarioRunResults (the frozen VM only carries a single scalar per
+    // execution). Mirrors the mockup's historyFor(), which aggregates by
+    // scenarioName alone, not scenarioName+iterationName — that's what makes the
+    // min–max spread band visible whenever a scenario has >=2 cases per run.
+    // Points are ordered to match `activeSeriesPoints`, so band/median/mean all
+    // share one X axis.
+    const band = useMemo(() => {
+        if (!hasTrend || !activeMetric || !selectedScenario || activeSeriesPoints.length === 0) {
+            return { points: [] as (BandPoint | undefined)[], kind: 'score' as MetricKind, better: 'high' as 'high' | 'low' | 'none' };
         }
-        return [...seen.values()];
-    }, [leafScenarios]);
+        const byExec = new Map<string, number[]>();
+        let kind: MetricKind = 'score';
+        let better: 'high' | 'low' | 'none' = 'high';
+        let kindResolved = false;
+        for (const r of dataset.scenarioRunResults ?? []) {
+            if (r.scenarioName !== selectedScenario.scenarioName) continue;
+            const m = r.evaluationResult?.metrics?.[activeMetric];
+            if (!m || !isNumeric(m)) continue;
+            const v = m.value!;
+            if (!kindResolved) {
+                kind = metricKindOf(m, v);
+                better = metricBetterOf(m);
+                kindResolved = true;
+            }
+            const arr = byExec.get(r.executionName);
+            if (arr) arr.push(v);
+            else byExec.set(r.executionName, [v]);
+        }
+        const points = activeSeriesPoints.map((pt) => aggregate(byExec.get(pt.executionName) ?? []));
+        return { points, kind, better };
+    }, [dataset, activeMetric, selectedScenario, activeSeriesPoints, hasTrend]);
 
     if (leafScenarios.length === 0) {
         return (
-            <div className={classes.emptyState}>
-                <Text className={classes.emptyTitle}>No scenario data</Text>
-                <Text size={300} style={{ color: tokens.colorNeutralForeground3 }}>
+            <div style={emptyStateStyle}>
+                <span style={emptyTitleStyle}>No scenario data</span>
+                <span style={{ fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-3)' }}>
                     No scenarios are available in this report.
-                </Text>
+                </span>
             </div>
         );
     }
 
-    const chartSeries = hasTrend
-        ? allSeries.filter((s) => s.metricName === activeMetric)
-        : [];
+    if (!hasTrend) {
+        return (
+            <div style={emptyStateStyle}>
+                <span style={emptyTitleStyle}>Needs at least 2 executions</span>
+                <span style={{ fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-3)' }}>
+                    Run this scenario across multiple executions to see metric trends over time.
+                </span>
+            </div>
+        );
+    }
 
-    const activeSeriesPoints = hasTrend
-        ? allSeries.find((s) => s.metricName === activeMetric)?.points ?? []
-        : [];
+    const { points: bandPoints, kind, better } = band;
+    const valid = bandPoints.filter((p): p is BandPoint => !!p);
+    const first = valid[0];
+    const last = valid[valid.length - 1];
+    const good = better === 'none' ? null : better !== 'low';
+    const eps = deltaEpsilon(kind);
 
-    const spreadByExec = useMemo(() => {
-        if (!hasTrend || !activeMetric || activeSeriesPoints.length === 0) return new Map<string, { min: number; max: number }>();
-        const map = new Map<string, { min: number; max: number }>();
-        for (const r of dataset.scenarioRunResults ?? []) {
-            const m = r.evaluationResult?.metrics?.[activeMetric];
-            if (!m || m.$type !== 'numeric' || typeof (m as NumericMetric).value !== 'number') continue;
-            const v = (m as NumericMetric).value!;
-            const existing = map.get(r.executionName);
-            if (existing) {
-                if (v < existing.min) existing.min = v;
-                if (v > existing.max) existing.max = v;
-            } else {
-                map.set(r.executionName, { min: v, max: v });
-            }
+    const dMean = first && last ? last.mean - first.mean : 0;
+    const netFlat = Math.abs(dMean) < eps;
+    const netColor = good === null || netFlat ? 'var(--neutral-foreground-4)' : (dMean > 0) === good ? statusText('success') : statusText('danger');
+    const netStr = netFlat ? 'stable' : (dMean > 0 ? '▲ ' : '▼ ') + deltaMagnitude(Math.abs(dMean), kind);
+    const peak = valid.length ? Math.max(...valid.map((p) => p.mean)) : 0;
+
+    const metricKindLabel = kind === 'fraction' ? 'fraction · 0–1' : kind === 'score' ? 'score · 1–5' : 'count';
+
+    const stats: { label: string; value: string; color: string }[] = [
+        { label: 'First run score', value: first ? formatRaw(first.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
+        { label: 'Last run score', value: last ? formatRaw(last.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
+        { label: 'Net change', value: netStr, color: netColor },
+        { label: 'Peak', value: formatRaw(peak, kind), color: 'var(--neutral-foreground-1)' },
+    ];
+
+    // Shared metric domain so every run's dumbbell normalizes on the same axis.
+    const [hMin, hMax] = metricScale(kind, peak);
+
+    let prev: BandPoint | undefined;
+    const runs = bandPoints.map((p, i) => {
+        const date = activeSeriesPoints[i]?.executionName ?? `R${i + 1}`;
+        const scoreStr = p ? formatRaw(p.mean, kind) : '—';
+        let changeStr = '—';
+        let dir = 0;
+        let prevPos: number | null = null;
+        const curPos = p ? posOn(p.mean, hMin, hMax) : 50;
+        if (p && prev) {
+            prevPos = posOn(prev.mean, hMin, hMax);
+            const d = p.mean - prev.mean;
+            const flat = Math.abs(d) < eps;
+            dir = good === null || flat ? 0 : (d > 0) === good ? 1 : -1;
+            changeStr = flat ? '—' : (d > 0 ? '▲ ' : '▼ ') + deltaMagnitude(Math.abs(d), kind);
         }
-        return map;
-    }, [dataset, activeMetric, activeSeriesPoints, hasTrend]);
-
-    const firstPoint = activeSeriesPoints[0];
-    const lastPoint = activeSeriesPoints[activeSeriesPoints.length - 1];
-    const netDelta = hasTrend && firstPoint && lastPoint ? lastPoint.value - firstPoint.value : 0;
-    const peakValue = hasTrend
-        ? Math.max(...activeSeriesPoints.map((p) => p.value))
-        : undefined;
-
-    const scaleMax = peakValue !== undefined ? (peakValue <= 5 ? 5 : peakValue <= 10 ? 10 : undefined) : undefined;
-    const scaleLabel = scaleMax != null ? `SCORE · 1–${scaleMax}` : 'METRIC VALUE';
-
-    const metricNames = allSeries.map((s) => s.metricName);
+        if (p) prev = p;
+        const db = dumbbellStyles(prevPos, curPos, dir, changeStr !== '—');
+        const spL = p ? posOn(p.lo, hMin, hMax) : 50;
+        const spR = p ? posOn(p.hi, hMin, hMax) : 50;
+        const spread: React.CSSProperties =
+            p && spR - spL > 0.5
+                ? { position: 'absolute', top: '50%', left: `${spL}%`, width: `${spR - spL}%`, height: '3px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: spreadTint(dir), pointerEvents: 'none' }
+                : { display: 'none' };
+        return { key: `${date}-${i}`, date, scoreStr, changeStr, numColor: statusText(db.sk), spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
+    });
 
     return (
-        <div className={classes.root}>
-            {scenarioPicker.length > 1 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-                    <span className={classes.scenarioPickerLabel}>Scenario</span>
-                    <div className={classes.scenarioPicker} role="listbox" aria-label="Select scenario">
-                        {scenarioPicker.map(({ key, label }) => {
-                            const isActive =
-                                key ===
-                                (selectedScenarioKey ??
-                                    (leafScenarios[0]
-                                        ? `${leafScenarios[0].scenarioName}::${leafScenarios[0].iterationName}::${leafScenarios[0].executionName}`
-                                        : undefined));
-                            return (
-                                <button
-                                    key={key}
-                                    role="option"
-                                    aria-selected={isActive}
-                                    className={`${classes.scenarioChip} ${isActive ? classes.scenarioChipSelected : ''}`}
-                                    onClick={() => {
-                                        setSelectedScenarioKey(key);
-                                        setSelectedMetric(undefined);
-                                    }}
-                                    title={label}
-                                >
-                                    {label}
-                                </button>
-                            );
-                        })}
-                    </div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {metricNames.length > 0 && (
+                <div role="tablist" ref={trackRef} className="eval-seg-track" style={segTrackStyle}>
+                    <span ref={indRef} className={s.slideIndicatorPill} aria-hidden="true" />
+                    {metricNames.map((name) => {
+                        const isActive = name === activeMetric;
+                        return (
+                            <button
+                                key={name}
+                                role="tab"
+                                aria-selected={isActive}
+                                className={mergeClasses('eval-seg-btn', isActive && 'is-active', s.segmentedPill, isActive && s.segmentedPillActive)}
+                                style={{ position: 'relative', zIndex: 1 }}
+                                onClick={() => setSelectedMetric(name)}
+                            >
+                                <span className="eval-seg-label" data-text={name}>{name}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             )}
 
-            {!hasTrend && (
-                <div className={classes.emptyState}>
-                    <Text className={classes.emptyTitle}>Needs at least 2 executions</Text>
-                    <Text size={300} style={{ color: tokens.colorNeutralForeground3 }}>
-                        Run this scenario across multiple executions to see metric trends over time.
-                    </Text>
-                </div>
-            )}
-
-            {hasTrend && metricNames.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <span className={classes.metricTabsLabel}>Metric</span>
-                    <TabList
-                        selectedValue={activeMetric}
-                        onTabSelect={onTabSelect}
-                        size="medium"
-                        appearance="subtle"
-                    >
-                        {metricNames.map((name) => (
-                            <Tab key={name} value={name}>{name}</Tab>
-                        ))}
-                    </TabList>
-                </div>
-            )}
-
-            {hasTrend && activeMetric && chartSeries.length > 0 && (
-                <div className={classes.chartCard}>
-                    <div className={classes.chartCardHeader}>
-                        <Text className={classes.chartCardTitle}>{activeMetric}</Text>
-                        <Text className={classes.chartCardSubtitle}>{scaleLabel}</Text>
-                    </div>
-
-                    {firstPoint && lastPoint && (
-                        <div className={classes.statsRow}>
-                            <StatCard
-                                label="First run score"
-                                value={scaleMax != null ? `${formatValue(firstPoint.value)}/${scaleMax}` : formatValue(firstPoint.value)}
-                                sentiment="neutral"
-                            />
-                            <StatCard
-                                label="Last run score"
-                                value={scaleMax != null ? `${formatValue(lastPoint.value)}/${scaleMax}` : formatValue(lastPoint.value)}
-                                sentiment="neutral"
-                            />
-                            <StatCard
-                                label="Net change"
-                                value={formatDelta(netDelta)}
-                                sentiment={netDelta > 0 ? 'positive' : netDelta < 0 ? 'negative' : 'neutral'}
-                            />
-                            {peakValue !== undefined && (
-                                <StatCard
-                                    label="Peak"
-                                    value={scaleMax != null ? `${formatValue(peakValue)}/${scaleMax}` : formatValue(peakValue)}
-                                    sentiment="neutral"
-                                />
-                            )}
+            {activeMetric && (
+                <Card appearance="outline">
+                    <div style={{ padding: 'var(--spacing-xs) var(--spacing-s)' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-m-nudge)', marginBottom: 'var(--spacing-xl)' }}>
+                            <h3 style={{ margin: 0, fontSize: 'var(--font-size-500)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
+                                {activeMetric}
+                            </h3>
+                            <span style={{ fontSize: 'var(--font-size-100)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.3px' }}>
+                                {metricKindLabel}
+                            </span>
                         </div>
-                    )}
 
-                    <TrendChart
-                        series={chartSeries}
-                        ariaLabel={`${activeMetric} score trend across executions${selectedScenario ? ` for ${selectedScenario.scenarioName}` : ''}`}
-                        showLegend={true}
-                    />
-
-                    {activeSeriesPoints.length > 0 && (
-                        <div className={classes.runHistorySection}>
-                            <Text className={classes.runHistoryTitle}>Run history</Text>
-                            <table className={classes.runTable} aria-label={`Run history for ${activeMetric}`}>
-                                <thead className={classes.runTableHead}>
-                                    <tr>
-                                        <th className={classes.runTableHeadCell}>Execution</th>
-                                        <th className={classes.runTableHeadCell}>Metric score</th>
-                                        <th className={classes.runTableHeadCell}>Spread</th>
-                                        <th className={`${classes.runTableHeadCell} ${classes.runTableHeadCellRight}`}>
-                                            Change vs previous
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {activeSeriesPoints.map((pt, i) => {
-                                        const prev = i > 0 ? activeSeriesPoints[i - 1] : undefined;
-                                        const delta = prev != null ? pt.value - prev.value : undefined;
-                                        const spread = spreadByExec.get(pt.executionName);
-                                        return (
-                                            <tr key={pt.executionName} className={classes.runTableRow}>
-                                                <td className={classes.runTableCell}>{pt.executionName}</td>
-                                                <td className={classes.runTableCell}>
-                                                    {scaleMax != null
-                                                        ? `${formatValue(pt.value)}/${scaleMax}`
-                                                        : formatValue(pt.value)}
-                                                </td>
-                                                <td className={classes.runTableCell}>
-                                                    {spread && spread.min !== spread.max
-                                                        ? `${formatValue(spread.min)}–${formatValue(spread.max)}${scaleMax != null ? `/${scaleMax}` : ''}`
-                                                        : '—'}
-                                                </td>
-                                                <td className={classes.runTableCellRight}>
-                                                    {delta == null ? (
-                                                        <span className={classes.deltaBaseline}>baseline</span>
-                                                    ) : delta === 0 ? (
-                                                        <span className={classes.deltaBaseline}>—</span>
-                                                    ) : (
-                                                        <span
-                                                            className={
-                                                                delta > 0
-                                                                    ? classes.deltaPositive
-                                                                    : classes.deltaNegative
-                                                            }
-                                                        >
-                                                            {delta > 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                        <div className="eval-hist-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-l)', marginBottom: 'var(--spacing-xxl)' }}>
+                            {stats.map((st) => (
+                                <div key={st.label} style={statCardStyle}>
+                                    <div style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontWeight: 'var(--font-weight-semibold)' }}>
+                                        {st.label}
+                                    </div>
+                                    <div style={{ fontSize: 'var(--font-size-600)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, color: st.color, fontVariantNumeric: 'tabular-nums' }}>
+                                        {st.value}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    )}
-                </div>
-            )}
 
-            {hasTrend && allSeries.length > 1 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <Badge appearance="tint" color="informative" size="small">All metrics overview</Badge>
-                    <TrendChart
-                        series={allSeries}
-                        ariaLabel={`All metric trends across executions${selectedScenario ? ` for ${selectedScenario.scenarioName}` : ''}`}
-                        showLegend={true}
-                    />
-                </div>
+                        <div style={{ marginBottom: 'var(--spacing-s-nudge)' }}>
+                            <TrendChart
+                                points={bandPoints}
+                                kind={kind}
+                                ariaLabel={`${activeMetric} trend across executions${selectedScenario ? ` for ${selectedScenario.scenarioName}` : ''}`}
+                                showLegend
+                            />
+                        </div>
+
+                        <div style={{ marginTop: 'var(--spacing-xxl)' }}>
+                            <h3 style={{ fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', margin: '0 0 var(--spacing-m)' }}>
+                                Run history
+                            </h3>
+                            <div className="eval-tscroll">
+                                <div className="eval-grid4" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', padding: 'var(--spacing-m-nudge) 0', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+                                    <span>Execution</span>
+                                    <span style={{ textAlign: 'center' }}>Metric score</span>
+                                    <span style={{ textAlign: 'right' }}>Δ run</span>
+                                </div>
+                                {runs.map((rn) => (
+                                    <div key={rn.key} className="eval-grid4" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m) 0', borderBottom: '1px solid var(--neutral-stroke-3)', fontSize: 'var(--font-size-300)' }}>
+                                        <span style={{ color: 'var(--neutral-foreground-1)' }}>{rn.date}</span>
+                                        <span style={{ color: 'var(--neutral-foreground-1)', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{rn.scoreStr}</span>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-l)' }}>
+                                            <span style={{ position: 'relative', flex: 1, minWidth: '110px', height: '16px' }}>
+                                                <span style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1.5px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)' }} />
+                                                <span style={rn.spread} />
+                                                <span style={rn.connector} />
+                                                <span style={rn.dotB} />
+                                                <span style={rn.dotA} />
+                                            </span>
+                                            <span style={{ flex: 'none', minWidth: '52px', textAlign: 'right', fontSize: 'var(--font-size-300)', fontVariantNumeric: 'tabular-nums', fontWeight: 'var(--font-weight-semibold)', color: rn.numColor }}>
+                                                {rn.changeStr}
+                                            </span>
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </Card>
             )}
         </div>
     );
+};
+
+const emptyStateStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 'var(--spacing-xxl) var(--spacing-xl)',
+    gap: 'var(--spacing-m)',
+    color: 'var(--neutral-foreground-3)',
+    textAlign: 'center',
+    border: '1px dashed var(--neutral-stroke-2)',
+    borderRadius: 'var(--radius-large)',
+};
+
+const emptyTitleStyle: React.CSSProperties = {
+    fontWeight: 'var(--font-weight-semibold)',
+    fontSize: 'var(--font-size-400)',
+    color: 'var(--neutral-foreground-2)',
+};
+
+const segTrackStyle: React.CSSProperties = {
+    display: 'flex',
+    width: '100%',
+    boxSizing: 'border-box',
+    justifyContent: 'safe center',
+    gap: 'var(--spacing-xs)',
+    padding: 'var(--spacing-xs)',
+    overflowX: 'auto',
+    backgroundImage: 'var(--acrylic-fill-light)',
+    backdropFilter: 'var(--acrylic-blur)',
+    WebkitBackdropFilter: 'var(--acrylic-blur)',
+    border: '1px solid var(--neutral-stroke-1)',
+    borderRadius: 'var(--radius-large)',
+    marginBottom: 'var(--spacing-xl)',
+    position: 'relative',
+};
+
+const statCardStyle: React.CSSProperties = {
+    background: 'var(--acrylic-fill-light)',
+    backdropFilter: 'var(--acrylic-blur)',
+    WebkitBackdropFilter: 'var(--acrylic-blur)',
+    border: '1px solid var(--neutral-stroke-1)',
+    borderRadius: 'var(--radius-large)',
+    padding: 'var(--spacing-l)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'var(--spacing-s)',
 };

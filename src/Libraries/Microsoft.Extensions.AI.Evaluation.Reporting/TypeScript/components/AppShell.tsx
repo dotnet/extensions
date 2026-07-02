@@ -38,7 +38,11 @@ export type ThemeSource =
     | 'toggle'
     | 'host';
 
-const SIDEBAR_WIDTH = '256px';
+// Fluent's Dropdown enforces a 250px min-width; the sidebar footer (where the
+// execution Dropdown lives) has 12px of horizontal padding on each side
+// (var(--spacing-m), see sidebarFooter below), so the sidebar must be at
+// least 250 + 2*12 = 274px wide for the dropdown to fit without clipping.
+const SIDEBAR_WIDTH = '274px';
 const TOPBAR_HEIGHT = '48px';
 
 const useStyles = makeStyles({
@@ -115,6 +119,10 @@ const useStyles = makeStyles({
         flex: 'none',
         backgroundColor: 'transparent',
         borderTopLeftRadius: 'var(--radius-xxlarge)',
+        position: 'sticky',
+        top: TOPBAR_HEIGHT,
+        alignSelf: 'flex-start',
+        height: `calc(100vh - ${TOPBAR_HEIGHT})`,
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
@@ -144,6 +152,8 @@ const useStyles = makeStyles({
         flexDirection: 'column',
         gap: 'var(--spacing-s-nudge)',
         borderTop: '1px solid var(--neutral-stroke-2)',
+        minWidth: 0,
+        overflow: 'hidden',
     },
 
     main: {
@@ -201,15 +211,19 @@ const useStyles = makeStyles({
     pivotLabel: { display: 'inline-flex', flexDirection: 'column' },
 
     contentInner: {
+        boxSizing: 'border-box',
         padding: 'var(--spacing-l) var(--page-padding) var(--spacing-xxxl)',
-        maxWidth: '1200px',
         width: '100%',
         flex: '1 0 auto',
     },
     footer: {
-        fontSize: 'var(--font-size-200)',
-        marginTop: 'var(--spacing-xxl)',
+        flex: 'none',
+        padding: 'var(--spacing-l) var(--page-padding)',
         color: 'var(--neutral-foreground-3)',
+        fontSize: 'var(--font-size-100)',
+        borderTop: '1px solid var(--neutral-stroke-2)',
+        backgroundColor: 'var(--neutral-background-1)',
+        borderBottomLeftRadius: 'var(--radius-xxlarge)',
     },
 
     switchLabel: { fontSize: 'var(--font-size-300)', paddingTop: 'var(--spacing-l)' },
@@ -324,7 +338,7 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
                                 {t.label}
                             </span>
                             {t.value === 'cases' && casesCount > 0 && (
-                                <Badge appearance="tint" color="brand" size="small" shape="circular">
+                                <Badge appearance="tint" color="brand" shape="circular">
                                     {casesCount}
                                 </Badge>
                             )}
@@ -357,9 +371,11 @@ const Sidebar = () => {
                 <Dropdown
                     aria-label="Execution"
                     className="eval-exec-drop"
+                    positioning={{ position: 'above', align: 'start', matchTargetSize: 'width' }}
                     value={selectedExec}
                     selectedOptions={[selectedExec]}
                     onOptionSelect={(_ev, data) => setExec(data.optionValue)}
+                    button={{ children: <span className="eval-exec-text">{selectedExec}</span> }}
                 >
                     {executions.map((name) => (
                         <Option key={name} value={name}>{name}</Option>
@@ -455,13 +471,20 @@ export const AppShell = ({
     children: React.ReactNode;
 }) => {
     const classes = useStyles();
-    const { dataset, scoreSummary, setIsSettingsOpen } = useReportContext();
+    const { dataset, scopedNode, setIsSettingsOpen } = useReportContext();
     const { darkMode, setDarkMode } = useReportContext();
     const { fluentTheme, rootClass } = resolveTheme(darkMode);
 
     const casesCount =
-        scoreSummary.primaryResult.numPassingIterations +
-        scoreSummary.primaryResult.numFailingIterations;
+        scopedNode.numPassingIterations +
+        scopedNode.numFailingIterations;
+
+    const results = dataset.scenarioRunResults ?? [];
+    const resultCount = results.length;
+    const executionCount = useMemo(
+        () => new Set(results.map((r) => r.executionName)).size,
+        [results],
+    );
 
     useHostTheme(themeSource, setDarkMode);
 
@@ -474,7 +497,7 @@ export const AppShell = ({
         // className onto the FluentProviders it renders inside portals.
         <FluentProvider theme={fluentTheme} className={rootClass}>
             <div className={mergeClasses('eval-root', rootClassName)}>
-            <header className={classes.topbar}>
+            <header className={mergeClasses(classes.topbar, 'eval-topbar')}>
                 <div className={classes.brand}>
                     <BrandMark />
                     <span className={classes.brandText}>AI Evaluation Report</span>
@@ -493,10 +516,10 @@ export const AppShell = ({
                     <PivotBar casesCount={casesCount} />
                     <div className={mergeClasses(classes.contentInner, 'eval-content')} data-screen-label="content">
                         {children}
-                        <p className={classes.footer}>
-                            Generated at {dataset.createdAt} by Microsoft.Extensions.AI.Evaluation.Reporting version {dataset.generatorVersion}
-                        </p>
                     </div>
+                    <footer className={classes.footer}>
+                        Generated {dataset.createdAt} · Microsoft.Extensions.AI.Evaluation.Reporting {dataset.generatorVersion} · {resultCount} results across {executionCount} executions
+                    </footer>
                 </main>
             </div>
 

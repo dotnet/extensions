@@ -13,17 +13,6 @@ export const useStyles = makeStyles({
     selectedText: {
         fontWeight: '500',
     },
-    hint: {
-        fontFamily: tokens.fontFamilyMonospace,
-        opacity: 0.75,
-        fontSize: '0.7rem',
-        paddingTop: '0.25rem',
-        paddingLeft: '1rem',
-        whiteSpace: 'nowrap',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.25rem',
-    },
     scenarioLabel: {
         whiteSpace: 'nowrap',
         fontSize: tokens.fontSizeBase300,
@@ -42,30 +31,9 @@ export const useStyles = makeStyles({
         marginBottom: '1rem',
         maxWidth: '75rem',
     },
-    section: {
-        marginTop: '0.75rem',
-        marginBottom: '0.75rem',
-        padding: '1rem',
-        border: '2px solid ' + tokens.colorNeutralStroke1,
-        borderRadius: '8px',
-        right: '0',
-        maxWidth: '80rem',
-    },
    dismissableSectionHeader: {
         display: 'flex',
         alignItems: 'center',
-    },
-    sectionHeader: {
-        display: 'flex',
-        alignItems: 'center',
-        cursor: 'pointer',
-        userSelect: 'none',
-    },
-    sectionHeaderText: {
-        margin: 0,
-        marginLeft: '0.5rem',
-        fontSize: tokens.fontSizeBase300,
-        fontWeight: '500',
     },
     sectionSubHeader: {
         fontSize: tokens.fontSizeBase300,
@@ -86,54 +54,6 @@ export const useStyles = makeStyles({
     infoMessage: {
         color: tokens.colorNeutralForeground1,
         marginBottom: '0.25rem',
-    },
-    sectionContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-        padding: '0.75rem 0',
-        cursor: 'text',
-        position: 'relative',
-        maxWidth: '75rem',
-        '& pre': {
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-        },
-    },
-    messageRow: {
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-    },
-    userMessageRow: {
-        marginLeft: '0',
-        marginRight: '10rem',
-    },
-    assistantMessageRow: {
-        marginLeft: '10rem',
-        marginRight: '0',
-    },
-    messageParticipantName: {
-        fontSize: tokens.fontSizeBase200,
-        marginBottom: '0.25rem',
-        color: tokens.colorNeutralForeground3,
-        paddingLeft: '0.5rem',
-    },
-    messageBubble: {
-        padding: '0.75rem 1rem',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        wordBreak: 'break-word',
-        backgroundColor: tokens.colorNeutralBackground3,
-        border: '1px solid ' + tokens.colorNeutralStroke2,
-    },
-    contextBubble: {
-        padding: '0.75rem 1rem',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        wordBreak: 'break-word',
-        backgroundColor: tokens.colorBrandBackground2,
-        border: '1px solid ' + tokens.colorNeutralStroke2,
     },
     cacheHitIcon: {
         color: tokens.colorPaletteGreenForeground1,
@@ -192,7 +112,7 @@ export const useStyles = makeStyles({
     },
     tablesContainer: {
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         gap: '1rem',
     },
     tableWrapper: {
@@ -212,13 +132,6 @@ export const useStyles = makeStyles({
             backgroundColor: tokens.colorNeutralBackground4,
             color: tokens.colorNeutralForeground1,
         }
-    },
-    preWrap: {
-        whiteSpace: 'pre-wrap',
-    },
-    imageContent: {
-        maxWidth: '100%',
-        maxHeight: '400px',
     },
     executionHeaderCell: {
         display: 'flex',

@@ -8,13 +8,13 @@ export { mergeClasses };
 export const useReportStyles = makeStyles({
     card: {
         backgroundColor: 'var(--neutral-background-1)',
-        border: '1px solid var(--neutral-stroke-2)',
+        border: '1px solid var(--neutral-stroke-1)',
         borderRadius: 'var(--radius-card)',
         overflow: 'hidden',
     },
     cardNested: {
         backgroundColor: 'var(--neutral-background-2)',
-        border: '1px solid var(--neutral-stroke-2)',
+        border: '1px solid var(--neutral-stroke-1)',
         borderRadius: 'var(--radius-large)',
         overflow: 'hidden',
     },
@@ -46,7 +46,7 @@ export const useReportStyles = makeStyles({
         fontWeight: 'var(--font-weight-semibold)',
         color: 'var(--neutral-foreground-3)',
         textTransform: 'uppercase',
-        letterSpacing: '0.5px',
+        letterSpacing: '0.4px',
     },
 
     statusDot: {
@@ -59,7 +59,7 @@ export const useReportStyles = makeStyles({
     },
     fillSuccess: { backgroundColor: 'var(--status-success-background-3)' },
     fillDanger: { backgroundColor: 'var(--status-danger-background-3)' },
-    fillWarning: { backgroundColor: 'var(--status-warning-background-3)' },
+    fillWarning: { backgroundColor: 'var(--status-warning-foreground-2)' },
     fillNeutral: { backgroundColor: 'var(--neutral-foreground-4)' },
     textSuccess: { color: 'var(--status-success-foreground-1)' },
     textDanger: { color: 'var(--status-danger-foreground-1)' },
@@ -79,23 +79,6 @@ export const useReportStyles = makeStyles({
         fontVariantNumeric: 'tabular-nums',
         lineHeight: 1,
     },
-    passRateTrack: {
-        position: 'relative',
-        width: '100%',
-        height: '4px',
-        borderRadius: 'var(--radius-circular)',
-        backgroundColor: 'var(--meter-track)',
-        overflow: 'hidden',
-    },
-    passRateFill: {
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        borderRadius: 'var(--radius-circular)',
-        backgroundColor: 'var(--compound-brand-background)',
-    },
-
     deltaPill: {
         display: 'inline-flex',
         alignItems: 'center',
@@ -355,6 +338,6 @@ export const pickStatusText = (
 
 export const statusSolidVar = (status: ReportStatus): string =>
     status === 'success' ? 'var(--status-success-background-3)'
-        : status === 'warning' ? 'var(--status-warning-background-3)'
+        : status === 'warning' ? 'var(--status-warning-foreground-2)'
             : status === 'danger' ? 'var(--status-danger-background-3)'
                 : 'var(--neutral-foreground-4)';

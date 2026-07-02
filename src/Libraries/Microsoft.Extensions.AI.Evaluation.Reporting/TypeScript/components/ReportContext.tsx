@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useContext, createContext, useState, useEffect, useRef } from "react";
+import { useContext, createContext, useState, useEffect, useMemo, useRef } from "react";
 import { ReverseTextIndex, ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
 
 export type ReportView = 'overview' | 'cases' | 'history' | 'comparison';
@@ -40,6 +40,7 @@ export type ReportContextType = {
     setExec: (exec: string | undefined) => void,
     activeExecution: string,
     activeNode: ScoreNode,
+    scopedNode: ScoreNode,
     isSettingsOpen: boolean,
     setIsSettingsOpen: (isSettingsOpen: boolean) => void,
 };
@@ -92,6 +93,7 @@ const defaultReportContext = createContext<ReportContextType>({
     setExec: (_exec: string | undefined) => { throw new Error("setExec function not implemented"); },
     activeExecution: "execution",
     activeNode: new ScoreNode("empty", ScoreNodeType.Group, "empty-root", "execution"),
+    scopedNode: new ScoreNode("empty", ScoreNodeType.Group, "empty-root", "execution"),
     isSettingsOpen: false,
     setIsSettingsOpen: (_isSettingsOpen: boolean) => { throw new Error("setIsSettingsOpen function not implemented"); },
 });
@@ -233,6 +235,11 @@ const useProvideReportContext = (
     const activeExecution = exec ?? scoreSummary.primaryResult.executionName;
     const activeNode = scoreSummary.executionHistory.get(activeExecution) ?? scoreSummary.primaryResult;
 
+    const scopedNode = useMemo(() => {
+        if (!selectedScenarioLevel) return activeNode;
+        return activeNode.flattenedNodes.find(n => n.nodeKey === selectedScenarioLevel) ?? activeNode;
+    }, [activeNode, selectedScenarioLevel]);
+
     const filterTree = (node: ScoreNode): ScoreNode | null => {
         if (selectedTags.length === 0 && searchValue === "") {
             return node;
@@ -299,6 +306,7 @@ const useProvideReportContext = (
         setExec,
         activeExecution,
         activeNode,
+        scopedNode,
         isSettingsOpen,
         setIsSettingsOpen,
     };

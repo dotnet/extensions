@@ -46,7 +46,7 @@ describe('CasesView — rows + expand + focus contract', () => {
         const failingBefore = allRows.filter((r) => /failed/i.test(r.getAttribute('aria-label') ?? ''));
         expect(failingBefore.length).toBeGreaterThan(0);
 
-        fireEvent.click(screen.getByRole('switch', { name: /failing only/i }));
+        fireEvent.click(screen.getByRole('switch', { name: /show failed/i }));
 
         const afterRows = screen.getAllByRole('button', { name: /passed|failed/i });
         expect(afterRows.length).toBe(failingBefore.length);

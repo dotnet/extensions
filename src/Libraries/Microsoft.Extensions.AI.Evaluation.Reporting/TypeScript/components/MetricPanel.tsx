@@ -45,7 +45,7 @@ const ratingWord = (rating: EvaluationRating | undefined): string => {
 
 const solidVarOf = (sk: ReportStatus): string =>
     sk === 'success' ? 'var(--status-success-background-3)'
-        : sk === 'warning' ? 'var(--status-warning-background-3)'
+        : sk === 'warning' ? 'var(--status-warning-foreground-2)'
             : sk === 'danger' ? 'var(--status-danger-background-3)'
                 : 'var(--neutral-foreground-4)';
 

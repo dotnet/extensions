@@ -20,18 +20,20 @@ const renderTranscript = (messages: ChatMessage[], modelResponse?: ChatResponse)
 };
 
 describe('TranscriptBlock — functionCall / functionResult discrimination', () => {
-    it('renders a "Tool call" section with the function name and arguments', () => {
+    it('renders a merged tool section with the function name, Input caption and arguments', () => {
         renderTranscript(toolCallScenario.messages, toolCallScenario.modelResponse);
 
-        expect(screen.getByText('Tool call')).toBeInTheDocument();
-        expect(screen.getByText('get_current_weather')).toBeInTheDocument();
+        // Call + result fold into one section titled "Tool call: <name>".
+        expect(screen.getByText('Tool call: get_current_weather')).toBeInTheDocument();
+        expect(screen.getByText(/get_current_weather/)).toBeInTheDocument();
+        expect(screen.getByText('Input')).toBeInTheDocument();
         expect(screen.getByText(/Seattle, WA/)).toBeInTheDocument();
     });
 
-    it('renders a "Tool result" section with the result payload', () => {
+    it('renders the result payload under an Output caption in the same section', () => {
         renderTranscript(toolCallScenario.messages, toolCallScenario.modelResponse);
 
-        expect(screen.getByText('Tool result')).toBeInTheDocument();
+        expect(screen.getByText('Output')).toBeInTheDocument();
         expect(screen.getByText(/Partly cloudy/)).toBeInTheDocument();
     });
 

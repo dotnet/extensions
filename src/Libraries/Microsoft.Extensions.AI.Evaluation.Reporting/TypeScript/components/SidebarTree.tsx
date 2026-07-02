@@ -21,7 +21,7 @@ const useLocalStyles = makeStyles({
         outlineStyle: 'none',
     },
     caretOpen: { transform: 'rotate(90deg)' },
-    labelGroup: { textTransform: 'uppercase', letterSpacing: '0.3px' },
+    labelGroup: { textTransform: 'uppercase', letterSpacing: '0.5px' },
     labelStrong: { fontWeight: 'var(--font-weight-semibold)' },
     labelSelected: { color: 'var(--neutral-foreground-1)' },
     labelDefault: { color: 'var(--neutral-foreground-2)' },
@@ -54,7 +54,13 @@ type SidebarRowVM = {
     onToggle: () => void;
 };
 
-const DEPTH_PAD = ['var(--spacing-m-nudge)', 'var(--spacing-xxl)', 'var(--spacing-xxxl)'] as const;
+const DEPTH_PAD = [
+    'var(--spacing-m-nudge)',
+    'var(--spacing-xxl)',
+    'var(--spacing-xxxl)',
+    'calc(var(--spacing-xxxl) + var(--spacing-s))',
+    'calc(var(--spacing-xxxl) + var(--spacing-l))',
+] as const;
 const padForDepth = (depth: number) => DEPTH_PAD[Math.min(depth, DEPTH_PAD.length - 1)];
 
 const pillProps = (passing: number, total: number) => {
@@ -66,7 +72,7 @@ const pillProps = (passing: number, total: number) => {
 
 export const SidebarTree = () => {
     const local = useLocalStyles();
-    const { activeNode, selectedScenarioLevel, selectScenarioLevel, setView } = useReportContext();
+    const { activeNode, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
 
     const topGroupKeys = useMemo(
         () => activeNode.childNodes.filter((n) => n.childNodes.length > 0).map((n) => n.nodeKey),
@@ -86,15 +92,18 @@ export const SidebarTree = () => {
         if (target !== (selectedScenarioLevel ?? '')) {
             selectScenarioLevel(target);
         }
-        setView('cases');
+        // Selecting a scenario re-scopes the CURRENT tab (mockup behavior) — it does not jump to Cases.
     };
 
     const rows = useMemo<SidebarRowVM[]>(() => {
         const out: SidebarRowVM[] = [];
         const walk = (nodes: ScoreNode[], depth: number) => {
-            const sorted = [...nodes].sort((a, b) => a.name.localeCompare(b.name));
+            // The sidebar shows the Group > Scenario hierarchy only (like the mockup); it never
+            // descends into iteration leaves. A node is expandable only if it has non-leaf children.
+            const branches = nodes.filter((n) => !n.isLeafNode);
+            const sorted = [...branches].sort((a, b) => a.name.localeCompare(b.name));
             for (const node of sorted) {
-                const hasChildren = node.childNodes.length > 0;
+                const hasChildren = node.childNodes.some((c) => !c.isLeafNode);
                 const isExpanded = expanded.has(node.nodeKey);
                 out.push({
                     key: node.nodeKey,
@@ -246,7 +255,7 @@ const SidebarRow = ({
             </span>
             {total !== undefined && total > 0 && (
                 <span className={local.pillSlot}>
-                    <Badge {...pillProps(passing ?? 0, total)} size="small" shape="circular">
+                    <Badge {...pillProps(passing ?? 0, total)} shape="circular">
                         {`${passing ?? 0}/${total}`}
                     </Badge>
                 </span>

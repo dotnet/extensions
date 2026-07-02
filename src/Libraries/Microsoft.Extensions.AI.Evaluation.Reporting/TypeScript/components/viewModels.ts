@@ -69,6 +69,35 @@ const executionOrder = (results: ScenarioRunResult[]): string[] => {
     return seen;
 };
 
+// Execution names ordered by creationTime ASCENDING (oldest → newest), the only
+// order-independent source of truth: the client preserves raw-results insertion
+// order everywhere else, but the data producers disagree (dev data is
+// newest-first, twoExecutionDataset is oldest-first). creationTime lives per-ROW
+// on ScenarioRunResult, not per-execution, so each execution is reduced to a
+// deterministic representative = the MIN creationTime over its rows. Ties (and
+// missing/equal times) fall back to first-seen insertion order for stability.
+export const chronologicalExecutions = (dataset: Dataset): string[] => {
+    const results = dataset.scenarioRunResults ?? [];
+    const minTime = new Map<string, string>();
+    const insertionIndex = new Map<string, number>();
+    for (const r of results) {
+        if (!insertionIndex.has(r.executionName)) {
+            insertionIndex.set(r.executionName, insertionIndex.size);
+        }
+        const existing = minTime.get(r.executionName);
+        if (existing === undefined || r.creationTime < existing) {
+            minTime.set(r.executionName, r.creationTime);
+        }
+    }
+    return [...insertionIndex.keys()].sort((a, b) => {
+        const ta = minTime.get(a) ?? '';
+        const tb = minTime.get(b) ?? '';
+        if (ta < tb) return -1;
+        if (ta > tb) return 1;
+        return (insertionIndex.get(a) ?? 0) - (insertionIndex.get(b) ?? 0);
+    });
+};
+
 const groupTallies = (results: ScenarioRunResult[]): Map<string, { passing: number; total: number }> => {
     const tallies = new Map<string, { passing: number; total: number }>();
     for (const scenario of results) {
@@ -150,17 +179,6 @@ export type MetricHistorySeries = {
     points: MetricHistoryPoint[];
 };
 
-export type MetricDelta = {
-    scenarioName: string;
-    iterationName: string;
-    metricName: string;
-    fromExecution: string;
-    toExecution: string;
-    fromValue: number;
-    toValue: number;
-    delta: number;
-};
-
 export type WeakMetric = {
     scenarioName: string;
     iterationName: string;
@@ -195,47 +213,106 @@ export const metricHistoryForScenario = (
     return [...series.entries()].map(([metricName, points]) => ({ metricName, points }));
 };
 
-export const metricDeltasForScenario = (
-    scoreSummary: ScoreSummary,
-    scenario: ScenarioRunResult,
-): MetricDelta[] => {
-    const series = metricHistoryForScenario(scoreSummary, scenario);
-    const deltas: MetricDelta[] = [];
-    for (const { metricName, points } of series) {
-        if (points.length < 2) {
-            continue;
-        }
-        const first = points[0];
-        const last = points[points.length - 1];
-        deltas.push({
-            scenarioName: scenario.scenarioName,
-            iterationName: scenario.iterationName,
-            metricName,
-            fromExecution: first.executionName,
-            toExecution: last.executionName,
-            fromValue: first.value,
-            toValue: last.value,
-            delta: last.value - first.value,
-        });
-    }
-    return deltas;
+// ── Biggest-movers model ─────────────────────────────────────────────────────
+// One row per (scenario, metric): the mean numeric value in the SELECTED
+// execution vs its chronological predecessor. `kind` classifies the metric so
+// the value can be rendered on its natural scale (score → "4/5", severity →
+// "/7", fraction → "0.xxx"). The kind/scale/format heuristic is a self-contained
+// copy of the one already duplicated across the views (ComparisonView,
+// HistoryView, MetricPanel) — a view-model-layer copy keeps this logic disjoint
+// from the view files rather than importing their private locals.
+
+export type MoverMetricKind = 'fraction' | 'score' | 'severity' | 'count';
+
+export type MoverRow = {
+    scenarioName: string;
+    metricName: string;
+    kind: MoverMetricKind;
+    value: number;
+    delta: number;
 };
 
-export const biggestMovers = (scoreSummary: ScoreSummary, limit = 5): MetricDelta[] => {
-    if (scoreSummary.executionHistory.size < 2) {
-        return [];
+const metricKind = (metric: NumericMetric): MoverMetricKind => {
+    const declared = metric.metadata?.kind as MoverMetricKind | undefined;
+    if (declared === 'fraction' || declared === 'score' || declared === 'severity' || declared === 'count') {
+        return declared;
     }
+    const v = metric.value ?? 0;
+    if (v >= 0 && v <= 1) return 'fraction';
+    return 'score';
+};
 
-    const [primaryResult] = scoreSummary.executionHistory.values();
-    const deltas: MetricDelta[] = [];
-    for (const leaf of primaryResult.flattenedNodes) {
-        if (leaf.scenario) {
-            deltas.push(...metricDeltasForScenario(scoreSummary, leaf.scenario));
+const scaleMaxOf = (kind: MoverMetricKind): number =>
+    kind === 'severity' ? 7 : 5;
+
+// Renders a numeric metric value on its natural scale: score → "4/5" / "4.2/5",
+// severity → "5/7", fraction → "0.xxx" (mirrors the in-repo `value + '/5'` idiom).
+export const formatScore = (value: number, kind: MoverMetricKind): string => {
+    if (kind === 'fraction') return value.toFixed(3);
+    const max = scaleMaxOf(kind);
+    const num = value % 1 === 0 ? '' + value : value.toFixed(1);
+    return `${num}/${max}`;
+};
+
+type MoverAgg = { scenarioName: string; metricName: string; kind: MoverMetricKind; sum: number; n: number };
+
+// Groups on the (scenarioName, metricName) pair itself so the key is never
+// re-parsed (scenario names contain dots; a delimiter split would be fragile).
+const pairKey = (scenarioName: string, metricName: string): string =>
+    JSON.stringify([scenarioName, metricName]);
+
+// Means each numeric metric over a scenario's cases for one execution, keyed by
+// (scenarioName, metricName). Mirrors ComparisonView's scenarioMetrics()
+// mean-over-cases aggregation so the numbers agree, without importing it.
+const meanByScenarioMetric = (results: ScenarioRunResult[]): Map<string, MoverAgg> => {
+    const agg = new Map<string, MoverAgg>();
+    for (const r of results) {
+        for (const metric of Object.values(r.evaluationResult?.metrics ?? {})) {
+            if (!isNumericMetric(metric)) continue;
+            const key = pairKey(r.scenarioName, metric.name);
+            const entry =
+                agg.get(key) ??
+                { scenarioName: r.scenarioName, metricName: metric.name, kind: metricKind(metric), sum: 0, n: 0 };
+            entry.sum += metric.value!;
+            entry.n += 1;
+            agg.set(key, entry);
         }
     }
+    return agg;
+};
 
-    deltas.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-    return Number.isFinite(limit) ? deltas.slice(0, limit) : deltas;
+// Biggest movers between the selected execution and its chronological
+// predecessor. One row per (scenario, metric); delta = mean(selected) −
+// mean(prev). Empty when there is no predecessor (selected run is the
+// chronologically-earliest). Sorted by |delta| descending, sliced to `limit`.
+export const moversBetween = (
+    results: ScenarioRunResult[],
+    selectedExec: string | undefined,
+    prevExec: string | undefined,
+    limit = 5,
+): MoverRow[] => {
+    if (!selectedExec || !prevExec) return [];
+
+    const selectedAgg = meanByScenarioMetric(results.filter((r) => r.executionName === selectedExec));
+    const prevAgg = meanByScenarioMetric(results.filter((r) => r.executionName === prevExec));
+
+    const rows: MoverRow[] = [];
+    for (const [key, sel] of selectedAgg.entries()) {
+        const prev = prevAgg.get(key);
+        if (!prev || prev.n === 0 || sel.n === 0) continue;
+        const selMean = sel.sum / sel.n;
+        const prevMean = prev.sum / prev.n;
+        rows.push({
+            scenarioName: sel.scenarioName,
+            metricName: sel.metricName,
+            kind: sel.kind,
+            value: selMean,
+            delta: selMean - prevMean,
+        });
+    }
+
+    rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+    return Number.isFinite(limit) ? rows.slice(0, limit) : rows;
 };
 
 const RATING_SEVERITY: EvaluationRating[] = [

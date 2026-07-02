@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useMemo } from 'react';
-import { Badge, Card } from '@fluentui/react-components';
+import { Badge, Card, ProgressBar } from '@fluentui/react-components';
 import { useReportContext } from './ReportContext';
 import {
     useReportStyles,
@@ -14,9 +14,12 @@ import {
     bucketMetrics,
     ratingBucket,
     passRateByScenarioGroup,
-    biggestMovers,
+    chronologicalExecutions,
+    moversBetween,
+    formatScore,
     scenariosForExecution,
-    type MetricDelta,
+    isLeafFailed,
+    type MoverRow,
     type ScenarioGroupPassRate,
     type KpiCounts,
 } from './viewModels';
@@ -76,6 +79,7 @@ const chipToStatus = (s: DeltaChip['status']): ReportStatus =>
 type AttentionItem = {
     key: string;
     label: string;
+    scenario: string;
     status: ReportStatus;
     statStr: string;
     failing: number;
@@ -104,6 +108,7 @@ const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionIte
             return {
                 key,
                 label: `${a.scenario} · ${a.metric}`,
+                scenario: a.scenario,
                 status,
                 statStr: `${a.danger} failing · ${weakPct}% weak`,
                 failing: a.danger,
@@ -115,9 +120,9 @@ const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionIte
         .slice(0, limit);
 };
 
-const DeltaBadge = ({ chip, size = 'small' }: { chip: DeltaChip; size?: 'small' | 'medium' }) =>
+const DeltaBadge = ({ chip, size = 'medium', shape = 'rounded', appearance = 'ghost' }: { chip: DeltaChip; size?: 'small' | 'medium'; shape?: 'rounded' | 'circular'; appearance?: 'ghost' | 'tint' }) =>
     chip.show ? (
-        <Badge appearance={chip.status === 'informative' ? 'ghost' : 'tint'} color={chip.status} size={size} shape="circular">
+        <Badge appearance={appearance} color={chip.status} size={size} shape={shape}>
             {chip.label}
         </Badge>
     ) : null;
@@ -143,42 +148,42 @@ const SummaryCard = ({
                         <div style={{ flex: 'none' }}>
                             <div className={s.eyebrow}>Overall pass rate</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-m)', marginTop: 'var(--spacing-xs)' }}>
-                                <span style={{ fontSize: 'var(--font-size-800)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>
+                                <span className="eval-hero-passrate" style={{ fontSize: 'var(--font-size-800)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>
                                     {passNow}
                                     <span style={{ fontSize: 'var(--font-size-500)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-3)' }}>%</span>
                                 </span>
-                                <DeltaBadge chip={passChip} size="medium" />
+                                <DeltaBadge chip={passChip} size="medium" shape="circular" />
                             </div>
                         </div>
-                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'stretch', borderLeft: '1px solid var(--neutral-stroke-2)' }}>
+                        <div className="eval-hero-kpis" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'stretch', borderLeft: '1px solid var(--neutral-stroke-2)' }}>
                             {kpis.map((k) => (
-                                <div key={k.label} style={{ padding: '0 var(--spacing-xl)', borderRight: k.last ? 'none' : '1px solid var(--neutral-stroke-2)' }}>
+                                <div key={k.label} className="eval-hero-kpi" style={{ padding: '0 var(--spacing-xl)', borderRight: k.last ? 'none' : '1px solid var(--neutral-stroke-2)' }}>
                                     <div className={s.eyebrow} style={{ whiteSpace: 'nowrap' }}>{k.label}</div>
                                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-s)', marginTop: 'var(--spacing-xs)' }}>
                                         <span style={{ fontSize: 'var(--font-size-600)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, whiteSpace: 'nowrap', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>
                                             {k.value}
                                         </span>
-                                        <DeltaBadge chip={k.chip} size="small" />
+                                        <DeltaBadge chip={k.chip} />
                                         <span style={{ fontSize: 'var(--font-size-100)', color: 'var(--neutral-foreground-3)', whiteSpace: 'nowrap' }}>{k.sub}</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <div
-                        role="img"
+                    <ProgressBar
+                        value={passNow / 100}
+                        thickness="medium"
+                        className="eval-grprate"
                         aria-label={`Overall pass rate ${passNow}%`}
-                        style={{ height: '4px', background: 'var(--eval-seg-empty)' }}
-                    >
-                        <div style={{ height: '100%', width: `${passNow}%`, background: statusSolidVar(fillStatus) }} />
-                    </div>
+                        style={{ ['--eval-bar']: statusSolidVar(fillStatus) } as React.CSSProperties}
+                    />
                 </div>
             </Card>
         </div>
     );
 };
 
-const MoversCard = ({ movers, compareLabel }: { movers: MetricDelta[]; compareLabel?: string }) => {
+const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel?: string }) => {
     const s = useReportStyles();
     return (
         <Card appearance="outline">
@@ -192,14 +197,16 @@ const MoversCard = ({ movers, compareLabel }: { movers: MetricDelta[]; compareLa
                             <path d="M5 11 L11 5 M6.5 5 H11 V9.5" />
                         </svg>
                     </span>
-                    <h3 className={s.sectionHeaderTitle}>Biggest movers</h3>
-                    {compareLabel && <span className={s.sectionHeaderSub}>vs {compareLabel}</span>}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-s-nudge)', minWidth: 0 }}>
+                        <h3 className={s.sectionHeaderTitle}>Biggest movers</h3>
+                        {compareLabel && <span className={s.sectionHeaderSub}>vs {compareLabel}</span>}
+                    </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto auto', alignItems: 'center', columnGap: 'var(--spacing-m)', gridAutoRows: '44px', padding: 'var(--spacing-s) var(--spacing-xl)' }}>
                     {movers.map((m) => {
                         const dc = numDeltaChip(m.delta);
                         const dotStatus = chipToStatus(dc.status);
-                        const valStr = m.toValue !== undefined ? m.toValue.toFixed(1) : '';
+                        const valStr = formatScore(m.value, m.kind);
                         return [
                             <span key={`${m.scenarioName}-${m.metricName}-n`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)', minWidth: 0 }}>
                                 <span style={auraDotStyle(dotStatus)} />
@@ -214,7 +221,7 @@ const MoversCard = ({ movers, compareLabel }: { movers: MetricDelta[]; compareLa
                                 {valStr}
                             </span>,
                             <span key={`${m.scenarioName}-${m.metricName}-d`} style={{ display: 'inline-flex', justifySelf: 'end' }}>
-                                <DeltaBadge chip={dc} size="small" />
+                                <DeltaBadge chip={dc} shape="circular" appearance="tint" />
                             </span>,
                         ];
                     })}
@@ -224,7 +231,7 @@ const MoversCard = ({ movers, compareLabel }: { movers: MetricDelta[]; compareLa
     );
 };
 
-const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView: () => void }) => {
+const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView: (item: AttentionItem) => void }) => {
     const s = useReportStyles();
     return (
         <Card appearance="outline">
@@ -243,16 +250,16 @@ const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView:
                 {items.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', padding: 'var(--spacing-s)' }}>
                         {items.map((a) => (
-                            <div key={a.key} className="eval-weak-row" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)', padding: '0 var(--spacing-m)', height: '44px' }}>
+                            <div key={a.key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)', padding: '0 var(--spacing-m)', height: '44px' }}>
                                 <span style={auraDotStyle(a.status)} />
-                                <span className="eval-weak-name" title={a.label} style={{ flex: 1, minWidth: 0, fontSize: 'var(--font-size-300)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}>
+                                <span title={a.label} style={{ flex: 1, minWidth: 0, fontSize: 'var(--font-size-300)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}>
                                     {a.label}
                                 </span>
                                 <span style={{ flex: 'none', fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                                     {a.statStr}
                                 </span>
                                 <span style={{ flex: 'none', display: 'inline-flex' }}>
-                                    <button className={s.viewLink} onClick={onView} aria-label={`View cases for ${a.label}`}>
+                                    <button className={s.viewLink} onClick={() => onView(a)} aria-label={`View cases for ${a.label}`}>
                                         View
                                     </button>
                                 </span>
@@ -284,8 +291,6 @@ const GroupTable = ({
     totalGoodPct: number;
     passChip: DeltaChip;
 }) => {
-    const s = useReportStyles();
-
     return (
         <Card appearance="outline">
             <div style={{ margin: '-12px' }}>
@@ -318,12 +323,29 @@ const GroupTable = ({
                                 <span style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.weak}</span>
                                 <span style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-s-nudge)', paddingLeft: 'var(--spacing-xxl)', paddingRight: 'var(--spacing-l)' }}>
                                     <span style={{ textAlign: 'right', fontSize: 'var(--font-size-200)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{ratePct}%</span>
-                                    <span className={s.passRateTrack} role="img" aria-label={`Pass rate ${ratePct}%`}>
-                                        <span className={s.passRateFill} style={{ width: `${ratePct}%`, background: statusSolidVar(status) }} />
-                                    </span>
+                                    <ProgressBar
+                                        value={ratePct / 100}
+                                        thickness="medium"
+                                        className="eval-grprate"
+                                        aria-label={`Pass rate ${ratePct}%`}
+                                        style={{ ['--eval-bar']: statusSolidVar(status) } as React.CSSProperties}
+                                    />
                                 </span>
-                                <span style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                    <DeltaBadge chip={deltaBadgeChip} size="small" />
+                                <span
+                                    style={{
+                                        textAlign: 'right',
+                                        fontSize: 'var(--font-size-300)',
+                                        fontWeight: 'var(--font-weight-semibold)',
+                                        fontVariantNumeric: 'tabular-nums',
+                                        color:
+                                            deltaBadgeChip.status === 'success'
+                                                ? 'var(--status-success-foreground-1)'
+                                                : deltaBadgeChip.status === 'danger'
+                                                    ? 'var(--status-danger-foreground-1)'
+                                                    : 'var(--neutral-foreground-3)',
+                                    }}
+                                >
+                                    {deltaBadgeChip.show ? deltaBadgeChip.label : '—'}
                                 </span>
                             </div>
                         );
@@ -336,8 +358,21 @@ const GroupTable = ({
                         <span style={{ display: 'flex', alignItems: 'center', paddingRight: 'var(--spacing-l)', justifyContent: 'flex-end' }}>
                             <span style={{ fontSize: 'var(--font-size-300)', textAlign: 'right' }}>{pctInt(totalKpi.passRate)}%</span>
                         </span>
-                        <span style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <DeltaBadge chip={passChip} size="small" />
+                        <span
+                            style={{
+                                textAlign: 'right',
+                                fontSize: 'var(--font-size-300)',
+                                fontWeight: 'var(--font-weight-semibold)',
+                                fontVariantNumeric: 'tabular-nums',
+                                color:
+                                    passChip.status === 'success'
+                                        ? 'var(--status-success-foreground-1)'
+                                        : passChip.status === 'danger'
+                                            ? 'var(--status-danger-foreground-1)'
+                                            : 'var(--neutral-foreground-3)',
+                            }}
+                        >
+                            {passChip.show ? passChip.label : '—'}
                         </span>
                     </div>
                 </div>
@@ -347,20 +382,30 @@ const GroupTable = ({
 };
 
 export const OverviewView = () => {
-    const { dataset, scoreSummary, activeExecution, activeNode, setView } = useReportContext();
+    const { dataset, scoreSummary, activeExecution, activeNode, scopedNode, selectedScenarioLevel, selectScenarioLevel, setView } = useReportContext();
 
-    const activeScenarios = useMemo(
-        () => scenariosForExecution(dataset, activeExecution),
-        [dataset, activeExecution],
-    );
+    // Scenarios for the active execution, restricted to the current sidebar selection.
+    // When "All scenarios" is selected scopedNode === activeNode, so this yields every scenario.
+    const activeScenarios = useMemo(() => {
+        const all = scenariosForExecution(dataset, activeExecution);
+        if (!selectedScenarioLevel) return all;
+        const scopedNames = new Set(
+            scopedNode.flattenedNodes
+                .filter((n) => n.isLeafNode && n.scenario)
+                .map((n) => n.scenario!.scenarioName),
+        );
+        return all.filter((s) => scopedNames.has(s.scenarioName));
+    }, [dataset, activeExecution, scopedNode, selectedScenarioLevel]);
 
-    const kpi = useMemo(() => kpiCountsFromNode(activeNode), [activeNode]);
+    const kpi = useMemo(() => kpiCountsFromNode(scopedNode), [scopedNode]);
     const buckets = useMemo(() => bucketMetrics(activeScenarios), [activeScenarios]);
 
-    const groupRows = useMemo(
-        () => passRateByScenarioGroup(dataset, activeExecution),
-        [dataset, activeExecution],
-    );
+    const groupRows = useMemo(() => {
+        const all = passRateByScenarioGroup(dataset, activeExecution);
+        if (!selectedScenarioLevel) return all;
+        const scopedGroups = new Set(activeScenarios.map((s) => s.scenarioName.split('.')[0]));
+        return all.filter((r) => scopedGroups.has(r.group));
+    }, [dataset, activeExecution, activeScenarios, selectedScenarioLevel]);
 
     const totalDeltaRun = useMemo(() => {
         const rowsWithDelta = groupRows.filter((r) => r.deltaRun !== undefined);
@@ -371,12 +416,27 @@ export const OverviewView = () => {
         return kpi.passRate - prevPassing / totalTotal;
     }, [groupRows, kpi.passRate]);
 
-    const movers = useMemo(() => biggestMovers(scoreSummary), [scoreSummary]);
-
+    // Movers compare the selected run against its chronologically-immediate
+    // predecessor (creationTime order), not an insertion index — correct under
+    // both newest-first dev data and oldest-first fixtures. When the selected run
+    // is the earliest, there is no predecessor: no movers, no compare label.
     const compareLabel = useMemo(() => {
-        const execs = [...scoreSummary.executionHistory.keys()];
-        return execs.length >= 2 ? execs[1] : undefined;
-    }, [scoreSummary]);
+        const chrono = chronologicalExecutions(dataset);
+        const idx = chrono.indexOf(activeExecution);
+        return idx > 0 ? chrono[idx - 1] : undefined;
+    }, [dataset, activeExecution]);
+
+    const movers = useMemo(() => {
+        const rows = moversBetween(
+            dataset.scenarioRunResults,
+            activeExecution,
+            compareLabel,
+            selectedScenarioLevel ? Infinity : 5,
+        );
+        if (!selectedScenarioLevel) return rows;
+        const scopedNames = new Set(activeScenarios.map((s) => s.scenarioName));
+        return rows.filter((m) => scopedNames.has(m.scenarioName)).slice(0, 5);
+    }, [dataset, activeExecution, compareLabel, activeScenarios, selectedScenarioLevel]);
 
     const attention = useMemo(() => attentionItems(activeScenarios), [activeScenarios]);
 
@@ -390,17 +450,31 @@ export const OverviewView = () => {
         if (!compareLabel) return undefined;
         const prevNode = scoreSummary.executionHistory.get(compareLabel);
         if (!prevNode) return undefined;
-        const prevKpi = kpiCountsFromNode(prevNode);
-        const prevBuckets = bucketMetrics(scenariosForExecution(dataset, compareLabel));
+
+        // Scope the comparison baseline to the same sidebar selection so the delta
+        // chips compare scoped-current against scoped-previous (apples to apples).
+        const scopedNames = selectedScenarioLevel
+            ? new Set(activeScenarios.map((s) => s.scenarioName))
+            : undefined;
+        const prevScenarios = scopedNames
+            ? scenariosForExecution(dataset, compareLabel).filter((s) => scopedNames.has(s.scenarioName))
+            : scenariosForExecution(dataset, compareLabel);
+
+        const prevFailing = scopedNames
+            ? prevScenarios.filter((s) => isLeafFailed(s)).length
+            : kpiCountsFromNode(prevNode).failing;
+        const prevBuckets = bucketMetrics(prevScenarios);
         const prevEvals = prevBuckets.good + prevBuckets.fair + prevBuckets.weak + prevBuckets.unknown;
-        const prevGroups = passRateByScenarioGroup(dataset, compareLabel);
+        const prevGroups = passRateByScenarioGroup(dataset, compareLabel).filter(
+            (r) => !scopedNames || activeScenarios.some((s) => s.scenarioName.split('.')[0] === r.group),
+        );
         const prevScenPass = prevGroups.filter((r) => r.passRate >= 1 && r.total > 0).length;
         return {
-            failing: prevKpi.failing,
+            failing: prevFailing,
             scenPass: prevScenPass,
             goodPct: Math.round((prevBuckets.good / Math.max(1, prevEvals)) * 100),
         };
-    }, [compareLabel, dataset, scoreSummary]);
+    }, [compareLabel, dataset, scoreSummary, activeScenarios, selectedScenarioLevel]);
 
     const passChip = chip(totalDeltaRun !== undefined ? Math.round(totalDeltaRun * 100) : undefined, { unit: '%' });
     const failChip = chip(prev ? kpi.failing - prev.failing : undefined, { lowerBetter: true });
@@ -408,6 +482,15 @@ export const OverviewView = () => {
     const goodChip = chip(prev ? goodPct - prev.goodPct : undefined, { unit: '%' });
 
     const hasMovers = movers.length > 0;
+
+    const openCasesForScenario = (item: AttentionItem) => {
+        const leaf = activeNode.flattenedNodes.find(
+            (n) => n.isLeafNode && n.scenario?.scenarioName === item.scenario,
+        );
+        const nodeKey = leaf ? leaf.nodeKey.slice(0, leaf.nodeKey.lastIndexOf('.')) : `root.${item.scenario}`;
+        if (nodeKey !== selectedScenarioLevel) selectScenarioLevel(nodeKey);
+        setView('cases');
+    };
 
     const kpis = [
         { label: 'Cases failing', value: String(kpi.failing), sub: `of ${kpi.total} cases`, chip: failChip },
@@ -425,11 +508,11 @@ export const OverviewView = () => {
                     style={{ display: 'grid', gridTemplateColumns: '1.12fr 1fr', gap: 'var(--spacing-l)', alignItems: 'stretch', marginBottom: 'var(--spacing-l)' }}
                 >
                     <MoversCard movers={movers} compareLabel={compareLabel} />
-                    <NeedsAttentionCard items={attention} onView={() => setView('cases')} />
+                    <NeedsAttentionCard items={attention} onView={openCasesForScenario} />
                 </div>
             ) : (
                 <div style={{ marginBottom: 'var(--spacing-l)' }}>
-                    <NeedsAttentionCard items={attention} onView={() => setView('cases')} />
+                    <NeedsAttentionCard items={attention} onView={openCasesForScenario} />
                 </div>
             )}
 

@@ -7,22 +7,16 @@ import {
     mergeClasses,
     Switch,
     SearchBox,
-    Menu,
-    MenuTrigger,
     MenuButton,
-    MenuPopover,
-    MenuList,
-    MenuItemCheckbox,
-    MenuDivider,
     Button,
+    Link,
 } from '@fluentui/react-components';
-import { ChevronRight16Regular, TagMultipleRegular } from '@fluentui/react-icons';
+import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { MoverDirections, getTabsterAttribute } from 'tabster';
 import { useReportStyles, statusSolidVar } from './reportStyles';
 import { useReportContext } from './ReportContext';
 import { ScoreNode, getConversationDisplay } from './Summary';
-import { isLeafFailed } from './viewModels';
-import { categorizeAndSortTags } from './TagsDisplay';
+import { isLeafFailed, scenariosForExecution } from './viewModels';
 import { TranscriptBlock } from './TranscriptBlock';
 import { MetricPanel } from './MetricPanel';
 
@@ -44,12 +38,27 @@ const useStyles = makeStyles({
         display: 'flex',
     },
     search: { width: '100%' },
+    tagWrap: { position: 'relative' },
+    tagOverlay: { position: 'fixed', inset: 0, zIndex: 40 },
+    tagPopover: {
+        position: 'absolute',
+        top: 'calc(100% + var(--spacing-xs))',
+        right: 0,
+        zIndex: 41,
+        backgroundColor: 'var(--neutral-background-1)',
+        border: '1px solid var(--neutral-stroke-1)',
+        borderRadius: 'var(--radius-large)',
+        boxShadow: 'var(--shadow-16)',
+        padding: 'var(--spacing-l)',
+        width: '312px',
+        maxHeight: '360px',
+        overflow: 'auto',
+    },
     tagMenuHead: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 'var(--spacing-m)',
-        padding: 'var(--spacing-xs) var(--spacing-m) var(--spacing-s)',
+        marginBottom: 'var(--spacing-m)',
     },
     tagMenuTitle: {
         fontSize: 'var(--font-size-100)',
@@ -58,22 +67,10 @@ const useStyles = makeStyles({
         letterSpacing: '0.5px',
         color: 'var(--neutral-foreground-3)',
     },
-    tagMenuList: { maxHeight: '320px', minWidth: '248px' },
-    collapseBtn: {
-        appearance: 'none',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'inherit',
-        fontSize: 'var(--font-size-200)',
-        fontWeight: 'var(--font-weight-semibold)',
-        lineHeight: 'var(--line-height-200)',
-        padding: 'var(--spacing-xs) var(--spacing-s)',
-        borderRadius: 'var(--radius-medium)',
-        backgroundColor: 'transparent',
-        color: 'var(--neutral-foreground-2)',
-        transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
-        '&:hover:not(:disabled)': { backgroundColor: 'var(--subtle-background-hover)', color: 'var(--neutral-foreground-1)' },
-        '&:disabled': { color: 'var(--neutral-foreground-disabled)', cursor: 'default' },
+    tagGrid: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 'var(--spacing-s-nudge)',
     },
 
     rowlist: { overflow: 'hidden' },
@@ -112,8 +109,9 @@ const useStyles = makeStyles({
         flex: '1 1 auto',
         minWidth: 0,
         marginRight: 'auto',
-        fontFamily: 'var(--font-family-monospace)',
-        fontSize: 'var(--font-size-200)',
+        fontFamily: 'var(--font-family-base)',
+        fontSize: 'var(--font-size-300)',
+        fontWeight: 'var(--font-weight-medium)',
         color: 'var(--neutral-foreground-2)',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
@@ -136,10 +134,9 @@ const useStyles = makeStyles({
     },
     twoPane: {
         display: 'grid',
-        gridTemplateColumns: '1.12fr 1fr',
+        gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
         gap: 'var(--spacing-l)',
         alignItems: 'start',
-        maxWidth: '75rem',
     },
 
     empty: {
@@ -210,24 +207,47 @@ type CaseRowVM = {
     key: string;
     label: string;
     group?: string;
+    scenarioName: string;
     failed: boolean;
+    isNew: boolean;
+    // First-appearance order of the row's scenario, and original dataset order within it,
+    // so the list can group by scenario and float new cases to the top of their own group.
+    scenOrder: number;
+    index: number;
     scenario: ScenarioRunResult;
 };
 
-const buildRows = (root: ScoreNode): CaseRowVM[] => {
+// prevKeys: `${scenarioName}#${iterationName}` present in the execution immediately before
+// the active one; a case is "New" when its key is absent there. Undefined = no previous
+// execution (active run is the earliest), so nothing is flagged new.
+const buildRows = (root: ScoreNode, prevKeys: Set<string> | undefined): CaseRowVM[] => {
     const rows: CaseRowVM[] = [];
+    // scenOrder captures the order each scenario first appears while iterating cases,
+    // so grouping follows first-appearance order rather than alphabetical case ids.
+    const scenOrder = new Map<string, number>();
     for (const node of root.flattenedNodes) {
         if (!node.isLeafNode || !node.scenario) {
             continue;
         }
         const segments = node.name.split(' / ');
         const label = segments[segments.length - 1];
-        const group = segments.length > 1 ? segments.slice(0, -1).join(' · ') : undefined;
+        const scenarioName = node.scenario.scenarioName;
+        // Right-side scenario tag = the case's scenario (matches the mockup's "RAG.Answer" chip).
+        // Derive from scenarioName so it's robust to multi-iteration scenarios (node.name is just the case id then).
+        const group = scenarioName || (segments.length > 1 ? segments.slice(0, -1).join(' · ') : undefined);
+        if (!scenOrder.has(scenarioName)) {
+            scenOrder.set(scenarioName, scenOrder.size);
+        }
+        const isNew = prevKeys ? !prevKeys.has(`${scenarioName}#${node.scenario.iterationName}`) : false;
         rows.push({
             key: node.nodeKey,
             label,
             group,
+            scenarioName,
             failed: isLeafFailed(node.scenario),
+            isNew,
+            scenOrder: scenOrder.get(scenarioName)!,
+            index: rows.length,
             scenario: node.scenario,
         });
     }
@@ -250,11 +270,13 @@ const metaLineFor = (scenario: ScenarioRunResult): string | undefined => {
 const CaseRow = ({
     vm,
     open,
+    showTag,
     onToggle,
     registerRowRef,
 }: {
     vm: CaseRowVM;
     open: boolean;
+    showTag: boolean;
     onToggle: () => void;
     registerRowRef: (key: string, el: HTMLButtonElement | null) => void;
 }) => {
@@ -291,7 +313,8 @@ const CaseRow = ({
                     />
                 </span>
                 <span className={classes.label}>{vm.label}</span>
-                {vm.group && <span className={s.badge}>{vm.group}</span>}
+                {vm.isNew && <span className={mergeClasses(s.badge, 'eval-new-badge')}>New</span>}
+                {showTag && vm.group && <span className={s.badge}>{vm.group}</span>}
             </button>
 
             {open && conversation && (
@@ -309,7 +332,7 @@ const CaseRow = ({
                         </div>
                     )}
                     <div className={mergeClasses(classes.twoPane, 'eval-twopane')}>
-                        <TranscriptBlock messages={conversation.messages} />
+                        <TranscriptBlock messages={conversation.messages} model={conversation.model} />
                         <MetricPanel scenario={vm.scenario} />
                     </div>
                 </div>
@@ -324,7 +347,8 @@ export const CasesView = () => {
     const {
         dataset,
         activeExecution,
-        activeNode,
+        scopedNode,
+        selectedScenarioLevel,
         filterTree,
         failedOnly,
         setFailedOnly,
@@ -338,9 +362,31 @@ export const CasesView = () => {
         clearFilters,
     } = useReportContext();
 
-    const { filterableTags } = categorizeAndSortTags(dataset, activeExecution);
+    const scopedScenarioNames = useMemo(() => {
+        if (!selectedScenarioLevel) return undefined;
+        return new Set(
+            scopedNode.flattenedNodes
+                .filter((n) => n.isLeafNode && n.scenario)
+                .map((n) => n.scenario!.scenarioName),
+        );
+    }, [scopedNode, selectedScenarioLevel]);
+
+    const filterableTags = useMemo(() => {
+        const results = (dataset.scenarioRunResults ?? []).filter(
+            (r) => r.executionName === activeExecution &&
+                (!scopedScenarioNames || scopedScenarioNames.has(r.scenarioName)),
+        );
+        const total = results.length;
+        const counts = new Map<string, number>();
+        for (const r of results) for (const tag of r.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+        return [...counts.entries()]
+            .filter(([, c]) => c !== total)
+            .map(([tag, count]) => ({ tag, count }))
+            .sort((a, b) => b.count - a.count);
+    }, [dataset, activeExecution, scopedScenarioNames]);
 
     const [openKey, setOpenKey] = useState<string | null>(null);
+    const [tagMenuOpen, setTagMenuOpen] = useState(false);
     const rowRefs = useRef(new Map<string, HTMLButtonElement | null>());
     const registerRowRef = (key: string, el: HTMLButtonElement | null) => {
         if (el) {
@@ -358,21 +404,57 @@ export const CasesView = () => {
         }
     };
 
+    // "Previous execution" == the one immediately before the active run in first-appearance
+    // (chronological) order — same baseline OverviewView/passRateByScenarioGroup use for their
+    // "vs previous" deltas. A case is New when its scenario#iteration key is absent from it.
+    const prevKeys = useMemo(() => {
+        const execs: string[] = [];
+        const seen = new Set<string>();
+        for (const r of dataset.scenarioRunResults ?? []) {
+            if (!seen.has(r.executionName)) {
+                seen.add(r.executionName);
+                execs.push(r.executionName);
+            }
+        }
+        const activeIdx = execs.indexOf(activeExecution);
+        const prevExec = activeIdx <= 0 ? execs[1] : execs[activeIdx - 1];
+        if (!prevExec) {
+            return undefined;
+        }
+        return new Set(
+            scenariosForExecution(dataset, prevExec).map((r) => `${r.scenarioName}#${r.iterationName}`),
+        );
+    }, [dataset, activeExecution]);
+
     const allRows = useMemo(() => {
-        const filtered = filterTree(activeNode);
-        return filtered ? buildRows(filtered) : [];
-    }, [filterTree, activeNode]);
+        const filtered = filterTree(scopedNode);
+        return filtered ? buildRows(filtered, prevKeys) : [];
+    }, [filterTree, scopedNode, prevKeys]);
 
     const rows = useMemo(() => {
         const filtered = failedOnly ? allRows.filter((r) => r.failed) : allRows;
         const sorted = [...filtered];
-        if (scenSort === 'passRate') {
-            sorted.sort((a, b) => Number(b.failed) - Number(a.failed) || a.label.localeCompare(b.label));
-        } else {
-            sorted.sort((a, b) => a.label.localeCompare(b.label));
-        }
+        // Always group by scenario (first-appearance order); within a group new cases float to
+        // the top, then original dataset order. In pass-rate mode, failed cases lead the group.
+        sorted.sort((a, b) => {
+            if (a.scenOrder !== b.scenOrder) return a.scenOrder - b.scenOrder;
+            if (scenSort === 'passRate' && a.failed !== b.failed) return a.failed ? -1 : 1;
+            if (a.isNew !== b.isNew) return a.isNew ? -1 : 1;
+            return a.index - b.index;
+        });
         return sorted;
     }, [allRows, failedOnly, scenSort]);
+
+    // The sidebar selection is a nodeKey; resolve it to a scenario name ONLY when the scope is a
+    // single scenario (every leaf shares one scenarioName). Rows equal to it hide the now-redundant
+    // scenario tag (mockup HTML:2330); a broader Group scope keeps tags so cases stay distinguishable.
+    const selectedScenarioName = useMemo(() => {
+        if (!selectedScenarioLevel) return undefined;
+        const names = new Set(
+            scopedNode.flattenedNodes.filter((n) => n.isLeafNode && n.scenario).map((n) => n.scenario!.scenarioName),
+        );
+        return names.size === 1 ? [...names][0] : undefined;
+    }, [selectedScenarioLevel, scopedNode]);
 
     const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
     useEffect(() => {
@@ -408,61 +490,79 @@ export const CasesView = () => {
                 </div>
 
                 {filterableTags.length > 0 && (
-                    <Menu checkedValues={{ tags: selectedTags }}>
-                        <MenuTrigger disableButtonEnhancement>
-                            <MenuButton
-                                appearance="secondary"
-                                icon={<TagMultipleRegular />}
-                                className="eval-fitbtn"
-                            >
-                                {tagLabel}
-                            </MenuButton>
-                        </MenuTrigger>
-                        <MenuPopover>
-                            <div className={classes.tagMenuHead}>
-                                <span className={classes.tagMenuTitle}>Filter by tag</span>
-                                {selectedTags.length > 0 && (
-                                    <Button
-                                        appearance="transparent"
-                                        size="small"
-                                        onClick={() => {
-                                            selectedTags.forEach((t) => handleTagClick(t));
-                                            setCasePage(1);
-                                        }}
-                                    >
-                                        Clear
-                                    </Button>
-                                )}
-                            </div>
-                            <MenuDivider />
-                            <MenuList className={classes.tagMenuList}>
-                                {filterableTags.map(({ tag, count }) => (
-                                    <MenuItemCheckbox
-                                        key={tag}
-                                        name="tags"
-                                        value={tag}
-                                        onClick={() => {
-                                            handleTagClick(tag);
-                                            setCasePage(1);
-                                        }}
-                                        secondaryContent={String(count)}
-                                    >
-                                        {tag}
-                                    </MenuItemCheckbox>
-                                ))}
-                            </MenuList>
-                        </MenuPopover>
-                    </Menu>
+                    <div className={mergeClasses(classes.tagWrap, 'eval-fitbtn')}>
+                        <MenuButton
+                            appearance="secondary"
+                            onClick={() => setTagMenuOpen((v) => !v)}
+                        >
+                            {tagLabel}
+                        </MenuButton>
+                        {tagMenuOpen && (
+                            <>
+                                <div className={classes.tagOverlay} onClick={() => setTagMenuOpen(false)} />
+                                <div className={classes.tagPopover}>
+                                    <div className={classes.tagMenuHead}>
+                                        <span className={classes.tagMenuTitle}>Filter by tag</span>
+                                        <Link
+                                            onClick={() => {
+                                                selectedTags.forEach((t) => handleTagClick(t));
+                                                setCasePage(1);
+                                            }}
+                                        >
+                                            Clear
+                                        </Link>
+                                    </div>
+                                    <div className={classes.tagGrid}>
+                                        {filterableTags.map(({ tag }) => {
+                                            const active = selectedTags.includes(tag);
+                                            return (
+                                                <button
+                                                    key={tag}
+                                                    type="button"
+                                                    className={mergeClasses('eval-tagopt', active && 'is-active')}
+                                                    aria-pressed={active}
+                                                    onClick={() => {
+                                                        handleTagClick(tag);
+                                                        setCasePage(1);
+                                                    }}
+                                                    style={{
+                                                        flex: '1 1 auto',
+                                                        boxSizing: 'border-box',
+                                                        border: active ? '1px solid var(--brand-stroke-1)' : '1px solid var(--neutral-stroke-1)',
+                                                        background: active ? 'var(--brand-background-2)' : 'transparent',
+                                                        color: active ? 'var(--brand-foreground-1)' : 'var(--neutral-foreground-2)',
+                                                        fontWeight: active ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
+                                                        borderRadius: 'var(--radius-circular)',
+                                                        padding: 'var(--spacing-xs) var(--spacing-l)',
+                                                        cursor: 'pointer',
+                                                        fontFamily: 'inherit',
+                                                        fontSize: 'var(--font-size-200)',
+                                                        lineHeight: 1.3,
+                                                        whiteSpace: 'nowrap',
+                                                        textAlign: 'center',
+                                                        transition:
+                                                            'background-color var(--duration-faster) var(--curve-easy-ease), border-color var(--duration-faster) var(--curve-easy-ease)',
+                                                    }}
+                                                >
+                                                    {tag}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 )}
 
-                <button
-                    type="button"
-                    className={classes.collapseBtn}
+                <Button
+                    appearance="secondary"
                     disabled={openKey === null}
                     onClick={() => closeOpen(false)}
+                    className="eval-fitbtn"
                 >
                     Collapse open
-                </button>
+                </Button>
 
                 <Switch
                     checked={failedOnly}
@@ -470,7 +570,7 @@ export const CasesView = () => {
                         setFailedOnly(data.checked);
                         setCasePage(1);
                     }}
-                    label="Failing only"
+                    label="Show failed"
                 />
             </div>
 
@@ -496,6 +596,7 @@ export const CasesView = () => {
                                 key={vm.key}
                                 vm={vm}
                                 open={openKey === vm.key}
+                                showTag={vm.scenarioName !== selectedScenarioName}
                                 onToggle={() => (openKey === vm.key ? closeOpen(true) : setOpenKey(vm.key))}
                                 registerRowRef={registerRowRef}
                             />
