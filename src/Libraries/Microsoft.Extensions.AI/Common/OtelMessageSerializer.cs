@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA1307 // Specify StringComparison for clarity
 #pragma warning disable CA1308 // Normalize strings to uppercase
@@ -18,6 +19,30 @@ namespace Microsoft.Extensions.AI;
 internal static class OtelMessageSerializer
 {
     internal static readonly JsonSerializerOptions DefaultOptions = CreateDefaultOptions();
+
+    /// <summary>
+    /// Validates that the given options would produce OpenTelemetry-conformant message JSON, then makes them
+    /// read-only so the validated state cannot be mutated afterwards.
+    /// </summary>
+    internal static void ValidateAndFreeze(JsonSerializerOptions options)
+    {
+        const string CopyHint = "Copy the existing JsonSerializerOptions (new JsonSerializerOptions(instance.JsonSerializerOptions)) and override only the properties you need.";
+
+        IList<IJsonTypeInfoResolver> chain = options.TypeInfoResolverChain;
+        if (chain.Count == 0 || chain[0] is not OtelContext)
+        {
+            Throw.InvalidOperationException(
+                "The configured JsonSerializerOptions must have the required OpenTelemetry type resolver first in its TypeInfoResolverChain. " + CopyHint);
+        }
+
+        if (options.PropertyNamingPolicy != JsonNamingPolicy.SnakeCaseLower)
+        {
+            Throw.InvalidOperationException(
+                "The configured JsonSerializerOptions must use JsonNamingPolicy.SnakeCaseLower to produce OpenTelemetry-conformant property names. " + CopyHint);
+        }
+
+        options.MakeReadOnly();
+    }
 
     private static readonly JsonElement _emptyObject =
         JsonSerializer.SerializeToElement(new object(), DefaultOptions.GetTypeInfo(typeof(object)));
@@ -36,8 +61,10 @@ internal static class OtelMessageSerializer
     }
 
     internal static string SerializeChatMessages(
-        IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null, JsonSerializerOptions? customContentSerializerOptions = null)
+        IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null, JsonSerializerOptions? options = null)
     {
+        options ??= DefaultOptions;
+
         List<object> output = [];
 
         string? finishReason =
@@ -225,12 +252,7 @@ internal static class OtelMessageSerializer
                         JsonElement element = _emptyObject;
                         try
                         {
-                            JsonTypeInfo? unknownContentTypeInfo =
-                                customContentSerializerOptions?.TryGetTypeInfo(content.GetType(), out JsonTypeInfo? ctsi) is true ? ctsi :
-                                DefaultOptions.TryGetTypeInfo(content.GetType(), out JsonTypeInfo? dtsi) ? dtsi :
-                                null;
-
-                            if (unknownContentTypeInfo is not null)
+                            if (options.TryGetTypeInfo(content.GetType(), out JsonTypeInfo? unknownContentTypeInfo))
                             {
                                 element = JsonSerializer.SerializeToElement(content, unknownContentTypeInfo);
                             }
@@ -252,7 +274,7 @@ internal static class OtelMessageSerializer
             output.Add(m);
         }
 
-        return JsonSerializer.Serialize(output, DefaultOptions.GetTypeInfo(typeof(IList<object>)));
+        return JsonSerializer.Serialize(output, options.GetTypeInfo(typeof(IList<object>)));
     }
 
     /// <summary>Derives the OTel <c>modality</c> classifier from a media type's top-level type.</summary>

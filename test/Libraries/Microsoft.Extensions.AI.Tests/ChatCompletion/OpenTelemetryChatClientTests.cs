@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,7 +106,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = enableSensitiveData;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -433,7 +434,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -594,7 +595,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -696,7 +697,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -829,7 +830,7 @@ public class OpenTelemetryChatClientTests
             .UseOpenTelemetry(null, sourceName, configure: instance =>
             {
                 instance.EnableSensitiveData = true;
-                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                AddTestJsonResolver(instance);
             })
             .Build();
 
@@ -998,6 +999,180 @@ public class OpenTelemetryChatClientTests
     private sealed class NonSerializableAIContent : AIContent;
 
     private static string ReplaceWhitespace(string? input) => Regex.Replace(input ?? "", @"\s+", " ").Trim();
+
+    /// <summary>
+    /// Configures the <see cref="OpenTelemetryChatClient"/> with options that chain the
+    /// <see cref="TestJsonSerializerContext"/> resolver after the default OTel resolvers.
+    /// </summary>
+    private static void AddTestJsonResolver(OpenTelemetryChatClient instance)
+    {
+        var opts = new JsonSerializerOptions(instance.JsonSerializerOptions);
+        opts.TypeInfoResolverChain.Add(TestJsonSerializerContext.Default);
+        instance.JsonSerializerOptions = opts;
+    }
+
+    [Fact]
+    public void JsonSerializerOptions_DefaultIsImmutable()
+    {
+        using var innerClient = new TestChatClient();
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+        Assert.True(chatClient.JsonSerializerOptions.IsReadOnly);
+        Assert.Throws<InvalidOperationException>(() => chatClient.JsonSerializerOptions.WriteIndented = true);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_NonSnakeCaseLowerNamingPolicy_ThrowsOnUse()
+    {
+        await RunTest(null);
+        await RunTest(JsonNamingPolicy.CamelCase);
+
+        static async Task RunTest(JsonNamingPolicy? policy)
+        {
+            using var innerClient = new TestChatClient
+            {
+                GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                    Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+            };
+            using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+            // Copy the conformant default (so the OTel resolver stays first) and change only the naming
+            // policy. This isolates the naming-policy check: any value other than SnakeCaseLower must throw.
+            chatClient.JsonSerializerOptions =
+                new JsonSerializerOptions(chatClient.JsonSerializerOptions) { PropertyNamingPolicy = policy };
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => chatClient.GetResponseAsync([new(ChatRole.User, "hello")]));
+
+            Assert.Contains("new JsonSerializerOptions(", ex.Message);
+        }
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_DefaultOptionsNotCopied_ThrowsOnUse()
+    {
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+        };
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+        // Starting from a blank JsonSerializerOptions (instead of copying the client's existing
+        // options) omits the required OpenTelemetry type resolver, so the first request throws.
+        chatClient.JsonSerializerOptions = new JsonSerializerOptions();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => chatClient.GetResponseAsync([new(ChatRole.User, "hello")]));
+
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_OtelResolverNotFirst_ThrowsOnUse()
+    {
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+        };
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+        // Capture the OTel resolver from the conformant default before overwriting the options.
+        var otelResolver = chatClient.JsonSerializerOptions.TypeInfoResolverChain[0];
+
+        // OTel resolver present, snake_case set, but shadowed by an earlier reflection-based resolver.
+        // The first resolver in the chain wins, so reflection would serialize a non-conformant shape.
+        var opts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        opts.TypeInfoResolverChain.Add(JsonSerializerOptions.Default.TypeInfoResolver!);
+        opts.TypeInfoResolverChain.Add(otelResolver);
+        chatClient.JsonSerializerOptions = opts;
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => chatClient.GetResponseAsync([new(ChatRole.User, "hello")]));
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_ConformantValue_IsFrozenOnFirstUse()
+    {
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, options, cancellationToken) =>
+                Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "hi"))),
+        };
+        using var chatClient = new OpenTelemetryChatClient(innerClient);
+
+        // A mutable, conformant copy of the default options.
+        var opts = new JsonSerializerOptions(chatClient.JsonSerializerOptions) { WriteIndented = false };
+        chatClient.JsonSerializerOptions = opts;
+
+        // Assignment alone does not freeze; the options stay mutable until first use.
+        Assert.False(opts.IsReadOnly);
+
+        _ = await chatClient.GetResponseAsync([new(ChatRole.User, "hello")]);
+
+        // First use freezes the value so its validated state cannot be mutated afterwards.
+        Assert.True(opts.IsReadOnly);
+        Assert.Same(opts, chatClient.JsonSerializerOptions);
+        Assert.Throws<InvalidOperationException>(() => opts.PropertyNamingPolicy = null);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task JsonSerializerOptions_WriteIndented_IsHonored(bool writeIndented)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hi!"))
+                {
+                    FinishReason = ChatFinishReason.Stop,
+                };
+            },
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testprovider", new Uri("http://localhost"), "model") :
+                null,
+        };
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.JsonSerializerOptions = new JsonSerializerOptions(instance.JsonSerializerOptions) { WriteIndented = writeIndented };
+            })
+            .Build();
+
+        await chatClient.GetResponseAsync("Hello!");
+
+        var activity = Assert.Single(activities);
+        var inputMessages = Assert.IsType<string>(activity.GetTagItem("gen_ai.input.messages"));
+        var outputMessages = Assert.IsType<string>(activity.GetTagItem("gen_ai.output.messages"));
+
+        if (writeIndented)
+        {
+            Assert.Contains("\n", inputMessages);
+            Assert.Contains("\n", outputMessages);
+        }
+        else
+        {
+            Assert.DoesNotContain("\n", inputMessages);
+            Assert.DoesNotContain("\n", outputMessages);
+
+            // Verify compact JSON still uses snake_case (not camelCase "finishReason")
+            Assert.Contains("\"finish_reason\":", outputMessages);
+        }
+    }
 
     [Theory]
     [InlineData(false)]

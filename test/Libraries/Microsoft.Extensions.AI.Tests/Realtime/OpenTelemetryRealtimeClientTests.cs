@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,7 +81,9 @@ public class OpenTelemetryRealtimeClientTests
         using var innerClient = new TestRealtimeClient(innerSession);
         using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
         client.EnableSensitiveData = enableSensitiveData;
-        client.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+        var opts = new JsonSerializerOptions(client.JsonSerializerOptions);
+        opts.TypeInfoResolverChain.Add(TestJsonSerializerContext.Default);
+        client.JsonSerializerOptions = opts;
         await using var session = await client.CreateSessionAsync();
 
         await foreach (var msg in GetClientMessagesAsync())
@@ -570,6 +573,180 @@ public class OpenTelemetryRealtimeClientTests
         _ = cancellationToken;
 
         yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_DefaultIsImmutable()
+    {
+        await using var innerSession = new TestRealtimeClientSession();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+        Assert.True(client.JsonSerializerOptions.IsReadOnly);
+        Assert.Throws<InvalidOperationException>(() => client.JsonSerializerOptions.WriteIndented = true);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_DefaultOptionsNotCopied_ThrowsOnUse()
+    {
+        await using var innerSession = new TestRealtimeClientSession();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+
+        // Starting from a blank JsonSerializerOptions (instead of copying the client's existing
+        // options) omits the required OpenTelemetry type resolver, so the first send throws.
+        client.JsonSerializerOptions = new JsonSerializerOptions();
+
+        await using var session = await client.CreateSessionAsync();
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            session.SendAsync(new CreateResponseRealtimeClientMessage()));
+
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_OtelResolverNotFirst_ThrowsOnUse()
+    {
+        await using var innerSession = new TestRealtimeClientSession();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+
+        // Capture the OTel resolver from the conformant default before overwriting the options.
+        var otelResolver = client.JsonSerializerOptions.TypeInfoResolverChain[0];
+
+        // OTel resolver present, snake_case set, but shadowed by an earlier reflection-based resolver.
+        // The first resolver in the chain wins, so reflection would serialize a non-conformant shape.
+        var opts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        opts.TypeInfoResolverChain.Add(JsonSerializerOptions.Default.TypeInfoResolver!);
+        opts.TypeInfoResolverChain.Add(otelResolver);
+        client.JsonSerializerOptions = opts;
+
+        await using var session = await client.CreateSessionAsync();
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            session.SendAsync(new CreateResponseRealtimeClientMessage()));
+
+        Assert.Contains("new JsonSerializerOptions(", ex.Message);
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_NonSnakeCaseLowerNamingPolicy_ThrowsOnUse()
+    {
+        await RunTest(null);
+        await RunTest(JsonNamingPolicy.CamelCase);
+
+        static async Task RunTest(JsonNamingPolicy? policy)
+        {
+            await using var innerSession = new TestRealtimeClientSession();
+            using var innerClient = new TestRealtimeClient(innerSession);
+            using var client = new OpenTelemetryRealtimeClient(innerClient);
+
+            // Copy the conformant default (so the OTel resolver stays first) and change only the naming
+            // policy. This isolates the naming-policy check: any value other than SnakeCaseLower must throw.
+            client.JsonSerializerOptions =
+                new JsonSerializerOptions(client.JsonSerializerOptions) { PropertyNamingPolicy = policy };
+
+            await using var session = await client.CreateSessionAsync();
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                session.SendAsync(new CreateResponseRealtimeClientMessage()));
+
+            Assert.Contains("new JsonSerializerOptions(", ex.Message);
+        }
+    }
+
+    [Fact]
+    public async Task JsonSerializerOptions_ConformantValue_IsFrozenOnFirstUse()
+    {
+        await using var innerSession = new TestRealtimeClientSession();
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient);
+
+        // A mutable, conformant copy of the default options.
+        var opts = new JsonSerializerOptions(client.JsonSerializerOptions) { WriteIndented = false };
+        client.JsonSerializerOptions = opts;
+
+        // Assignment alone does not freeze; the options stay mutable until first use.
+        Assert.False(opts.IsReadOnly);
+
+        await using var session = await client.CreateSessionAsync();
+        await session.SendAsync(new CreateResponseRealtimeClientMessage());
+
+        // First use freezes the value so its validated state cannot be mutated afterwards.
+        Assert.True(opts.IsReadOnly);
+        Assert.Throws<InvalidOperationException>(() => opts.PropertyNamingPolicy = null);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task JsonSerializerOptions_WriteIndented_IsHonored(bool writeIndented)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        await using var innerSession = new TestRealtimeClientSession
+        {
+            Options = new RealtimeSessionOptions
+            {
+                Model = "test-model",
+                SessionKind = RealtimeSessionKind.Conversation,
+            },
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ? new ChatClientMetadata("testprovider", new Uri("http://localhost"), "model") :
+                null,
+            GetStreamingResponseAsyncCallback = (cancellationToken) => CallbackAsync(cancellationToken),
+        };
+
+        static async IAsyncEnumerable<RealtimeServerMessage> CallbackAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            _ = cancellationToken;
+            yield return new OutputTextAudioRealtimeServerMessage(RealtimeServerMessageType.OutputTextDone) { OutputIndex = 0, Text = "Hi!" };
+            yield return new ResponseCreatedRealtimeServerMessage(RealtimeServerMessageType.ResponseDone)
+            {
+                ResponseId = "resp_1",
+                Status = "completed",
+            };
+        }
+
+        using var innerClient = new TestRealtimeClient(innerSession);
+        using var client = new OpenTelemetryRealtimeClient(innerClient, sourceName: sourceName);
+        client.EnableSensitiveData = true;
+        client.JsonSerializerOptions = new JsonSerializerOptions(client.JsonSerializerOptions) { WriteIndented = writeIndented };
+        await using var session = await client.CreateSessionAsync();
+
+        await foreach (var msg in GetClientMessagesAsync())
+        {
+            await session.SendAsync(msg);
+        }
+
+        await foreach (var response in session.GetStreamingResponseAsync())
+        {
+            // Consume responses
+        }
+
+        // Find activities with input or output messages
+        var inputActivity = activities.FirstOrDefault(a => a.GetTagItem("gen_ai.input.messages") is not null);
+        var outputActivity = activities.FirstOrDefault(a => a.GetTagItem("gen_ai.output.messages") is not null);
+
+        Assert.NotNull(inputActivity);
+        Assert.NotNull(outputActivity);
+
+        var inputMessages = (string)inputActivity.GetTagItem("gen_ai.input.messages")!;
+        var outputMessages = (string)outputActivity.GetTagItem("gen_ai.output.messages")!;
+
+        if (writeIndented)
+        {
+            Assert.Contains("\n", inputMessages);
+            Assert.Contains("\n", outputMessages);
+        }
+        else
+        {
+            Assert.DoesNotContain("\n", inputMessages);
+            Assert.DoesNotContain("\n", outputMessages);
+        }
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
