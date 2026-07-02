@@ -240,8 +240,11 @@ internal sealed class OpenAIHostedFileClient : IHostedFileClient
             while (true)
             {
                 AsyncCollectionResult result = containerClient.GetContainerFilesAsync(
-                    containerId, limit < int.MaxValue ? limit : null,
-                    null, after, new() { CancellationToken = cancellationToken });
+                    new ContainerFileCollectionOptions(containerId)
+                    {
+                        PageSizeLimit = limit < int.MaxValue ? limit : null,
+                        AfterId = after,
+                    }, cancellationToken);
 
                 // Get only the first raw page. We must not let the SDK auto-paginate
                 // because its pagination logic deserializes the full response, which crashes.
