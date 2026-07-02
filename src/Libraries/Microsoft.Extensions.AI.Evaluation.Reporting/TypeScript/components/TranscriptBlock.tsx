@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { Fragment } from 'react';
 import { Card } from '@fluentui/react-components';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useReportContext } from './ReportContext';
 import { type ChatMessageDisplay, isTextContent, isImageContent } from './Summary';
 
@@ -94,7 +96,7 @@ type GroupVM =
     | { kind: 'group'; role: 'user' | 'assistant'; bubbles: BubbleVM[]; participantName: string }
     | { kind: 'system'; content: AIContent };
 
-const buildGroups = (messages: ChatMessageDisplay[]): GroupVM[] => {
+const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): GroupVM[] => {
     const groups: GroupVM[] = [];
     // Assistant turns buffer tool calls in `pending`; they fold into the top of
     // the next reply bubble as sections. A turn can run tool → reply → tool.
@@ -114,7 +116,7 @@ const buildGroups = (messages: ChatMessageDisplay[]): GroupVM[] => {
         if (isFunctionResult(content)) {
             // Merge into the most recent buffered call (adjacent call+result → one section).
             const last = pending[pending.length - 1];
-            const resultText = safeJsonMaybeString(content.result);
+            const resultText = safeJsonMaybeString(content.result, prettifyJson);
             if (last && !last.hasResult) {
                 last.hasResult = true;
                 last.resultText = resultText;
@@ -131,7 +133,7 @@ const buildGroups = (messages: ChatMessageDisplay[]): GroupVM[] => {
             }
             pending.push({
                 name: content.name ?? 'function',
-                callText: safeJson(content.arguments ?? {}, true),
+                callText: safeJson(content.arguments ?? {}, prettifyJson),
                 hasResult: false,
                 resultText: '',
             });
@@ -145,7 +147,7 @@ const buildGroups = (messages: ChatMessageDisplay[]): GroupVM[] => {
             }
             pending.push({
                 name: content.$type ?? 'tool',
-                callText: safeJson(content, true),
+                callText: safeJson(content, prettifyJson),
                 hasResult: false,
                 resultText: '',
             });
@@ -177,7 +179,7 @@ const buildGroups = (messages: ChatMessageDisplay[]): GroupVM[] => {
                 openAssistant = { kind: 'group', role: 'assistant', bubbles: [], participantName: m.participantName };
                 groups.push(openAssistant);
             }
-            pending.push({ name: 'tool', callText: safeJson(content, true), hasResult: false, resultText: '' });
+            pending.push({ name: 'tool', callText: safeJson(content, prettifyJson), hasResult: false, resultText: '' });
             continue;
         }
 
@@ -194,8 +196,22 @@ const buildGroups = (messages: ChatMessageDisplay[]): GroupVM[] => {
     return groups;
 };
 
-const safeJsonMaybeString = (value: unknown): string =>
-    typeof value === 'string' ? value : safeJson(value ?? null, true);
+const safeJsonMaybeString = (value: unknown, pretty: boolean): string => {
+    if (typeof value === 'string') {
+        // A double-encoded JSON string result: parse + re-stringify with the flag
+        // so it pretty-prints. Genuinely-non-JSON strings fall through unchanged.
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                return safeJson(JSON.parse(trimmed), pretty);
+            } catch {
+                // not JSON — keep the raw string
+            }
+        }
+        return value;
+    }
+    return safeJson(value ?? null, pretty);
+};
 
 // ── Rendering ──────────────────────────────────────────────────────────────
 
@@ -239,6 +255,50 @@ const MD_TEXT_STYLE: CSSProperties = {
     wordBreak: 'break-word',
 };
 
+// Replace literal `[[n]]` citation tokens in string children with a styled
+// superscript chip (React elements — NEVER innerHTML). There is no citation
+// data model in the wire contract, so this is a non-linking display chip.
+const CITE_RE = /\[\[(\d+)\]\]/g;
+
+const withCitations = (children: ReactNode): ReactNode => {
+    let key = 0;
+    const transform = (node: ReactNode): ReactNode => {
+        if (typeof node === 'string') {
+            if (!CITE_RE.test(node)) return node;
+            CITE_RE.lastIndex = 0;
+            const out: ReactNode[] = [];
+            let last = 0;
+            let m: RegExpExecArray | null;
+            while ((m = CITE_RE.exec(node)) !== null) {
+                if (m.index > last) out.push(node.slice(last, m.index));
+                out.push(<sup className="eval-cite" key={`c-${key++}`}>{m[1]}</sup>);
+                last = m.index + m[0].length;
+            }
+            if (last < node.length) out.push(node.slice(last));
+            return <Fragment key={`f-${key++}`}>{out}</Fragment>;
+        }
+        if (Array.isArray(node)) return node.map((n) => transform(n));
+        return node;
+    };
+    return transform(children);
+};
+
+// react-markdown renderer overrides: tag the container children with a citation
+// transform on text-bearing elements only. `code`/`pre` are intentionally NOT
+// overridden so `[[n]]` inside code stays literal.
+const MD_COMPONENTS: Components = {
+    p: ({ children }) => <p>{withCitations(children)}</p>,
+    li: ({ children }) => <li>{withCitations(children)}</li>,
+    td: ({ children }) => <td>{withCitations(children)}</td>,
+    th: ({ children }) => <th>{withCitations(children)}</th>,
+    blockquote: ({ children }) => <blockquote>{withCitations(children)}</blockquote>,
+    em: ({ children }) => <em>{withCitations(children)}</em>,
+    strong: ({ children }) => <strong>{withCitations(children)}</strong>,
+    a: ({ children, href }) => (
+        <a href={href} target="_blank" rel="noopener noreferrer">{withCitations(children)}</a>
+    ),
+};
+
 const CODE_STYLE: CSSProperties = {
     margin: 0,
     fontFamily: 'var(--font-family-monospace)',
@@ -261,7 +321,9 @@ const TextNode = ({ content }: { content: AIContent }) => {
             // not JSON — render as markdown / plain text below
         }
         return renderMarkdown ? (
-            <div style={MD_TEXT_STYLE}><ReactMarkdown>{content.text}</ReactMarkdown></div>
+            <div className="eval-md" style={MD_TEXT_STYLE}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>{content.text}</ReactMarkdown>
+            </div>
         ) : (
             <span style={{ whiteSpace: 'pre-wrap' }}>{content.text}</span>
         );
@@ -484,8 +546,8 @@ const SystemGroup = ({ content }: { content: AIContent }) => {
 };
 
 export const TranscriptBlock = ({ messages, model: modelProp }: { messages: ChatMessageDisplay[]; model?: string }) => {
-    const { dataset } = useReportContext();
-    const groups = buildGroups(messages);
+    const { dataset, prettifyJson } = useReportContext();
+    const groups = buildGroups(messages, prettifyJson);
     const { time, date } = chatClock(dataset?.createdAt);
 
     // Prefer the wire model id (modelResponse.modelId, surfaced as conversation.model);

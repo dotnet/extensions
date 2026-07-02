@@ -58,7 +58,10 @@ const numDeltaChip = (d: number): DeltaChip => {
 };
 
 const rateStatus = (rate: number): ReportStatus =>
-    rate >= 0.9 ? 'success' : rate >= 0.7 ? 'warning' : 'danger';
+    rate >= 0.9 ? 'success'
+        : rate >= 0.75 ? 'caution'
+            : rate >= 0.5 ? 'warning'
+                : 'danger';
 
 const auraDotStyle = (status: ReportStatus): React.CSSProperties => {
     const solid = statusSolidVar(status);
@@ -221,7 +224,9 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                                 {valStr}
                             </span>,
                             <span key={`${m.scenarioName}-${m.metricName}-d`} style={{ display: 'inline-flex', justifySelf: 'end' }}>
-                                <DeltaBadge chip={dc} shape="circular" appearance="tint" />
+                                {dc.status === 'informative'
+                                    ? <span style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontVariantNumeric: 'tabular-nums', justifySelf: 'end' }}>—</span>
+                                    : <DeltaBadge chip={dc} shape="circular" appearance="tint" />}
                             </span>,
                         ];
                     })}

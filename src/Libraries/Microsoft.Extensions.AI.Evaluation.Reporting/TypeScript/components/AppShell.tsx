@@ -85,6 +85,18 @@ const useStyles = makeStyles({
         gap: 'var(--spacing-m)',
         flex: 'none',
         minWidth: 0,
+        border: 'none',
+        backgroundColor: 'transparent',
+        padding: 0,
+        margin: 0,
+        cursor: 'pointer',
+        font: 'inherit',
+        color: 'inherit',
+        textAlign: 'left',
+        ':focus-visible': {
+            outline: '2px solid var(--brand-80)',
+            outlineOffset: '2px',
+        },
     },
     brandLogo: { alignSelf: 'center', flex: 'none', color: 'var(--brand-80)' },
     brandText: {
@@ -473,6 +485,12 @@ export const AppShell = ({
     const classes = useStyles();
     const { dataset, scopedNode, setIsSettingsOpen } = useReportContext();
     const { darkMode, setDarkMode } = useReportContext();
+    const { setView, clearScenarioLevel } = useReportContext();
+
+    const goHome = () => {
+        setView('overview');
+        clearScenarioLevel();
+    };
     const { fluentTheme, rootClass } = resolveTheme(darkMode);
 
     const casesCount =
@@ -498,10 +516,15 @@ export const AppShell = ({
         <FluentProvider theme={fluentTheme} className={rootClass}>
             <div className={mergeClasses('eval-root', rootClassName)}>
             <header className={mergeClasses(classes.topbar, 'eval-topbar')}>
-                <div className={classes.brand}>
+                <button
+                    type="button"
+                    className={classes.brand}
+                    onClick={goHome}
+                    aria-label="Go to Overview, all scenarios"
+                >
                     <BrandMark />
                     <span className={classes.brandText}>AI Evaluation Report</span>
-                </div>
+                </button>
                 <div className={classes.topbarActions}>
                     {themeSource === 'toggle' && <ThemeToggle />}
                     <Tooltip content="Settings" relationship="label">

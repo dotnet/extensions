@@ -134,7 +134,7 @@ const useStyles = makeStyles({
     },
     twoPane: {
         display: 'grid',
-        gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
+        gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)',
         gap: 'var(--spacing-l)',
         alignItems: 'start',
     },

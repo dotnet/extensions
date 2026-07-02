@@ -164,7 +164,7 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
     }
     for (const o of valid) {
         medEls.push(
-            <circle key={`md${o.i}`} cx={xOf(o.i)} cy={yOf(o.p.median)} r={4} strokeWidth={1.5} style={{ fill: 'var(--neutral-background-1)', stroke: medColor }} />,
+            <circle key={`md${o.i}`} cx={xOf(o.i)} cy={yOf(o.p.median)} r={3.25} strokeWidth={1.5} style={{ fill: 'var(--neutral-background-1)', stroke: medColor }} />,
         );
     }
 
@@ -176,7 +176,7 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
     }
     for (const o of valid) {
         meanEls.push(
-            <circle key={`d${o.i}`} cx={xOf(o.i)} cy={yOf(o.p.mean)} r={4} strokeWidth={1.5} style={{ fill: 'var(--neutral-background-1)', stroke: color }}>
+            <circle key={`d${o.i}`} cx={xOf(o.i)} cy={yOf(o.p.mean)} r={3.25} strokeWidth={1.5} style={{ fill: 'var(--neutral-background-1)', stroke: color }}>
                 <title>{`R${o.i + 1}: mean ${o.p.mean.toFixed(kind === 'fraction' ? 3 : 1)}`}</title>
             </circle>,
         );
@@ -188,7 +188,7 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
         </text>
     ));
 
-    // hollow donut swatch matching the chart marker geometry (r=4 + 1.5px stroke)
+    // hollow donut swatch matching the chart marker geometry (r=3.25 + 1.5px stroke → 8px painted, = dumbbell dot)
     const donut = (stroke: string): React.CSSProperties => ({
         position: 'absolute',
         left: '50%',

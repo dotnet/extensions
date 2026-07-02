@@ -181,6 +181,7 @@ const useStyles = makeStyles({
         padding: '0 var(--spacing-l) var(--spacing-l) var(--spacing-xxxl)',
         display: 'flex',
         flexDirection: 'column',
+        containerType: 'inline-size',
     },
     hero: {
         display: 'flex',

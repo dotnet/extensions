@@ -629,6 +629,107 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 .eval-md-toggle[aria-pressed="true"] { background: var(--brand-background-2); color: var(--brand-foreground-1); }
 .eval-md-toggle[aria-pressed="true"]:hover { background: var(--brand-background-2-hover); color: var(--brand-foreground-1); }
 
+/* Item 1.1a — Markdown rendered inside chat bubbles (TranscriptBlock TextNode).
+   react-markdown emits p, ul, headings and pre with default browser margins that inflate the
+   bubble vs the plain-text branch; zero the container outer margins and give a
+   tight, consistent vertical rhythm so bubble padding stays stable when Render
+   Markdown toggles. Light + dark parity via tokens only. */
+.eval-md > :first-child { margin-top: 0; }
+.eval-md > :last-child { margin-bottom: 0; }
+.eval-md p,
+.eval-md ul,
+.eval-md ol,
+.eval-md blockquote,
+.eval-md pre,
+.eval-md table {
+  margin: var(--spacing-xs) 0;
+}
+.eval-md ul,
+.eval-md ol { padding-left: var(--spacing-xl); }
+.eval-md li { margin: var(--spacing-xxs) 0; }
+.eval-md li > ul,
+.eval-md li > ol { margin: var(--spacing-xxs) 0; }
+.eval-md h1,
+.eval-md h2,
+.eval-md h3,
+.eval-md h4 {
+  margin: var(--spacing-s) 0 var(--spacing-xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-400);
+}
+.eval-md h1 { font-size: var(--font-size-500); }
+.eval-md h2 { font-size: var(--font-size-400); }
+.eval-md h3 { font-size: var(--font-size-300); }
+.eval-md h4 { font-size: var(--font-size-200); }
+.eval-md a {
+  color: var(--brand-foreground-1);
+  text-decoration: none;
+}
+.eval-md a:hover { text-decoration: underline; }
+.eval-md blockquote {
+  padding: var(--spacing-xxs) var(--spacing-m);
+  border-left: 3px solid var(--neutral-stroke-1);
+  color: var(--neutral-foreground-2);
+}
+.eval-md code {
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-200);
+  background: var(--neutral-background-3);
+  padding: 1px var(--spacing-xxs);
+  border-radius: var(--radius-small);
+}
+.eval-md pre {
+  font-family: var(--font-family-monospace);
+  font-size: var(--font-size-200);
+  line-height: var(--line-height-200);
+  background: var(--neutral-background-3);
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--radius-medium);
+  overflow-x: auto;
+}
+.eval-md pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+.eval-md table {
+  border-collapse: collapse;
+  font-size: var(--font-size-200);
+}
+.eval-md th,
+.eval-md td {
+  border: 1px solid var(--neutral-stroke-2);
+  padding: var(--spacing-xxs) var(--spacing-s);
+  text-align: left;
+}
+.eval-md th {
+  background: var(--neutral-background-3);
+  font-weight: var(--font-weight-semibold);
+}
+.eval-md hr {
+  border: none;
+  border-top: 1px solid var(--neutral-stroke-2);
+  margin: var(--spacing-s) 0;
+}
+
+/* Item 1.1b — `[[n]]` citation tokens rendered as a small superscript chip
+   (non-linking; there is no citation source data in the wire contract). */
+.eval-cite {
+  display: inline-block;
+  vertical-align: super;
+  font-size: var(--font-size-100);
+  line-height: 1;
+  font-weight: var(--font-weight-semibold);
+  min-width: 14px;
+  padding: 1px var(--spacing-xxs);
+  margin: 0 1px;
+  text-align: center;
+  border-radius: var(--radius-small);
+  background: var(--brand-background-2);
+  color: var(--brand-foreground-1);
+}
+
 .fui-searchbox { width: 100%; }
 .eval-content .eval-cmp-drop { width: 100%; }
 .eval-sidebar .eval-exec-drop { width: 100%; }
@@ -696,10 +797,11 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   }
 }
 /* Item 1b — Cases metadata tables are single-column by default (tablesContainer in
-   Styles.ts); only widen to a side-by-side row on very wide screens, where the Cases
-   metrics column (1/3 of the two-pane layout) has enough room for it. */
-@media (min-width: 1400px) {
-  .eval-content .eval-meta-tables { flex-direction: row; }
+   Styles.ts); only widen to a side-by-side row when the metric-detail panel itself
+   (containerType:inline-size in MetricPanel) is wide enough — i.e. on an external
+   monitor where the ~322px metrics pane grows past 720px, not merely a wide viewport. */
+@container (min-width: 720px) {
+  .eval-meta-tables { flex-direction: row; }
 }
 /* Phone stop — narrow the 24px page gutters to 12px so content isn't squeezed on
    phones, and drop the hero pass-rate number a size so it doesn't dominate the row.

@@ -12,6 +12,7 @@ export type ReportContextType = {
     scoreSummary: ScoreSummary,
     selectedScenarioLevel?: string,
     selectScenarioLevel: (key: string) => void,
+    clearScenarioLevel: () => void,
     renderMarkdown: boolean,
     setRenderMarkdown: (renderMarkdown: boolean) => void,
     prettifyJson: boolean,
@@ -60,6 +61,9 @@ const defaultReportContext = createContext<ReportContextType>({
     selectedScenarioLevel: undefined,
     selectScenarioLevel: (_selectedScenarioLevel: string) => {
         throw new Error("selectScenarioLevel function not implemented");
+    },
+    clearScenarioLevel: () => {
+        throw new Error("clearScenarioLevel function not implemented");
     },
     renderMarkdown: true,
     setRenderMarkdown: (_renderMarkdown: boolean) => {
@@ -205,6 +209,8 @@ const useProvideReportContext = (
         }
     };
 
+    const clearScenarioLevel = () => setSelectedScenarioLevel(undefined);
+
     const setSearchValue = (next: string) => {
         setSearchValueRaw(next);
         if (next !== "") {
@@ -278,6 +284,7 @@ const useProvideReportContext = (
         scoreSummary,
         selectedScenarioLevel,
         selectScenarioLevel,
+        clearScenarioLevel,
         renderMarkdown,
         setRenderMarkdown,
         prettifyJson,
