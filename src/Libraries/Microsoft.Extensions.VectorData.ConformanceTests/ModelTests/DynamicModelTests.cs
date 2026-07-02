@@ -284,7 +284,7 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
     #region Delete
 
     [Fact]
-    public async Task Delete_single_record()
+    public virtual async Task Delete_single_record()
     {
         var recordToRemove = fixture.TestData[2];
 
