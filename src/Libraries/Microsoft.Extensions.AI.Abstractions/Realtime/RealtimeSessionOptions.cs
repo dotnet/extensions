@@ -57,6 +57,7 @@ public class RealtimeSessionOptions
     public int? MaxOutputTokens { get; init; }
 
     /// <summary>
+    /// Gets or initializes the output modalities for the response, for example, "text" and "audio".
     /// </summary>
     /// <remarks>
     /// If <see langword="null"/>, the default conversation modalities are used.
