@@ -682,6 +682,22 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.AINameAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AINameAttribute.AINameAttribute(string name);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.AINameAttribute.Name { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "abstract class Microsoft.Extensions.AI.AITool",
       "Stage": "Stable",
       "Methods": [
