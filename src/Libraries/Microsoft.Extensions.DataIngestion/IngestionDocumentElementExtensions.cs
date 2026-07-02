@@ -23,9 +23,9 @@ internal static class IngestionDocumentElementExtensions
         if (element is IngestionDocumentImage image)
         {
             string? description = image.AlternativeText ?? image.Text;
-            if (!string.IsNullOrEmpty(description) && image.Address is not null)
+            if (!string.IsNullOrEmpty(description) && image.Source is not null)
             {
-                return $"![{description}]({image.Address.OriginalString})";
+                return $"![{description}]({image.Source.OriginalString})";
             }
 
             return description;

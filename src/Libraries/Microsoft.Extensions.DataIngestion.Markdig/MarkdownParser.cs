@@ -153,7 +153,7 @@ internal static class MarkdownParser
             }
             else if (Uri.TryCreate(link.Url, UriKind.RelativeOrAbsolute, out Uri? address))
             {
-                result.Address = address;
+                result.Source = address;
             }
         }
 
