@@ -17,10 +17,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
 {
     public LinuxUtilizationParserCgroupV2Tests()
     {
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Windows/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
     }
 
     private const string VerifiedDataDirectory = "Verified";

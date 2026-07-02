@@ -12,10 +12,7 @@ public class PerformanceCounterFactoryTests
 {
     public PerformanceCounterFactoryTests()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
     }
 
     [Fact]

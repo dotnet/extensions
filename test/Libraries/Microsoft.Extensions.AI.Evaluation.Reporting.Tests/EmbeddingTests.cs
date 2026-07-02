@@ -13,10 +13,7 @@ public class EmbeddingTests
     public void CIBuildsMustIncludeEmbeddedHTML()
     {
         // TF_BUILD should be set in our CI pipeline
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")))
-        {
-            Assert.Skip("Skipping test because it is not running in CI");
-        }
+        Assert.SkipUnless(!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")), "Skipping test because it is not running in CI");
 
         Assert.NotEmpty(HtmlReportWriter.HtmlTemplateBefore);
         Assert.NotEmpty(HtmlReportWriter.HtmlTemplateAfter);

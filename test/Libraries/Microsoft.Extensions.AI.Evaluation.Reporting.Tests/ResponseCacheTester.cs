@@ -22,10 +22,7 @@ public abstract class ResponseCacheTester
 
     private void SkipIfNotConfigured()
     {
-        if (!IsConfigured)
-        {
-            Assert.Skip("Test not configured");
-        }
+        Assert.SkipUnless(IsConfigured, "Test not configured");
     }
 
     [Fact]

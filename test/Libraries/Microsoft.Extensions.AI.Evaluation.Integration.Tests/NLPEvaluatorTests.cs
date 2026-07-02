@@ -148,10 +148,7 @@ public class NLPEvaluatorTests
     [MemberNotNull(nameof(_nlpReportingConfiguration))]
     private static void SkipIfNotConfigured()
     {
-        if (!Settings.Current.Configured)
-        {
-            Assert.Skip("Test is not configured");
-        }
+        Assert.SkipUnless(Settings.Current.Configured, "Test is not configured");
 
         Assert.NotNull(_nlpReportingConfiguration);
     }

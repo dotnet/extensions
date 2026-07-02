@@ -22,10 +22,7 @@ public class WindowsDiskMetricsTests
 {
     public WindowsDiskMetricsTests()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
     }
 
     private const string CategoryName = "LogicalDisk";

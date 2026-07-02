@@ -8,15 +8,11 @@ using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 
-[MarkItDownCondition]
 public class MarkItDownReaderTests : DocumentReaderConformanceTests
 {
     protected override IngestionDocumentReader CreateDocumentReader(bool extractImages = false)
     {
-        if (!MarkItDownConditionAttribute.IsInstalled.Value)
-        {
-            Assert.Skip("MarkItDown is not installed");
-        }
+        Assert.SkipUnless(MarkItDownConditionHelper.IsInstalled.Value, "MarkItDown is not installed");
 
         return new MarkItDownReader(extractImages: extractImages);
     }

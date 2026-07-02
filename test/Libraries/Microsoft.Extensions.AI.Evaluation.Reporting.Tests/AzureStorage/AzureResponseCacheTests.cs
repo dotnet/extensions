@@ -39,6 +39,7 @@ public class AzureResponseCacheTests : ResponseCacheTester, IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         if (Settings.Current.Configured)
         {
             await CreateResponseCacheProvider().ResetAsync();

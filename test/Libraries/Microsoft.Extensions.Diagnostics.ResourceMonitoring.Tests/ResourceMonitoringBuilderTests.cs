@@ -13,13 +13,10 @@ public sealed class ResourceMonitoringBuilderTests
 {
     public ResourceMonitoringBuilderTests()
     {
-        if (OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on macOS");
-        }
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Skipped on macOS");
     }
 
-    [Fact(Skip = "Not supported on MacOs.")]
+    [Fact]
     public void AddPublisher_CalledOnce_AddsSinglePublisherToServiceCollection()
     {
         using var provider = new ServiceCollection()

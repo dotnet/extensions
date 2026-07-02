@@ -225,10 +225,7 @@ public class HybridCacheEventSourceTests(ITestOutputHelper log, TestEventListene
         // including this data for visibility when tests fail - ETW subsystem can be ... weird
         log.WriteLine($".NET {Environment.Version} on {Environment.OSVersion}, {IntPtr.Size * 8}-bit");
 
-        if (!listener.Source.IsEnabled())
-        {
-            Assert.Skip("Event source not enabled");
-        }
+        Assert.SkipUnless(listener.Source.IsEnabled(), "Event source not enabled");
     }
 
     private async Task AssertCountersAsync()

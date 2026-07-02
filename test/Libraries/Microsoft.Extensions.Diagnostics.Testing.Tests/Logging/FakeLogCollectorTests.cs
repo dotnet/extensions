@@ -12,12 +12,14 @@ public partial class FakeLogCollectorTests
 {
     private class Output : ITestOutputHelper
     {
+        private readonly System.Text.StringBuilder _sb = new();
+
         public string Last { get; private set; } = string.Empty;
-        public string Output1 => Last;
-        string ITestOutputHelper.Output => Output1;
+        string ITestOutputHelper.Output => _sb.ToString();
 
         public void Write(string message)
         {
+            _sb.Append(message);
             Last += message;
         }
 
@@ -25,6 +27,7 @@ public partial class FakeLogCollectorTests
 
         public void WriteLine(string message)
         {
+            _sb.AppendLine(message);
             Last = message;
         }
 

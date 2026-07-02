@@ -11,8 +11,7 @@ namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 /// <summary>
 /// Checks whether MarkItDown is installed and accessible. Used to conditionally skip tests.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
-public class MarkItDownConditionAttribute : Attribute
+internal static class MarkItDownConditionHelper
 {
     internal static readonly Lazy<bool> IsInstalled = new(CanInvokeMarkItDown);
 

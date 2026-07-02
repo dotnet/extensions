@@ -565,10 +565,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     public virtual async Task FunctionInvocation_SupportsMultipleParallelRequests()
     {
         SkipIfNotEnabled();
-        if (!SupportsParallelFunctionCalling)
-        {
-            Assert.Skip("Parallel function calling is not supported by this chat client");
-        }
+        Assert.SkipUnless(SupportsParallelFunctionCalling, "Parallel function calling is not supported by this chat client");
 
         using var chatClient = new FunctionInvokingChatClient(ChatClient);
 
@@ -1404,10 +1401,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
 
-        if (skipIntegration is not null || ChatClient is null)
-        {
-            Assert.Skip("Client is not enabled.");
-        }
+        Assert.SkipUnless(skipIntegration is null && ChatClient is not null, "Client is not enabled.");
     }
 
 }

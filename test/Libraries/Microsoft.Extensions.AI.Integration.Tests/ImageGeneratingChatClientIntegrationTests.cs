@@ -439,9 +439,6 @@ public abstract class ImageGeneratingChatClientIntegrationTests : IDisposable
     {
         string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
 
-        if (skipIntegration is not null || ChatClient is null)
-        {
-            Assert.Skip("Client is not enabled.");
-        }
+        Assert.SkipUnless(skipIntegration is null && ChatClient is not null, "Client is not enabled.");
     }
 }

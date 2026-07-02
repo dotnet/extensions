@@ -20,10 +20,7 @@ public class OpenAITextToSpeechClientIntegrationTests : TextToSpeechClientIntegr
     public async Task GetStreamingAudioAsync_StreamingModel_ReturnsMultipleUpdatesWithUsage()
     {
         var openAIClient = IntegrationTestHelpers.GetOpenAIClient();
-        if (openAIClient is null)
-        {
-            Assert.Skip("Client is not enabled.");
-        }
+        Assert.SkipUnless(openAIClient is not null, "Client is not enabled.");
 
         using ITextToSpeechClient client = openAIClient
             .GetAudioClient(TestRunnerConfiguration.Instance["OpenAI:TextToSpeechStreamingModel"] ?? "gpt-4o-mini-tts")

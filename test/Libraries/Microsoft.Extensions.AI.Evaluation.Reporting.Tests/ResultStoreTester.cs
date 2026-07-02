@@ -58,10 +58,7 @@ public abstract class ResultStoreTester
 
     private void SkipIfNotConfigured()
     {
-        if (!IsConfigured)
-        {
-            Assert.Skip("Test not configured");
-        }
+        Assert.SkipUnless(IsConfigured, "Test not configured");
     }
 
     [Fact]

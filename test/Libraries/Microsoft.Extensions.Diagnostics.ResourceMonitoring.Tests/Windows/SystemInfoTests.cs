@@ -16,10 +16,7 @@ public sealed class SystemInfoTests
 {
     public SystemInfoTests()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
     }
 
     /// <summary>

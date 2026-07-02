@@ -218,9 +218,6 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
     [MemberNotNull(nameof(_embeddingGenerator))]
     protected void SkipIfNotEnabled()
     {
-        if (_embeddingGenerator is null)
-        {
-            Assert.Skip("Generator is not enabled.");
-        }
+        Assert.SkipUnless(_embeddingGenerator is not null, "Generator is not enabled.");
     }
 }

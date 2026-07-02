@@ -19,10 +19,7 @@ public class AcceptanceTest
 {
     public AcceptanceTest()
     {
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Windows/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
     }
 
     [Fact]

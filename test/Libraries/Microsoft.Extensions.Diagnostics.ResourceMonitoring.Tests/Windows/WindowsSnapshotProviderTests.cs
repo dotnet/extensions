@@ -20,9 +20,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 public sealed class WindowsSnapshotProviderTests
 {
-    // Class-level skip condition
-    // Skip: if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Linux/macOS");
-
     private const string VerifiedDataDirectory = "Verified";
 
     private readonly Mock<IMeterFactory> _meterFactoryMock;
@@ -31,6 +28,8 @@ public sealed class WindowsSnapshotProviderTests
 
     public WindowsSnapshotProviderTests()
     {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
+
         _options = Options.Options.Create<ResourceMonitoringOptions>(new());
         using var meter = new Meter(nameof(BasicConstructor));
         _meterFactoryMock = new Mock<IMeterFactory>();

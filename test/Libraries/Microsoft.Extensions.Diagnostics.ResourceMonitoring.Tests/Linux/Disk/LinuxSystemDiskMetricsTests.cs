@@ -20,10 +20,7 @@ public class LinuxSystemDiskMetricsTests
 {
     public LinuxSystemDiskMetricsTests()
     {
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Windows/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
     }
 
     private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };

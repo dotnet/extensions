@@ -23,10 +23,7 @@ public class ResourceHealthCheckExtensionsTests
 {
     public ResourceHealthCheckExtensionsTests()
     {
-        if (OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on macOS");
-        }
+        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Skipped on macOS");
     }
 
     [Fact]
@@ -477,10 +474,7 @@ public class ResourceHealthCheckExtensionsTests
         ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,
         string expectedDescription)
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Windows-specific test.");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows-specific test.");
 
         var logger = new FakeLogger<WindowsContainerSnapshotProvider>();
         var fakeClock = new FakeTimeProvider();

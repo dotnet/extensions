@@ -259,10 +259,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_UncPath_ChildPath_ReturnsResolved()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         string root = @"\\server\share\data";
         string child = @"\\server\share\data\sub\file.txt";
@@ -275,10 +272,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_UncPath_DifferentShare_Throws()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         string root = @"\\server\share\data";
         string other = @"\\server\share\other\file.txt";
@@ -290,10 +284,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_UncPath_DotDotEscapes_Throws()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         string root = @"\\server\share\data";
         string escaped = @"\\server\share\data\..\other";
@@ -305,10 +296,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_UncPath_SiblingWithPrefix_Throws()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         string root = @"\\server\share\data";
         string sibling = @"\\server\share\data-sibling\file.txt";
@@ -320,10 +308,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_UncPath_PathEqualsRoot_DoesNotThrow()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         string root = @"\\server\share\data";
 
@@ -339,10 +324,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_ShortPathRoot_LongPathChild_DocumentedBehavior()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         // Short (8.3) paths are NOT consistently normalized by Path.GetFullPath
         // across .NET versions. This test documents that if the root uses a short
@@ -391,10 +373,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_ConsistentShortPaths_Works()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         // When both root and child are constructed from the same short-path
         // string via Path.Combine, EnsureWithinRoot succeeds because
@@ -433,10 +412,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_AltSeparatorInRoot_Works()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         // Forward slash is an alternate directory separator on Windows.
         string root = Path.GetTempPath().Replace('\\', '/') + "testroot";
@@ -470,10 +446,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_DriveRoot_ChildPath_Works()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         string root = @"C:\";
         string child = @"C:\some\nested\file.txt";
@@ -486,10 +459,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_DriveRoot_DifferentDrive_Throws()
     {
-        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            Assert.Skip("Skipped on Linux/macOS");
-        }
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
 
         string root = @"C:\data";
         string other = @"D:\data\file.txt";
@@ -501,10 +471,7 @@ public class PathValidationTests
     [Fact]
     public void EnsureWithinRoot_UnixAbsoluteRoot_ChildPath_Works()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            Assert.Skip("Skipped on Windows");
-        }
+        Assert.SkipUnless(!OperatingSystem.IsWindows(), "Skipped on Windows");
 
         string root = "/tmp/testroot";
         string child = "/tmp/testroot/sub/file.txt";

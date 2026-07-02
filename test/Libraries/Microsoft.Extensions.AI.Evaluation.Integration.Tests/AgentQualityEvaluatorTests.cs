@@ -267,10 +267,7 @@ public class AgentQualityEvaluatorTests
     [MemberNotNull(nameof(_needsContextReportingConfiguration))]
     private static void SkipIfNotConfigured()
     {
-        if (!Settings.Current.Configured)
-        {
-            Assert.Skip("Test is not configured");
-        }
+        Assert.SkipUnless(Settings.Current.Configured, "Test is not configured");
 
         Assert.NotNull(_chatOptionsWithTools);
         Assert.NotNull(_agentQualityReportingConfiguration);

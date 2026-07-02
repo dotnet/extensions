@@ -126,9 +126,6 @@ public abstract class ImageGeneratorIntegrationTests : IDisposable
     {
         string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
 
-        if (skipIntegration is not null || _generator is null)
-        {
-            Assert.Skip("Generator is not enabled.");
-        }
+        Assert.SkipUnless(skipIntegration is null && _generator is not null, "Generator is not enabled.");
     }
 }

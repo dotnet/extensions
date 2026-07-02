@@ -39,6 +39,7 @@ public class AzureResultStoreTests : ResultStoreTester, IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         if (_dirClient is not null)
         {
             await _dirClient.DeleteAsync();

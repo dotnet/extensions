@@ -17,15 +17,14 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
 public class LinuxNetworkMetricsTests
 {
-    // Class-level skip condition
-    // Skip: if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()) Assert.Skip("Skipped on Windows/macOS");
-
     private readonly Mock<ITcpStateInfoProvider> _tcpStateInfoProvider = new();
     private readonly DateTimeOffset _startTime = DateTimeOffset.UtcNow;
     private FakeTimeProvider _timeProvider;
 
     public LinuxNetworkMetricsTests()
     {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+
         _timeProvider = new FakeTimeProvider(_startTime);
 
         _tcpStateInfoProvider.Setup(p => p.GetIpV4TcpStateInfo()).Returns(new TcpStateInfo());

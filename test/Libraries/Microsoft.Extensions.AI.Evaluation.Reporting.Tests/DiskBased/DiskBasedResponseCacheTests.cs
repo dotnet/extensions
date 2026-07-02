@@ -26,6 +26,7 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
 
     public ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
         foreach (string path in _tempStorage)
         {
             try

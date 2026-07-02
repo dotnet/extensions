@@ -91,9 +91,6 @@ public abstract class SpeechToTextClientIntegrationTests : IDisposable
     {
         string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
 
-        if (skipIntegration is not null || _client is null)
-        {
-            Assert.Skip("Client is not enabled.");
-        }
+        Assert.SkipUnless(skipIntegration is null && _client is not null, "Client is not enabled.");
     }
 }

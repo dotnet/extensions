@@ -621,10 +621,7 @@ public class SafetyEvaluatorTests
     [MemberNotNull(nameof(_hubBasedContentSafetyReportingConfiguration))]
     private static void SkipIfNotConfigured()
     {
-        if (!Settings.Current.Configured)
-        {
-            Assert.Skip("Test is not configured");
-        }
+        Assert.SkipUnless(Settings.Current.Configured, "Test is not configured");
 
         Assert.NotNull(_chatOptions);
         Assert.NotNull(_contentSafetyReportingConfiguration);

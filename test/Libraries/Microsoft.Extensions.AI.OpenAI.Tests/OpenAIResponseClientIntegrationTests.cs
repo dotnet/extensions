@@ -140,10 +140,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Image generation tool requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Image generation tool requires gpt-5.4 or later.");
 
         var chatOptions = new ChatOptions
         {
@@ -315,10 +312,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Tool search requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Tool search requires gpt-5.4 or later.");
 
         var mcpTool = new HostedMcpServerTool("deepwiki", new Uri("https://mcp.deepwiki.com/mcp"))
         {
@@ -859,10 +853,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Tool search requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Tool search requires gpt-5.4 or later.");
 
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
         AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
@@ -898,10 +889,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Tool search requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Tool search requires gpt-5.4 or later.");
 
         // HostedToolSearchTool with no deferred tools — the API rejects this with 400
         // because tool_search requires at least one tool with defer_loading.
@@ -919,10 +907,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Tool search requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Tool search requires gpt-5.4 or later.");
 
         // HostedToolSearchTool with DeferredTools explicitly set to empty — no tools are deferred.
         // The API rejects this with 400 because tool_search requires at least one deferred tool.
@@ -946,10 +931,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Tool search requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Tool search requires gpt-5.4 or later.");
 
         // Force defer_loading on a code_interpreter tool via Patch — the API should reject this.
         var codeTool = new HostedCodeInterpreterTool();
@@ -975,10 +957,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Tool search requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Tool search requires gpt-5.4 or later.");
 
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
         AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
@@ -1020,10 +999,7 @@ public class OpenAIResponseClientIntegrationTests : ChatClientIntegrationTests
     {
         SkipIfNotEnabled();
 
-        if (TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is not true)
-        {
-            Assert.Skip("Tool search requires gpt-5.4 or later.");
-        }
+        Assert.SkipUnless(TestRunnerConfiguration.Instance["OpenAI:ChatModel"]?.StartsWith("gpt-5.4", StringComparison.OrdinalIgnoreCase) is true, "Tool search requires gpt-5.4 or later.");
 
         AIFunction getWeather = AIFunctionFactory.Create(() => "Sunny, 72°F", "GetWeather", "Gets the current weather.");
         AIFunction getTime = AIFunctionFactory.Create(() => "3:00 PM", "GetTime", "Gets the current time.");
