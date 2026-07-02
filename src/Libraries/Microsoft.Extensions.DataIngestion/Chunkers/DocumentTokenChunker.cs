@@ -47,6 +47,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
             int stringBuilderTokenCount = 0;
             StringBuilder stringBuilder = new();
+            Dictionary<string, object>? accumulatedMetadata = null;
             foreach (IngestionDocumentElement element in document.EnumerateContent())
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -58,6 +59,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
                 int contentToProcessTokenCount = _tokenizer.CountTokens(elementContent!, considerNormalization: false);
                 ReadOnlyMemory<char> contentToProcess = elementContent.AsMemory();
+                bool elementMetadataAccumulated = false;
                 while (stringBuilderTokenCount + contentToProcessTokenCount >= _maxTokensPerChunk)
                 {
                     int index = _tokenizer.GetIndexByTokenCount(
@@ -67,6 +69,13 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                         out int addedTokenCount,
                         considerNormalization: false);
 
+                    // Accumulate metadata the first time this element contributes content.
+                    if (!elementMetadataAccumulated && index > 0)
+                    {
+                        AccumulateMetadata(element, ref accumulatedMetadata);
+                        elementMetadataAccumulated = true;
+                    }
+
                     unsafe
                     {
                         fixed (char* ptr = &MemoryMarshal.GetReference(contentToProcess.Span))
@@ -75,10 +84,16 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                         }
                     }
                     stringBuilderTokenCount += addedTokenCount;
-                    yield return FinalizeChunk();
+                    yield return FinalizeChunk(ref accumulatedMetadata);
 
                     contentToProcess = contentToProcess.Slice(index);
                     contentToProcessTokenCount = _tokenizer.CountTokens(contentToProcess.Span, considerNormalization: false);
+                }
+
+                // Accumulate metadata if the element only contributed content after the loop.
+                if (!elementMetadataAccumulated)
+                {
+                    AccumulateMetadata(element, ref accumulatedMetadata);
                 }
 
                 _ = stringBuilder.Append(contentToProcess);
@@ -87,11 +102,11 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
 
             if (stringBuilder.Length > 0)
             {
-                yield return FinalizeChunk();
+                yield return FinalizeChunk(ref accumulatedMetadata);
             }
             yield break;
 
-            IngestionChunk FinalizeChunk()
+            IngestionChunk FinalizeChunk(ref Dictionary<string, object>? metadata)
             {
                 TextContent chunkContent = new(stringBuilder.ToString());
                 IngestionChunk chunk = new IngestionChunk(
@@ -99,6 +114,17 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                     document: document,
                     tokenCount: stringBuilderTokenCount,
                     context: string.Empty);
+
+                if (metadata is { Count: > 0 })
+                {
+                    foreach (var kvp in metadata)
+                    {
+                        chunk.Metadata[kvp.Key] = kvp.Value;
+                    }
+
+                    metadata = null;
+                }
+
                 _ = stringBuilder.Clear();
                 stringBuilderTokenCount = 0;
 
@@ -123,6 +149,30 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers
                 }
 
                 return chunk;
+            }
+        }
+
+        private static void AccumulateMetadata(IngestionDocumentElement element, ref Dictionary<string, object>? accumulated)
+        {
+            if (!element.HasMetadata)
+            {
+                return;
+            }
+
+            accumulated ??= [];
+            foreach (var kvp in element.Metadata)
+            {
+                if (kvp.Value is not null)
+                {
+#if NET
+                    accumulated.TryAdd(kvp.Key, kvp.Value);
+#else
+                    if (!accumulated.ContainsKey(kvp.Key))
+                    {
+                        accumulated[kvp.Key] = kvp.Value;
+                    }
+#endif
+                }
             }
         }
 
