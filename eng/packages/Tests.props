@@ -61,7 +61,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)' OR '$(TargetFramework)' == ''">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0' OR '$(TargetFramework)' == ''">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingNet10Version)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostNet10Version)" />
   </ItemGroup>
