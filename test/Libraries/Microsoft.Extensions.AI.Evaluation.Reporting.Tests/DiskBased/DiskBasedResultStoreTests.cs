@@ -22,7 +22,14 @@ public class DiskBasedResultStoreTests : ResultStoreTester, IAsyncLifetime
         return path;
     }
 
-    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+    public ValueTask InitializeAsync()
+    {
+#if NET
+        return ValueTask.CompletedTask;
+#else
+        return new ValueTask(Task.CompletedTask);
+#endif
+    }
 
     public ValueTask DisposeAsync()
     {
@@ -41,7 +48,11 @@ public class DiskBasedResultStoreTests : ResultStoreTester, IAsyncLifetime
             }
         }
 
+#if NET
         return ValueTask.CompletedTask;
+#else
+        return new ValueTask(Task.CompletedTask);
+#endif
     }
 
     public override bool IsConfigured => true;

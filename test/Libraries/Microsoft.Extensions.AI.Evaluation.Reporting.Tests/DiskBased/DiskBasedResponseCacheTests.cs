@@ -22,7 +22,14 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
         return path;
     }
 
-    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+    public ValueTask InitializeAsync()
+    {
+#if NET
+        return ValueTask.CompletedTask;
+#else
+        return new ValueTask(Task.CompletedTask);
+#endif
+    }
 
     public ValueTask DisposeAsync()
     {
@@ -41,7 +48,11 @@ public class DiskBasedResponseCacheTests : ResponseCacheTester, IAsyncLifetime
             }
         }
 
+#if NET
         return ValueTask.CompletedTask;
+#else
+        return new ValueTask(Task.CompletedTask);
+#endif
     }
 
     internal override bool IsConfigured => true;
