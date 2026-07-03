@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
@@ -15,7 +16,6 @@ using Microsoft.Shared.Instruments;
 using Moq;
 using VerifyXunit;
 using Xunit;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 

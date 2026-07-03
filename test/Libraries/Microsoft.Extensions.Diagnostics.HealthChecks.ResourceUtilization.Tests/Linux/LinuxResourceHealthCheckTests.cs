@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -11,7 +12,6 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 

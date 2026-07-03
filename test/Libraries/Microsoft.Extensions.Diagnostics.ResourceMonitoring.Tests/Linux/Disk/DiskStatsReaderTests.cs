@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 using Xunit;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 

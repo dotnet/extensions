@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,6 @@ using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 using static Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop.JobObjectInfo;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 

@@ -3,10 +3,10 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 using Xunit;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 

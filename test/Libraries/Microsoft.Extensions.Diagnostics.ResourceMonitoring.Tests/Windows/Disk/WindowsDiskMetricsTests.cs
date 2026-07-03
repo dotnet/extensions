@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
@@ -14,7 +15,6 @@ using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Moq;
 using Xunit;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 

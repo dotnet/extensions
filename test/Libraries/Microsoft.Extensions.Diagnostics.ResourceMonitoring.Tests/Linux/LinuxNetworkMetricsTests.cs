@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Moq;
 using Xunit;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
