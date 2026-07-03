@@ -46,7 +46,7 @@
     <PackageVersion Include="PdfPig" Version="0.1.10" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.1.3" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.1.3" />
   </ItemGroup>
@@ -61,7 +61,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0' OR '$(TargetFramework)' == ''">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingNet10Version)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostNet10Version)" />
   </ItemGroup>
