@@ -22,6 +22,16 @@ internal static class DiagnosticsConstants
         internal const string FileCountTagName = "rag.file.count";
     }
 
+    internal static class ProcessDocuments
+    {
+        internal const string ActivityName = "ProcessDocuments";
+    }
+
+    internal static class ProcessDocument
+    {
+        internal const string ActivityName = "ProcessDocument";
+    }
+
     internal static class ProcessSource
     {
         internal const string DocumentIdTagName = "rag.document.id";
