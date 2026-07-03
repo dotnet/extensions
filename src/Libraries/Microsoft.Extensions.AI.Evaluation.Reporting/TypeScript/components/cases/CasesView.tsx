@@ -13,10 +13,10 @@ import {
 } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { MoverDirections, getTabsterAttribute } from 'tabster';
-import { useReportStyles, statusSolidVar } from './reportStyles';
-import { useReportContext } from './ReportContext';
-import { ScoreNode, getConversationDisplay } from './Summary';
-import { isLeafFailed, scenariosForExecution } from './viewModels';
+import { useReportStyles, statusSolidVar } from '../styles/reportStyles';
+import { useReportContext } from '../core/ReportContext';
+import { ScoreNode, getConversationDisplay } from '../core/Summary';
+import { isLeafFailed, scenariosForExecution } from '../core/viewModels';
 import { TranscriptBlock } from './TranscriptBlock';
 import { MetricPanel } from './MetricPanel';
 
@@ -72,9 +72,41 @@ const useStyles = makeStyles({
         flexWrap: 'wrap',
         gap: 'var(--spacing-s-nudge)',
     },
+    // The base look of a tag pill is set inline (see below); these hover slots use
+    // !important to override that inline background on hover.
+    tagOpt: {
+        ':hover': { background: 'var(--neutral-background-3) !important' },
+    },
+    tagOptActive: {
+        ':hover': { background: 'var(--brand-background-2-hover) !important' },
+    },
 
     rowlist: { overflow: 'hidden' },
     rowWrap: { borderTop: '1px solid var(--neutral-stroke-3)', '&:first-child': { borderTop: 'none' } },
+    // Animated left accent bar that slides in when the case is expanded.
+    caseWrap: {
+        position: 'relative',
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '2px',
+            zIndex: 3,
+            background: 'var(--brand-stroke-1)',
+            pointerEvents: 'none',
+            opacity: 0,
+            transform: 'scaleY(0)',
+            transformOrigin: 'top',
+            transition:
+                'transform var(--duration-normal) var(--curve-decelerate-mid), ' +
+                'opacity var(--duration-faster) var(--curve-easy-ease)',
+        },
+    },
+    caseWrapOpen: {
+        '&::before': { opacity: 1, transform: 'scaleY(1)' },
+    },
     row: {
         appearance: 'none',
         border: 'none',
@@ -90,6 +122,17 @@ const useStyles = makeStyles({
         cursor: 'pointer',
         userSelect: 'none',
         backgroundColor: 'transparent',
+    },
+    rowInteractive: {
+        transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
+        ':hover': { background: 'var(--subtle-background-hover)' },
+        ':focus-visible': {
+            boxShadow:
+                '0 0 0 2px var(--focus-stroke-inner) inset, ' +
+                '0 0 0 4px var(--focus-stroke-outer) inset',
+            borderRadius: 'inherit',
+            outline: 'none',
+        },
     },
     caret: {
         flexShrink: 0,
@@ -288,11 +331,11 @@ const CaseRow = ({
     const metaLine = open ? metaLineFor(vm.scenario) : undefined;
 
     return (
-        <div className={mergeClasses(classes.rowWrap, 'eval-case-wrap', open && 'is-open')}>
+        <div className={mergeClasses(classes.rowWrap, classes.caseWrap, open && classes.caseWrapOpen)}>
             <button
                 type="button"
                 ref={(el) => registerRowRef(vm.key, el)}
-                className={mergeClasses(classes.row, 'eval-case-row')}
+                className={mergeClasses(classes.row, classes.rowInteractive)}
                 aria-expanded={open}
                 aria-label={`${vm.label}${vm.failed ? ' (failed)' : ' (passed)'}`}
                 onClick={onToggle}
@@ -507,7 +550,7 @@ export const CasesView = () => {
                                                 <button
                                                     key={tag}
                                                     type="button"
-                                                    className={mergeClasses('eval-tagopt', active && 'is-active')}
+                                                    className={active ? classes.tagOptActive : classes.tagOpt}
                                                     aria-pressed={active}
                                                     onClick={() => {
                                                         handleTagClick(tag);

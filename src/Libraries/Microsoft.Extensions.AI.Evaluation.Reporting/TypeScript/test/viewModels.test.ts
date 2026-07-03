@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { describe, it, expect } from 'vitest';
-import { createScoreSummary } from '../components/Summary';
+import { createScoreSummary } from '../components/core/Summary';
 import {
     isLeafFailed,
     passRateByScenarioGroup,
     kpiCountsFromNode,
     ratingBucket,
     bucketMetrics,
-} from '../components/viewModels';
+} from '../components/core/viewModels';
 import {
     multiGroupDataset,
     diagnosticsErrorDataset,

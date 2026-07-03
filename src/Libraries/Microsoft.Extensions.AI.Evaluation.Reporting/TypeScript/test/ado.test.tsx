@@ -4,9 +4,7 @@
 import React, { useEffect } from 'react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
-import { createScoreSummary } from '../components/Summary';
-import { ReportContextProvider, useReportContext } from '../components/ReportContext';
-import { detectHostDarkMode } from '../components/theme';
+import { createScoreSummary, ReportContextProvider, useReportContext, detectHostDarkMode } from '../components';
 
 const dataset: Dataset = {
     generatorVersion: '0.0.1',

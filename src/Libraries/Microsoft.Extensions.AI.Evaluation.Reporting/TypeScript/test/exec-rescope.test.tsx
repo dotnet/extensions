@@ -4,16 +4,17 @@
 import React, { useEffect } from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { createScoreSummary } from '../components/Summary';
-import { ReportContextProvider, useReportContext } from '../components/ReportContext';
-import { CasesView } from '../components/CasesView';
 import {
+    createScoreSummary,
+    ReportContextProvider,
+    useReportContext,
+    CasesView,
     passRateByScenarioGroup,
     kpiCountsFromNode,
     weakestMetrics,
     bucketMetrics,
     scenariosForExecution,
-} from '../components/viewModels';
+} from '../components';
 import { twoExecutionDataset } from './fixtures/richDataset';
 
 const PRIMARY = 'exec-v1';

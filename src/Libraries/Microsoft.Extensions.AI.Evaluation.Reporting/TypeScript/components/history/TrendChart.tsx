@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useEffect, useRef, useState } from 'react';
-import { useReportContext } from './ReportContext';
+import { useReportContext } from '../core/ReportContext';
 
 export type BandPoint = {
     mean: number;

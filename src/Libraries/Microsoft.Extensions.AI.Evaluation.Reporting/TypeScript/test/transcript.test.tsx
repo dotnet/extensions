@@ -4,9 +4,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ReportContextProvider } from '../components/ReportContext';
-import { createScoreSummary, getConversationDisplay } from '../components/Summary';
-import { TranscriptBlock } from '../components/TranscriptBlock';
+import { ReportContextProvider, createScoreSummary, getConversationDisplay, TranscriptBlock } from '../components';
 import { toolCallDataset, toolCallScenario } from './fixtures/richDataset';
 
 const renderTranscript = (messages: ChatMessage[], modelResponse?: ChatResponse) => {

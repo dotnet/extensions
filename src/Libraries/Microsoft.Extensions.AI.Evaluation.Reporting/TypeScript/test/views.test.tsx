@@ -4,10 +4,7 @@
 import React, { useEffect } from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { createScoreSummary } from '../components/Summary';
-import { ReportContextProvider, useReportContext } from '../components/ReportContext';
-import { HistoryView } from '../components/HistoryView';
-import { ComparisonView } from '../components/ComparisonView';
+import { createScoreSummary, ReportContextProvider, useReportContext, HistoryView, ComparisonView } from '../components';
 import { twoExecutionDataset, singleExecutionDataset } from './fixtures/richDataset';
 
 const renderWith = (dataset: Dataset, ui: React.ReactElement) => {
@@ -89,9 +86,10 @@ describe('ComparisonView — twoExecutionDataset', () => {
     });
 
     // Metric-name labels also appear in the "Biggest mover" KPI sub-label, so read the
-    // per-metric table rows (.eval-cmp-row) directly instead of a free-text query.
+    // per-metric table rows directly instead of a free-text query. Data rows share the
+    // responsive .eval-grid3 class with the header, but only the header has role="row".
     const metricRowNames = (container: HTMLElement): string[] =>
-        [...container.querySelectorAll('.eval-cmp-row')].map(
+        [...container.querySelectorAll('.eval-grid3:not([role="row"])')].map(
             (row) => row.firstElementChild?.textContent?.trim() ?? '',
         );
 

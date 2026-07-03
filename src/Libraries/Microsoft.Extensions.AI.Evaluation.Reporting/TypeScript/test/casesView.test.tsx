@@ -4,9 +4,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import { ReportContextProvider } from '../components/ReportContext';
-import { createScoreSummary } from '../components/Summary';
-import { CasesView } from '../components/CasesView';
+import { ReportContextProvider, createScoreSummary, CasesView } from '../components';
 import { toolCallDataset, richDataset } from './fixtures/richDataset';
 
 const renderCases = (dataset: Dataset) => {

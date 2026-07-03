@@ -5,11 +5,36 @@ import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { Badge, makeStyles, mergeClasses } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { MoverDirections, getTabsterAttribute } from 'tabster';
-import { useReportContext } from './ReportContext';
-import { ScoreNode } from './Summary';
-import { useReportStyles } from './reportStyles';
+import { useReportContext } from '../core/ReportContext';
+import { ScoreNode } from '../core/Summary';
+import { useReportStyles } from '../styles/reportStyles';
 
 const useLocalStyles = makeStyles({
+    tocRow: {
+        background: 'transparent',
+        transition:
+            'backdrop-filter var(--duration-fast) var(--curve-easy-ease), ' +
+            '-webkit-backdrop-filter var(--duration-fast) var(--curve-easy-ease)',
+        ':hover': {
+            WebkitBackdropFilter: 'var(--eval-nav-bd-hover)',
+            backdropFilter: 'var(--eval-nav-bd-hover)',
+        },
+        ':focus-visible': {
+            boxShadow:
+                '0 0 0 2px var(--focus-stroke-inner) inset, ' +
+                '0 0 0 4px var(--focus-stroke-outer) inset',
+            borderRadius: 'inherit',
+            outline: 'none',
+        },
+    },
+    tocRowSelected: {
+        WebkitBackdropFilter: 'var(--eval-nav-bd-sel)',
+        backdropFilter: 'var(--eval-nav-bd-sel)',
+        ':hover': {
+            WebkitBackdropFilter: 'var(--eval-nav-bd-sel)',
+            backdropFilter: 'var(--eval-nav-bd-sel)',
+        },
+    },
     caretButton: {
         appearance: 'none',
         padding: 0,
@@ -225,7 +250,7 @@ const SidebarRow = ({
             aria-selected={selected}
             {...(hasChildren ? { 'aria-expanded': expanded } : {})}
             title={label}
-            className={mergeClasses(s.sidebarItem, 'eval-toc-row', selected && 'is-selected')}
+            className={mergeClasses(s.sidebarItem, local.tocRow, selected && local.tocRowSelected)}
             style={{ paddingLeft: padForDepth(depth) }}
             onClick={onSelect}
             onKeyDown={onRowKeyDown}

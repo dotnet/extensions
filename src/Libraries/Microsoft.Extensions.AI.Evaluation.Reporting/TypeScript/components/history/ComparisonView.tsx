@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useMemo, useEffect, useState } from 'react';
-import { makeStyles, Badge, Card, Dropdown, Option } from '@fluentui/react-components';
+import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluentui/react-components';
 import { ChevronRight20Regular } from '@fluentui/react-icons';
-import { useReportContext } from './ReportContext';
-import { useReportStyles } from './reportStyles';
-import { chronologicalExecutions } from './viewModels';
+import { useReportContext } from '../core/ReportContext';
+import { useReportStyles } from '../styles/reportStyles';
+import { chronologicalExecutions } from '../core/viewModels';
 import { DUMBBELL_D, DUMBBELL_RING, DUMBBELL_CONN } from './dumbbellGeometry';
 
 // Every color references a DS token so it flips in dark mode. SOLID = saturated
@@ -209,6 +209,10 @@ const buildCmpRow = (k: string, ba: MetricAgg | undefined, bb: MetricAgg | undef
 type SortKey = 'name' | 'a' | 'b' | 'change';
 
 const useLocalStyles = makeStyles({
+    cmpRow: {
+        transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
+        ':hover': { background: 'var(--subtle-background-hover)' },
+    },
     sortBtn: {
         display: 'inline-flex',
         alignItems: 'center',
@@ -524,7 +528,7 @@ export const ComparisonView = () => {
                             </span>
                         </div>
 
-                        <div className="eval-tscroll">
+                        <div className={s.tscroll}>
                             <div
                                 role="row"
                                 className="eval-grid3"
@@ -564,7 +568,7 @@ export const ComparisonView = () => {
                                     {g.rows.map((m) => (
                                         <div
                                             key={`${g.scenario}-${m.name}`}
-                                            className="eval-grid3 eval-cmp-row"
+                                            className={mergeClasses('eval-grid3', local.cmpRow)}
                                             style={{ display: 'grid', gridTemplateColumns: CMP_COLS, columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', borderBottom: '1px solid var(--neutral-stroke-3)', fontSize: 'var(--font-size-300)' }}
                                         >
                                             <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--neutral-foreground-1)' }}>

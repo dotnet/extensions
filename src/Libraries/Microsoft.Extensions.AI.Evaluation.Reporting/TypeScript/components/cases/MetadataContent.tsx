@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell } from "@fluentui/react-components";
-import { useStyles } from "./Styles";
+import { useStyles } from "../styles/Styles";
 
 export const MetadataContent = ({ metadata }: { metadata: { [K: string]: string }; }) => {
     const classes = useStyles();

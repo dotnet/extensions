@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import uFuzzy from "@leeoniya/ufuzzy";
-import { isLeafFailed } from "./viewModels";
+import { isLeafFailed } from "./scoring";
 
 export enum ScoreNodeType {
     Group,

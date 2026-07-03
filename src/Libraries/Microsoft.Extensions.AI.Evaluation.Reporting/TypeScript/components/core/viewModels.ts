@@ -2,14 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ScoreNode, getScoreHistory, type ScoreSummary } from './Summary';
+import { isLeafFailed } from './scoring';
 
-// isLeafFailed must stay identical to the tree's aggregate pass/fail so KPI and Cases counts can't diverge.
-export const isLeafFailed = (scenario: ScenarioRunResult): boolean =>
-    Object.values(scenario.evaluationResult?.metrics ?? {}).some(
-        (metric) =>
-            metric?.interpretation?.failed === true ||
-            (metric?.diagnostics?.some((d) => d.severity === 'error') ?? false),
-    );
+// isLeafFailed lives in ./scoring to break the former Summary<->viewModels import cycle; re-exported here
+// so existing consumers (CasesView, OverviewView, tests, and the barrel) keep importing it from viewModels.
+export { isLeafFailed };
 
 export type RatingBucket = 'good' | 'fair' | 'weak' | 'unknown';
 

@@ -4,10 +4,10 @@
 import { useId, useState } from 'react';
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { useReportStyles, type ReportStatus } from './reportStyles';
+import { useReportStyles, type ReportStatus } from '../styles/reportStyles';
 import { DiagnosticsContent } from './DiagnosticsContent';
 import { MetadataContent } from './MetadataContent';
-import { type MetricType } from './MetricCard';
+import { type MetricType } from './metricTypes';
 
 const statusKeyOf = (rating: EvaluationRating | undefined): ReportStatus => {
     switch (rating) {
@@ -133,6 +133,17 @@ const useStyles = makeStyles({
         cursor: 'pointer',
         userSelect: 'none',
         backgroundColor: 'transparent',
+    },
+    rowInteractive: {
+        transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
+        ':hover': { background: 'var(--subtle-background-hover)' },
+        ':focus-visible': {
+            boxShadow:
+                '0 0 0 2px var(--focus-stroke-inner) inset, ' +
+                '0 0 0 4px var(--focus-stroke-outer) inset',
+            borderRadius: 'inherit',
+            outline: 'none',
+        },
     },
     caret: {
         flexShrink: 0,
@@ -338,7 +349,7 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
         <div className={classes.rowWrap}>
             <button
                 type="button"
-                className={mergeClasses(classes.row, 'eval-metric-row')}
+                className={mergeClasses(classes.row, classes.rowInteractive)}
                 aria-expanded={open}
                 aria-controls={panelId}
                 onClick={() => setOpen((v) => !v)}

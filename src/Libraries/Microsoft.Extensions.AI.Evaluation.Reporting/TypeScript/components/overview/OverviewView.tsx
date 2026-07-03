@@ -3,12 +3,12 @@
 
 import { useMemo } from 'react';
 import { Badge, Card, ProgressBar } from '@fluentui/react-components';
-import { useReportContext } from './ReportContext';
+import { useReportContext } from '../core/ReportContext';
 import {
     useReportStyles,
     statusSolidVar,
     type ReportStatus,
-} from './reportStyles';
+} from '../styles/reportStyles';
 import {
     kpiCountsFromNode,
     bucketMetrics,
@@ -22,7 +22,7 @@ import {
     type MoverRow,
     type ScenarioGroupPassRate,
     type KpiCounts,
-} from './viewModels';
+} from '../core/viewModels';
 
 const pctInt = (r: number) => Math.round(r * 100);
 
@@ -296,13 +296,14 @@ const GroupTable = ({
     totalGoodPct: number;
     passChip: DeltaChip;
 }) => {
+    const s = useReportStyles();
     return (
         <Card appearance="outline">
             <div style={{ margin: '-12px' }}>
                 <h3 style={{ margin: 0, padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
                     Pass rate by scenario group
                 </h3>
-                <div className="eval-tscroll">
+                <div className={s.tscroll}>
                     <div className="eval-grid6" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, padding: 'var(--spacing-m-nudge) var(--spacing-xl)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
                         <span>Scenario group</span>
                         <span style={{ textAlign: 'right' }}>Good</span>

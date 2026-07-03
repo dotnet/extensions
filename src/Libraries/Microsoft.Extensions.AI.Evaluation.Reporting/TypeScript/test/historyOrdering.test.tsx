@@ -4,9 +4,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { createScoreSummary } from '../components/Summary';
-import { ReportContextProvider } from '../components/ReportContext';
-import { HistoryView } from '../components/HistoryView';
+import { createScoreSummary, ReportContextProvider, HistoryView } from '../components';
 
 const E1 = 'EvaluationRun-alpha'; // chronologically earliest
 const E2 = 'EvaluationRun-bravo'; // middle
@@ -65,7 +63,7 @@ const renderHistory = () => {
 // Read the "Execution" column of the run-history rows, top → bottom, skipping
 // the header row ("Execution").
 const runExecColumn = (): string[] =>
-    [...document.querySelectorAll('.eval-tscroll .eval-grid4')]
+    [...document.querySelectorAll('.eval-grid4')]
         .map((r) => (r.querySelector(':scope > span')?.textContent ?? '').trim())
         .filter((t) => t && t !== 'Execution');
 
@@ -100,7 +98,7 @@ describe('HistoryView — chronological ordering', () => {
 
     it("the middle row's dumbbell baselines against the chronologically-earlier run", () => {
         renderHistory();
-        const rows = [...document.querySelectorAll('.eval-tscroll .eval-grid4')].filter(
+        const rows = [...document.querySelectorAll('.eval-grid4')].filter(
             (r) => (r.querySelector(':scope > span')?.textContent ?? '').trim() === E2,
         );
         expect(rows.length).toBe(1);

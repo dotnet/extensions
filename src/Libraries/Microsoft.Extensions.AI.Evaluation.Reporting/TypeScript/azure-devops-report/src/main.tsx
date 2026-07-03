@@ -3,14 +3,12 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from '../../components/App.tsx';
+import { App, createScoreSummary, ReportContextProvider } from '../../components';
 import './index.css'
 import { init, ready, getAccessToken, getConfiguration } from "azure-devops-extension-sdk";
 import { getClient } from "./azure-devops-extension-api";
 import { Build, Attachment, BuildRestClient } from "./azure-devops-extension-api/Build";
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
-import { createScoreSummary as createScoreSummary } from '../../components/Summary.ts';
-import { ReportContextProvider } from '../../components/ReportContext.tsx';
 
 const ErrorHtml = ({ message }: { message: string }) =>
   <html>

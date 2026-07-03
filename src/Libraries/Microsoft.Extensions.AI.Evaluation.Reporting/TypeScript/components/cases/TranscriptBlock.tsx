@@ -6,8 +6,9 @@ import { Fragment } from 'react';
 import { Card } from '@fluentui/react-components';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useReportContext } from './ReportContext';
-import { type ChatMessageDisplay, isTextContent, isImageContent } from './Summary';
+import { useReportContext } from '../core/ReportContext';
+import { type ChatMessageDisplay, isTextContent, isImageContent } from '../core/Summary';
+import './transcript.css';
 
 type FunctionCallLike = AIContent & {
     $type: 'functionCall';

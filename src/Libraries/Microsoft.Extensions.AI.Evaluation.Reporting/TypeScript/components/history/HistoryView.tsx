@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Card, mergeClasses } from '@fluentui/react-components';
-import { useReportContext } from './ReportContext';
-import { useReportStyles } from './reportStyles';
-import { metricHistoryForScenario, chronologicalExecutions } from './viewModels';
+import { Card, makeStyles, mergeClasses } from '@fluentui/react-components';
+import { useReportContext } from '../core/ReportContext';
+import { useReportStyles } from '../styles/reportStyles';
+import { metricHistoryForScenario, chronologicalExecutions } from '../core/viewModels';
 import { TrendChart, type BandPoint, type MetricKind } from './TrendChart';
 import { DUMBBELL_D, DUMBBELL_RING, DUMBBELL_CONN } from './dumbbellGeometry';
 
@@ -104,8 +104,38 @@ const aggregate = (values: number[]): BandPoint | undefined => {
     return { mean, median, lo: sorted[0], hi: sorted[sorted.length - 1], n: sorted.length };
 };
 
+const useLocalStyles = makeStyles({
+    // Hides the horizontal scrollbar on the metric segmented control.
+    segTrack: {
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': { height: 0, width: 0 },
+    },
+    // Hover affordance for a non-active segment button (active buttons don't get it).
+    segBtn: {
+        ':hover': {
+            WebkitBackdropFilter: 'var(--eval-nav-bd-hover)',
+            backdropFilter: 'var(--eval-nav-bd-hover)',
+            color: 'var(--neutral-foreground-1)',
+        },
+    },
+    // Reserves the width of the bold (active) label via a hidden ::after clone so the
+    // control doesn't reflow when a metric becomes active.
+    segLabel: {
+        display: 'inline-flex',
+        flexDirection: 'column',
+        '&::after': {
+            content: 'attr(data-text)',
+            fontWeight: 'var(--font-weight-semibold)',
+            height: 0,
+            overflow: 'hidden',
+            visibility: 'hidden',
+        },
+    },
+});
+
 export const HistoryView = () => {
     const s = useReportStyles();
+    const local = useLocalStyles();
     const { scoreSummary, dataset, selectedScenarioLevel } = useReportContext();
 
     const leafScenarios = useMemo(() => {
@@ -312,7 +342,7 @@ export const HistoryView = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             {metricNames.length > 0 && (
-                <div role="tablist" ref={trackRef} className="eval-seg-track" style={segTrackStyle}>
+                <div role="tablist" ref={trackRef} className={local.segTrack} style={segTrackStyle}>
                     <span ref={indRef} className={s.slideIndicatorPill} aria-hidden="true" />
                     {metricNames.map((name) => {
                         const isActive = name === activeMetric;
@@ -321,11 +351,11 @@ export const HistoryView = () => {
                                 key={name}
                                 role="tab"
                                 aria-selected={isActive}
-                                className={mergeClasses('eval-seg-btn', isActive && 'is-active', s.segmentedPill, isActive && s.segmentedPillActive)}
+                                className={mergeClasses(s.segmentedPill, !isActive && local.segBtn, isActive && s.segmentedPillActive)}
                                 style={{ position: 'relative', zIndex: 1 }}
                                 onClick={() => setSelectedMetric(name)}
                             >
-                                <span className="eval-seg-label" data-text={name}>{name}</span>
+                                <span className={local.segLabel} data-text={name}>{name}</span>
                             </button>
                         );
                     })}
@@ -370,7 +400,7 @@ export const HistoryView = () => {
                             <h3 style={{ fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', margin: '0 0 var(--spacing-m)' }}>
                                 Run history
                             </h3>
-                            <div className="eval-tscroll">
+                            <div className={s.tscroll}>
                                 <div className="eval-grid4" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', padding: 'var(--spacing-m-nudge) 0', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
                                     <span>Execution</span>
                                     <span style={{ textAlign: 'center' }}>Metric score</span>

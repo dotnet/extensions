@@ -3,9 +3,7 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from '../../components/App.tsx'
-import { createScoreSummary } from '../../components/Summary.ts';
-import { ReportContextProvider } from '../../components/ReportContext.tsx';
+import { App, createScoreSummary, ReportContextProvider } from '../../components';
 
 let dataset: Dataset = { scenarioRunResults: [] };
 

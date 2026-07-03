@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useReportContext } from './ReportContext';
-import { OverviewView } from './OverviewView';
-import { CasesView } from './CasesView';
-import { HistoryView } from './HistoryView';
-import { ComparisonView } from './ComparisonView';
+import { useReportContext } from '../core/ReportContext';
+import { OverviewView } from '../overview/OverviewView';
+import { CasesView } from '../cases/CasesView';
+import { HistoryView } from '../history/HistoryView';
+import { ComparisonView } from '../history/ComparisonView';
 
 export const ViewRouter = () => {
     const { view } = useReportContext();

@@ -25,7 +25,7 @@ import {
     WeatherSunnyRegular,
 } from '@fluentui/react-icons';
 import { MoverDirections, getTabsterAttribute } from 'tabster';
-import { useReportContext, type ReportView } from './ReportContext';
+import { useReportContext, type ReportView } from '../core/ReportContext';
 import { resolveTheme, detectHostDarkMode } from './theme';
 import { useAdoResize } from './useAdoResize';
 import { SidebarTree } from './SidebarTree';
@@ -215,8 +215,41 @@ const useStyles = makeStyles({
         fontFamily: 'inherit',
         fontSize: 'var(--font-size-300)',
         padding: 'var(--spacing-m) var(--spacing-s)',
+        color: 'var(--neutral-foreground-2)',
+        fontWeight: 'var(--font-weight-regular)',
+        transition: 'color var(--duration-faster) var(--curve-easy-ease)',
+        // Hover underline that fades in beneath the tab (the active tab uses the
+        // separately-animated slide indicator, not this ::before).
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: '8px',
+            right: '8px',
+            bottom: 0,
+            height: '2px',
+            borderRadius: 'var(--radius-circular)',
+            background: 'transparent',
+            transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
+        },
+        ':hover': { color: 'var(--neutral-foreground-1)' },
+        '&:hover::before': { background: 'var(--neutral-stroke-1-hover)' },
     },
-    pivotLabel: { display: 'inline-flex', flexDirection: 'column' },
+    pivotActive: {
+        color: 'var(--neutral-foreground-1)',
+        fontWeight: 'var(--font-weight-semibold)',
+    },
+    pivotLabel: {
+        display: 'inline-flex',
+        flexDirection: 'column',
+        // Reserves the bold-active width so switching tabs doesn't shift layout.
+        '&::after': {
+            content: 'attr(data-text)',
+            fontWeight: 'var(--font-weight-semibold)',
+            height: 0,
+            overflow: 'hidden',
+            visibility: 'hidden',
+        },
+    },
 
     contentInner: {
         boxSizing: 'border-box',
@@ -339,10 +372,10 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
                             role="tab"
                             aria-selected={active}
                             tabIndex={active ? 0 : -1}
-                            className={mergeClasses(classes.pivot, 'eval-pivot', active && 'is-active')}
+                            className={mergeClasses(classes.pivot, active && classes.pivotActive)}
                             onClick={() => setView(t.value)}
                         >
-                            <span className={mergeClasses(classes.pivotLabel, 'eval-pivot-label')} data-text={t.label}>
+                            <span className={classes.pivotLabel} data-text={t.label}>
                                 {t.label}
                             </span>
                             {t.value === 'cases' && casesCount > 0 && (

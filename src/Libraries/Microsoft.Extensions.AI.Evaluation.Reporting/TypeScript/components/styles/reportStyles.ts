@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { makeStyles, mergeClasses } from '@fluentui/react-components';
-
-export { mergeClasses };
+import { makeStyles } from '@fluentui/react-components';
 
 export const useReportStyles = makeStyles({
     card: {
@@ -315,6 +313,16 @@ export const useReportStyles = makeStyles({
             textDecoration: 'underline',
         },
         '&:active': { backgroundColor: 'var(--brand-background-2-hover)' },
+    },
+
+    // Wraps a wide grid/table so it scrolls horizontally instead of overflowing on
+    // narrow viewports. Shared by History, Overview, and Comparison run tables.
+    tscroll: {
+        '@media (max-width: 720px)': {
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+        },
     },
 });
 

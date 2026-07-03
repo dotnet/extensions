@@ -3,7 +3,7 @@
 
 import { DismissCircle16Regular, Warning16Regular, Info16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, mergeClasses } from "@fluentui/react-components";
-import { useStyles } from "./Styles";
+import { useStyles } from "../styles/Styles";
 
 export const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic[]; }) => {
     const classes = useStyles();

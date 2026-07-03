@@ -4,9 +4,7 @@
 import React, { useEffect } from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ReportContextProvider, useReportContext } from '../components/ReportContext';
-import { createScoreSummary } from '../components/Summary';
-import { CasesView } from '../components/CasesView';
+import { ReportContextProvider, useReportContext, createScoreSummary, CasesView } from '../components';
 
 // A case is "New" when its `${scenarioName}#${iterationName}` key is absent from the
 // immediately-previous execution; the earliest execution has no previous run and flags nothing.

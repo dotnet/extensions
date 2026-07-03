@@ -6,7 +6,7 @@ import {
     chronologicalExecutions,
     moversBetween,
     formatScore,
-} from '../components/viewModels';
+} from '../components/core/viewModels';
 
 const E1 = 'run-alpha'; // chronologically earliest
 const E2 = 'run-bravo'; // middle
