@@ -29,7 +29,6 @@
     <NetCoreTargetFrameworks Condition="'$(CustomTargetFrameworks)' != ''">$(SupportedNetCoreTargetFrameworks)</NetCoreTargetFrameworks>
     <NetCoreTargetFrameworks Condition="'$(CustomTargetFrameworks)' != '' AND $(CustomTargetFrameworks.Contains('net8.0'))">$(NetCoreTargetFrameworks);net8.0</NetCoreTargetFrameworks>
     <ConditionalNet462 Condition="'$(CustomTargetFrameworks)' == '' OR $(CustomTargetFrameworks.Contains('net462'))">;net462</ConditionalNet462>
-    <ConditionalNet472 Condition="'$(IsWindowsBuild)' == 'true' AND ('$(CustomTargetFrameworks)' == '' OR $(CustomTargetFrameworks.Contains('net472')))">;net472</ConditionalNet472>
 
     <!-- All the .NET TFMs we're testing against -->
     <TestNetCoreTargetFrameworks>$(NetCoreTargetFrameworks)</TestNetCoreTargetFrameworks>
@@ -100,7 +99,7 @@
       Run tests with the VS Test Runner (dotnet test) instead of the XUnit Test runner (dotnet exec).
       This is needed to produce Cobertura code coverage. See the targets file to more information.
     -->
-    <UseVSTestRunner>true</UseVSTestRunner>
+    <UseVSTestRunner Condition="'$(TestRunnerName)' != 'XUnitV3'">true</UseVSTestRunner>
   </PropertyGroup>
 
   <!-- Enable the Evaluation report builds on all CI builds -->

@@ -15,8 +15,6 @@ internal static class MarkItDownConditionHelper
 {
     internal static readonly Lazy<bool> IsInstalled = new(CanInvokeMarkItDown);
 
-    public static string SkipReason => "MarkItDown is not installed or not accessible.";
-
     private static bool CanInvokeMarkItDown()
     {
         ProcessStartInfo startInfo = new()

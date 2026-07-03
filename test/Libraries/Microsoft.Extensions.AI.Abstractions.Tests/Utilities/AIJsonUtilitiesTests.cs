@@ -650,10 +650,7 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void CreateJsonSchema_IncorporatesTypesAndAnnotations_Net()
     {
-        if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework"))
-        {
-            return;
-        }
+        Assert.SkipUnless(!RuntimeInformation.FrameworkDescription.Contains(".NET Framework"), "Only runs on .NET Core");
 
         AssertDeepEquals(JsonSerializer.Deserialize(
             """
@@ -886,10 +883,7 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void CreateJsonSchema_IncorporatesTypesAndAnnotations_NetFx()
     {
-        if (!RuntimeInformation.FrameworkDescription.Contains(".NET Framework"))
-        {
-            return;
-        }
+        Assert.SkipUnless(RuntimeInformation.FrameworkDescription.Contains(".NET Framework"), "Only runs on .NET Framework");
 
         AssertDeepEquals(JsonSerializer.Deserialize(
             """
