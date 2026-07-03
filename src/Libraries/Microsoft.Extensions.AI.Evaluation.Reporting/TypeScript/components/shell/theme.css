@@ -424,8 +424,8 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --scrim: rgba(0, 0, 0, 0.5);
 
   --acrylic-fill-light:
-    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    linear-gradient(rgba(38, 38, 38, 0.7), rgba(38, 38, 38, 0.7));
+    linear-gradient(rgba(51, 51, 51, 0.6), rgba(51, 51, 51, 0.6)),
+    linear-gradient(rgba(51, 51, 51, 0.6), rgba(51, 51, 51, 0.6));
   --acrylic-fallback-light: rgb(30, 30, 30);
 
   --focus-stroke-outer: var(--white);

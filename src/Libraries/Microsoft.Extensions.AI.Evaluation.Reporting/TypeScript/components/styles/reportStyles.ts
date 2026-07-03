@@ -310,7 +310,7 @@ export const useReportStyles = makeStyles({
         transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
         '&:hover': {
             backgroundColor: 'var(--brand-background-2)',
-            textDecoration: 'underline',
+            color: 'var(--brand-foreground-2)',
         },
         '&:active': { backgroundColor: 'var(--brand-background-2-hover)' },
     },
