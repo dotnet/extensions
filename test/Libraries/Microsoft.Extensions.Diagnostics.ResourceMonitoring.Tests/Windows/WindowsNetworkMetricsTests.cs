@@ -9,6 +9,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 using Microsoft.Shared.Instruments;
 using Moq;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
@@ -16,7 +17,7 @@ public class WindowsNetworkMetricsTests
 {
     public WindowsNetworkMetricsTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Skipped on Linux/macOS");
     }
 
     [Fact]

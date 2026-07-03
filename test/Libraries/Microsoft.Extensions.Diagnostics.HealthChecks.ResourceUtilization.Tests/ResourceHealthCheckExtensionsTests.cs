@@ -16,6 +16,7 @@ using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 using static Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop.JobObjectInfo;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
@@ -23,7 +24,7 @@ public class ResourceHealthCheckExtensionsTests
 {
     public ResourceHealthCheckExtensionsTests()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Skipped on macOS");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skipped on macOS");
     }
 
     [Fact]
@@ -474,7 +475,7 @@ public class ResourceHealthCheckExtensionsTests
         ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,
         string expectedDescription)
     {
-        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows-specific test.");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Windows-specific test.");
 
         var logger = new FakeLogger<WindowsContainerSnapshotProvider>();
         var fakeClock = new FakeTimeProvider();

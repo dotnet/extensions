@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk.Test;
 
@@ -14,7 +15,7 @@ public class DiskStatsReaderTests
 {
     public DiskStatsReaderTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Skipped on Windows/macOS");
     }
 
     private static readonly string[] _skipDevicePrefixes = new[] { "ram", "loop", "dm-" };

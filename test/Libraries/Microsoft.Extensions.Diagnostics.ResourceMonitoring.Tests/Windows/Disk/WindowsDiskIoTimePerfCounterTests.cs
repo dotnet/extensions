@@ -7,6 +7,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Disk.Test;
 
@@ -15,7 +16,7 @@ public class WindowsDiskIoTimePerfCounterTests
 {
     public WindowsDiskIoTimePerfCounterTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Skipped on Linux/macOS");
     }
 
     private const string CategoryName = "LogicalDisk";

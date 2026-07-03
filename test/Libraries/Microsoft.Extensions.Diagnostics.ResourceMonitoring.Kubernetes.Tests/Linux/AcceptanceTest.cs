@@ -12,6 +12,7 @@ using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Moq;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Linux;
 
@@ -19,7 +20,7 @@ public class AcceptanceTest
 {
     public AcceptanceTest()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Skipped on Windows/macOS");
     }
 
     [Fact]

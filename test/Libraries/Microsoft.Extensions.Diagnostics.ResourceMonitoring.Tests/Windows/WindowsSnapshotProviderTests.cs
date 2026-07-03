@@ -15,6 +15,7 @@ using Microsoft.Shared.Instruments;
 using Moq;
 using VerifyXunit;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
@@ -28,7 +29,7 @@ public sealed class WindowsSnapshotProviderTests
 
     public WindowsSnapshotProviderTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Skipped on Linux/macOS");
 
         _options = Options.Options.Create<ResourceMonitoringOptions>(new());
         using var meter = new Meter(nameof(BasicConstructor));

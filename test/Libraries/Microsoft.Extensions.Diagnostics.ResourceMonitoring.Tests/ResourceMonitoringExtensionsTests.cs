@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
@@ -20,7 +21,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void Throw_Null_When_Registration_Ingredients_Null()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         var services = new ServiceCollection();
 
@@ -33,7 +34,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void AddsResourceMonitoringService_ToServicesCollection()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -55,7 +56,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void AddsResourceMonitoringService_ToServicesCollection_NoArgs()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -73,7 +74,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void AddsResourceMonitoringService_AsHostedService()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         using var provider = new ServiceCollection()
             .AddLogging()
@@ -96,7 +97,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void ConfigureResourceUtilization_InitializeTrackerProperly()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         using var host = FakeHost.CreateBuilder()
             .ConfigureServices(services =>
@@ -124,7 +125,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void ConfigureMonitor_GivenOptionsDelegate_InitializeTrackerWithOptionsProperly()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         const int SamplingWindowValue = 3;
         const int CalculationPeriodValue = 2;
@@ -154,7 +155,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void ConfigureMonitor_GivenIConfigurationSection_InitializeTrackerWithOptionsProperly()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         const int SamplingWindowValue = 3;
         const int CalculationPeriod = 2;
@@ -197,7 +198,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void Registering_Resource_Utilization_Adds_Only_One_Object_Of_Type_ResourceUtilizationService_To_DI_Container()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         using var host = FakeHost.CreateBuilder()
             .ConfigureServices(services =>
@@ -222,7 +223,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void AddResourceMonitoringInternal_WhenMacOs_ReturnsSameServiceCollection()
     {
-        Assert.SkipUnless(OperatingSystem.IsMacOS(), "For MacOs only.");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "For MacOs only.");
 
         var services = new ServiceCollection();
 
@@ -237,7 +238,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void AddResourceMonitoring_AddsISnapshotProvider()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         var services = new ServiceCollection();
 
@@ -252,7 +253,7 @@ public sealed class ResourceMonitoringExtensionsTests
     [Fact]
     public void AddResourceMonitoringInternal_CallsConfigureDelegate()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Not supported on MacOs.");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Not supported on MacOs.");
 
         var services = new ServiceCollection();
         bool delegateCalled = false;

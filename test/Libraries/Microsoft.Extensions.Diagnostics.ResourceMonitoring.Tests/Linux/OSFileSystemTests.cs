@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Shared.Pools;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
@@ -14,7 +15,7 @@ public sealed class OSFileSystemTests
 {
     public OSFileSystemTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Skipped on Windows/macOS");
     }
 
     [Fact]

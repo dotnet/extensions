@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Testing.Test;
 
@@ -27,7 +28,7 @@ public class FakeCertificateFactoryTests
     [InlineData(true)]
     public void GenerateRsa_RunsOnWindows_GeneratesRsa(bool runsOnWindows)
     {
-        Assert.SkipUnless(!OperatingSystem.IsLinux(), "Skipped on Linux");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Skipped on Linux");
 
         Assert.NotNull(FakeSslCertificateFactory.GenerateRsa(runsOnWindows));
     }
@@ -35,7 +36,7 @@ public class FakeCertificateFactoryTests
     [Fact]
     public void GenerateRsa_DoesNotRunOnWindows_GeneratesRsa()
     {
-        Assert.SkipUnless(!OperatingSystem.IsWindows(), "Skipped on Windows");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Skipped on Windows");
 
         Assert.NotNull(FakeSslCertificateFactory.GenerateRsa(runsOnWindows: false));
     }

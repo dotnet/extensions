@@ -14,6 +14,7 @@ using Microsoft.Shared.Instruments;
 using Moq;
 using VerifyXunit;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
@@ -21,7 +22,7 @@ public sealed class LinuxUtilizationProviderTests
 {
     public LinuxUtilizationProviderTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Skipped on Windows/macOS");
     }
 
     private const string VerifiedDataDirectory = "Verified";

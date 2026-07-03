@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
@@ -28,7 +29,7 @@ public sealed class AcceptanceTest
     [Fact]
     public void Adding_Linux_Resource_Utilization_Allows_To_Query_Snapshot_Provider()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         using var services = new ServiceCollection()
             .AddResourceMonitoring()
@@ -44,7 +45,7 @@ public sealed class AcceptanceTest
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Section()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -74,7 +75,7 @@ public sealed class AcceptanceTest
     [Fact]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Action()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -98,7 +99,7 @@ public sealed class AcceptanceTest
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv1()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -148,7 +149,7 @@ public sealed class AcceptanceTest
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv2()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -197,7 +198,7 @@ public sealed class AcceptanceTest
     [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -296,7 +297,7 @@ public sealed class AcceptanceTest
     [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -405,7 +406,7 @@ public sealed class AcceptanceTest
     [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_Using_LinuxCalculationV2()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux specific tests");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {

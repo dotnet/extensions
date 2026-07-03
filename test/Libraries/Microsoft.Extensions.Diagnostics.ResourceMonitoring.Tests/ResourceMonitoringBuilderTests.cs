@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
@@ -13,7 +14,7 @@ public sealed class ResourceMonitoringBuilderTests
 {
     public ResourceMonitoringBuilderTests()
     {
-        Assert.SkipUnless(!OperatingSystem.IsMacOS(), "Skipped on macOS");
+        Assert.SkipUnless(!RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "Skipped on macOS");
     }
 
     [Fact]

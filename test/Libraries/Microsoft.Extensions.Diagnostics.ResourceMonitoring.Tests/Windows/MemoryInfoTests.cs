@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
@@ -16,7 +17,7 @@ public sealed class MemoryInfoTests
 {
     public MemoryInfoTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Skipped on Linux/macOS");
     }
 
     [Fact]

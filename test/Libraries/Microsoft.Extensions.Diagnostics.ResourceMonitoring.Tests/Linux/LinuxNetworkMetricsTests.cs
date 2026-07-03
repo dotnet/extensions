@@ -12,6 +12,7 @@ using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
 using Moq;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
@@ -23,7 +24,7 @@ public class LinuxNetworkMetricsTests
 
     public LinuxNetworkMetricsTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Skipped on Windows/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Skipped on Windows/macOS");
 
         _timeProvider = new FakeTimeProvider(_startTime);
 

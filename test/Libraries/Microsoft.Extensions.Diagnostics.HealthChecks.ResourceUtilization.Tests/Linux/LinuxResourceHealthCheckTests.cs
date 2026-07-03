@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
@@ -148,7 +149,7 @@ public class LinuxResourceHealthCheckTests
         ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds,
         string expectedDescription)
     {
-        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux-specific test.");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux-specific test.");
 
         var fakeClock = new FakeTimeProvider();
         var dataTracker = new Mock<IResourceMonitor>();

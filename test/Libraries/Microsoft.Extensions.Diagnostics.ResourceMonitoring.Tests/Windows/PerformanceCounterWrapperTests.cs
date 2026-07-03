@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.Versioning;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
@@ -12,7 +13,7 @@ public class PerformanceCounterWrapperTests
 {
     public PerformanceCounterWrapperTests()
     {
-        Assert.SkipUnless(OperatingSystem.IsWindows(), "Skipped on Linux/macOS");
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Skipped on Linux/macOS");
     }
 
     [Fact]
