@@ -210,20 +210,15 @@ type CaseRowVM = {
     scenarioName: string;
     failed: boolean;
     isNew: boolean;
-    // First-appearance order of the row's scenario, and original dataset order within it,
-    // so the list can group by scenario and float new cases to the top of their own group.
     scenOrder: number;
     index: number;
     scenario: ScenarioRunResult;
 };
 
-// prevKeys: `${scenarioName}#${iterationName}` present in the execution immediately before
-// the active one; a case is "New" when its key is absent there. Undefined = no previous
-// execution (active run is the earliest), so nothing is flagged new.
+// prevKeys holds `scenarioName#iterationName` for the previous execution; a case is
+// New when its key isn't there. Undefined = earliest run.
 const buildRows = (root: ScoreNode, prevKeys: Set<string> | undefined): CaseRowVM[] => {
     const rows: CaseRowVM[] = [];
-    // scenOrder captures the order each scenario first appears while iterating cases,
-    // so grouping follows first-appearance order rather than alphabetical case ids.
     const scenOrder = new Map<string, number>();
     for (const node of root.flattenedNodes) {
         if (!node.isLeafNode || !node.scenario) {
@@ -232,8 +227,6 @@ const buildRows = (root: ScoreNode, prevKeys: Set<string> | undefined): CaseRowV
         const segments = node.name.split(' / ');
         const label = segments[segments.length - 1];
         const scenarioName = node.scenario.scenarioName;
-        // Right-side scenario tag = the case's scenario (matches the mockup's "RAG.Answer" chip).
-        // Derive from scenarioName so it's robust to multi-iteration scenarios (node.name is just the case id then).
         const group = scenarioName || (segments.length > 1 ? segments.slice(0, -1).join(' · ') : undefined);
         if (!scenOrder.has(scenarioName)) {
             scenOrder.set(scenarioName, scenOrder.size);
@@ -404,9 +397,7 @@ export const CasesView = () => {
         }
     };
 
-    // "Previous execution" == the one immediately before the active run in first-appearance
-    // (chronological) order — same baseline OverviewView/passRateByScenarioGroup use for their
-    // "vs previous" deltas. A case is New when its scenario#iteration key is absent from it.
+    // Previous execution = the run immediately before the active one (same baseline Overview uses).
     const prevKeys = useMemo(() => {
         const execs: string[] = [];
         const seen = new Set<string>();
@@ -434,8 +425,6 @@ export const CasesView = () => {
     const rows = useMemo(() => {
         const filtered = failedOnly ? allRows.filter((r) => r.failed) : allRows;
         const sorted = [...filtered];
-        // Always group by scenario (first-appearance order); within a group new cases float to
-        // the top, then original dataset order. In pass-rate mode, failed cases lead the group.
         sorted.sort((a, b) => {
             if (a.scenOrder !== b.scenOrder) return a.scenOrder - b.scenOrder;
             if (scenSort === 'passRate' && a.failed !== b.failed) return a.failed ? -1 : 1;
@@ -445,9 +434,8 @@ export const CasesView = () => {
         return sorted;
     }, [allRows, failedOnly, scenSort]);
 
-    // The sidebar selection is a nodeKey; resolve it to a scenario name ONLY when the scope is a
-    // single scenario (every leaf shares one scenarioName). Rows equal to it hide the now-redundant
-    // scenario tag (mockup HTML:2330); a broader Group scope keeps tags so cases stay distinguishable.
+    // A row hides its scenario tag only when the scope is a single scenario (its tag would be
+    // redundant); broader scopes keep tags.
     const selectedScenarioName = useMemo(() => {
         if (!selectedScenarioLevel) return undefined;
         const names = new Set(

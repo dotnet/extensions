@@ -8,12 +8,8 @@ import { ReportContextProvider, useReportContext } from '../components/ReportCon
 import { createScoreSummary } from '../components/Summary';
 import { CasesView } from '../components/CasesView';
 
-// Positive guard for the "New" case badge. It is derived client-side by CasesView from the data
-// (a case whose `${scenarioName}#${iterationName}` key is absent from the immediately-previous
-// execution is New; the earliest execution — having no previous run — flags nothing). This test
-// guards that contract from silently vanishing, and replaces reliance on the dev-data generator's
-// former hand-labeled "new-in-latest" rig: with the generator now growing case sets organically
-// per run, the badge must still appear in the latest execution and be absent in the earliest.
+// A case is "New" when its `${scenarioName}#${iterationName}` key is absent from the
+// immediately-previous execution; the earliest execution has no previous run and flags nothing.
 
 type Metrics = ScenarioRunResult['evaluationResult']['metrics'];
 
@@ -51,9 +47,8 @@ const scenario = (
 const LATEST = 'exec-latest';
 const EARLIEST = 'exec-earliest';
 
-// Results are emitted newest-first (same as the generator), so the first-seen execution is the
-// latest. The latest run carries one case (`kept-in-latest`) that never appeared in the earliest
-// run, so exactly one case first-appears in the latest execution and none in the earliest.
+// Emitted newest-first (like the generator): the latest run carries one case (`kept-in-latest`)
+// absent from the earliest, so exactly one case is "New" and none in the earliest run.
 const newCaseDataset: Dataset = {
     generatorVersion: '0.0.1-test',
     createdAt: '2026-06-22T12:00:00.000Z',
@@ -87,7 +82,7 @@ const renderCasesWith = (exec?: string) => {
     );
 };
 
-describe('CasesView — "New" badge derivation (guards the organic new-case data)', () => {
+describe('CasesView — "New" badge derivation', () => {
     it('shows >=1 New badge on the latest execution', () => {
         renderCasesWith(undefined); // default active execution == primary == latest
         const badges = screen.getAllByText('New', { selector: '.eval-new-badge' });

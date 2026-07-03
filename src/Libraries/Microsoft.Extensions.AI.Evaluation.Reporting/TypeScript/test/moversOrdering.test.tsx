@@ -8,16 +8,6 @@ import {
     formatScore,
 } from '../components/viewModels';
 
-// ── Dedicated distinct-creationTime fixture ──────────────────────────────────
-// Three executions whose creationTimes ascend E1 → E2 → E3, but which are
-// INSERTED newest-first (E3, E2, E1). Because insertion order (E3, E2, E1) is
-// the REVERSE of chronological order (E1, E2, E3), any implementation that
-// derives "previous run" from an insertion index resolves the wrong baseline —
-// so these tests FAIL under an index impl and pass only under a creationTime
-// sort. `creationTime` lives per-row, so a second scenario is additionally
-// inserted oldest-first to prove the helper reduces each execution to its MIN
-// row-time rather than reading the first row it happens to see.
-
 const E1 = 'run-alpha'; // chronologically earliest
 const E2 = 'run-bravo'; // middle
 const E3 = 'run-charlie'; // chronologically latest
@@ -54,12 +44,8 @@ const row = (
         formatVersion: 1 as unknown as int,
     }) as ScenarioRunResult;
 
-// Scenario A: TWO cases per execution with DISTINCT accuracy values, so a
-// mean-over-cases aggregation is non-trivial (mean ≠ any single case value).
-//   E1 accuracy cases: 2, 4  → mean 3
-//   E2 accuracy cases: 3, 5  → mean 4
-//   E3 accuracy cases: 4, 4  → mean 4
-// Scenario B: a fraction metric to exercise fraction formatting.
+// Scenario A: two accuracy cases per exec (E1:2,4→3; E2:3,5→4; E3:4,4→4) so mean-over-cases
+// is non-trivial. Scenario B: a fraction metric to exercise fraction formatting.
 const makeExec = (exec: string, t: string, accA: [number, number], fracB: number): ScenarioRunResult[] => [
     row('Group.ScenarioA', 'iteration1', exec, t, { accuracy: numeric('accuracy', accA[0]) }),
     row('Group.ScenarioA', 'iteration2', exec, t, { accuracy: numeric('accuracy', accA[1]) }),
@@ -73,18 +59,16 @@ const dataset: Dataset = {
     scenarioRunResults: [
         ...makeExec(E3, T3, [4, 4], 0.9),
         ...makeExec(E2, T2, [3, 5], 0.5),
-        // Scenario B of the earliest run is inserted BEFORE scenario A of the
-        // earliest run, so the first E1 row the loop sees is not the "primary"
-        // one — proves min-over-rows, not first-row, drives the representative.
+        // Scenario B of the earliest run is inserted before scenario A, so the first E1 row seen
+        // isn't the "primary" one — proves min-over-rows (not first-row) picks the representative.
         row('Group.ScenarioB', 'iteration1', E1, T1, { coverage: numeric('coverage', 0.1) }),
         row('Group.ScenarioA', 'iteration1', E1, T1, { accuracy: numeric('accuracy', 2) }),
         row('Group.ScenarioA', 'iteration2', E1, T1, { accuracy: numeric('accuracy', 4) }),
     ],
 };
 
-// Inline, view-independent mean-over-cases for one (scenario, metric, exec) —
-// mirrors ComparisonView's scenarioMetrics algorithm WITHOUT importing it, so
-// the parity assertion pins moversBetween to the same numbers by construction.
+// Inline mean-over-cases for one (scenario, metric, exec), computed independently of the view
+// so the parity assertion pins moversBetween to the same numbers by construction.
 const meanOf = (scenario: string, metricName: string, exec: string): number => {
     const vals = dataset.scenarioRunResults
         .filter((r) => r.executionName === exec && r.scenarioName === scenario)
@@ -112,10 +96,8 @@ describe('moversBetween — baseline is the chronological predecessor', () => {
         const prev = chrono[chrono.indexOf(selected) - 1];
         expect(prev).toBe(E2); // chronological predecessor of E3
 
-        // The insertion-index predecessor of E3 (inserted first, index 0) would
-        // be undefined/none; the SECOND-inserted exec is E2 here only by luck of
-        // this layout, so guard the direction explicitly instead: selecting E2
-        // must baseline against E1 (chrono), never against E3 (insertion-newer).
+        // Guard direction explicitly: selecting E2 must baseline against E1 (chronological),
+        // never against E3, which is only insertion-newer.
         const moversE2 = moversBetween(dataset.scenarioRunResults, E2, chrono[chrono.indexOf(E2) - 1]);
         const accE2 = moversE2.find((m) => m.scenarioName === 'Group.ScenarioA' && m.metricName === 'accuracy')!;
         // mean(E2)=4, mean(E1)=3 → delta = +1 (vs E1). If it baselined on E3

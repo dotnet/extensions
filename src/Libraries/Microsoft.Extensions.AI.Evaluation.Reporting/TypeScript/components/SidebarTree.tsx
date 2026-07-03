@@ -92,14 +92,14 @@ export const SidebarTree = () => {
         if (target !== (selectedScenarioLevel ?? '')) {
             selectScenarioLevel(target);
         }
-        // Selecting a scenario re-scopes the CURRENT tab (mockup behavior) — it does not jump to Cases.
+        // Selecting a scenario re-scopes the CURRENT tab — it does not jump to Cases.
     };
 
     const rows = useMemo<SidebarRowVM[]>(() => {
         const out: SidebarRowVM[] = [];
         const walk = (nodes: ScoreNode[], depth: number) => {
-            // The sidebar shows the Group > Scenario hierarchy only (like the mockup); it never
-            // descends into iteration leaves. A node is expandable only if it has non-leaf children.
+            // The sidebar shows the Group > Scenario hierarchy only; it never descends into
+            // iteration leaves. A node is expandable only if it has non-leaf children.
             const branches = nodes.filter((n) => !n.isLeafNode);
             const sorted = [...branches].sort((a, b) => a.name.localeCompare(b.name));
             for (const node of sorted) {

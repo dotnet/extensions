@@ -4,8 +4,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReportContext } from './ReportContext';
 
-// A single execution's per-metric distribution across its cases: the mean +
-// median lines and the min/max spread band are all derived from these.
 export type BandPoint = {
     mean: number;
     median: number;
@@ -26,9 +24,6 @@ type Domain = {
     ticks: number;
 };
 
-// y-domain per kind. Bounded scales (score 1–5, fraction 0–1) always span their
-// full declared range so the axis shows every possible value; the unit ("/5")
-// rides the top tick.
 const domainFor = (kind: MetricKind, pts: (BandPoint | undefined)[]): Domain => {
     if (kind !== 'score' && kind !== 'fraction') {
         let lo = Infinity;
@@ -58,9 +53,6 @@ const domainFor = (kind: MetricKind, pts: (BandPoint | undefined)[]): Domain => 
     return { min, max, fmt, unit, ticks };
 };
 
-// Fallback plot width (px) when the wrapper hasn't been measured yet (SSR /
-// tests / first paint). Equals the previous fixed viewBox width, so unmeasured
-// renders are byte-for-byte identical to the old fixed-760 output.
 const W_FALLBACK = 760;
 const H = 260;
 const PAD_L = 34;
@@ -75,26 +67,15 @@ export type TrendChartProps = {
     showLegend?: boolean;
 };
 
-// mean line + dashed median line + min/max spread band per metric, across
-// executions. Mirrors the mockup's bandChart + chartLegend. Every color is a DS
-// token so it flips in dark mode; the band opacity is the only value that keys
-// off the theme directly.
 export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: TrendChartProps) => {
     const { darkMode } = useReportContext();
 
-    // Measure the wrapper and drive the SVG's user-space width from it, so 1
-    // user unit = 1 CSS px at any container width. With a fixed viewBox the
-    // fixed `fontSize`/`strokeWidth` user units scaled with the container; by
-    // making viewBox width == rendered px width, tick fonts and line strokes
-    // stay a literal, constant px size regardless of window width. `xOf`
-    // already interpolates across `W - PAD`, so the plot reflows.
     const wrapRef = useRef<HTMLDivElement | null>(null);
     const [measuredW, setMeasuredW] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         const el = wrapRef.current;
-        // ResizeObserver is a browser-only enhancement; guard it so non-DOM envs
-        // (tests/SSR) no-op gracefully and fall back to the fixed W below.
+        // ResizeObserver is browser-only; guard so non-DOM envs fall back to the fixed W below.
         if (!el || typeof ResizeObserver === 'undefined') return;
         const ro = new ResizeObserver((entries) => {
             const w = entries[0]?.contentRect.width;
