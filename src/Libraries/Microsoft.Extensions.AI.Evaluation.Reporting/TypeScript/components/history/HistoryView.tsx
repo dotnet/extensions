@@ -7,7 +7,7 @@ import { useReportContext } from '../core/ReportContext';
 import { useReportStyles } from '../styles/reportStyles';
 import { metricHistoryForScenario, chronologicalExecutions } from '../core/viewModels';
 import { TrendChart, type BandPoint, type MetricKind } from './TrendChart';
-import { DUMBBELL_D, DUMBBELL_RING, DUMBBELL_CONN } from './dumbbellGeometry';
+import { metricScale, posOn, formatRaw, STATUS_TEXT, dumbbellStyles } from './dumbbellGeometry';
 
 const metricKindOf = (metric: BaseEvaluationMetric, sampleValue: number): MetricKind => {
     const hint = metric.metadata?.kind;
@@ -24,73 +24,14 @@ const metricBetterOf = (metric: BaseEvaluationMetric): 'high' | 'low' | 'none' =
     return b === 'low' || b === 'none' ? b : 'high';
 };
 
-const formatRaw = (v: number, kind: MetricKind): string => {
-    if (kind === 'fraction') return v.toFixed(3);
-    if (kind === 'score') return (v % 1 === 0 ? `${v}` : v.toFixed(1)) + '/5';
-    return v % 1 === 0 ? `${v}` : v.toFixed(1);
-};
-
 const deltaEpsilon = (kind: MetricKind): number =>
     kind === 'fraction' ? 0.005 : kind === 'score' ? 0.05 : 0.5;
 
 const deltaMagnitude = (v: number, kind: MetricKind): string =>
     v.toFixed(kind === 'fraction' ? 3 : kind === 'score' ? 1 : 0);
 
-// Full declared scale of a metric for absolute dumbbell positioning.
-const metricScale = (kind: MetricKind, peak: number): [number, number] =>
-    kind === 'fraction' ? [0, 1] : kind === 'score' ? [1, 5] : [0, Math.max(1, peak || 1)];
-
-const posOn = (v: number, min: number, max: number): number =>
-    max > min ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : 50;
-
-type StatusKind = 'success' | 'danger' | 'neutral';
-
-const statusSolid = (sk: StatusKind): string =>
-    sk === 'success'
-        ? 'var(--status-success-background-3)'
-        : sk === 'danger'
-            ? 'var(--status-danger-foreground-2)'
-            : 'var(--neutral-foreground-4)';
-
-const statusText = (sk: StatusKind): string =>
-    sk === 'success'
-        ? 'var(--status-success-foreground-1)'
-        : sk === 'danger'
-            ? 'var(--status-danger-foreground-1)'
-            : 'var(--neutral-foreground-4)';
-
 const spreadTint = (dir: number): string =>
     dir > 0 ? 'var(--spread-tint-pos)' : dir < 0 ? 'var(--spread-tint-neg)' : 'var(--spread-tint-flat)';
-
-const dumbbellStyles = (
-    prevPos: number | null,
-    currPos: number,
-    dir: number,
-    hasDelta: boolean,
-): { sk: StatusKind; connector: React.CSSProperties; dotB: React.CSSProperties; dotA: React.CSSProperties } => {
-    const D = DUMBBELL_D;
-    const RING = DUMBBELL_RING;
-    const CONN = DUMBBELL_CONN;
-    const sk: StatusKind = dir > 0 ? 'success' : dir < 0 ? 'danger' : 'neutral';
-    const color = statusSolid(sk);
-    const halo = '0 0 0 2px var(--neutral-background-1)';
-    const hasPrev = prevPos !== null && prevPos !== undefined && Number.isFinite(prevPos);
-    const cur = Math.max(0, Math.min(100, currPos));
-    const prv = hasPrev ? Math.max(0, Math.min(100, prevPos!)) : cur;
-    const lo = Math.min(prv, cur);
-    const hi = Math.max(prv, cur);
-    const connVisible = hasPrev && hasDelta && hi - lo > 0.01;
-    return {
-        sk,
-        connector: connVisible
-            ? { position: 'absolute', top: '50%', left: `${lo}%`, width: `${hi - lo}%`, height: `${CONN}px`, transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: color }
-            : { display: 'none' },
-        dotB: hasPrev
-            ? { position: 'absolute', top: '50%', left: `${prv}%`, width: `${D}px`, height: `${D}px`, boxSizing: 'border-box', transform: 'translate(-50%,-50%)', borderRadius: '50%', background: 'var(--neutral-background-1)', border: `${RING}px solid var(--neutral-foreground-3)`, boxShadow: halo }
-            : { display: 'none' },
-        dotA: { position: 'absolute', top: '50%', left: `${cur}%`, width: `${D}px`, height: `${D}px`, boxSizing: 'border-box', transform: 'translate(-50%,-50%)', borderRadius: '50%', background: color, boxShadow: halo },
-    };
-};
 
 const isNumeric = (m: BaseEvaluationMetric): m is NumericMetric =>
     m.$type === 'numeric' && typeof (m as NumericMetric).value === 'number';
@@ -297,7 +238,7 @@ export const HistoryView = () => {
 
     const dMean = first && last ? last.mean - first.mean : 0;
     const netFlat = Math.abs(dMean) < eps;
-    const netColor = good === null || netFlat ? 'var(--neutral-foreground-4)' : (dMean > 0) === good ? statusText('success') : statusText('danger');
+    const netColor = good === null || netFlat ? 'var(--neutral-foreground-4)' : (dMean > 0) === good ? STATUS_TEXT.success : STATUS_TEXT.danger;
     const netStr = netFlat ? 'stable' : (dMean > 0 ? '▲ ' : '▼ ') + deltaMagnitude(Math.abs(dMean), kind);
     const peak = valid.length ? Math.max(...valid.map((p) => p.mean)) : 0;
 
@@ -336,7 +277,7 @@ export const HistoryView = () => {
             p && spR - spL > 0.5
                 ? { position: 'absolute', top: '50%', left: `${spL}%`, width: `${spR - spL}%`, height: '3px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: spreadTint(dir), pointerEvents: 'none' }
                 : { display: 'none' };
-        return { key: `${date}-${i}`, date, scoreStr, changeStr, numColor: statusText(db.sk), spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
+        return { key: `${date}-${i}`, date, scoreStr, changeStr, numColor: STATUS_TEXT[db.sk], spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
     });
 
     return (

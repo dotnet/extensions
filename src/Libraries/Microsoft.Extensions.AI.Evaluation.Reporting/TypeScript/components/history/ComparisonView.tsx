@@ -7,26 +7,7 @@ import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { useReportStyles } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
-import { DUMBBELL_D, DUMBBELL_RING, DUMBBELL_CONN } from './dumbbellGeometry';
-
-// Every color references a DS token so it flips in dark mode. SOLID = saturated
-// dot/connector fill; TEXT = readable foreground for the current value + delta.
-type StatusKey = 'success' | 'warning' | 'danger' | 'caution' | 'neutral';
-
-const STATUS_SOLID: Record<StatusKey, string> = {
-    success: 'var(--status-success-background-3)',
-    warning: 'var(--status-warning-foreground-2)',
-    danger: 'var(--status-danger-foreground-2)',
-    caution: 'var(--palette-yellow-foreground1)',
-    neutral: 'var(--neutral-foreground-4)',
-};
-const STATUS_TEXT: Record<StatusKey, string> = {
-    success: 'var(--status-success-foreground-1)',
-    warning: 'var(--status-warning-foreground-1)',
-    danger: 'var(--status-danger-foreground-1)',
-    caution: 'var(--palette-yellow-foreground1)',
-    neutral: 'var(--neutral-foreground-3)',
-};
+import { metricScale, posOn, formatRaw, dumbbellStyles, STATUS_TEXT, type StatusKey } from './dumbbellGeometry';
 
 const BUCKET_ORDER: StatusKey[] = ['success', 'warning', 'danger', 'neutral'];
 
@@ -54,46 +35,6 @@ const metricKind = (m: NumericMetric): MetricKind => {
 };
 
 const metricBetter = (m: NumericMetric): string => m.metadata?.better ?? 'high';
-
-const metricScale = (kind: MetricKind, peak: number): [number, number] =>
-    kind === 'fraction' ? [0, 1] : kind === 'score' ? [1, 5] : [0, Math.max(1, peak || 1)];
-
-const posOn = (v: number, min: number, max: number): number =>
-    max > min ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : 50;
-
-const formatRaw = (v: number, kind: MetricKind): string => {
-    if (kind === 'fraction') return v.toFixed(3);
-    return (v % 1 === 0 ? '' + v : v.toFixed(1)) + '/5';
-};
-
-const HALO = 'box-shadow:0 0 0 2px var(--neutral-background-1);';
-
-type Dumbbell = { connectorStyle: string; dotBStyle: string; dotAStyle: string };
-
-const dumbbellStyles = (
-    prevPos: number | null,
-    currPos: number,
-    dir: number,
-    hasDelta: boolean,
-): Dumbbell => {
-    const sk: StatusKey = dir > 0 ? 'success' : dir < 0 ? 'danger' : 'neutral';
-    const color = STATUS_SOLID[sk];
-    const hasPrev = prevPos !== null && prevPos !== undefined && isFinite(prevPos);
-    const cur = Math.max(0, Math.min(100, currPos));
-    const prv = hasPrev ? Math.max(0, Math.min(100, prevPos as number)) : cur;
-    const lo = Math.min(prv, cur);
-    const hi = Math.max(prv, cur);
-    const connVisible = hasPrev && hasDelta && hi - lo > 0;
-    return {
-        connectorStyle: connVisible
-            ? `position:absolute; top:50%; left:${lo}%; width:${hi - lo}%; height:${DUMBBELL_CONN}px; transform:translateY(-50%); border-radius:var(--radius-circular); background:${color};`
-            : 'display:none;',
-        dotBStyle: hasPrev
-            ? `position:absolute; top:50%; left:${prv}%; width:${DUMBBELL_D}px; height:${DUMBBELL_D}px; box-sizing:border-box; transform:translate(-50%,-50%); border-radius:50%; background:var(--neutral-background-1); border:${DUMBBELL_RING}px solid var(--neutral-foreground-3); ${HALO}`
-            : 'display:none;',
-        dotAStyle: `position:absolute; top:50%; left:${cur}%; width:${DUMBBELL_D}px; height:${DUMBBELL_D}px; box-sizing:border-box; transform:translate(-50%,-50%); border-radius:50%; background:${color}; ${HALO}`,
-    };
-};
 
 // Per-scenario mean of each metric across its cases; scenario is the only grouping
 // key (no metric-family field in the data).
@@ -149,9 +90,9 @@ type CmpRow = {
     bColor: string;
     delta: string;
     deltaColor: 'success' | 'danger' | 'subtle';
-    connectorStyle: string;
-    dotBStyle: string;
-    dotAStyle: string;
+    connector: React.CSSProperties;
+    dotB: React.CSSProperties;
+    dotA: React.CSSProperties;
     av: number;
     bv: number;
     d: number;
@@ -175,7 +116,7 @@ const buildCmpRow = (k: string, ba: MetricAgg | undefined, bb: MetricAgg | undef
     const dir = good === null || isFlat || !hasA ? 0 : (d > 0) === good ? 1 : -1;
     const prevPos = hasA ? posOn(av, dmin, dmax) : null;
     const curPos = posOn(bv, dmin, dmax);
-    const db = dumbbellStyles(prevPos, curPos, dir, !isFlat);
+    const db = dumbbellStyles(prevPos, curPos, dir, !isFlat, 0);
     let domB: StatusKey = 'neutral';
     let best = -1;
     if (bb) {
@@ -195,9 +136,9 @@ const buildCmpRow = (k: string, ba: MetricAgg | undefined, bb: MetricAgg | undef
         bColor: STATUS_TEXT[domB],
         delta: x.txt,
         deltaColor: x.color,
-        connectorStyle: db.connectorStyle,
-        dotBStyle: db.dotBStyle,
-        dotAStyle: db.dotAStyle,
+        connector: db.connector,
+        dotB: db.dotB,
+        dotA: db.dotA,
         av,
         bv,
         d,
@@ -587,9 +528,9 @@ export const ComparisonView = () => {
                                                     style={{ flex: 1, minWidth: '60px', position: 'relative', height: '16px' }}
                                                 >
                                                     <span aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1.5px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)' }} />
-                                                    <span aria-hidden="true" style={cssText(m.connectorStyle)} />
-                                                    <span aria-hidden="true" style={cssText(m.dotBStyle)} />
-                                                    <span aria-hidden="true" style={cssText(m.dotAStyle)} />
+                                                    <span aria-hidden="true" style={m.connector} />
+                                                    <span aria-hidden="true" style={m.dotB} />
+                                                    <span aria-hidden="true" style={m.dotA} />
                                                 </span>
                                                 <span
                                                     style={{
@@ -630,19 +571,4 @@ export const ComparisonView = () => {
             )}
         </div>
     );
-};
-
-// Parse a `prop:value;` string (from dumbbellStyles) into a React style object.
-const cssText = (text: string): React.CSSProperties => {
-    const out: Record<string, string> = {};
-    for (const decl of text.split(';')) {
-        const i = decl.indexOf(':');
-        if (i < 0) continue;
-        const prop = decl.slice(0, i).trim();
-        const value = decl.slice(i + 1).trim();
-        if (!prop || !value) continue;
-        const camel = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-        out[camel] = value;
-    }
-    return out as React.CSSProperties;
 };
