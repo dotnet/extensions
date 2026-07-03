@@ -606,6 +606,10 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 
 /* Item 1 — Overview hero card gets the acrylic surface (mockup HTML:427-443). Fluent v9 Card root = .fui-Card.
    Selector is .eval-content-prefixed (specificity 0,3,0) so it outranks the base card rule above. */
+/* Make the hero a query container so its KPI reflow keys off the hero's OWN width, not
+   the viewport (the sidebar steals ~274px when it's a side column, so a viewport media
+   query mis-fires — see the @container rule near the responsive block below). */
+.eval-content .eval-hero-acrylic { container: eval-hero / inline-size; }
 .eval-content .eval-hero-acrylic .fui-Card {
   background-color: var(--acrylic-fallback-light);
   border-radius: var(--radius-card);
@@ -781,10 +785,15 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   .eval-grid6 { min-width: 680px; }
   .eval-grid4 { min-width: 560px; }
   .eval-grid3 { min-width: 520px; }
-  /* Gap D — the hero KPI group is inline-styled marginLeft:auto + display:flex with
-     nowrap cells and vertical dividers, so it can't wrap and overflows the acrylic
-     card (overflow:hidden clips it). Let it wrap to a new row under the pass-rate,
-     drop the left divider, and swap the per-cell vertical dividers for row spacing. */
+}
+/* Gap D — hero KPI reflow, driven by the hero's OWN width via a @container query (the
+   hero is a container; see .eval-hero-acrylic rule above), NOT the viewport. When the
+   sidebar is a side column the hero is only viewport-minus-~274px wide, so a viewport
+   media query missed it and the KPI group wrapped to a second row still right-aligned
+   (margin-left:auto) with a stray left divider. Below ~820px hero width the pass-rate +
+   3 KPIs no longer fit side-by-side, so stack the KPI group under the pass-rate:
+   left-align it, let it wrap internally, and drop the left + per-cell dividers. */
+@container eval-hero (max-width: 820px) {
   .eval-content .eval-hero-kpis {
     margin-left: 0 !important;
     flex-wrap: wrap !important;
