@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useCallback } from 'react';
 import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluentui/react-components';
 import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { useReportStyles } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
-import { metricScale, posOn, formatRaw, dumbbellStyles, STATUS_TEXT, type StatusKey } from './dumbbellGeometry';
+import { metricScale, posOn, formatRaw, dumbbellStyles, STATUS_TEXT, type StatusKey, type MetricScaleKind } from './dumbbellGeometry';
 
 const BUCKET_ORDER: StatusKey[] = ['success', 'warning', 'danger', 'neutral'];
 
@@ -23,7 +23,7 @@ const RATING_STATUS: Record<string, StatusKey> = {
 const statusKey = (rating: EvaluationRating | undefined): StatusKey =>
     RATING_STATUS[rating ?? 'unknown'] ?? 'neutral';
 
-type MetricKind = 'fraction' | 'score' | 'severity' | 'count';
+type MetricKind = MetricScaleKind;
 
 const metricKind = (m: NumericMetric): MetricKind => {
     const k = m.metadata?.kind as MetricKind | undefined;
@@ -233,14 +233,14 @@ export const ComparisonView = () => {
         );
     }, [scopedNode, selectedScenarioLevel]);
 
-    const resultsFor = (execName: string | undefined): ScenarioRunResult[] => {
+    const resultsFor = useCallback((execName: string | undefined): ScenarioRunResult[] => {
         if (!execName) return [];
         return (dataset.scenarioRunResults ?? []).filter(
             (r) =>
                 r.executionName === execName &&
                 (!scopedScenarioNames || scopedScenarioNames.has(r.scenarioName)),
         );
-    };
+    }, [dataset, scopedScenarioNames]);
 
     const groups = useMemo(() => {
         if (!hasTwoExecs || !effectiveA || !effectiveB || effectiveA === effectiveB) return [];
@@ -270,7 +270,7 @@ export const ComparisonView = () => {
                 return { scenario: sn, rows, cases: (B ?? A ?? { cases: 0 }).cases };
             })
             .filter((g) => g.rows.length > 0);
-    }, [dataset, effectiveA, effectiveB, hasTwoExecs, sortKey, sortDir, selectedScenarioLevel, scopedScenarioNames]);
+    }, [resultsFor, effectiveA, effectiveB, hasTwoExecs, sortKey, sortDir]);
 
     const allRows = useMemo(() => groups.reduce<CmpRow[]>((acc, g) => acc.concat(g.rows), []), [groups]);
     const multiScenario = groups.length > 1;

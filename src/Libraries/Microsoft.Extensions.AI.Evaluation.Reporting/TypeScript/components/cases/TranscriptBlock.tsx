@@ -311,7 +311,7 @@ const TextNode = ({ content }: { content: AIContent }) => {
     }
 
     if (isImageContent(content)) {
-        const imageUrl = (content as UriContent).uri || (content as DataContent).uri;
+        const imageUrl = (content as UriContent | DataContent).uri;
         return <img src={imageUrl} alt="Content" style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: 'var(--radius-small)' }} />;
     }
 
@@ -529,7 +529,7 @@ const SystemGroup = ({ content }: { content: AIContent }) => {
 export const TranscriptBlock = ({ messages, model: modelProp }: { messages: ChatMessageDisplay[]; model?: string }) => {
     const { dataset, prettifyJson } = useReportContext();
     const groups = buildGroups(messages, prettifyJson);
-    const { time, date } = chatClock(dataset?.createdAt);
+    const { time, date } = chatClock(dataset.createdAt);
 
     const assistantGroup = groups.find((g): g is Extract<GroupVM, { kind: 'group' }> => g.kind === 'group' && g.role === 'assistant');
     const model = modelProp || (assistantGroup ? modelFromParticipant(assistantGroup.participantName) : '—');

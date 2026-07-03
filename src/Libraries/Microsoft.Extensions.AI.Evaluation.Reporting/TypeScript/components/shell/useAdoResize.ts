@@ -17,7 +17,9 @@ export function useAdoResize(enabled: boolean): void {
             try {
                 const height = document.documentElement.scrollHeight;
                 resize(undefined, height);
-            } catch { }
+            } catch {
+                // resize() is only available inside the ADO host frame; ignore when absent.
+            }
         });
 
         return () => {

@@ -505,18 +505,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   color: var(--palette-berry-background3);
 }
 
-.acrylic-highlight {
-  background-image: var(--acrylic-fill-light);
-  -webkit-backdrop-filter: var(--acrylic-blur);
-  backdrop-filter: var(--acrylic-blur);
-  box-shadow: var(--shadow-8);
-  border: 1px solid var(--neutral-stroke-1);
-  border-radius: var(--radius-card);
-}
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .acrylic-highlight { background: var(--acrylic-fallback-light); }
-}
-
 .eval-content .fui-Card {
   border-radius: var(--radius-card);
   overflow: hidden;

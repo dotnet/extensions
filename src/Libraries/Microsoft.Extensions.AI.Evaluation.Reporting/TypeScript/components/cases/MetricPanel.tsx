@@ -94,7 +94,6 @@ const displayValue = (metric: MetricType): string | undefined => {
             return metric.value === undefined || metric.value === null ? undefined : metric.value ? 'Yes' : 'No';
         case 'numeric':
             return metric.value === undefined || metric.value === null ? undefined : String(metric.value);
-        case 'none':
         default:
             return undefined;
     }

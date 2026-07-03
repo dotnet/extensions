@@ -228,9 +228,9 @@ const scaleMaxOf = (kind: MoverMetricKind): number =>
 
 export const formatScore = (value: number, kind: MoverMetricKind): string => {
     if (kind === 'fraction') return value.toFixed(3);
-    const max = scaleMaxOf(kind);
     const num = value % 1 === 0 ? '' + value : value.toFixed(1);
-    return `${num}/${max}`;
+    if (kind === 'count') return num;
+    return `${num}/${scaleMaxOf(kind)}`;
 };
 
 type MoverAgg = { scenarioName: string; metricName: string; kind: MoverMetricKind; sum: number; n: number };

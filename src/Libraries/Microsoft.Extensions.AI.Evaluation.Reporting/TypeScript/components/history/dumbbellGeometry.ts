@@ -3,9 +3,9 @@
 
 import type { CSSProperties } from 'react';
 
-export const DUMBBELL_D = 8;
-export const DUMBBELL_RING = 1.5;
-export const DUMBBELL_CONN = 1.5;
+const DUMBBELL_D = 8;
+const DUMBBELL_RING = 1.5;
+const DUMBBELL_CONN = 1.5;
 
 export type MetricScaleKind = 'fraction' | 'score' | 'severity' | 'count';
 

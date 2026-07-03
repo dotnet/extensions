@@ -79,6 +79,11 @@ const auraDotStyle = (status: ReportStatus): React.CSSProperties => {
 const chipToStatus = (s: DeltaChip['status']): ReportStatus =>
     s === 'success' ? 'success' : s === 'danger' ? 'danger' : 'neutral';
 
+const deltaTextColor = (status: DeltaChip['status']): string =>
+    status === 'success' ? 'var(--status-success-foreground-1)'
+        : status === 'danger' ? 'var(--status-danger-foreground-1)'
+            : 'var(--neutral-foreground-3)';
+
 type AttentionItem = {
     key: string;
     label: string;
@@ -343,12 +348,7 @@ const GroupTable = ({
                                         fontSize: 'var(--font-size-300)',
                                         fontWeight: 'var(--font-weight-semibold)',
                                         fontVariantNumeric: 'tabular-nums',
-                                        color:
-                                            deltaBadgeChip.status === 'success'
-                                                ? 'var(--status-success-foreground-1)'
-                                                : deltaBadgeChip.status === 'danger'
-                                                    ? 'var(--status-danger-foreground-1)'
-                                                    : 'var(--neutral-foreground-3)',
+                                        color: deltaTextColor(deltaBadgeChip.status),
                                     }}
                                 >
                                     {deltaBadgeChip.show ? deltaBadgeChip.label : '—'}
@@ -370,12 +370,7 @@ const GroupTable = ({
                                 fontSize: 'var(--font-size-300)',
                                 fontWeight: 'var(--font-weight-semibold)',
                                 fontVariantNumeric: 'tabular-nums',
-                                color:
-                                    passChip.status === 'success'
-                                        ? 'var(--status-success-foreground-1)'
-                                        : passChip.status === 'danger'
-                                            ? 'var(--status-danger-foreground-1)'
-                                            : 'var(--neutral-foreground-3)',
+                                color: deltaTextColor(passChip.status),
                             }}
                         >
                             {passChip.show ? passChip.label : '—'}

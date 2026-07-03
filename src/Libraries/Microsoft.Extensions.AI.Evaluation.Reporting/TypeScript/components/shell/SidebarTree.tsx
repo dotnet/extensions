@@ -150,6 +150,7 @@ export const SidebarTree = () => {
         };
         walk(activeNode.childNodes, 0);
         return out;
+        // walk/scopeTo/toggle are pure over the listed deps; adding them would rebuild rows every render.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeNode, expanded, selectedScenarioLevel]);
 

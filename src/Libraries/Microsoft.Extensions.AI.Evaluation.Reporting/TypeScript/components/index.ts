@@ -7,21 +7,20 @@
 // shell
 export { App } from './shell/App';
 export type { HeightStrategy, ThemeSource } from './shell/AppShell';
-export { DARK_ROOT_CLASS, resolveTheme, detectHostDarkMode } from './shell/theme';
-export type { ResolvedTheme } from './shell/theme';
+export { detectHostDarkMode } from './shell/theme';
 
 // core
 export { ReportContextProvider, useReportContext } from './core/ReportContext';
 export type { ReportView, ScenarioSort, ReportContextType } from './core/ReportContext';
 export {
-  ScoreNode,
-  ScoreNodeType,
-  ReverseTextIndex,
-  createScoreSummary,
-  getScoreHistory,
-  getConversationDisplay,
-  isTextContent,
-  isImageContent,
+    ScoreNode,
+    ScoreNodeType,
+    ReverseTextIndex,
+    createScoreSummary,
+    getScoreHistory,
+    getConversationDisplay,
+    isTextContent,
+    isImageContent,
 } from './core/Summary';
 export type { ScoreSummary, ConversationDisplay, ChatMessageDisplay } from './core/Summary';
 export * from './core/viewModels';

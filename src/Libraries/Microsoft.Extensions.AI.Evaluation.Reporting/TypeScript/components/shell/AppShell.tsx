@@ -498,7 +498,6 @@ const useHostTheme = (themeSource: ThemeSource, setDarkMode: (v: boolean) => voi
 
         window.addEventListener('themeChanged', sync);
         return () => window.removeEventListener('themeChanged', sync);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [themeSource, setDarkMode]);
 };
 
@@ -529,8 +528,8 @@ export const AppShell = ({
     const results = dataset.scenarioRunResults ?? [];
     const resultCount = results.length;
     const executionCount = useMemo(
-        () => new Set(results.map((r) => r.executionName)).size,
-        [results],
+        () => new Set((dataset.scenarioRunResults ?? []).map((r) => r.executionName)).size,
+        [dataset.scenarioRunResults],
     );
 
     useHostTheme(themeSource, setDarkMode);

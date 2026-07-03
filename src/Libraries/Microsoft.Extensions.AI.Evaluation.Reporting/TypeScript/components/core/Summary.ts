@@ -40,8 +40,6 @@ export class ScoreNode {
     failed: boolean = false;
     numPassingIterations: number = 0;
     numFailingIterations: number = 0;
-    numPassingScenarios: number = 0;
-    numFailingScenarios: number = 0;
 
     setChildren(children: Map<string, ScoreNode>) {
         this.children = children;
@@ -89,18 +87,17 @@ export class ScoreNode {
         this.failed = false;
         this.numPassingIterations = 0;
         this.numFailingIterations = 0;
-        this.numPassingScenarios = 0;
-        this.numFailingScenarios = 0;
 
         if (this.isLeafNode) {
+            const scenario = this.scenario!;
 
-            this.failed = this.scenario ? isLeafFailed(this.scenario) : false;
+            this.failed = isLeafFailed(scenario);
 
             this.numPassingIterations = this.failed ? 0 : 1;
             this.numFailingIterations = this.failed ? 1 : 0;
-            const lastMessage = this.scenario?.messages[this.scenario?.messages.length - 1];
+            const lastMessage = scenario.messages[scenario.messages.length - 1];
 
-            const { messages } = getConversationDisplay(lastMessage ? [lastMessage] : [], this.scenario?.modelResponse);
+            const { messages } = getConversationDisplay(lastMessage ? [lastMessage] : [], scenario.modelResponse);
             let history = "";
             if (messages.length === 1) {
                 const content = messages[0].content;
@@ -123,12 +120,7 @@ export class ScoreNode {
                     this.numPassingIterations += child.numPassingIterations;
                     this.numFailingIterations += child.numFailingIterations;
                     if (this.nodeType == ScoreNodeType.Scenario) {
-                        this.numPassingScenarios = this.failed ? 0 : 1;
-                        this.numFailingScenarios = this.failed ? 1 : 0;
                         this.shortenedPrompt = child.shortenedPrompt;
-                    } else if (this.nodeType == ScoreNodeType.Group) {
-                        this.numPassingScenarios += child.numPassingScenarios;
-                        this.numFailingScenarios += child.numFailingScenarios;
                     }
                 }
             }

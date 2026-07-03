@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useContext, createContext, useState, useEffect, useMemo, useRef } from "react";
-import { ReverseTextIndex, ScoreNode, ScoreNodeType, ScoreSummary } from "./Summary";
+import { ScoreNode, ScoreSummary } from "./Summary";
 
 export type ReportView = 'overview' | 'cases' | 'history' | 'comparison';
 export type ScenarioSort = 'name' | 'passRate';
@@ -46,59 +46,9 @@ export type ReportContextType = {
     setIsSettingsOpen: (isSettingsOpen: boolean) => void,
 };
 
-const defaultReportContext = createContext<ReportContextType>({
-    dataset: {} as Dataset,
-    scoreSummary: {
-        primaryResult: new ScoreNode("empty", ScoreNodeType.Group, "empty-root", "execution"),
-        includesReportHistory: false,
-        executionHistory: new Map<string, ScoreNode>(),
-        nodesByKey: new Map<string, Map<string, ScoreNode>>(),
-        reverseTextIndex: new ReverseTextIndex(),
-        reverseTextIndexByExecution: new Map<string, ReverseTextIndex>(),
-    },
-    selectedScenarioLevel: undefined,
-    selectScenarioLevel: (_selectedScenarioLevel: string) => {
-        throw new Error("selectScenarioLevel function not implemented");
-    },
-    clearScenarioLevel: () => {
-        throw new Error("clearScenarioLevel function not implemented");
-    },
-    renderMarkdown: true,
-    setRenderMarkdown: (_renderMarkdown: boolean) => {
-        throw new Error("setRenderMarkdown function not implemented");
-    },
-    prettifyJson: true,
-    setPrettifyJson: (_prettifyJson: boolean) => {
-        throw new Error("setPrettifyJson function not implemented");
-    },
-    searchValue: '',
-    setSearchValue: (_searchValue: string | undefined) => { throw new Error("setSearchValue function not implemented"); },
-    selectedTags: [],
-    handleTagClick: (_tag: string) => { throw new Error("handleTagClick function not implemented"); },
-    clearFilters: () => { throw new Error("clearFilters function not implemented"); },
-    filterTree: (_node: ScoreNode) => { throw new Error("filterTree function not implemented"); },
-    view: 'overview',
-    setView: (_view: ReportView) => { throw new Error("setView function not implemented"); },
-    darkMode: false,
-    setDarkMode: (_darkMode: boolean) => { throw new Error("setDarkMode function not implemented"); },
-    failedOnly: false,
-    setFailedOnly: (_failedOnly: boolean) => { throw new Error("setFailedOnly function not implemented"); },
-    scenSort: 'name',
-    setScenSort: (_scenSort: ScenarioSort) => { throw new Error("setScenSort function not implemented"); },
-    casePage: 1,
-    setCasePage: (_casePage: number) => { throw new Error("setCasePage function not implemented"); },
-    cmpA: undefined,
-    setCmpA: (_cmpA: string | undefined) => { throw new Error("setCmpA function not implemented"); },
-    cmpB: undefined,
-    setCmpB: (_cmpB: string | undefined) => { throw new Error("setCmpB function not implemented"); },
-    exec: undefined,
-    setExec: (_exec: string | undefined) => { throw new Error("setExec function not implemented"); },
-    activeExecution: "execution",
-    activeNode: new ScoreNode("empty", ScoreNodeType.Group, "empty-root", "execution"),
-    scopedNode: new ScoreNode("empty", ScoreNodeType.Group, "empty-root", "execution"),
-    isSettingsOpen: false,
-    setIsSettingsOpen: (_isSettingsOpen: boolean) => { throw new Error("setIsSettingsOpen function not implemented"); },
-});
+// The provider always supplies a real value; `useReportContext` throws if a
+// consumer is rendered outside a `ReportContextProvider`.
+const ReportContext = createContext<ReportContextType | undefined>(undefined);
 
 export const ReportContextProvider = ({ dataset, scoreSummary, persistKey, children }:
     { dataset: Dataset, scoreSummary: ScoreSummary, persistKey?: string, children: React.ReactNode }) => {
@@ -106,14 +56,18 @@ export const ReportContextProvider = ({ dataset, scoreSummary, persistKey, child
     const app = useProvideReportContext(dataset, scoreSummary, persistKey);
 
     return (
-        <defaultReportContext.Provider value={app}>
+        <ReportContext.Provider value={app}>
             {children}
-        </defaultReportContext.Provider>
+        </ReportContext.Provider>
     );
 };
 
-export const useReportContext = () => {
-    return useContext(defaultReportContext);
+export const useReportContext = (): ReportContextType => {
+    const context = useContext(ReportContext);
+    if (context === undefined) {
+        throw new Error("useReportContext must be used within a ReportContextProvider");
+    }
+    return context;
 };
 
 const STORAGE_PREFIX = 'ai-eval-report:ui-intent:';
@@ -146,6 +100,7 @@ const writePersisted = (persistKey: string | undefined, value: PersistedUiIntent
     try {
         sessionStorage.setItem(STORAGE_PREFIX + persistKey, JSON.stringify(value));
     } catch {
+        // Storage may be unavailable (quota exceeded / private mode); persistence is best-effort.
     }
 };
 
