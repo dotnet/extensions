@@ -2,7 +2,9 @@
   <PropertyGroup>
     <!-- Do not generate documentation, and do not warn about enabling /doc for tests. -->
     <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)' == ''">false</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);RT0000</NoWarn>
+    <!-- xUnit1051 flags classes whose name ends in "Tests" that contain no test methods (e.g. fixture bases, abstract test bases, helper classes).
+         Fixing it would require renaming hundreds of existing classes; suppress it repo-wide instead. -->
+    <NoWarn>$(NoWarn);RT0000;xUnit1051</NoWarn>
     <!-- Use xUnit v3 test runner -->
     <TestRunnerName>XUnitV3</TestRunnerName>
     <!-- xUnit v3 requires test projects to be executable -->
