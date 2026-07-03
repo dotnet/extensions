@@ -46,8 +46,6 @@ export type ReportContextType = {
     setIsSettingsOpen: (isSettingsOpen: boolean) => void,
 };
 
-// Create the default context, which will be used to provide the context value
-// if no provider is found in the component tree. This should never happen in practice.
 const defaultReportContext = createContext<ReportContextType>({
     dataset: {} as Dataset,
     scoreSummary: {

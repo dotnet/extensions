@@ -19,12 +19,8 @@ const renderWith = (dataset: Dataset, ui: React.ReactElement) => {
     );
 };
 
-// Selects the sidebar node whose leaf scenario matches `scenarioName` (item 10:
-// Comparison must follow the sidebar selection). selectedScenarioLevel is a
-// nodeKey, not a scenarioName, so we resolve the leaf's nodeKey at runtime.
-// selectScenarioLevel TOGGLES, so we only call it while the target key is not
-// already the active selection — otherwise the effect would flip it back off and
-// re-fire in a render loop.
+// Selects the sidebar node for `scenarioName` (resolving its leaf nodeKey at runtime).
+// selectScenarioLevel toggles, so only call it when the target isn't already active.
 const ScenarioSelector = ({ scenarioName, children }: { scenarioName: string; children: React.ReactNode }) => {
     const { activeNode, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
     const targetKey = activeNode.flattenedNodes.find(
@@ -34,8 +30,7 @@ const ScenarioSelector = ({ scenarioName, children }: { scenarioName: string; ch
         if (targetKey && selectedScenarioLevel !== targetKey) {
             selectScenarioLevel(targetKey);
         }
-        // selectScenarioLevel is intentionally excluded: it is a fresh reference
-        // each render and toggles, so depending on it would loop.
+        // selectScenarioLevel is a fresh reference each render and toggles, so it's excluded to avoid a loop.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [targetKey, selectedScenarioLevel]);
     return <>{children}</>;
@@ -56,7 +51,7 @@ describe('HistoryView — twoExecutionDataset', () => {
 
     it('renders the run history section', () => {
         renderWith(twoExecutionDataset, <HistoryView />);
-        // Run history is now a CSS grid (matches the v3.1 mockup), not a <table>.
+        // Run history is a CSS grid, not a <table>.
         expect(screen.getByText(/run history/i)).toBeInTheDocument();
     });
 });
@@ -89,19 +84,18 @@ describe('ComparisonView — twoExecutionDataset', () => {
 
     it('renders the per-metric change section', () => {
         renderWith(twoExecutionDataset, <ComparisonView />);
-        // Per-metric change is now a CSS grid (matches the v3.1 mockup), not a <table>.
+        // Per-metric change is a CSS grid, not a <table>.
         expect(screen.getByText(/per-metric change/i)).toBeInTheDocument();
     });
 
-    // The metric-name labels also appear in the "Biggest mover" KPI sub-label,
-    // so read the per-metric TABLE rows (`.eval-cmp-row`) directly rather than a
-    // free-text query.
+    // Metric-name labels also appear in the "Biggest mover" KPI sub-label, so read the
+    // per-metric table rows (.eval-cmp-row) directly instead of a free-text query.
     const metricRowNames = (container: HTMLElement): string[] =>
         [...container.querySelectorAll('.eval-cmp-row')].map(
             (row) => row.firstElementChild?.textContent?.trim() ?? '',
         );
 
-    it('scopes rows to the sidebar-selected scenario (item 10)', () => {
+    it('scopes rows to the sidebar-selected scenario', () => {
         // Unscoped: all four metrics from both scenarios are present in the rows.
         const { container } = renderWith(twoExecutionDataset, <ComparisonView />);
         expect(metricRowNames(container).sort()).toEqual(
@@ -109,7 +103,7 @@ describe('ComparisonView — twoExecutionDataset', () => {
         );
     });
 
-    it('hides other scenarios once a sidebar scenario is selected (item 10)', async () => {
+    it('hides other scenarios once a sidebar scenario is selected', async () => {
         const { container } = renderWith(
             twoExecutionDataset,
             <ScenarioSelector scenarioName="Comparison.TextSummary">

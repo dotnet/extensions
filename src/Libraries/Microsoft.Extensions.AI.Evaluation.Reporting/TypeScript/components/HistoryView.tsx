@@ -9,8 +9,6 @@ import { metricHistoryForScenario, chronologicalExecutions } from './viewModels'
 import { TrendChart, type BandPoint, type MetricKind } from './TrendChart';
 import { DUMBBELL_D, DUMBBELL_RING, DUMBBELL_CONN } from './dumbbellGeometry';
 
-// Infer a metric's axis kind the same way the mockup's metricKind() does:
-// prefer an explicit metadata hint, else fall back to value shape.
 const metricKindOf = (metric: BaseEvaluationMetric, sampleValue: number): MetricKind => {
     const hint = metric.metadata?.kind;
     if (hint === 'score' || hint === 'fraction' || hint === 'count') return hint;
@@ -64,9 +62,6 @@ const statusText = (sk: StatusKind): string =>
 const spreadTint = (dir: number): string =>
     dir > 0 ? 'var(--spread-tint-pos)' : dir < 0 ? 'var(--spread-tint-neg)' : 'var(--spread-tint-flat)';
 
-// Shared-domain dumbbell geometry: baseline = hollow dot at prevPos, current =
-// filled dot (status-colored) at currPos, joined by a same-color connector.
-// Mirrors the mockup's dumbbellStyles so History reads identically to Comparison.
 const dumbbellStyles = (
     prevPos: number | null,
     currPos: number,
@@ -84,10 +79,6 @@ const dumbbellStyles = (
     const prv = hasPrev ? Math.max(0, Math.min(100, prevPos!)) : cur;
     const lo = Math.min(prv, cur);
     const hi = Math.max(prv, cur);
-    // Clamp-collapse: once prev/cur are clamped to [0,100] their positions can
-    // coincide (or leave only a sub-pixel sliver) even when the raw delta was
-    // non-zero — e.g. both values pinned to the same domain edge. Treat that as
-    // "no visible delta" so we don't paint a hairline connector under the dots.
     const connVisible = hasPrev && hasDelta && hi - lo > 0.01;
     return {
         sk,
@@ -104,8 +95,6 @@ const dumbbellStyles = (
 const isNumeric = (m: BaseEvaluationMetric): m is NumericMetric =>
     m.$type === 'numeric' && typeof (m as NumericMetric).value === 'number';
 
-// Aggregate a set of case values into the mean/median/min/max the band chart
-// and dumbbells need.
 const aggregate = (values: number[]): BandPoint | undefined => {
     if (values.length === 0) return undefined;
     const sorted = [...values].sort((a, b) => a - b);
@@ -127,10 +116,8 @@ export const HistoryView = () => {
             .map((node) => ({ scenario: node.scenario!, nodeKey: node.nodeKey }));
     }, [scoreSummary]);
 
-    // History reflects the LEFT-SIDEBAR scenario selection (there is no in-panel
-    // scenario picker). The sidebar sets `selectedScenarioLevel` to a node key,
-    // which may be a group; resolve it to the first leaf scenario under it. When
-    // nothing is selected ("All scenarios") we show the first leaf.
+    // History follows the sidebar selection (no in-panel picker). Resolve the selected
+    // node key — possibly a group — to the first leaf scenario under it.
     const selectedScenario = useMemo(() => {
         if (!selectedScenarioLevel) return leafScenarios[0]?.scenario;
         const match = leafScenarios.find(
@@ -150,9 +137,7 @@ export const HistoryView = () => {
     const activeMetric =
         selectedMetric && metricNames.includes(selectedMetric) ? selectedMetric : metricNames[0];
 
-    // Sliding white pill under the active segmented metric tab (pill mode: the
-    // indicator tracks the active button's box — translate + width + height).
-    // Mirrors AppShell's PivotBar underline slide, adapted for a filled pill.
+    // Slide the pill indicator to track the active metric button.
     const trackRef = useRef<HTMLDivElement | null>(null);
     const indRef = useRef<HTMLSpanElement | null>(null);
     const placedRef = useRef(false);
@@ -205,14 +190,7 @@ export const HistoryView = () => {
 
     const hasTrend = allSeries.length > 0;
 
-    // Ordered list of executions for this scenario (the band chart's X axis).
-    // metricHistoryForScenario preserves raw-results insertion order, which the
-    // data producers disagree on (dev data is newest-first). Sort ascending by
-    // creationTime via chronologicalExecutions so the ONE series that drives all
-    // three surfaces — the run-history dumbbell rows, the First/Last/Net stats,
-    // and the TrendChart X-axis — reads chronologically (oldest → newest),
-    // matching the v3.1 mockup. Executions missing from the chronological order
-    // fall to the end in their original relative order.
+    // Executions for this scenario ordered oldest → newest (see chronologicalExecutions).
     const activeSeriesPoints = useMemo(() => {
         const points = activeMetric
             ? allSeries.find((series) => series.metricName === activeMetric)?.points ?? []
@@ -230,14 +208,8 @@ export const HistoryView = () => {
             .map((o) => o.pt);
     }, [allSeries, activeMetric, dataset]);
 
-    // Per-execution {mean, median, lo, hi} across ALL CASES OF THE SCENARIO
-    // (every iterationName) for the active metric — derived client-side from
-    // dataset.scenarioRunResults (the frozen VM only carries a single scalar per
-    // execution). Mirrors the mockup's historyFor(), which aggregates by
-    // scenarioName alone, not scenarioName+iterationName — that's what makes the
-    // min–max spread band visible whenever a scenario has >=2 cases per run.
-    // Points are ordered to match `activeSeriesPoints`, so band/median/mean all
-    // share one X axis.
+    // Per-execution mean/median/min/max across ALL cases of the scenario (by scenarioName,
+    // not per-iteration) — that's what makes the min–max spread band appear.
     const band = useMemo(() => {
         if (!hasTrend || !activeMetric || !selectedScenario || activeSeriesPoints.length === 0) {
             return { points: [] as (BandPoint | undefined)[], kind: 'score' as MetricKind, better: 'high' as 'high' | 'low' | 'none' };

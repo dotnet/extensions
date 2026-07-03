@@ -389,8 +389,6 @@ const GroupTable = ({
 export const OverviewView = () => {
     const { dataset, scoreSummary, activeExecution, activeNode, scopedNode, selectedScenarioLevel, selectScenarioLevel, setView } = useReportContext();
 
-    // Scenarios for the active execution, restricted to the current sidebar selection.
-    // When "All scenarios" is selected scopedNode === activeNode, so this yields every scenario.
     const activeScenarios = useMemo(() => {
         const all = scenariosForExecution(dataset, activeExecution);
         if (!selectedScenarioLevel) return all;
@@ -421,10 +419,8 @@ export const OverviewView = () => {
         return kpi.passRate - prevPassing / totalTotal;
     }, [groupRows, kpi.passRate]);
 
-    // Movers compare the selected run against its chronologically-immediate
-    // predecessor (creationTime order), not an insertion index — correct under
-    // both newest-first dev data and oldest-first fixtures. When the selected run
-    // is the earliest, there is no predecessor: no movers, no compare label.
+    // Compare against the chronologically-immediate predecessor (creationTime
+    // order), not an insertion index. The earliest run has no predecessor.
     const compareLabel = useMemo(() => {
         const chrono = chronologicalExecutions(dataset);
         const idx = chrono.indexOf(activeExecution);
@@ -456,8 +452,6 @@ export const OverviewView = () => {
         const prevNode = scoreSummary.executionHistory.get(compareLabel);
         if (!prevNode) return undefined;
 
-        // Scope the comparison baseline to the same sidebar selection so the delta
-        // chips compare scoped-current against scoped-previous (apples to apples).
         const scopedNames = selectedScenarioLevel
             ? new Set(activeScenarios.map((s) => s.scenarioName))
             : undefined;

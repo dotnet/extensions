@@ -9,10 +9,8 @@ import { useReportStyles } from './reportStyles';
 import { chronologicalExecutions } from './viewModels';
 import { DUMBBELL_D, DUMBBELL_RING, DUMBBELL_CONN } from './dumbbellGeometry';
 
-// ── Shared-domain dumbbell geometry + status colors (mirrors the mockup's
-//    STATUS map + dumbbellStyles/posOn/metricScale). Every color references a DS
-//    token so it flips in dark mode. `.solid` = saturated dot/connector fill;
-//    `.text` = readable foreground for the current value + delta.
+// Every color references a DS token so it flips in dark mode. SOLID = saturated
+// dot/connector fill; TEXT = readable foreground for the current value + delta.
 type StatusKey = 'success' | 'warning' | 'danger' | 'caution' | 'neutral';
 
 const STATUS_SOLID: Record<StatusKey, string> = {
@@ -97,11 +95,8 @@ const dumbbellStyles = (
     };
 };
 
-// Per-execution, per-scenario metric aggregation (mean of value across the
-// scenario's cases). Scenario is the ONLY grouping key — the data has no
-// metric-family field — mirroring the mockup's scenarioMetrics(). Derived
-// client-side from the frozen dataset (the same access pattern Overview/Cases
-// use), so nothing here changes the view-model or API surface.
+// Per-scenario mean of each metric across its cases; scenario is the only grouping
+// key (no metric-family field in the data).
 type MetricAgg = { kind: MetricKind; better: string; sum: number; n: number; statusDist: Record<string, number> };
 type ScenAgg = { name: string; cases: number; metricAgg: Record<string, MetricAgg>; metricOrder: string[] };
 
@@ -266,11 +261,8 @@ export const ComparisonView = () => {
         [scoreSummary],
     );
 
-    // Default A/B ordering by creationTime (oldest → newest), the only
-    // order-independent source of truth (dev data is newest-first, fixtures are
-    // oldest-first). Default Current (B) = chronologically-latest run; default
-    // Baseline (A) = its immediate predecessor — matching Overview's "Current =
-    // latest, previous = predecessor". Users can still override via the dropdowns.
+    // Default by creationTime (oldest → newest): Current (B) = latest run,
+    // Baseline (A) = its predecessor. Users can still override via the dropdowns.
     const chrono = useMemo(() => chronologicalExecutions(dataset), [dataset]);
     const defaultB = chrono.length >= 1 ? chrono[chrono.length - 1] : undefined;
     const defaultA = chrono.length >= 2 ? chrono[chrono.length - 2] : undefined;
@@ -285,11 +277,8 @@ export const ComparisonView = () => {
 
     const hasTwoExecs = executions.length >= 2;
 
-    // Restrict the comparison to the sidebar-selected scenario/subtree. The
-    // selection is a nodeKey (e.g. `root.Comparison.TextSummary`), NOT a
-    // scenarioName — translate it to the set of leaf scenarioNames under the
-    // scoped node (same idiom as OverviewView). When nothing is selected, the set
-    // is undefined and every scenario is shown (prior behavior).
+    // The sidebar selection is a nodeKey, not a scenarioName; resolve it to the leaf
+    // scenarioNames under the scoped node. undefined = show all.
     const scopedScenarioNames = useMemo(() => {
         if (!selectedScenarioLevel) return undefined;
         return new Set(
@@ -419,8 +408,6 @@ export const ComparisonView = () => {
 
     return (
         <div>
-            {/* Run selector + headline KPIs: ONE bordered acrylic panel. Selectors
-                on top; the three KPIs as inline stat blocks divided by 1px rules. */}
             <div
                 style={{
                     marginBottom: 'var(--spacing-xl)',
@@ -641,8 +628,7 @@ export const ComparisonView = () => {
     );
 };
 
-// Parse a `prop:value; …` CSS text string (produced by dumbbellStyles) into a
-// React style object so the exact mockup geometry can be applied inline.
+// Parse a `prop:value;` string (from dumbbellStyles) into a React style object.
 const cssText = (text: string): React.CSSProperties => {
     const out: Record<string, string> = {};
     for (const decl of text.split(';')) {

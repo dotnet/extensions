@@ -8,17 +8,6 @@ import { createScoreSummary } from '../components/Summary';
 import { ReportContextProvider } from '../components/ReportContext';
 import { HistoryView } from '../components/HistoryView';
 
-// ── Dedicated distinct-creationTime fixture ──────────────────────────────────
-// Three executions whose creationTimes ascend E1 → E2 → E3, INSERTED
-// newest-first (E3, E2, E1). Because insertion order is the REVERSE of
-// chronological order, the three History surfaces driven by the metric series —
-// the run-history dumbbell rows, the First/Last/Net stats, and the TrendChart
-// X-axis — all read BACKWARDS unless the series is sorted by creationTime. Each
-// exec has a single case with a MONOTONIC mean (E1=2, E2=3, E3=4) so the
-// expected chronological order and its deltas are unambiguous. A test that
-// asserted only against insertion order (or an iteration-adjacent `prev`) would
-// FAIL here — it passes only under the chronological (creationTime) ordering.
-
 const E1 = 'EvaluationRun-alpha'; // chronologically earliest
 const E2 = 'EvaluationRun-bravo'; // middle
 const E3 = 'EvaluationRun-charlie'; // chronologically latest
@@ -87,7 +76,7 @@ const statValue = (label: string): string => {
     return (card?.querySelectorAll('div')[1]?.textContent ?? '').trim();
 };
 
-describe('HistoryView — chronological ordering (item 8, remedy b)', () => {
+describe('HistoryView — chronological ordering', () => {
     it('renders run-history rows oldest-first even when inserted newest-first', () => {
         renderHistory();
         // Chronological order is E1 (oldest) → E2 → E3 (newest); insertion order
@@ -117,18 +106,15 @@ describe('HistoryView — chronological ordering (item 8, remedy b)', () => {
         expect(rows.length).toBe(1);
         const middle = rows[0];
 
-        // The change cell shows the delta vs the chronological predecessor E1
-        // (mean 2) → E2 (mean 3) = +1 improvement → "▲ 1.0". A newer-neighbour
-        // (E3, mean 4) baseline would read "▼ 1.0".
+        // Change cell = delta vs the chronological predecessor: E1(2) → E2(3) = "▲ 1.0"
+        // (an E3-mean-4 baseline would instead read "▼ 1.0").
         const changeSpan = [...middle.querySelectorAll('span')].find(
             (s) => /[▲▼]/.test(s.textContent ?? '') && s.children.length === 0,
         );
         expect(changeSpan?.textContent?.trim()).toBe('▲ 1.0');
 
-        // The hollow "previous" dot (dotB) must sit to the LEFT of the filled
-        // "current" dot (dotA): prev = E1 (mean 2, lower position) < cur = E2
-        // (mean 3). Reading their left% off the inline styles proves the
-        // connector runs earlier → later, not later → earlier.
+        // The hollow "previous" dot (dotB) must sit LEFT of the filled "current" dot (dotA):
+        // prev = E1 (mean 2) < cur = E2 (mean 3), proving the connector runs earlier → later.
         const track = middle.querySelector('span[style*="min-width"]');
         const lefts = track
             ? [...track.querySelectorAll('span')]

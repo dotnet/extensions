@@ -214,9 +214,6 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
     }
 
     const [primaryResult] = executionHistory.values();
-    // NOTE: single-child chains are intentionally NOT collapsed — the sidebar shows the full
-    // Group > Scenario hierarchy like the mockup (e.g. "Chat > Quality", not a merged "Chat / Quality").
-
     const reverseTextIndexByExecution = new Map<string, ReverseTextIndex>();
     for (const [executionName, scoreNode] of executionHistory.entries()) {
         const index = new ReverseTextIndex();

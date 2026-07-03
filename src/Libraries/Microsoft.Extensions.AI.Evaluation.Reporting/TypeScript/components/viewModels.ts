@@ -69,13 +69,6 @@ const executionOrder = (results: ScenarioRunResult[]): string[] => {
     return seen;
 };
 
-// Execution names ordered by creationTime ASCENDING (oldest → newest), the only
-// order-independent source of truth: the client preserves raw-results insertion
-// order everywhere else, but the data producers disagree (dev data is
-// newest-first, twoExecutionDataset is oldest-first). creationTime lives per-ROW
-// on ScenarioRunResult, not per-execution, so each execution is reduced to a
-// deterministic representative = the MIN creationTime over its rows. Ties (and
-// missing/equal times) fall back to first-seen insertion order for stability.
 export const chronologicalExecutions = (dataset: Dataset): string[] => {
     const results = dataset.scenarioRunResults ?? [];
     const minTime = new Map<string, string>();
@@ -213,15 +206,6 @@ export const metricHistoryForScenario = (
     return [...series.entries()].map(([metricName, points]) => ({ metricName, points }));
 };
 
-// ── Biggest-movers model ─────────────────────────────────────────────────────
-// One row per (scenario, metric): the mean numeric value in the SELECTED
-// execution vs its chronological predecessor. `kind` classifies the metric so
-// the value can be rendered on its natural scale (score → "4/5", severity →
-// "/7", fraction → "0.xxx"). The kind/scale/format heuristic is a self-contained
-// copy of the one already duplicated across the views (ComparisonView,
-// HistoryView, MetricPanel) — a view-model-layer copy keeps this logic disjoint
-// from the view files rather than importing their private locals.
-
 export type MoverMetricKind = 'fraction' | 'score' | 'severity' | 'count';
 
 export type MoverRow = {
@@ -245,8 +229,6 @@ const metricKind = (metric: NumericMetric): MoverMetricKind => {
 const scaleMaxOf = (kind: MoverMetricKind): number =>
     kind === 'severity' ? 7 : 5;
 
-// Renders a numeric metric value on its natural scale: score → "4/5" / "4.2/5",
-// severity → "5/7", fraction → "0.xxx" (mirrors the in-repo `value + '/5'` idiom).
 export const formatScore = (value: number, kind: MoverMetricKind): string => {
     if (kind === 'fraction') return value.toFixed(3);
     const max = scaleMaxOf(kind);
@@ -256,14 +238,9 @@ export const formatScore = (value: number, kind: MoverMetricKind): string => {
 
 type MoverAgg = { scenarioName: string; metricName: string; kind: MoverMetricKind; sum: number; n: number };
 
-// Groups on the (scenarioName, metricName) pair itself so the key is never
-// re-parsed (scenario names contain dots; a delimiter split would be fragile).
 const pairKey = (scenarioName: string, metricName: string): string =>
     JSON.stringify([scenarioName, metricName]);
 
-// Means each numeric metric over a scenario's cases for one execution, keyed by
-// (scenarioName, metricName). Mirrors ComparisonView's scenarioMetrics()
-// mean-over-cases aggregation so the numbers agree, without importing it.
 const meanByScenarioMetric = (results: ScenarioRunResult[]): Map<string, MoverAgg> => {
     const agg = new Map<string, MoverAgg>();
     for (const r of results) {
@@ -281,10 +258,6 @@ const meanByScenarioMetric = (results: ScenarioRunResult[]): Map<string, MoverAg
     return agg;
 };
 
-// Biggest movers between the selected execution and its chronological
-// predecessor. One row per (scenario, metric); delta = mean(selected) −
-// mean(prev). Empty when there is no predecessor (selected run is the
-// chronologically-earliest). Sorted by |delta| descending, sliced to `limit`.
 export const moversBetween = (
     results: ScenarioRunResult[],
     selectedExec: string | undefined,

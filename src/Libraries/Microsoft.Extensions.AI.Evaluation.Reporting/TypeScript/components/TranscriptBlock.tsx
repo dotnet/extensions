@@ -35,9 +35,6 @@ const isToolish = (content: AIContent): boolean => {
     return !KNOWN_CONTENT_TYPES.has(t) && /call|result|tool|function/i.test(t);
 };
 
-// Teal tool-section surface (1:1 with the mockup VM color-mix formulas). The
-// accent TEXT — title, icon, Input/Output captions — uses the AA-safe
-// --tool-accent-text token; the raw teal fails AA on the tinted head.
 const T_ACCENT = 'var(--tool-accent-text)';
 const T_TINT = 'color-mix(in srgb, var(--palette-teal-foreground) 7%, var(--neutral-background-1))';
 const T_HEAD = 'color-mix(in srgb, var(--palette-teal-foreground) 14%, var(--neutral-background-1))';
@@ -55,16 +52,12 @@ const safeJson = (value: unknown, pretty: boolean): string => {
     }
 };
 
-// Derive a human display model id from the assistant group's participant name.
-// getConversationDisplay formats it as "<authorName> (<role>)" when an author
-// exists; strip the trailing " (role)" to recover the model id.
 const modelFromParticipant = (participantName: string): string => {
     const m = participantName.match(/^(.*)\s+\([^)]*\)\s*$/);
     const name = (m ? m[1] : participantName).trim();
     return name && name.toLowerCase() !== 'assistant' ? name : '—';
 };
 
-// Mirror the mockup chatClock(): time + long-form date parsed from createdAt.
 const chatClock = (createdAt: string | undefined): { time: string; date: string } => {
     const s = createdAt ?? '';
     const time = (s.match(/(\d{1,2}:\d{2})/) ?? [])[1] ?? '';
@@ -76,9 +69,6 @@ const chatClock = (createdAt: string | undefined): { time: string; date: string 
     }
     return { time, date };
 };
-
-// ── View-model (reconstructs the mockup's convo → convoM → groups pipeline
-//    from the flat ChatMessageDisplay stream) ───────────────────────────────
 
 type ToolSectionVM = {
     name: string;
@@ -98,8 +88,6 @@ type GroupVM =
 
 const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): GroupVM[] => {
     const groups: GroupVM[] = [];
-    // Assistant turns buffer tool calls in `pending`; they fold into the top of
-    // the next reply bubble as sections. A turn can run tool → reply → tool.
     let pending: ToolSectionVM[] = [];
     let openAssistant: Extract<GroupVM, { kind: 'group' }> | null = null;
 
@@ -213,8 +201,6 @@ const safeJsonMaybeString = (value: unknown, pretty: boolean): string => {
     return safeJson(value ?? null, pretty);
 };
 
-// ── Rendering ──────────────────────────────────────────────────────────────
-
 const AV_BASE: CSSProperties = {
     width: '32px',
     height: '32px',
@@ -255,9 +241,6 @@ const MD_TEXT_STYLE: CSSProperties = {
     wordBreak: 'break-word',
 };
 
-// Replace literal `[[n]]` citation tokens in string children with a styled
-// superscript chip (React elements — NEVER innerHTML). There is no citation
-// data model in the wire contract, so this is a non-linking display chip.
 const CITE_RE = /\[\[(\d+)\]\]/g;
 
 const withCitations = (children: ReactNode): ReactNode => {
@@ -283,9 +266,6 @@ const withCitations = (children: ReactNode): ReactNode => {
     return transform(children);
 };
 
-// react-markdown renderer overrides: tag the container children with a citation
-// transform on text-bearing elements only. `code`/`pre` are intentionally NOT
-// overridden so `[[n]]` inside code stays literal.
 const MD_COMPONENTS: Components = {
     p: ({ children }) => <p>{withCitations(children)}</p>,
     li: ({ children }) => <li>{withCitations(children)}</li>,
@@ -550,8 +530,6 @@ export const TranscriptBlock = ({ messages, model: modelProp }: { messages: Chat
     const groups = buildGroups(messages, prettifyJson);
     const { time, date } = chatClock(dataset?.createdAt);
 
-    // Prefer the wire model id (modelResponse.modelId, surfaced as conversation.model);
-    // fall back to deriving it from the first assistant group's participant name (mockup chat header parity).
     const assistantGroup = groups.find((g): g is Extract<GroupVM, { kind: 'group' }> => g.kind === 'group' && g.role === 'assistant');
     const model = modelProp || (assistantGroup ? modelFromParticipant(assistantGroup.participantName) : '—');
 

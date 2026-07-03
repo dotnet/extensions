@@ -35,15 +35,12 @@ The .NET Foundation licenses this file to you under the MIT license.
   font-display: swap;
 }
 
-/* Body reset + themed page background (mockup HTML:159-175). Both consumers import this file. */
 html, body { margin: 0; padding: 0; }
 body { background: var(--acrylic-fallback-light); }
 @media (prefers-color-scheme: dark) {
   body { background: rgb(30, 30, 30); }
 }
-/* Defense-in-depth: also flip the body bg when dark is toggled in-app (the theme
-   class lands on .eval-root, a descendant of body), independent of the OS setting.
-   Invisible in practice — .eval-root paints edge-to-edge — but keeps body consistent. */
+/* Also flip the body background when dark is toggled in-app, not only via the OS setting. */
 body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 30); }
 
 :root {
@@ -576,17 +573,11 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   .acrylic-highlight { background: var(--acrylic-fallback-light); }
 }
 
-/* Base card surface (mockup HTML:382-387 + nested HTML:393-400). React emits capital .fui-Card.
-   MUST stay ABOVE the hero rule below: it is (0,2,0), equal to the un-upgraded hero rule, so
-   placing it AFTER would let its opaque bg flatten the frosted hero. The hero rule below is
-   upgraded to (0,3,0) via the extra .eval-content so the acrylic always outranks this. */
 .eval-content .fui-Card {
   border-radius: var(--radius-card);
   overflow: hidden;
   background: var(--neutral-background-1);
 }
-/* Item 2 — Fluent draws the card border on ::after at borderRadiusMedium (4px), independent of
-   the radius set on the card root above; without matching it here the border misses the corners. */
 .eval-content .fui-Card::after {
   border-radius: var(--radius-card);
 }
@@ -598,17 +589,13 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 .eval-content .fui-Card .fui-Card::after {
   border-radius: var(--radius-large);
 }
-/* Item 3 — the transcript Card (TranscriptBlock.tsx) must match the metrics-block "cardNested"
-   surface (reportStyles.ts) rather than the base card background set above. */
+
+/* The transcript Card (TranscriptBlock.tsx) must match the metrics-block "cardNested" surface
+   (reportStyles.ts) rather than the base card background set above. */
 .eval-content .eval-transcript.fui-Card, .eval-content .eval-transcript .fui-Card {
   background: var(--neutral-background-2);
 }
 
-/* Item 1 — Overview hero card gets the acrylic surface (mockup HTML:427-443). Fluent v9 Card root = .fui-Card.
-   Selector is .eval-content-prefixed (specificity 0,3,0) so it outranks the base card rule above. */
-/* Make the hero a query container so its KPI reflow keys off the hero's OWN width, not
-   the viewport (the sidebar steals ~274px when it's a side column, so a viewport media
-   query mis-fires — see the @container rule near the responsive block below). */
 .eval-content .eval-hero-acrylic { container: eval-hero / inline-size; }
 .eval-content .eval-hero-acrylic .fui-Card {
   background-color: var(--acrylic-fallback-light);
@@ -624,7 +611,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   }
 }
 
-/* Item 7 — Cases "All tags" popover pill states (mockup HTML:336-337). Base/active are inline; these are the hovers. */
 .eval-tagopt:not(.is-active):hover { background: var(--neutral-background-3) !important; }
 .eval-tagopt.is-active:hover { background: var(--brand-background-2-hover) !important; }
 
@@ -633,11 +619,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 .eval-md-toggle[aria-pressed="true"] { background: var(--brand-background-2); color: var(--brand-foreground-1); }
 .eval-md-toggle[aria-pressed="true"]:hover { background: var(--brand-background-2-hover); color: var(--brand-foreground-1); }
 
-/* Item 1.1a — Markdown rendered inside chat bubbles (TranscriptBlock TextNode).
-   react-markdown emits p, ul, headings and pre with default browser margins that inflate the
-   bubble vs the plain-text branch; zero the container outer margins and give a
-   tight, consistent vertical rhythm so bubble padding stays stable when Render
-   Markdown toggles. Light + dark parity via tokens only. */
 .eval-md > :first-child { margin-top: 0; }
 .eval-md > :last-child { margin-bottom: 0; }
 .eval-md p,
@@ -717,8 +698,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   margin: var(--spacing-s) 0;
 }
 
-/* Item 1.1b — `[[n]]` citation tokens rendered as a small superscript chip
-   (non-linking; there is no citation source data in the wire contract). */
 .eval-cite {
   display: inline-block;
   vertical-align: super;
@@ -737,9 +716,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 .fui-searchbox { width: 100%; }
 .eval-content .eval-cmp-drop { width: 100%; }
 .eval-sidebar .eval-exec-drop { width: 100%; }
-/* Item 5 — Fluent's Dropdown button is display:grid and renders the selected value as a bare
-   text node, so text-overflow can't apply directly to the button; ellipsis on the button-slot
-   span (AppShell.tsx) is the only reliable fix. */
 .eval-sidebar .eval-exec-drop .eval-exec-text { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .eval-sidebar .eval-exec-drop .fui-Dropdown__button { min-width: 0; }
 .eval-settings-pop { left: auto !important; right: 0 !important; }
@@ -772,9 +748,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   .eval-root .eval-main { border-top-left-radius: 0; box-shadow: none; overflow: visible; }
   body .eval-root { height: auto; overflow: visible; }
   .eval-root .eval-pivotbar { position: static; }
-  /* Gap C — the topbar is a sibling above .eval-shell; once the root switches to
-     document scroll (above) a sticky topbar rides the viewport down. Un-pin it so
-     the header scrolls away with the page, matching the pivotbar un-pin above. */
   .eval-root .eval-topbar { position: static; }
 }
 @media (max-width: 640px) {
@@ -786,13 +759,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   .eval-grid4 { min-width: 560px; }
   .eval-grid3 { min-width: 520px; }
 }
-/* Gap D — hero KPI reflow, driven by the hero's OWN width via a @container query (the
-   hero is a container; see .eval-hero-acrylic rule above), NOT the viewport. When the
-   sidebar is a side column the hero is only viewport-minus-~274px wide, so a viewport
-   media query missed it and the KPI group wrapped to a second row still right-aligned
-   (margin-left:auto) with a stray left divider. Below ~820px hero width the pass-rate +
-   3 KPIs no longer fit side-by-side, so stack the KPI group under the pass-rate:
-   left-align it, let it wrap internally, and drop the left + per-cell dividers. */
 @container eval-hero (max-width: 820px) {
   .eval-content .eval-hero-kpis {
     margin-left: 0 !important;
@@ -805,17 +771,9 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
     border-right: none !important;
   }
 }
-/* Item 1b — Cases metadata tables are single-column by default (tablesContainer in
-   Styles.ts); only widen to a side-by-side row when the metric-detail panel itself
-   (containerType:inline-size in MetricPanel) is wide enough — i.e. on an external
-   monitor where the ~322px metrics pane grows past 720px, not merely a wide viewport. */
 @container (min-width: 720px) {
   .eval-meta-tables { flex-direction: row; }
 }
-/* Phone stop — narrow the 24px page gutters to 12px so content isn't squeezed on
-   phones, and drop the hero pass-rate number a size so it doesn't dominate the row.
-   Overriding --page-padding on .eval-root cascades to every consumer (pivotbar,
-   content, footer). Divergence from the mockup (no phone stop there) — intentional. */
 @media (max-width: 560px) {
   .eval-root { --page-padding: var(--spacing-m); }
   .eval-content .eval-hero-passrate { font-size: var(--font-size-700) !important; }

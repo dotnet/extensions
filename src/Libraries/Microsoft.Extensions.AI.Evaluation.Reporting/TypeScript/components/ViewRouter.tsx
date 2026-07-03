@@ -7,8 +7,6 @@ import { CasesView } from './CasesView';
 import { HistoryView } from './HistoryView';
 import { ComparisonView } from './ComparisonView';
 
-// Switches the content pane on the `view` UI-intent from context. Shared
-// identically by both consumers (only AppShell props differ per main.tsx).
 export const ViewRouter = () => {
     const { view } = useReportContext();
 

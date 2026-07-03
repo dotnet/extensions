@@ -38,10 +38,6 @@ export type ThemeSource =
     | 'toggle'
     | 'host';
 
-// Fluent's Dropdown enforces a 250px min-width; the sidebar footer (where the
-// execution Dropdown lives) has 12px of horizontal padding on each side
-// (var(--spacing-m), see sidebarFooter below), so the sidebar must be at
-// least 250 + 2*12 = 274px wide for the dropdown to fit without clipping.
 const SIDEBAR_WIDTH = '274px';
 const TOPBAR_HEIGHT = '48px';
 
