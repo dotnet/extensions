@@ -224,3 +224,40 @@ gh aw compile --validate
 - **Single-file output**: When creating a workflow, produce exactly **one** workflow `.md` file. Do not create separate documentation files (architecture docs, runbooks, usage guides, etc.). If documentation is needed, add a brief `## Usage` section inside the workflow file itself.
 - **Triggering runs**: Always use `gh aw run <workflow-name>` to trigger a workflow on demand — not `gh workflow run <file>.lock.yml`. `gh aw run` handles workflow resolution by short name, input parsing and validation, and correct run-tracking for agentic workflows. Use `--ref <branch>` to run on a specific branch.
 - **CLI commands reference**: For a complete guide on all `gh aw` commands and their MCP tool equivalents (for restricted environments), see `https://raw.githubusercontent.com/github/gh-aw/main/.github/aw/cli-commands.md`
+
+## Repository-Specific Requirements: Copilot PAT Pool
+
+**⚠️ MANDATORY**: Every agentic workflow in this repository **must** utilize the Copilot PAT Pool in the `copilot-pat-pool` environment as detailed in `.github/workflows/shared/pat_pool.README.md`. This mechanism selects a random Copilot PAT from a numbered pool of environment secrets to avoid rate-limiting from a single shared PAT, while preventing agentic workflows from having access to secrets from other environments.
+
+When **creating** or **updating** an agentic workflow, always include the following frontmatter that integrates the PAT pool, as found in as detailed in the **Usage** section of `.github/workflows/shared/pat_pool.README.md`. This should be used verbatim when first added.
+
+If other `engine` properties are customized for the workflow, that customization will need to be added into this same `engine` block and hand-editing can rearrange the PAT pool frontmatter and comment for ideal maintainability.
+
+## Repository-Specific Requirements: Schedule Seed
+
+When compiling a workflow that uses **fuzzy scheduling** (e.g., `schedule: weekly on monday around 9:00`), or when recompiling all workflows, always pass the `--schedule-seed` flag with this repository's identity:
+
+```bash
+# Single workflow with fuzzy scheduling
+gh aw compile .github/workflows/<name>.md --schedule-seed dotnet/extensions
+
+# Recompile all workflows
+gh aw compile --schedule-seed dotnet/extensions
+```
+
+The schedule seed ensures fuzzy schedule times are deterministic for this repository — the same seed always produces the same cron offsets, preventing unnecessary lock file churn across compilations. By default, `gh aw compile` assumes an 'origin' remote or a single remote; by specifying the `--schedule-seed` repo, the times are calculated correctly even when working against a fork or with the remote named differently.
+
+## Repository-Specific Requirements: Frontmatter Ordering
+
+When **creating** or **updating** an agentic workflow's frontmatter, follow this ordering convention. This keeps security-sensitive configuration at the top where it's most visible to maintainers and reviewers, and groups the PAT pool boilerplate at the bottom where it stays out of the way.
+
+### Frontmatter section ordering
+
+Arrange top-level frontmatter keys in this order within the `---` markers:
+
+1. **Descriptive** — `id`, `name`, `description`, etc.
+2. **Security** — `permissions`, `safe_outputs`, `network`, `roles`, etc.
+3. **Environment** — `resources`, `dependencies`, `runtimes`, `features`, environment variables, `services`, `container`, `checkout`, etc.
+4. **Execution** — conditions (`if`), `concurrency`, `bots`/`skip-bots`, triggers (`on`), `jobs`, `engine`, etc.
+
+The PAT pool integration naturally falls into the **Execution** group at the bottom, including the `environment` property that defines the _execution environment_ for the agentic job. Keep the PAT pool content together as the last items in the frontmatter.
