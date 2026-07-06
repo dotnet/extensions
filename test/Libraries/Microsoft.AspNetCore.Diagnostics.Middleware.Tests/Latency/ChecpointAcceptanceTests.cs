@@ -104,7 +104,6 @@ public class ChecpointAcceptanceTests
 
         var e = await Record.ExceptionAsync(async () => response = await host.GetTestClient().GetAsync("/").ConfigureAwait(false));
 
-        Assert.NotNull(e);
         Assert.Null(e);
         Assert.NotNull(response);
 

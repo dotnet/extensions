@@ -16,6 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- CPM disables implicit FSharp.Core reference; add explicitly so it deploys to output -->
+    <PackageReference Include="FSharp.Core" VersionOverride="$(FSCorePackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" ProjectUnderTest="true" />
   </ItemGroup>
 
