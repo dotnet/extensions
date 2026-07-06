@@ -17,6 +17,7 @@
     <!-- Suppress xunit v2 types from TemplateVerifier transitive dependencies to avoid conflicts with v3 -->
     <PackageReference Include="xunit.core" ExcludeAssets="compile;runtime" PrivateAssets="all" />
     <PackageReference Include="xunit.extensibility.core" ExcludeAssets="compile;runtime" PrivateAssets="all" />
+    <PackageReference Include="xunit.extensibility.execution" ExcludeAssets="compile;runtime" PrivateAssets="all" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
     <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
     <PackageReference Include="NuGet.Packaging" />
