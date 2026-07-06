@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.IO;
+#if !NET10_0_OR_GREATER
 using System.Linq;
+#endif
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
