@@ -9,6 +9,9 @@
     <TestRunnerName>XUnitV3</TestRunnerName>
     <!-- xUnit v3 requires test projects to be executable -->
     <OutputType>Exe</OutputType>
+    <!-- Enable dotnet test to use Microsoft.Testing.Platform protocol directly
+         instead of the VSTest testhost (which requires testhost.dll/Newtonsoft.Json). -->
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
