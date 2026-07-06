@@ -6,6 +6,10 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- All tests in this project are integration tests that get skipped when
+         no Ollama endpoint is configured (CI). Exit code 8 means "zero tests ran"
+         in Microsoft.Testing.Platform which is expected for this project. -->
+    <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) --ignore-exit-code 8</TestRunnerAdditionalArguments>
   </PropertyGroup>
 
   <ItemGroup>
