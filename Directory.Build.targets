@@ -92,8 +92,8 @@
 
   <Target Name="_ConfigureTestRunnerAdditionalArguments" BeforeTargets="_InnerGetTestsToRun">
     <PropertyGroup>
-      <!-- See https://learn.microsoft.com/dotnet/core/tools/dotnet-test -->
-      <_BlameArgs>--blame --blame-crash --blame-crash-dump-type full --blame-hang --blame-hang-dump-type full --blame-hang-timeout 6m</_BlameArgs>
+      <!-- The blame options are only supported by VSTest, not by Microsoft.Testing.Platform (used by xUnit v3) -->
+      <_BlameArgs Condition="'$(UseMicrosoftTestingPlatformRunner)' != 'true'">--blame --blame-crash --blame-crash-dump-type full --blame-hang --blame-hang-dump-type full --blame-hang-timeout 6m</_BlameArgs>
 
       <!-- This property is used by the Arcade SDK while bootstrapping the VS Test runner -->
       <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) $(_BlameArgs)</TestRunnerAdditionalArguments>
