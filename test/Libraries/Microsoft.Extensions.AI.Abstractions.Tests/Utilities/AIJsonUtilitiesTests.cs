@@ -19,6 +19,7 @@ using Microsoft.TestUtilities;
 using Xunit;
 
 #pragma warning disable SA1114 // parameter list should follow declaration
+#pragma warning disable S1144 // Unused private types or members should be removed (members are used via reflection in schema tests)
 
 namespace Microsoft.Extensions.AI;
 
