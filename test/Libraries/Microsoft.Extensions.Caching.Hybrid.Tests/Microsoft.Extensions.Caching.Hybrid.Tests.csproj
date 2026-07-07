@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetCoreTargetFrameworks);net472</TargetFrameworks>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet472)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>

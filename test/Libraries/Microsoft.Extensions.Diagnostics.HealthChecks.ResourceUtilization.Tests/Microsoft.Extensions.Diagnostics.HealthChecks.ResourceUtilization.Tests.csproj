@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization.csproj" ProjectUnderTest="true" />    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Tests\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Tests.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Tests\Microsoft.Extensions.Diagnostics.ResourceMonitoring.Tests.csproj" />
   </ItemGroup>
   
   <ItemGroup>
