@@ -17,8 +17,7 @@
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="CommunityToolkit.VectorData.InMemory" Version="1.0.0-preview.3" />
     <PackageVersion Include="CommunityToolkit.VectorData.SqliteVec" Version="1.0.0-preview.3" />
-    <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="9.0.201" />
-    <PackageVersion Include="Microsoft.TemplateEngine.TestHelper" Version="9.0.200-rtm.25066.4" />
+    <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3" Version="11.0.100-preview.3.26207.106" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="Moq.AutoMock" Version="3.1.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />

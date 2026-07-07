@@ -3,11 +3,4 @@
 
   <!-- Import package versions used for tests and benchmarks -->
   <Import Project="$(MSBuildThisFileDirectory)..\eng\packages\Tests.props" />
-
-  <ItemGroup>
-    <!-- Used only to suppress xunit v2 types from TemplateVerifier transitive dependencies -->
-    <PackageVersion Include="xunit.core" Version="2.9.3" />
-    <PackageVersion Include="xunit.extensibility.core" Version="2.9.3" />
-    <PackageVersion Include="xunit.extensibility.execution" Version="2.9.3" />
-  </ItemGroup>
 </Project>

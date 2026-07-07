@@ -11,16 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier">
-      <ExcludeAssets>build;buildTransitive</ExcludeAssets>
-    </PackageReference>
-    <!-- Allow xunit v2 assemblies at runtime (needed by Verify.Xunit v2 used internally by TemplateVerifier)
-         but exclude from compile to avoid type conflicts with xUnit v3. The v2 and v3 assemblies have
-         different names (xunit.core.dll vs xunit.v3.core.dll) so they coexist at runtime. -->
-    <PackageReference Include="xunit.core" ExcludeAssets="compile" PrivateAssets="all" />
-    <PackageReference Include="xunit.extensibility.core" ExcludeAssets="compile" PrivateAssets="all" />
-    <PackageReference Include="xunit.extensibility.execution" ExcludeAssets="compile" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
+    <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier.XunitV3" />
     <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
     <PackageReference Include="NuGet.Packaging" />
     <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.ProjectTemplates.Tests;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
-using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 using static Microsoft.Shared.ProjectTemplates.Tests.TemplateTestUtilities;
 
@@ -18,7 +17,7 @@ public class AIAgentWebAPISnapshotTests : TemplateSnapshotTestBase
     public AIAgentWebAPISnapshotTests(ITestOutputHelper log)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        _log = new XunitLoggerProvider(new TestOutputHelperAdapter(log)).CreateLogger("TestRun");
+        _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
 #pragma warning restore CA2000 // Dispose objects before losing scope
     }
 

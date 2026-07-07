@@ -13,7 +13,7 @@
     <PackageReference Include="Moq.AutoMock" />
     <PackageReference Include="Moq" />
     <PackageReference Include="StrongNamer" Condition="'$(SignArtifacts)' == 'true' " />
-    <PackageReference Include="Verify.XunitV3" Condition="'$(IsIntegrationTestProject)' != 'true'" />
+    <PackageReference Include="Verify.XunitV3" />
     <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
