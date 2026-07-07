@@ -191,7 +191,7 @@ is:
 2. Resolve that release's `tag_name` through `refs/tags`, dereferencing annotated tags
    to the commit they point at.
 3. Treat the release as ready for a maintained PR only when that resolved commit equals
-   the PR body's recorded `Upstream-Scan-Ref`.
+   the PR body's recorded `upstream-scan-ref`.
 
 Compare that baseline with all durable release signals available at the scanned ref:
 
@@ -250,7 +250,7 @@ Search using the requested release version, CHANGELOG ref, date range, or upstre
 
 Do not silently ignore search failures. If GitHub search/listing is unavailable, report the problem and ask the user whether to proceed without the preflight.
 
-A standing **upstream-scan tracking PR** (one carrying the `otel-genai-tracking` state block) is the exception: it is the durable scan record, not a blocking duplicate. When the preflight surfaces it, continue rather than stopping -- the maintaining workflow owns how that PR is created and incremented.
+A standing **upstream-scan tracking PR** (one carrying the `# meai-otel-genai-worker:state:begin` block) is the exception: it is the durable scan record, not a blocking duplicate. When the preflight surfaces it, continue rather than stopping -- the maintaining workflow owns how that PR is created and incremented.
 
 ### Analyzing the Release / PRs
 
@@ -264,7 +264,7 @@ For Step 4, read the source files listed in [references/file-inventory.md](refer
 
 ### PR Title and Description Guidance
 
-When creating or updating a PR after implementing GenAI semantic-conventions changes (from either repo), follow [references/pr-description.md](references/pr-description.md) for the title format and the changes-table shape. For a recurring **upstream-scan tracking PR** (the kind carrying the `otel-genai-tracking` state block), that reference also defines the full body template -- the implemented-changes table, the merged and in-flight applicability tables, and, at the very bottom, the machine-readable tracking state block (the body ends there).
+When creating or updating a PR after implementing GenAI semantic-conventions changes (from either repo), follow [references/pr-description.md](references/pr-description.md) for the title format and the changes-table shape. For a recurring **upstream-scan tracking PR** (the kind carrying the `# meai-otel-genai-worker:state:begin` block), that reference also defines the full body template -- the implemented-changes table, the merged and in-flight applicability tables, and, at the very bottom, the machine-readable tracking state block (the body ends there).
 
 ---
 

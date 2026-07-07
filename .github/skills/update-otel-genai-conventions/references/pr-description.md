@@ -140,19 +140,20 @@ Applicability legend (symbol-only in the Applicability column):
 
 ### 5. Tracking state -- very bottom
 
-Place the machine-readable scan state at the **very bottom** of the body, after the applicability tables. The body **ends with this block** -- do not append a refresh procedure or any other section after it. The state lives in a fenced `yaml` block whose first and last lines are `# otel-genai-tracking:begin` / `# otel-genai-tracking:end` sentinel comments so the next run can locate and parse it. Keep both sentinels inside the code fence as `yaml` comments: GitHub Actions safe-output processing preserves fenced content, so `yaml`-comment delimiters survive round-trips and stay parseable:
+Place the machine-readable scan state at the **very bottom** of the body, after the applicability tables. The body **ends with this block** -- do not append a refresh procedure or any other section after it. The state lives in a fenced `yaml` block whose first and last lines are `# meai-otel-genai-worker:state:begin` / `# meai-otel-genai-worker:state:end` sentinel comments so the next run can locate and parse it. The next run matches these as **whole** comment lines (leading indent and a trailing CR are tolerated, but the `# ` prefix and the `:state:begin`/`:state:end` suffix must be exact), so keep each sentinel on its own line. Keep both sentinels inside the code fence as `yaml` comments: GitHub Actions safe-output processing preserves fenced content, so `yaml`-comment delimiters survive round-trips and stay parseable:
 
 ````markdown
 ## Tracking state
 
 ```yaml
-# otel-genai-tracking:begin
-Upstream-Repo: open-telemetry/semantic-conventions-genai
-Upstream-Scan-Ref: <commit-sha>            # optional inline note on what changed since the prior ref
-Upstream-Scan-Date: <ISO-8601 UTC>
-Upstream-Release: none                      # Unreleased; Towncrier fragments under changelog.d/
-Core-Semconv-Dependency: vX.Y.Z             # versions.env SEMCONV_VERSION (core dep, NOT the GenAI version)
-DotnetExtensions-Implemented-Version: vX.Y  # doc-comment version reference currently in source
-# otel-genai-tracking:end
+# meai-otel-genai-worker:state:begin
+upstream-repo: open-telemetry/semantic-conventions-genai
+upstream-scan-ref: <commit-sha>              # optional inline note on what changed since the prior ref
+upstream-scan-date: <ISO-8601 UTC>
+upstream-release: none                       # Unreleased; Towncrier fragments under changelog.d/
+core-semconv-dependency: vX.Y.Z              # versions.env SEMCONV_VERSION (core dep, NOT the GenAI version)
+dotnet-extensions-implemented-version: vX.Y  # doc-comment version reference currently in source
+feedback-processed-through: <ISO-8601 UTC>   # watermark: run start when PR review feedback was last processed
+# meai-otel-genai-worker:state:end
 ```
 ````

@@ -10,11 +10,18 @@
 #      marker), ADOPT (a human-bootstrapped automation+area-ai PR on our branch with no
 #      marker yet), BLOCKED (a non-automation PR occupying our branch -- a human owns it),
 #      or NONE.
-#   3. Reads the PR's recorded Upstream-Scan-Ref and Upstream-Release, and computes a
-#      recommended lifecycle action.
+#   3. Reads the PR's recorded upstream-scan-ref, upstream-release, and
+#      feedback-processed-through watermark, and computes a recommended lifecycle action.
+#   4. Detects whether any PR review activity is newer than the recorded watermark. This
+#      is an author-agnostic wake gate only -- it never reads comment bodies. The agent
+#      collects and evaluates the actual review feedback itself under gh-aw integrity
+#      filtering (min-integrity + integrity-reactions), the single source of truth for
+#      which feedback is trusted and actionable.
 #
 # Writes (under $AGENT_DIR, uploaded in the agent artifact so downstream jobs read them):
-#   target.json         resolved scan target + PR discovery + recommended action
+#   target.json  resolved scan target + PR discovery + recommended action, plus the
+#                feedback-processed-through watermark and this run's run_started_at (which
+#                the agent stamps back as the new watermark)
 #
 # The recommended action lets a caught-up run early-noop before the expensive build. The
 # agent's Step 3 remains authoritative and refines edge cases (e.g. release-gate mark-ready).
@@ -47,12 +54,14 @@ DESIRED_BRANCH="update-otel-genai-to-latest"
 # `base-branch: main` safe output). PR discovery restricts to this base so a tracking-branch
 # PR opened against some other base is never mistaken for the maintained PR.
 BASE_BRANCH="main"
-MARKER_ID="otel-genai"
+# The state block's delimiters are hard-coded to this workflow's name -- a worker-internal
+# concern the orchestrator neither knows nor supplies. The block is delimited by whole yaml-comment
+# lines `# ${STATE_MARKER}:state:begin` / `:state:end`.
+STATE_MARKER="meai-otel-genai-worker"
 upstream_sha=""
 if [ -n "$TARGET_JSON" ]; then
 	UPSTREAM_REPO="$(jq -r '.upstream_repo // "open-telemetry/semantic-conventions-genai"' <<<"$TARGET_JSON")"
 	DESIRED_BRANCH="$(jq -r '.desired_branch // "update-otel-genai-to-latest"' <<<"$TARGET_JSON")"
-	MARKER_ID="$(jq -r '.marker_id // "otel-genai"' <<<"$TARGET_JSON")"
 	UPSTREAM_REF="$(jq -r '.upstream_ref // ""' <<<"$TARGET_JSON")"
 	upstream_sha="$(jq -r '.upstream_sha // ""' <<<"$TARGET_JSON")"
 fi
@@ -144,25 +153,26 @@ write_target() {
 		--arg release_detection_confidence "$release_detection_confidence" \
 		--arg release_detection_signal "$release_detection_signal" \
 		--arg desired_branch "$DESIRED_BRANCH" --arg pr_branch "${PR_BRANCH:-}" \
-		--arg marker_id "$MARKER_ID" \
 		--arg pr "$1" --arg pr_state "$2" --argjson pr_is_draft "${3:-false}" \
 		--arg pr_recorded_sha "$4" --arg pr_recorded_release "$5" \
 		--arg classification "$6" --arg action "$7" \
-		--arg run_started_at "$run_started_at" \
+		--argjson has_new_feedback "${has_new_feedback:-false}" \
+		--arg watermark "${watermark:-}" --arg run_started_at "$run_started_at" \
 		'{upstream_repo:$upstream_repo, upstream_ref:$upstream_ref, upstream_sha:$upstream_sha,
 		  upstream_release:$upstream_release, upstream_release_commit:$upstream_release_commit,
 		  release_matches_scan:$release_matches_scan, release_matches_pr:$release_matches_pr,
 		  release_ready:$release_ready,
 		  release_detection_confidence:$release_detection_confidence,
 		  release_detection_signal:$release_detection_signal,
-		  desired_branch:$desired_branch, pr_branch:$pr_branch, marker_id:$marker_id,
+		  desired_branch:$desired_branch, pr_branch:$pr_branch,
 		  pr:$pr, pr_state:$pr_state, pr_is_draft:$pr_is_draft, pr_recorded_sha:$pr_recorded_sha,
 		  pr_recorded_release:$pr_recorded_release, classification:$classification, action:$action,
-		  run_started_at:$run_started_at}' >"$target_file"
+		  has_new_feedback:$has_new_feedback,
+		  watermark:$watermark, run_started_at:$run_started_at}' >"$target_file"
 }
 
 step_summary() {
-	# $1=classification $2=action $3=pr $4=pr_recorded_sha
+	# $1=classification $2=action $3=pr $4=pr_recorded_sha $5=new_feedback
 	{
 		echo "## Otel GenAI worker -- setup decision"
 		echo ""
@@ -182,6 +192,8 @@ step_summary() {
 		echo "| PR recorded SHA | \`${4:-<none>}\` |"
 		echo "| classification | **${1}** |"
 		echo "| recommended action | **${2}** |"
+		echo "| new review activity | ${5} |"
+		[ "${feedback_query_failed:-false}" = "true" ] && echo "| review-activity query | **failed** -- wake gate opened, run will produce |"
 		[ "${tracking_valid_count:-0}" -gt 1 ] && echo "| valid tracking PR candidates | ${tracking_valid_count} (newest selected) |"
 	} >>"${GITHUB_STEP_SUMMARY:-/dev/null}" 2>/dev/null || true
 }
@@ -202,18 +214,46 @@ tracking_value() {
 	local name="$1"
 	# Tolerate an optional leading markdown list/quote marker (-, *, +, >) before the field
 	# name. The identity guard that gates a PR write accepts the field in this same anchored,
-	# tolerant form, so anything it admits is recoverable here -- otherwise a stray bullet
-	# would extract to an empty value and wedge the state machine into a permanent
-	# produce/re-wake loop (an empty recorded SHA never matches; an empty watermark treats
-	# every comment as new).
-	sed -n "s/^[[:space:]]*[-*+>]\{0,1\}[[:space:]]*${name}:[[:space:]]*//p" \
-		| head -1 | tr -d $'"\'\r' | sed 's/[[:space:]]*#.*$//; s/[[:space:]]*$//'
+	# tolerant form, so anything it admits is recoverable here.
+	sed -n "s/^[[:space:]]*[-*+>]*[[:space:]]*${name}:[[:space:]]*//p" |
+		head -1 | tr -d '"'\''\r' | sed 's/[[:space:]]*#.*$//; s/[[:space:]]*$//'
 }
+
+tracking_block() {
+	# Emit only the machine-managed state block -- the fenced yaml block the agent writes as
+	# the VERY LAST thing in the body, delimited by the visible `# ${STATE_MARKER}:state:begin`
+	# / `:state:end` comment lines (matched as whole comment lines: leading indent and a
+	# trailing CR are tolerated, but the "# " prefix and the ":state:begin"/":state:end" suffix
+	# must be exact). Take the LAST begin..end range so human prose anywhere above it -- a quoted
+	# or bulleted "field:" line, or an older state block a maintainer pastes in as a note --
+	# cannot win tracking_value's first match and force a false caught-up no-op or silently
+	# suppress real reviewer feedback via a bogus watermark. A begin with no matching end (a
+	# human truncated the block) still yields its fields rather than an empty read.
+	awk -v b="# ${STATE_MARKER}:state:begin" -v e="# ${STATE_MARKER}:state:end" '
+		{ t=$0; sub(/\r$/,"",t); gsub(/^[[:space:]]+|[[:space:]]+$/,"",t) }
+		t == b { inb=1; buf=$0 ORS; next }
+		inb    { buf=buf $0 ORS; if (t == e) { inb=0; last=buf } }
+		END    { if (inb) last=buf; printf "%s", last }'
+}
+
+body_has_state_marker() {
+	# true iff $1 carries the state block's begin delimiter as a whole yaml-comment line.
+	# Feed the body on stdin (not a jq --arg) so an oversized PR body can never hit an argv
+	# length limit, and trim each line's ends with \s -- the same whitespace set awk's
+	# [[:space:]] trims in tracking_block and the publish guardrail -- so ownership detection
+	# and block extraction can never disagree. Leading indent and a trailing CR are tolerated;
+	# the "# " prefix and ":state:begin" suffix must be exact.
+	printf '%s' "$1" | jq -Rrs --arg m "# ${STATE_MARKER}:state:begin" \
+		'split("\n") | any(gsub("^\\s+|\\s+$";"") == $m)'
+}
+
+watermark=""
+has_new_feedback="false"
 
 if [ -z "$REPO" ] || [ -z "${GH_TOKEN:-}" ]; then
 	echo "GITHUB_REPOSITORY or GH_TOKEN unset; cannot discover PR -- defaulting to produce (fresh)"
 	write_target "" "" false "" "" "none" "produce"
-	step_summary "none" "produce" "" ""
+	step_summary "none" "produce" "" "" "false"
 	exit 0
 fi
 
@@ -242,13 +282,14 @@ if [ -n "$pr" ]; then
 	PR_BRANCH="$(jq -r '.[0].headRefName // ""' <<<"$rows")"
 	has_automation="$(jq -r '[.[0].labels[]?.name] | (index("automation") != null) and (index("area-ai") != null)' <<<"$rows")"
 	# Fetch the PR body with retries. A transient blip must not drop our tracking
-	# marker -- that would misclassify our own PR as a fresh adopt.
+	# marker -- that would misclassify our own PR as a fresh adopt and replay feedback
+	# off a phantom watermark; body_ok tells a real empty body from a failed fetch.
 	fetch_pr_body "$pr"
-	has_marker="false"
-	printf '%s' "$body" | grep -q "${MARKER_ID}-tracking:begin" && has_marker="true"
+	has_marker="$(body_has_state_marker "$body")"
 	if [ "$body_ok" != "true" ] && [ "$has_automation" = "true" ]; then
 		# Body unreadable after retries but our automation labels are present: almost
-		# certainly our own PR mid-blip. Treat as ours so the agent can re-read and reconcile.
+		# certainly our own PR mid-blip. Treat as ours -- the agent re-reads the real
+		# body and reconciles -- rather than re-adopting or replaying stale feedback.
 		classification="ours"
 	elif [ "$has_automation" = "true" ] && [ "$has_marker" = "true" ]; then
 		classification="ours"
@@ -286,8 +327,8 @@ else
 		[ -n "$candidate_pr" ] || continue
 		fetch_pr_body "$candidate_pr"
 		[ "$body_ok" = "true" ] || continue
-		printf '%s' "$body" | grep -q "${MARKER_ID}-tracking:begin" || continue
-		candidate_sha="$(printf '%s\n' "$body" | tracking_value "Upstream-Scan-Ref")"
+		[ "$(body_has_state_marker "$body")" = "true" ] || continue
+		candidate_sha="$(printf '%s\n' "$body" | tracking_block | tracking_value "upstream-scan-ref")"
 		printf '%s' "$candidate_sha" | grep -Eq '^[0-9a-fA-F]{7,}$' || continue
 		tracking_valid_count=$((tracking_valid_count + 1))
 		if [ -z "$pr" ]; then
@@ -307,13 +348,55 @@ fi
 # ---- 3. Read recorded state + compute the recommended action -----------------------
 pr_recorded_sha="" pr_recorded_release=""
 if [ -n "$pr" ] && [ "$classification" != "blocked" ] && [ "$body_ok" = "true" ]; then
-	pr_recorded_sha="$(printf '%s\n' "$body" | tracking_value "Upstream-Scan-Ref")"
-	pr_recorded_release="$(printf '%s\n' "$body" | tracking_value "Upstream-Release")"
+	watermark="$(printf '%s\n' "$body" \
+		| tracking_block | tracking_value "feedback-processed-through")"
+	pr_recorded_sha="$(printf '%s\n' "$body" \
+		| tracking_block | tracking_value "upstream-scan-ref")"
+	pr_recorded_release="$(printf '%s\n' "$body" \
+		| tracking_block | tracking_value "upstream-release")"
 fi
 [ -n "$upstream_release_commit" ] && [ -n "$pr_recorded_sha" ] && [ "$upstream_release_commit" = "$pr_recorded_sha" ] && release_matches_pr="true"
 [ "$release_matches_pr" = "true" ] && release_ready="true"
 
-# ---- 4. Recommended lifecycle action ------------------------------------------------
+# ---- 4. Wake gate: is there any review activity newer than the watermark? -----------
+# Author-agnostic and body-free: this only decides whether a caught-up PR is worth waking
+# the agent for. It does NOT read, trust, or filter comment content -- the agent collects
+# the actual review feedback itself under gh-aw integrity filtering. Over-waking (e.g. for
+# an un-endorsed external comment the agent will not act on) is harmless; under-waking is
+# not: each query is retried, and if any still fails the real count is unknown, so the gate
+# opens (has_new_feedback=true) and produces, letting the agent's own Step 3 analysis and
+# independent feedback discovery stay authoritative instead of trusting a false no-op.
+feedback_query_failed="false"
+# Retry an activity query up to 3 times, appending its timestamps to $feedback_times only on
+# a clean fetch. The discovery and PR-body reads above already retry; matching that here keeps
+# a single transient API blip from opening the gate and forcing a needless produce.
+fetch_activity() {
+	local endpoint="$1" jqexpr="$2" fattempt scratch
+	scratch="$(mktemp)"
+	for fattempt in 1 2 3; do
+		if gh api "$endpoint" --paginate -q "$jqexpr" >"$scratch" 2>/dev/null; then
+			cat "$scratch" >>"$feedback_times"; rm -f "$scratch"; return 0
+		fi
+		[ "$fattempt" -lt 3 ] && sleep 2
+	done
+	rm -f "$scratch"; return 1
+}
+if [ -n "$pr" ] && [ "$classification" != "blocked" ]; then
+	feedback_times="$(mktemp)"
+	fetch_activity "repos/${REPO}/issues/${pr}/comments" '.[] | select(.user.type != "Bot") | .created_at'   || feedback_query_failed="true"
+	fetch_activity "repos/${REPO}/pulls/${pr}/comments"  '.[] | select(.user.type != "Bot") | .created_at'   || feedback_query_failed="true"
+	fetch_activity "repos/${REPO}/pulls/${pr}/reviews"   '.[] | select(.user.type != "Bot") | .submitted_at' || feedback_query_failed="true"
+	if [ "$feedback_query_failed" = "true" ]; then
+		echo "::warning::review-activity query failed for PR #${pr} after retries; opening the wake gate so this run produces instead of risking a false no-op"
+		has_new_feedback="true"
+	else
+		new_count="$(awk -v since="$watermark" 'NF && (since=="" || $0 > since)' "$feedback_times" | grep -c . || true)"
+		[ "${new_count:-0}" -gt 0 ] && has_new_feedback="true"
+	fi
+	rm -f "$feedback_times"
+fi
+
+# ---- 5. Recommended lifecycle action ------------------------------------------------
 # Only a high-confidence caught-up state early-noops; every uncertain case produces so
 # the agent can make the real zero-delta / release-gate decision in Steps 2-3.
 action="produce"
@@ -335,6 +418,7 @@ case "$classification" in
 		if [ "$classification" = "ours" ] \
 			&& [ -n "$upstream_sha" ] && [ -n "$pr_recorded_sha" ] \
 			&& [ "$upstream_sha" = "$pr_recorded_sha" ] \
+			&& [ "$has_new_feedback" != "true" ] \
 			&& [ "$release_changed" != "true" ] \
 			&& [ "$release_pending" != "true" ]; then
 			action="noop"
@@ -344,7 +428,7 @@ case "$classification" in
 esac
 
 pr_state="open"; [ -z "$pr" ] && pr_state="none"; write_target "$pr" "$pr_state" "$pr_is_draft" "$pr_recorded_sha" "$pr_recorded_release" "$classification" "$action"
-step_summary "$classification" "$action" "${pr:-}" "$pr_recorded_sha"
+step_summary "$classification" "$action" "${pr:-}" "$pr_recorded_sha" "$has_new_feedback"
 
-echo "Setup: classification=${classification} action=${action} pr=${pr:-<none>} pr_branch=${PR_BRANCH:-<none>} recorded_sha=${pr_recorded_sha:-<none>} upstream_sha=${upstream_sha:-<none>} release_ready=${release_ready}"
+echo "Setup: classification=${classification} action=${action} pr=${pr:-<none>} pr_branch=${PR_BRANCH:-<none>} recorded_sha=${pr_recorded_sha:-<none>} upstream_sha=${upstream_sha:-<none>} release_ready=${release_ready} new_feedback=${has_new_feedback}"
 echo "-- target.json --"; jq '.' "$target_file"
