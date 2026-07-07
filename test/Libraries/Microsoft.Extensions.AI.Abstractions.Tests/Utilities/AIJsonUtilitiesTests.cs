@@ -581,6 +581,52 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_AIParameterNameAttribute_UsedForPropertyName()
+    {
+        Delegate method = ([AIParameterName("$select")] string select, int top) =>
+        {
+        };
+
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method);
+
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.True(properties.TryGetProperty("$select", out _));
+        Assert.False(properties.TryGetProperty("select", out _));
+
+        string[] required = schema.GetProperty("required").EnumerateArray().Select(e => e.GetString()!).ToArray();
+        Assert.Contains("$select", required);
+        Assert.Contains("top", required);
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_AIParameterNameAttribute_DuplicateNamesThrow()
+    {
+        Delegate duplicateByAttribute = ([AIParameterName("dup")] string first, [AIParameterName("dup")] string second) =>
+        {
+        };
+        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(duplicateByAttribute.Method));
+
+        Delegate duplicateByCollision = ([AIParameterName("filter")] string select, string filter) =>
+        {
+        };
+        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(duplicateByCollision.Method));
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_AIParameterNameAttribute_EscapesJsonPointerSegment()
+    {
+        JsonSerializerOptions options = new() { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
+        Delegate method = ([AIParameterName("a/b~c")] RecursiveNode node) =>
+        {
+        };
+
+        string schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, serializerOptions: options).ToString();
+
+        Assert.Contains("#/properties/a~1b~0c", schema);
+        Assert.DoesNotContain("#/properties/a/b~c", schema);
+    }
+
+    [Fact]
     public static void CreateJsonSchema_CanBeBoolean()
     {
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));
@@ -1860,6 +1906,11 @@ public static partial class AIJsonUtilitiesTests
         }
 
         public int CustomValue { get; set; }
+    }
+
+    private sealed class RecursiveNode
+    {
+        public RecursiveNode? Next { get; set; }
     }
 
     [JsonSerializable(typeof(JsonElement))]

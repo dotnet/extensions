@@ -316,6 +316,39 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public void Metadata_AIFunctionNameAttribute()
+    {
+        Func<string> funcWithAttribute = [AIFunctionName("get_user")] () => "test";
+        AIFunction func = AIFunctionFactory.Create(funcWithAttribute);
+        Assert.Equal("get_user", func.Name);
+
+        Func<string> funcWithBoth = [AIFunctionName("my_function")][DisplayName("display_name")] () => "test";
+        func = AIFunctionFactory.Create(funcWithBoth);
+        Assert.Equal("my_function", func.Name);
+
+        func = AIFunctionFactory.Create(funcWithAttribute, name: "explicit_name");
+        Assert.Equal("explicit_name", func.Name);
+
+        func = AIFunctionFactory.Create(funcWithAttribute, new AIFunctionFactoryOptions { Name = "options_name" });
+        Assert.Equal("options_name", func.Name);
+    }
+
+    [Fact]
+    public async Task Parameters_MappedByAIParameterNameAttribute_Async()
+    {
+        AIFunction func = AIFunctionFactory.Create(([AIParameterName("$select")] string select, int top) => select + top);
+
+        AssertExtensions.EqualFunctionCallResults("Name2", await func.InvokeAsync(new()
+        {
+            ["$select"] = "Name",
+            ["top"] = 2,
+        }));
+
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(() => func.InvokeAsync(new() { ["top"] = 2 }).AsTask());
+        Assert.Contains("$select", ex.Message);
+    }
+
+    [Fact]
     public void AIFunctionFactoryCreateOptions_ValuesPropagateToAIFunction()
     {
         IReadOnlyDictionary<string, object?> metadata = new Dictionary<string, object?> { ["a"] = "b" };

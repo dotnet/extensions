@@ -418,6 +418,38 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.AIFunctionNameAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunctionNameAttribute.AIFunctionNameAttribute(string name);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.AIFunctionNameAttribute.Name { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.AIParameterNameAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIParameterNameAttribute.AIParameterNameAttribute(string name);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.AIParameterNameAttribute.Name { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "readonly struct Microsoft.Extensions.AI.AIJsonSchemaCreateContext",
       "Stage": "Stable",
       "Methods": [
