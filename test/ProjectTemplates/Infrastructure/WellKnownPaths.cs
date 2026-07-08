@@ -65,11 +65,30 @@ internal static class WellKnownPaths
 
         var dotNetExePath = Path.Combine(RepoRoot, ".dotnet", dotNetExeName);
 
-        if (!File.Exists(dotNetExePath))
+        if (File.Exists(dotNetExePath))
         {
-            throw new InvalidOperationException($"Expected to find '{dotNetExeName}' at '{dotNetExePath}', but it was not found.");
+            return dotNetExePath;
         }
 
-        return dotNetExePath;
+        var dotNetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        if (!string.IsNullOrWhiteSpace(dotNetHostPath) && File.Exists(dotNetHostPath))
+        {
+            return dotNetHostPath;
+        }
+
+        var pathValue = Environment.GetEnvironmentVariable("PATH");
+        if (!string.IsNullOrWhiteSpace(pathValue))
+        {
+            foreach (var pathEntry in pathValue.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var candidate = Path.Combine(pathEntry.Trim(), dotNetExeName);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        throw new InvalidOperationException($"Expected to find '{dotNetExeName}' in '{dotNetExePath}', DOTNET_HOST_PATH, or PATH, but it was not found.");
     }
 }
