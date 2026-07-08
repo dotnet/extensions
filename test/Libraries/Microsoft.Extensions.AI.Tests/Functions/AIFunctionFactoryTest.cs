@@ -481,6 +481,28 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public void AIParameterNameAttribute_DuplicateNames_DetectedEvenWhenExcludedFromSchema()
+    {
+        // Validates that collision detection occurs in ExpectedArgumentNames collection
+        // even when one of the colliding parameters is excluded from schema generation.
+        // This addresses the concern that collisions might go undetected when
+        // ExcludeFromSchema = true for one of the parameters.
+
+        var options = new AIFunctionFactoryOptions
+        {
+            ConfigureParameterBinding = p => p.Name == "second"
+                ? new AIFunctionFactoryOptions.ParameterBindingOptions { ExcludeFromSchema = true }
+                : default
+        };
+
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
+            ([AIParameterName("dup")] string first, [AIParameterName("dup")] string second) => first + second,
+            options));
+        Assert.Contains("dup", ex.Message);
+        Assert.Contains("AIParameterNameAttribute", ex.Message);
+    }
+
+    [Fact]
     public void AIFunctionNameAttribute_DisplayNameAttribute_StillHonoredWhenNoAIFunctionNameAttribute()
     {
         AIFunction func = AIFunctionFactory.Create([DisplayName("from-display-name")] () => "result");
