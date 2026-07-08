@@ -39,7 +39,7 @@ internal sealed class HttpLatencyLogEnricher : IHttpLogEnricher
                 AppendClientName(httpContext.Request, stringBuilder);
                 _ = stringBuilder.Append(',');
                 FormatLatencyData(stringBuilder, latencyContext.LatencyData);
-                collector.Add("latencyInfo", stringBuilder.ToString());
+                collector.Add("LatencyInfo", stringBuilder.ToString());
             }
             finally
             {
