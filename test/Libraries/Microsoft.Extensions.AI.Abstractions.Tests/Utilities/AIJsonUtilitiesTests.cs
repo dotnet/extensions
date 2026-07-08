@@ -565,6 +565,25 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_AIFunctionNameAttribute_NotUsedForTitle()
+    {
+        [AIFunctionName("my_tool")]
+        static void TestMethod(string param)
+        {
+            // Test method for schema generation
+        }
+
+        var method = ((Action<string>)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method);
+
+        // The schema title is not derived from AIFunctionNameAttribute.
+        if (schema.TryGetProperty("title", out JsonElement titleElement))
+        {
+            Assert.NotEqual("my_tool", titleElement.GetString());
+        }
+    }
+
+    [Fact]
     public static void CreateFunctionJsonSchema_DisplayNameAttribute_CanBeOverridden()
     {
         [DisplayName("custom_method_name")]
@@ -584,11 +603,13 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void CreateFunctionJsonSchema_AIParameterNameAttribute_UsedForPropertyName()
     {
-        Delegate method = ([AIParameterName("custom_property_name")] string select, int top) =>
+        static void TestMethod([AIParameterName("custom_property_name")] string select, int top)
         {
-        };
+            // Test method for schema generation
+        }
 
-        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method);
+        var method = ((Action<string, int>)TestMethod).Method;
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method);
 
         JsonElement properties = schema.GetProperty("properties");
         Assert.True(properties.TryGetProperty("custom_property_name", out _));
@@ -602,49 +623,34 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void CreateFunctionJsonSchema_AIParameterNameAttribute_DuplicateNamesThrow()
     {
-        Delegate duplicateByAttribute = ([AIParameterName("dup")] string first, [AIParameterName("dup")] string second) =>
+        static void DuplicateByAttribute([AIParameterName("dup")] string first, [AIParameterName("dup")] string second)
         {
-        };
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(duplicateByAttribute.Method));
+            // Test method for schema generation
+        }
 
-        Delegate duplicateByCollision = ([AIParameterName("filter")] string select, string filter) =>
+        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(((Action<string, string>)DuplicateByAttribute).Method));
+
+        static void DuplicateByCollision([AIParameterName("filter")] string select, string filter)
         {
-        };
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(duplicateByCollision.Method));
+            // Test method for schema generation
+        }
+
+        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(((Action<string, string>)DuplicateByCollision).Method));
     }
 
     [Fact]
     public static void CreateFunctionJsonSchema_AIParameterNameAttribute_EscapesJsonPointerSegment()
     {
         JsonSerializerOptions options = new() { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
-        Delegate method = ([AIParameterName("a/b~c")] RecursiveNode node) =>
+        static void TestMethod([AIParameterName("a/b~c")] RecursiveNode node)
         {
-        };
+            // Test method for schema generation
+        }
 
-        string schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method, serializerOptions: options).ToString();
+        string schema = AIJsonUtilities.CreateFunctionJsonSchema(((Action<RecursiveNode>)TestMethod).Method, serializerOptions: options).ToString();
 
         Assert.Contains("#/properties/a~1b~0c", schema);
         Assert.DoesNotContain("#/properties/a/b~c", schema);
-    }
-
-    [Fact]
-    public static void CreateFunctionJsonSchema_AIFunctionNameAttribute_NotUsedForSchemaTitle()
-    {
-        // AIFunctionNameAttribute overrides the AI-facing function name but does not affect the JSON schema title.
-        Delegate method = [AIFunctionName("my_tool")] (string param) => { };
-
-        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method);
-
-        // The schema title is not derived from AIFunctionNameAttribute.
-        Assert.False(schema.TryGetProperty("title", out JsonElement titleElement) && titleElement.GetString() == "my_tool");
-    }
-
-    [Fact]
-    public static void CreateFunctionJsonSchema_AIFunctionNameAttribute_HonoredByAIFunctionFactory()
-    {
-        Func<string> funcWithAttribute = [AIFunctionName("get_user")] () => "test";
-        AIFunction func = AIFunctionFactory.Create(funcWithAttribute);
-        Assert.Equal("get_user", func.Name);
     }
 
     [Fact]

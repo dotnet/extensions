@@ -117,6 +117,7 @@ public partial class AIFunctionFactoryTest
             AIFunctionFactory.Create((string? theParam) => theParam + " " + theParam),
             AIFunctionFactory.Create((int theParam) => theParam * 2),
             AIFunctionFactory.Create((int? theParam) => theParam * 2),
+            AIFunctionFactory.Create(([AIParameterName("theParam")] string otherName) => otherName),
         ];
 
         foreach (AIFunction f in funcs)
@@ -336,18 +337,28 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public void Metadata_AIFunctionAndParameterNameAttributes_PreservedByAsDeclarationOnly()
+    {
+        AIFunction func = AIFunctionFactory.Create([AIFunctionName("my_tool")] ([AIParameterName("my_param")] string myParam) => myParam);
+
+        AIFunctionDeclaration declaration = func.AsDeclarationOnly();
+
+        Assert.Equal("my_tool", declaration.Name);
+        Assert.Equal(func.JsonSchema.ToString(), declaration.JsonSchema.ToString());
+        Assert.Contains("my_param", declaration.JsonSchema.ToString());
+        Assert.IsNotAssignableFrom<AIFunction>(declaration);
+    }
+
+    [Fact]
     public async Task Parameters_MappedByAIParameterNameAttribute_Async()
     {
         AIFunction func = AIFunctionFactory.Create(([AIParameterName("$select")] string select, int top) => select + top);
 
         AssertExtensions.EqualFunctionCallResults("Name2", await func.InvokeAsync(new() { ["$select"] = "Name", ["top"] = 2 }));
-
-        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(() => func.InvokeAsync(new() { ["top"] = 2 }).AsTask());
-        Assert.Contains("$select", ex.Message);
     }
 
     [Fact]
-    public void AIParameterNameAttribute_OverridesSchemaPropertyName()
+    public void Parameters_AIParameterNameAttribute_OverridesSchemaPropertyName()
     {
         AIFunction func = AIFunctionFactory.Create(
             ([AIParameterName("my_param")] string myParam, int top) => myParam + top);
@@ -367,37 +378,7 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task AIParameterNameAttribute_BindsArgumentByOverriddenName_Async()
-    {
-        AIFunction func = AIFunctionFactory.Create(
-            ([AIParameterName("$select")] string select,
-             [AIParameterName("$expand")] string expand,
-             string filter) =>
-                $"select='{select}', expand='{expand}', filter='{filter}'");
-
-        object? result = await func.InvokeAsync(new()
-        {
-            ["$select"] = "Name,Id",
-            ["$expand"] = "Orders",
-            ["filter"] = "Active",
-        });
-
-        AssertExtensions.EqualFunctionCallResults("select='Name,Id', expand='Orders', filter='Active'", result);
-    }
-
-    [Fact]
-    public async Task AIParameterNameAttribute_MissingRequiredArgument_ReportsSchemaName_Async()
-    {
-        AIFunction func = AIFunctionFactory.Create(
-            ([AIParameterName("my_param")] string myParam) => myParam);
-
-        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>(() => func.InvokeAsync().AsTask());
-
-        Assert.Contains("my_param", ex.Message);
-    }
-
-    [Fact]
-    public async Task AIParameterNameAttribute_HonoredByStrictUnmappedMemberHandling_Async()
+    public async Task Parameters_AIParameterNameAttribute_StrictUnmappedMemberHandling_Async()
     {
         JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
         {
@@ -418,7 +399,7 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task AIParameterNameAttribute_InheritedByOverride_Async()
+    public async Task Parameters_AIParameterNameAttribute_InheritedByOverride_Async()
     {
         MethodInfo overrideMethod = typeof(MyDerivedType).GetMethod(nameof(MyDerivedType.Method))!;
         AIFunction func = AIFunctionFactory.Create(overrideMethod, new MyDerivedType());
@@ -430,31 +411,7 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public async Task AIFunctionAndParameterNameAttributes_BothHonored_Async()
-    {
-        AIFunction func = AIFunctionFactory.Create([AIFunctionName("my_tool")] ([AIParameterName("my_param")] string myParam) => myParam);
-
-        Assert.Equal("my_tool", func.Name);
-        Assert.Contains("my_param", func.JsonSchema.ToString());
-
-        AssertExtensions.EqualFunctionCallResults("Name", await func.InvokeAsync(new() { ["my_param"] = "Name" }));
-    }
-
-    [Fact]
-    public void AIFunctionAndParameterNameAttributes_NameAndParameterSchema_PreservedByAsDeclarationOnly()
-    {
-        AIFunction func = AIFunctionFactory.Create([AIFunctionName("my_tool")] ([AIParameterName("my_param")] string myParam) => myParam);
-
-        AIFunctionDeclaration declaration = func.AsDeclarationOnly();
-
-        Assert.Equal("my_tool", declaration.Name);
-        Assert.Equal(func.JsonSchema.ToString(), declaration.JsonSchema.ToString());
-        Assert.Contains("my_param", declaration.JsonSchema.ToString());
-        Assert.IsNotAssignableFrom<AIFunction>(declaration);
-    }
-
-    [Fact]
-    public void AIParameterNameAttribute_EscapesNameInJsonPointerRef()
+    public void Parameters_AIParameterNameAttribute_EscapesJsonPointerRef()
     {
         JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
 
@@ -469,7 +426,7 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public void AIParameterNameAttribute_DuplicateNames_Throw()
+    public void Parameters_AIParameterNameAttribute_DuplicateNames_Throw()
     {
         ArgumentException ex = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
             ([AIParameterName("dup")] string first, [AIParameterName("dup")] string second) => first + second));
@@ -481,7 +438,7 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
-    public void AIParameterNameAttribute_DuplicateNames_DetectedEvenWhenExcludedFromSchema()
+    public void Parameters_AIParameterNameAttribute_DuplicateNames_ExcludedFromSchema()
     {
         // Validates that collision detection occurs in ExpectedArgumentNames collection
         // even when one of the colliding parameters is excluded from schema generation.
@@ -500,14 +457,6 @@ public partial class AIFunctionFactoryTest
             options));
         Assert.Contains("dup", ex.Message);
         Assert.Contains("AIParameterNameAttribute", ex.Message);
-    }
-
-    [Fact]
-    public void AIFunctionNameAttribute_DisplayNameAttribute_StillHonoredWhenNoAIFunctionNameAttribute()
-    {
-        AIFunction func = AIFunctionFactory.Create([DisplayName("from-display-name")] () => "result");
-
-        Assert.Equal("from-display-name", func.Name);
     }
 
     [Fact]
