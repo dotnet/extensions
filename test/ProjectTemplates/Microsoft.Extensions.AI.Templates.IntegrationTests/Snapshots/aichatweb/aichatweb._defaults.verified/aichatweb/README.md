@@ -6,14 +6,29 @@ This project is an AI chat application that demonstrates how to chat with custom
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
 
 # Configure the AI Model Provider
-To use models hosted by GitHub Models, you will need to create a GitHub personal access token with `models:read` permissions, but no other scopes or permissions. See [Prototyping with AI models](https://docs.github.com/github-models/prototyping-with-ai-models) and [Managing your personal access tokens](https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) in the GitHub Docs for more information.
+## Setting up a local environment using Foundry Local
+This project is configured to use Foundry Local, which runs models on your workstation through a local OpenAI-compatible endpoint. It does not need an API key.
 
-From the command line, configure your token for this project using .NET User Secrets by running the following commands:
+### 1. Install Foundry Local
+Install Foundry Local for your operating system by following the [Foundry Local documentation](https://learn.microsoft.com/azure/ai-foundry/foundry-local/).
 
-```sh
-cd <<your-project-directory>>
-dotnet user-secrets set GitHubModels:Token YOUR-TOKEN
+### 2. Run the app
+The app starts the Foundry Local service for you. On first run, it downloads the configured models, then loads them into the local service.
+
+The default chat model alias is `qwen3-4b`. The default embedding model alias is `qwen3-embedding-0.6b`.
+
+### 3. Override model aliases or the service URL
+You can change the defaults in `appsettings.json`, `appsettings.Development.json`, or user secrets:
+
+```json
+{
+  "FoundryLocal": {
+    "ChatModel": "qwen3-4b",
+    "EmbeddingModel": "qwen3-embedding-0.6b",
+    "ServiceUrl": "http://127.0.0.1:5273"
+  }
+}
 ```
 
-Learn more about [prototyping with AI models using GitHub Models](https://docs.github.com/github-models/prototyping-with-ai-models).
+Use `FoundryLocal:ServiceUrl` if another local process already uses the default port.
 

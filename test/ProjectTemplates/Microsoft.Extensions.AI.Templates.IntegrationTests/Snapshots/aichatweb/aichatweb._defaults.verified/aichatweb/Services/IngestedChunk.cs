@@ -5,7 +5,7 @@ namespace aichatweb.Services;
 
 public class IngestedChunk
 {
-    public const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
+    public const int VectorDimensions = 1024; // 1024 is the default vector size for the qwen3-embedding-0.6b embedding model
     public const string VectorDistanceFunction = DistanceFunction.CosineDistance;
     public const string CollectionName = "data-aichatweb-chunks";
 

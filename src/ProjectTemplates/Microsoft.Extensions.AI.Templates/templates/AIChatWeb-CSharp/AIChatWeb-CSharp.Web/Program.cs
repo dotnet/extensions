@@ -1,4 +1,4 @@
-#if (IsGHModels || IsOpenAI || IsFoundryLocal || (IsAzureOpenAI && !IsManagedIdentity))
+#if (IsOpenAI || IsFoundryLocal || (IsAzureOpenAI && !IsManagedIdentity))
 using System.ClientModel;
 #elif (IsAzureOpenAI && IsManagedIdentity)
 using System.ClientModel.Primitives;
@@ -15,7 +15,7 @@ using Azure.Identity;
 using Microsoft.Extensions.AI;
 #if (IsOllama)
 using OllamaSharp;
-#elif (IsGHModels || IsOpenAI || IsFoundryLocal || IsAzureOpenAI)
+#elif (IsOpenAI || IsFoundryLocal || IsAzureOpenAI)
 using OpenAI;
 #endif
 using AIChatWeb_CSharp.Web.Components;
@@ -25,21 +25,7 @@ using AIChatWeb_CSharp.Web.Services.Ingestion;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-#if (IsGHModels)
-// You will need to set the endpoint and key to your own values
-// You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
-//   cd this-project-directory
-//   dotnet user-secrets set GitHubModels:Token YOUR-GITHUB-TOKEN
-var credential = new ApiKeyCredential(builder.Configuration["GitHubModels:Token"] ?? throw new InvalidOperationException("Missing configuration: GitHubModels:Token. See the README for details."));
-var openAIOptions = new OpenAIClientOptions()
-{
-    Endpoint = new Uri("https://models.inference.ai.azure.com")
-};
-
-var ghModelsClient = new OpenAIClient(credential, openAIOptions);
-var chatClient = ghModelsClient.GetChatClient("gpt-4o-mini").AsIChatClient();
-var embeddingGenerator = ghModelsClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
-#elif (IsOllama)
+#if (IsOllama)
 IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"),
     "llama3.2");
 IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApiClient(new Uri("http://localhost:11434"),

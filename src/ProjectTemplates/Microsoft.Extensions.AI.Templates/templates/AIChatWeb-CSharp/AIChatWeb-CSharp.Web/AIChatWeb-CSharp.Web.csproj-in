@@ -13,7 +13,7 @@
 #endif -->
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${PackageVersion:OllamaSharp}" />
-#elif ((IsGHModels || IsOpenAI) && !IsAspire)
+#elif (IsOpenAI && !IsAspire)
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 #elif (IsFoundryLocal && !IsAspire)
     <PackageReference Include="Microsoft.AI.Foundry.Local" Version="${PackageVersion:Microsoft.AI.Foundry.Local}" />
@@ -22,7 +22,7 @@
     <PackageReference Include="Azure.AI.Projects" Version="${PackageVersion:Azure.AI.Projects}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 #endif -->
-<!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
+<!--#if ((IsAzureOpenAI || IsOpenAI) && IsAspire) -->
     <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${PackageVersion:Aspire.Azure.AI.OpenAI}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 <!--#endif -->
