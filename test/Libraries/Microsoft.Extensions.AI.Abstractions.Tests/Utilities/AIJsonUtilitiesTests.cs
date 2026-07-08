@@ -576,11 +576,9 @@ public static partial class AIJsonUtilitiesTests
         var method = ((Action<string>)TestMethod).Method;
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method);
 
-        // The schema title is not derived from AIFunctionNameAttribute.
-        if (schema.TryGetProperty("title", out JsonElement titleElement))
-        {
-            Assert.NotEqual("my_tool", titleElement.GetString());
-        }
+        // The schema title is derived from the method name, not from AIFunctionNameAttribute.
+        Assert.True(schema.TryGetProperty("title", out JsonElement titleElement));
+        Assert.Equal("TestMethod", titleElement.GetString());
     }
 
     [Fact]
