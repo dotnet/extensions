@@ -27,8 +27,10 @@ public abstract class VectorStoreFixture : IAsyncLifetime
 
     /// <summary>
     /// Creates a collection for the given name and definition.
-    /// Delegates to <see cref="TestStore.CreateCollection{TKey, TRecord}"/> which can be overridden for provider-specific options.
     /// </summary>
+    /// <remarks>
+    /// This delegates to <see cref="TestStore.CreateCollection{TKey, TRecord}"/>, which can be overridden for provider-specific options.
+    /// </remarks>
     public virtual VectorStoreCollection<TKey, TRecord> CreateCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition definition)
         where TKey : notnull
         where TRecord : class
@@ -36,8 +38,10 @@ public abstract class VectorStoreFixture : IAsyncLifetime
 
     /// <summary>
     /// Creates a dynamic collection for the given name and definition.
-    /// Delegates to <see cref="TestStore.CreateDynamicCollection"/> which can be overridden for provider-specific options.
     /// </summary>
+    /// <remarks>
+    /// This delegates to <see cref="TestStore.CreateDynamicCollection"/>, which can be overridden for provider-specific options.
+    /// </remarks>
     public virtual VectorStoreCollection<object, Dictionary<string, object?>> CreateDynamicCollection(string name, VectorStoreCollectionDefinition definition)
         => TestStore.CreateDynamicCollection(name, definition);
 }
