@@ -14,7 +14,8 @@
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion.Markdig\Microsoft.Extensions.DataIngestion.Markdig.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion.MarkItDown\Microsoft.Extensions.DataIngestion.MarkItDown.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DataIngestion\Microsoft.Extensions.DataIngestion.csproj" />
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />  </ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DocumentFormat.OpenXml" />
