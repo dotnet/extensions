@@ -23,14 +23,14 @@ var foundryManager = FoundryLocalManager.Instance;
 await foundryManager.StartWebServiceAsync();
 var foundryCatalog = await foundryManager.GetCatalogAsync();
 
-async Task<string> EnsureFoundryModelAsync(string alias)
+async Task<string> EnsureFoundryModelAsync(string modelAlias)
 {
-    var model = await foundryCatalog.GetModelAsync(alias)
+    var model = await foundryCatalog.GetModelAsync(modelAlias)
         ?? throw new InvalidOperationException(
-            $"Foundry Local model '{alias}' was not found in the catalog. Run 'foundry model list' to see available models.");
+            $"Foundry Local model '{modelAlias}' was not found in the catalog. Run 'foundry model list' to see available models.");
     if (!await model.IsCachedAsync())
     {
-        Console.WriteLine($"Foundry Local: downloading model '{alias}' (first run only)...");
+        Console.WriteLine($"Foundry Local: downloading model '{modelAlias}' (first run only)...");
         await model.DownloadAsync(_ => { });
     }
     if (!await model.IsLoadedAsync())
