@@ -7,6 +7,13 @@
     <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
   </PropertyGroup>
 
+<!--#if (IsFoundryLocal) -->
+  <PropertyGroup>
+    <!-- Foundry Local ships native runtime assets per RID, so restore must be RID-aware for the build to resolve them. -->
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+<!--#endif -->
   <ItemGroup>
 <!--#if (IsOllama && IsAspire)
     <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${PackageVersion:CommunityToolkit.Aspire.OllamaSharp}" />
