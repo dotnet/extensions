@@ -808,7 +808,11 @@ public static partial class AIFunctionFactory
                     pType != typeof(IServiceProvider) &&
                     !string.IsNullOrEmpty(parameters[i].Name))
                 {
-                    _ = expectedArgumentNames.Add(AIJsonUtilities.GetParameterSchemaName(parameters[i]));
+                    string effectiveName = AIJsonUtilities.GetParameterSchemaName(parameters[i]);
+                    if (!expectedArgumentNames.Add(effectiveName))
+                    {
+                        Throw.ArgumentException(nameof(key.Method), $"Multiple parameters are mapped to the same name '{effectiveName}'. Ensure that any {nameof(AIParameterNameAttribute)} values do not collide with each other or with other parameter names.");
+                    }
                 }
             }
 
@@ -1220,9 +1224,11 @@ public static partial class AIFunctionFactory
             {
                 return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
             }
-            catch (Exception e) when (e is ArgumentNullException or NullReferenceException)
+            catch (Exception e) when (e is ArgumentNullException or NullReferenceException or IndexOutOfRangeException)
             {
-                // DynamicMethod return parameters don't support GetCustomAttribute.
+                // DynamicMethod return parameters don't support GetCustomAttribute. Additionally, on .NET Framework,
+                // querying inherited attributes on the return parameter of an overriding method can throw
+                // IndexOutOfRangeException. In either case, treat the description as absent.
                 return null;
             }
         }

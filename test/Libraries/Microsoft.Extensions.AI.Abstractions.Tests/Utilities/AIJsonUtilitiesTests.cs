@@ -584,18 +584,18 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void CreateFunctionJsonSchema_AIParameterNameAttribute_UsedForPropertyName()
     {
-        Delegate method = ([AIParameterName("$select")] string select, int top) =>
+        Delegate method = ([AIParameterName("custom_property_name")] string select, int top) =>
         {
         };
 
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method);
 
         JsonElement properties = schema.GetProperty("properties");
-        Assert.True(properties.TryGetProperty("$select", out _));
+        Assert.True(properties.TryGetProperty("custom_property_name", out _));
         Assert.False(properties.TryGetProperty("select", out _));
 
         string[] required = schema.GetProperty("required").EnumerateArray().Select(e => e.GetString()!).ToArray();
-        Assert.Contains("$select", required);
+        Assert.Contains("custom_property_name", required);
         Assert.Contains("top", required);
     }
 
@@ -625,6 +625,26 @@ public static partial class AIJsonUtilitiesTests
 
         Assert.Contains("#/properties/a~1b~0c", schema);
         Assert.DoesNotContain("#/properties/a/b~c", schema);
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_AIFunctionNameAttribute_NotUsedForSchemaTitle()
+    {
+        // AIFunctionNameAttribute overrides the AI-facing function name but does not affect the JSON schema title.
+        Delegate method = [AIFunctionName("my_tool")] (string param) => { };
+
+        JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method.Method);
+
+        // The schema title is not derived from AIFunctionNameAttribute.
+        Assert.False(schema.TryGetProperty("title", out JsonElement titleElement) && titleElement.GetString() == "my_tool");
+    }
+
+    [Fact]
+    public static void CreateFunctionJsonSchema_AIFunctionNameAttribute_HonoredByAIFunctionFactory()
+    {
+        Func<string> funcWithAttribute = [AIFunctionName("get_user")] () => "test";
+        AIFunction func = AIFunctionFactory.Create(funcWithAttribute);
+        Assert.Equal("get_user", func.Name);
     }
 
     [Fact]

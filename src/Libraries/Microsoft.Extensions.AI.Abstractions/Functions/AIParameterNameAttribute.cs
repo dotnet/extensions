@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// By default this is inferred from .NET metadata. Apply this attribute to use a different identifier.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-[Experimental(DiagnosticIds.Experiments.AIParameterName, UrlFormat = DiagnosticIds.UrlFormat)]
+[Experimental(DiagnosticIds.Experiments.AIFunctionAndParameterName, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class AIParameterNameAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="AIParameterNameAttribute"/> class.</summary>
