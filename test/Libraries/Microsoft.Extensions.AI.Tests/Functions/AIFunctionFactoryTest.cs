@@ -431,10 +431,12 @@ public partial class AIFunctionFactoryTest
         ArgumentException ex = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
             ([AIParameterName("dup")] string first, [AIParameterName("dup")] string second) => first + second));
         Assert.Contains("dup", ex.Message);
+        Assert.Equal("method", ex.ParamName);
 
         ArgumentException ex2 = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
             ([AIParameterName("filter")] string select, string filter) => select + filter));
         Assert.Contains("filter", ex2.Message);
+        Assert.Equal("method", ex2.ParamName);
     }
 
     [Fact]
@@ -457,6 +459,7 @@ public partial class AIFunctionFactoryTest
             options));
         Assert.Contains("dup", ex.Message);
         Assert.Contains("AIParameterNameAttribute", ex.Message);
+        Assert.Equal("method", ex.ParamName);
     }
 
     [Fact]

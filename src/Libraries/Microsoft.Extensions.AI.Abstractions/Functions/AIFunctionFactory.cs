@@ -710,7 +710,7 @@ public static partial class AIFunctionFactory
         private static readonly object? _boxedDefaultCancellationToken = default(CancellationToken);
 
         /// <summary>
-        /// Gets or creates a descriptors using the specified method and options.
+        /// Gets or creates a descriptor using the specified method and options.
         /// </summary>
         public static ReflectionAIFunctionDescriptor GetOrCreate(MethodInfo method, AIFunctionFactoryOptions options)
         {
@@ -811,7 +811,7 @@ public static partial class AIFunctionFactory
                     string effectiveName = AIJsonUtilities.GetParameterSchemaName(parameters[i]);
                     if (!expectedArgumentNames.Add(effectiveName))
                     {
-                        Throw.ArgumentException(nameof(key.Method), $"Multiple parameters are mapped to the same name '{effectiveName}'. Ensure that any {nameof(AIParameterNameAttribute)} values do not collide with each other or with other parameter names.");
+                        Throw.ArgumentException("method", $"Multiple parameters are mapped to the same name '{effectiveName}'. Ensure that any {nameof(AIParameterNameAttribute)} values do not collide with each other or with other parameter names.");
                     }
                 }
             }

@@ -626,14 +626,18 @@ public static partial class AIJsonUtilitiesTests
             // Test method for schema generation
         }
 
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(((Action<string, string>)DuplicateByAttribute).Method));
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(((Action<string, string>)DuplicateByAttribute).Method));
+        Assert.Contains("dup", ex.Message);
+        Assert.Equal("method", ex.ParamName);
 
         static void DuplicateByCollision([AIParameterName("filter")] string select, string filter)
         {
             // Test method for schema generation
         }
 
-        Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(((Action<string, string>)DuplicateByCollision).Method));
+        ArgumentException ex2 = Assert.Throws<ArgumentException>(() => AIJsonUtilities.CreateFunctionJsonSchema(((Action<string, string>)DuplicateByCollision).Method));
+        Assert.Contains("filter", ex2.Message);
+        Assert.Equal("method", ex2.ParamName);
     }
 
     [Fact]
