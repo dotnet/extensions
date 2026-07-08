@@ -1,25 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.TestUtilities;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
 
 /// <summary>
-/// This class exists because currently the local copy of <see cref="ConditionalTheoryAttribute"/> can't ignore tests that throw <see cref="SkipTestException"/>.
+/// Checks whether MarkItDown is installed and accessible. Used to conditionally skip tests.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
-public class MarkItDownConditionAttribute : Attribute, ITestCondition
+internal static class MarkItDownConditionHelper
 {
     internal static readonly Lazy<bool> IsInstalled = new(CanInvokeMarkItDown);
-
-    public bool IsMet => IsInstalled.Value;
-
-    public string SkipReason => "MarkItDown is not installed or not accessible.";
 
     private static bool CanInvokeMarkItDown()
     {

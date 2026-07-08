@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -15,7 +15,6 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
-using Microsoft.TestUtilities;
 using Xunit;
 
 #pragma warning disable SA1114 // parameter list should follow declaration
@@ -648,13 +647,10 @@ public static partial class AIJsonUtilitiesTests
         AssertDeepEquals(expectedSchema, schema);
     }
 
-    [ConditionalFact]
+    [Fact]
     public static void CreateJsonSchema_IncorporatesTypesAndAnnotations_Net()
     {
-        if (RuntimeInformation.FrameworkDescription.Contains(".NET Framework"))
-        {
-            return;
-        }
+        Assert.SkipUnless(!RuntimeInformation.FrameworkDescription.Contains(".NET Framework"), "Only runs on .NET Core");
 
         AssertDeepEquals(JsonSerializer.Deserialize(
             """
@@ -884,13 +880,10 @@ public static partial class AIJsonUtilitiesTests
 
     // .NET Framework only has a subset of the available data annotation attributes.
     // .NET Standard doesn't have any (the M.E.AI.Abstractions library doesn't reference the additional package).
-    [ConditionalFact]
+    [Fact]
     public static void CreateJsonSchema_IncorporatesTypesAndAnnotations_NetFx()
     {
-        if (!RuntimeInformation.FrameworkDescription.Contains(".NET Framework"))
-        {
-            return;
-        }
+        Assert.SkipUnless(RuntimeInformation.FrameworkDescription.Contains(".NET Framework"), "Only runs on .NET Framework");
 
         AssertDeepEquals(JsonSerializer.Deserialize(
             """

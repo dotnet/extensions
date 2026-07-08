@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable CA1822 // Mark members as static
@@ -12,7 +12,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -48,7 +47,7 @@ public class OpenAIAssistantChatClientIntegrationTests : ChatClientIntegrationTe
     public override Task MultiModal_DescribeImage() => Task.CompletedTask;
     public override Task MultiModal_DescribePdf() => Task.CompletedTask;
 
-    [ConditionalFact]
+    [Fact]
     public async Task UseCodeInterpreter_ProducesCodeExecutionResults()
     {
         SkipIfNotEnabled();
