@@ -23,7 +23,7 @@ internal sealed class HttpLatencyLogEnricher : IHttpLogEnricher
 {
     internal const string DataVersion = "v1.0";
 
-    private readonly ObjectPool<StringBuilder> _builderPool = PoolFactory.CreateStringBuilderPool();
+    private static readonly ObjectPool<StringBuilder> _builderPool = PoolFactory.SharedStringBuilderPool;
 
     public void Enrich(IEnrichmentTagCollector collector, HttpContext httpContext)
     {
@@ -52,7 +52,7 @@ internal sealed class HttpLatencyLogEnricher : IHttpLogEnricher
     {
         if (request.Headers.TryGetValue(TelemetryConstants.ClientApplicationNameHeader, out var values))
         {
-            _ = stringBuilder.Append(values);
+            _ = stringBuilder.Append(values[0]);
         }
     }
 
