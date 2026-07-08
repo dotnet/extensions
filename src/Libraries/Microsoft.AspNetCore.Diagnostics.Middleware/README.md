@@ -128,7 +128,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRequestLatencyTelemetry();
 builder.Services.AddRequestCheckpoint();
 builder.Services.AddHttpLatencyTelemetry();
-builder.Services.AddHttpLoggingRedaction();
 
 var app = builder.Build();
 

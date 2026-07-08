@@ -47,7 +47,7 @@ internal class MockLatencyData
             (long)Math.Round(((double)LatencyData.DurationTimestamp / LatencyData.DurationTimestampFrequency) * MillisecondsPerSecond));
     }
 
-    public string SerializedLatencyData { get; private set; }
+    public string SerializedLatencyData { get; }
 
-    public LatencyData LatencyData { get; private set; }
+    public LatencyData LatencyData { get; }
 }
