@@ -17,12 +17,6 @@ public class HttpLatencyLogEnricherTests
     public void HttpLatencyLogEnricher_DoesNotEnrich_OnNullContext()
     {
         HttpContext? httpContext = null;
-        var headers = new HeaderDictionary
-        {
-        };
-
-        var request = new Mock<HttpRequest>();
-        request.Setup(a => a.Headers).Returns(headers);
         var enricher = new HttpLatencyLogEnricher();
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
         Assert.Throws<NullReferenceException>(() => enricher.Enrich(mockEnrichmentPropertyBag.Object, httpContext!));
@@ -33,12 +27,6 @@ public class HttpLatencyLogEnricherTests
     public void HttpLatencyLogEnricher_DoesNotEnrich_WithoutLatencyContext()
     {
         var context = GetHttpContext(null!);
-        var headers = new HeaderDictionary
-        {
-        };
-
-        var request = new Mock<HttpRequest>();
-        request.Setup(a => a.Headers).Returns(headers);
         var enricher = new HttpLatencyLogEnricher();
         Mock<IEnrichmentTagCollector> mockEnrichmentPropertyBag = new Mock<IEnrichmentTagCollector>();
         enricher.Enrich(mockEnrichmentPropertyBag.Object, context);
