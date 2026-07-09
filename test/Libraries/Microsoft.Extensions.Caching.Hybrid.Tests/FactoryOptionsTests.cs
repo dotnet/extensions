@@ -375,33 +375,33 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     }
 
     [Fact]
-    public void HybridCacheEntryContextConstructor_CopiesEveryPublicWritableOption()
+    public void CreateOptionsFromContext_CopiesEveryPublicWritableContextProperty()
     {
-        // Guards against silent data loss when HybridCacheEntryContext (or HybridCacheEntryOptions)
-        // gains a new property and the HybridCacheEntryContext(options) seeding constructor is not updated.
-        var optionProps = typeof(HybridCacheEntryOptions)
+        // Guards the context -> options mapping in DefaultHybridCache against silent data loss when
+        // HybridCacheEntryContext gains a new writable property that CreateOptionsFromContext doesn't copy.
+        var contextProps = typeof(HybridCacheEntryContext)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanRead && p.CanWrite)
+            .Where(p => p.CanRead && p.SetMethod is { IsPublic: true })
             .ToArray();
 
-        Assert.NotEmpty(optionProps);
+        Assert.NotEmpty(contextProps);
 
-        var source = new HybridCacheEntryOptions();
-        var expected = new Dictionary<string, object?>(optionProps.Length);
-        foreach (var prop in optionProps)
+        var context = new HybridCacheEntryContext(null);
+        var expected = new Dictionary<string, object?>(contextProps.Length);
+        foreach (var prop in contextProps)
         {
             object? value = MakeDistinctiveValue(prop.PropertyType, prop.Name);
-            prop.SetValue(source, value);
+            prop.SetValue(context, value);
             expected[prop.Name] = value;
         }
 
-        var context = new HybridCacheEntryContext(source);
+        HybridCacheEntryOptions options = DefaultHybridCache.CreateOptionsFromContext(context);
 
-        foreach (var prop in optionProps)
+        foreach (var prop in contextProps)
         {
-            PropertyInfo contextProp = typeof(HybridCacheEntryContext).GetProperty(prop.Name, BindingFlags.Public | BindingFlags.Instance)!;
-            Assert.NotNull(contextProp);
-            Assert.Equal(expected[prop.Name], contextProp.GetValue(context));
+            PropertyInfo optionsProp = typeof(HybridCacheEntryOptions).GetProperty(prop.Name, BindingFlags.Public | BindingFlags.Instance)!;
+            Assert.NotNull(optionsProp);
+            Assert.Equal(expected[prop.Name], optionsProp.GetValue(options));
         }
     }
 
@@ -429,8 +429,8 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
         }
 
         throw new NotSupportedException(
-            $"HybridCacheEntryOptions has a new property '{propName}' of type {underlying.FullName}. " +
-            $"Add a distinctive value generator here AND update the HybridCacheEntryContext(HybridCacheEntryOptions) constructor.");
+            $"HybridCacheEntryContext has a new property '{propName}' of type {underlying.FullName}. " +
+            $"Add a distinctive value generator here AND update DefaultHybridCache.CreateOptionsFromContext.");
     }
 
     private static int StableHash(string s)

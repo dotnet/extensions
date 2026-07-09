@@ -640,13 +640,7 @@ internal partial class DefaultHybridCache
             HybridCacheEntryFlags mandatoryWriteSideFlags,
             ref HybridCacheEntryFlags activeFlags)
         {
-            _options = new HybridCacheEntryOptions
-            {
-                Expiration = context.Expiration,
-                LocalCacheExpiration = context.LocalCacheExpiration,
-                Flags = context.Flags,
-                LocalSize = context.LocalSize,
-            };
+            _options = CreateOptionsFromContext(context);
             ValidateOptions(_options);
 
             HybridCacheEntryFlags factoryFlags = context.Flags ?? HybridCacheEntryFlags.None;

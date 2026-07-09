@@ -290,6 +290,17 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
     }
 
+    // Projects the (possibly factory-mutated) context back into an options instance that the write paths
+    // (SetL1 / SetL2Async / ResolveLocalSize) read. Keep in sync when HybridCacheEntryContext gains a property.
+    internal static HybridCacheEntryOptions CreateOptionsFromContext(HybridCacheEntryContext context)
+        => new HybridCacheEntryOptions
+        {
+            Expiration = context.Expiration,
+            LocalCacheExpiration = context.LocalCacheExpiration,
+            Flags = context.Flags,
+            LocalSize = context.LocalSize,
+        };
+
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         ValidateOptions(options);
