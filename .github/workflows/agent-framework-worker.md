@@ -233,7 +233,7 @@ re-build). Key fields:
   `/tmp/gh-aw/agent/ProjectTemplates.csproj.bumped`.
 - `pr`, `pr_state`, `pr_is_draft`, `pr_branch` -- the maintained PR (if any).
 - `pr_recorded_version` -- the release the maintained PR already bumped to (from its tracking block).
-- `classification` -- `ours` / `none` (see below).
+- `classification` -- `ours` / `adopt` / `blocked` / `none` (see below).
 - `has_new_feedback`, `watermark`, `run_started_at` -- review-activity wake gate and watermarks.
 - `action` -- the recommended lifecycle action (`produce` or `noop`).
 - `desired_branch` (`update-agent-framework-template`), `base_branch` (`main`), `props_path`.
@@ -241,14 +241,20 @@ re-build). Key fields:
 Classifications:
 - **`ours`** -- an open `automation`+`area-ai-templates` PR on `pr_branch` carrying the
   `agent-framework-template:state` block. Maintain it.
+- **`adopt`** -- an open `automation`+`area-ai-templates` **draft** PR on `desired_branch` with **no**
+  tracking block yet (a human bootstrapped it). It passes both the label and draft gates: take it
+  over and write the full tracking block this run.
+- **`blocked`** -- a PR occupies `desired_branch` but fails a takeover gate: it is missing the
+  automation labels, or it is a labeled non-draft (ready) PR a human is finalizing.
+  **Emit `noop` and stand down** -- a human owns it.
 - **`none`** -- no open maintained PR.
 
 ## Step 1 -- Guard rails
 
-- If `action` is `noop`: emit a `noop` safe output. Write the reason to the step summary. Do nothing
-  else.
+- If `action` is `noop` **or** `classification` is `blocked`: emit a `noop` safe output. Write the
+  reason to the step summary. Do nothing else.
 - If `validated` is `false`: the prospective bump did **not** build. **Never** open or update a PR
-  with unvalidated versions. If a maintained PR exists (`ours`), post a single `add-comment`
+  with unvalidated versions. If a maintained PR exists (`ours`/`adopt`), post a single `add-comment`
   noting the build failure (quote the `build_summary`) and stop; otherwise emit `noop`. Do not emit
   `create-pull-request`, `push-to-pull-request-branch`, or `update-pull-request`.
 
@@ -259,9 +265,12 @@ With `validated: true`, pick the path from `classification` and the PR state:
 | classification | PR state | Action |
 |---|---|---|
 | `none` | -- | **Fresh PR** (Step 3a) |
-| `ours` | behind (`pr_recorded_version` != `release_version`), **draft** | **Incremental update** (Step 3b) |
-| `ours` | caught up (`pr_recorded_version` == `release_version`) | **No-op** (already handled by `action: noop`) |
+| `ours` / `adopt` | behind (`pr_recorded_version` != `release_version`), **draft** | **Incremental update** (Step 3b) |
+| `ours` / `adopt` | caught up (`pr_recorded_version` == `release_version`) | **No-op** (already handled by `action: noop`) |
 | `ours` | behind, **non-draft** | **Advisory only** (Step 3d) |
+
+For `adopt`, additionally write the **full tracking block** into the body this run so the PR becomes
+`ours`.
 
 ## Step 3 -- Apply and publish
 
@@ -299,7 +308,7 @@ switching** (`git branch {branch} HEAD`), then emit **`create-pull-request`** wi
 - branch `{branch}`, title `Update Agent Framework to <release_version>`,
 - the body from Step 4 (including the tracking block), draft (configured by the safe output).
 
-### 3b. Incremental update (behind, draft, `ours`)
+### 3b. Incremental update (behind, draft, `ours`/`adopt`)
 
 The PR branch already exists on the remote. Fetch and check it out, apply, and **append** a commit
 (never amend/rebase/reset/squash/force-push):
@@ -313,7 +322,7 @@ git commit -m "Update Agent Framework to <release_version>"
 ```
 
 Emit **`push-to-pull-request-branch`** (target the PR), **`update-pull-request`** (full-body replace
-per Step 4), and one **`add-comment`** summarizing the
+per Step 4; for `adopt`, this adds the tracking block), and one **`add-comment`** summarizing the
 delta (old -> new versions).
 
 ### 3d. Advisory only (behind, non-draft, `ours`)

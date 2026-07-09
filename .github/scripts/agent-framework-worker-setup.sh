@@ -14,8 +14,9 @@
 #      through the repo's Arcade build, and runs the snapshot + execution tests -- recording whether
 #      they succeeded. The working tree is left clean; the exact validated files are saved for the
 #      agent to drop into place on the PR branch, so the agent never has to build.
-#   4. Discovers the maintained draft PR and classifies it: OURS (carries the automation labels) or
-#      NONE.
+#   4. Discovers the maintained draft PR and classifies it: OURS (carries our tracking marker),
+#      ADOPT (a human-bootstrapped automation+area-ai-templates draft PR on our branch with no marker
+#      yet), BLOCKED (a PR occupying our branch that fails a takeover gate), or NONE.
 #   5. Reads the PR's recorded agent-framework-version and computes a recommended lifecycle action.
 #
 # Writes (under $AGENT_DIR, uploaded in the agent artifact):
@@ -352,9 +353,18 @@ if [ -n "$pr" ]; then
 	PR_BRANCH="$(jq -r '.[0].headRefName // ""' <<<"$rows")"
 	has_labels="$(jq -r --arg a "$LABEL_A" --arg b "$LABEL_B" '[.[0].labels[]?.name] | (index($a) != null) and (index($b) != null)' <<<"$rows")"
 	fetch_pr_body "$pr"
-	# A maintained PR carries the automation labels: it is ours to keep updated.
-	if [ "$has_labels" = "true" ]; then
+	has_marker="$(body_has_state_marker "$body")"
+	if [ "$body_ok" != "true" ] && [ "$has_labels" = "true" ]; then
 		classification="ours"
+	elif [ "$has_labels" = "true" ] && [ "$has_marker" = "true" ]; then
+		classification="ours"
+	elif [ "$has_labels" = "true" ] && [ "$has_marker" != "true" ] && [ "$pr_is_draft" = "true" ]; then
+		# Human-bootstrapped: automation labels + draft + no tracking marker yet -> adopt it.
+		# Both the label and draft gates must pass; a labeled but non-draft (ready) PR is left to
+		# the human (falls through to blocked).
+		classification="adopt"
+	else
+		classification="blocked"
 	fi
 fi
 
@@ -368,12 +378,18 @@ fi
 # Recommended lifecycle action. The agent's Step 3 remains authoritative and refines edge cases.
 action="produce"
 case "$classification" in
+	blocked)
+		action="noop" ;;
 	none)
 		# Fresh only if main actually needs the bump; otherwise the template is already current.
 		[ "$main_needs_bump" = "true" ] && action="produce" || action="noop" ;;
-	ours)
-		# Caught up (PR already at this release) -> no-op; behind -> produce (incremental).
-		if [ "$pr_recorded_version" = "$release_version" ]; then action="noop"; else action="produce"; fi ;;
+	ours|adopt)
+		# Caught up (an ours PR already at this release) -> no-op; else produce.
+		if [ "$classification" = "ours" ] && [ "$pr_recorded_version" = "$release_version" ]; then
+			action="noop"
+		else
+			action="produce"
+		fi ;;
 esac
 
 write_target "$pr" "open" "$pr_is_draft" "$pr_recorded_version" "$classification" "$action"
