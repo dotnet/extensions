@@ -40,6 +40,8 @@ safe-outputs:
     allowed-files:
       - "eng/packages/ProjectTemplates.props"
       - "src/ProjectTemplates/Microsoft.Agents.AI.ProjectTemplates/**"
+      - "src/Libraries/Microsoft.Extensions.AI*/**"
+      - "test/ProjectTemplates/Microsoft.Agents.AI.ProjectTemplates.IntegrationTests/**"
   push-to-pull-request-branch:
     target: "*"
     required-labels: [automation, area-ai-templates]
@@ -47,6 +49,8 @@ safe-outputs:
     allowed-files:
       - "eng/packages/ProjectTemplates.props"
       - "src/ProjectTemplates/Microsoft.Agents.AI.ProjectTemplates/**"
+      - "src/Libraries/Microsoft.Extensions.AI*/**"
+      - "test/ProjectTemplates/Microsoft.Agents.AI.ProjectTemplates.IntegrationTests/**"
   update-pull-request:
     target: "*"
     required-labels: [automation, area-ai-templates]
@@ -343,6 +347,35 @@ Do **not** implement. Post one **`add-comment`** noting that a newer Agent Frame
 (`release_version`) is available and that re-marking the PR as draft lets the next scheduled run
 apply it. Do not update the body.
 
+### 3e. Evaluate Agent Framework changes and keep consumption current (fresh / incremental paths)
+
+Bumping versions is not the whole job: the Agent Framework surface can change between releases, so on
+the fresh and incremental paths you must also confirm the template and any **other** Agent Framework
+consumption in the repo still work and follow the currently prescribed patterns.
+
+1. **Read the changes.** The host wrote the Agent Framework release notes spanning
+   `target.json.from_version` -> `release_version` to
+   `/tmp/gh-aw/agent/<target.json.af_changes_path>` (`target.json.af_change_count` releases). Read it
+   and identify API changes, removals/deprecations, renames, and newly recommended patterns.
+2. **Find the consumption.** The template lives under
+   `src/ProjectTemplates/Microsoft.Agents.AI.ProjectTemplates/**`; other consumption is under
+   `src/Libraries/Microsoft.Extensions.AI*/**`. Use the skill's
+   guidance to locate every place these consume Agent Framework types/APIs.
+3. **Apply required updates.** For any consumption affected by the changes, update it to the current
+   prescribed pattern -- but only within the allowed files (the template tree, the
+   `Microsoft.Extensions.AI*` libraries, `eng/packages/ProjectTemplates.props`, and the template
+   integration-test tree). Commit these alongside the version bump. Reject or skip anything outside
+   that scope and note it in the PR body.
+4. **Ensure the tests pass.** The host already ran the template's snapshot + execution tests
+   against the bump (`target.json.tests_summary`). If you changed template **content** (not just
+   versions), the snapshot tests will no longer match -- regenerate the affected `.verified`
+   snapshots under
+   `test/ProjectTemplates/Microsoft.Agents.AI.ProjectTemplates.IntegrationTests/Snapshots/**` so they
+   reflect the intended new content, and re-run the tests. Never publish with failing tests: if you
+   cannot make them pass within the allowed files, emit `report_incomplete` describing why.
+5. If your evaluation finds **no** required consumption changes, that is a valid outcome -- record in
+   the PR body that the changes were reviewed and no consumption updates were needed.
+
 ## Step 4 -- PR body and tracking block
 
 Regenerate the **entire** body on every full-body write. Include, succinctly:
@@ -358,7 +391,10 @@ Regenerate the **entire** body on every full-body write. Include, succinctly:
    version were bumped and the `Microsoft.Agents.AI.ProjectTemplates` package restored, built, and
    packed successfully through the repo's Arcade build (quote `build_summary`), and that the
    snapshot + execution tests passed (quote `tests_summary`).
-5. A note that the automation maintains this draft; a human reviews and merges.
+5. **Agent Framework changes reviewed**: note the `af_change_count` releases evaluated across
+   `from_version` -> `release_version`, and either the consumption updates you made or that no
+   consumption changes were required.
+6. A note that the automation maintains this draft; a human reviews and merges.
 
 End the body with the machine-readable tracking block as the very last thing, wrapped in a `yaml`
 code fence. The fence lines are **required** -- without them the `#` marker lines render as Markdown

@@ -78,9 +78,19 @@ Every bump must be CI-validated before it is published. The worker's setup scrip
 and records the results in `target.json`: it restores, builds, and packs the
 `Microsoft.Agents.AI.ProjectTemplates` package through the repo's Arcade build, then runs the
 template's snapshot + execution tests. Never open or update a PR with an unvalidated
-(`validated: false`) bump. See
+(`validated: false`) bump. Evaluating whether other Agent Framework consumption under
+`src/Libraries/Microsoft.Extensions.AI*` needs updates is the **agent's** job (see below), not the
+host build. See
 [references/build-commands.md](references/build-commands.md) and
 [references/testing.md](references/testing.md).
+
+## Evaluate changes across the release
+
+Beyond bumping versions, evaluate what changed in Agent Framework between the previously integrated
+version and the target release, and bring the template and any other consumption up to the currently
+prescribed patterns. The setup script gathers the `microsoft/agent-framework` `dotnet-*` release
+notes for the range into `af-changes.md` for you. See
+[references/evaluate-changes.md](references/evaluate-changes.md).
 
 ## Pull request format
 
