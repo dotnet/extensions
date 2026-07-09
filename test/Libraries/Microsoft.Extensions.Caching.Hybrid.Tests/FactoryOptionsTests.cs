@@ -272,12 +272,12 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     }
 
     [Fact]
-    public async Task FactoryReceivesUsableOptions_WhenCallerPassedNull()
+    public async Task FactoryReceivesUsableContext_WhenCallerPassedNull()
     {
         // The context-aware overload must hand the factory a real, mutable context even when
         // the caller did not supply options.
         using var provider = BuildCacheWithL2(log, out var cache, out var localCache);
-        string key = nameof(FactoryReceivesUsableOptions_WhenCallerPassedNull);
+        string key = nameof(FactoryReceivesUsableContext_WhenCallerPassedNull);
         int factoryCalls = 0;
 
         _ = await cache.GetOrCreateAsync<Guid>(
