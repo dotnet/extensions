@@ -39,12 +39,12 @@ public class OcrClientBuilderTests
             .Use(c =>
             {
                 order.Add("outer-built");
-                return new InspectorOcrClient(c, "outer", order);
+                return new InspectorOcrClient(c, "outer");
             })
             .Use(c =>
             {
                 order.Add("inner-built");
-                return new InspectorOcrClient(c, "inner", order);
+                return new InspectorOcrClient(c, "inner");
             })
             .Build();
 
@@ -95,10 +95,9 @@ public class OcrClientBuilderTests
         Assert.Same(services, observed);
     }
 
-    private sealed class InspectorOcrClient(IOcrClient inner, string name, List<string> order) : DelegatingOcrClient(inner)
+    private sealed class InspectorOcrClient(IOcrClient inner, string name) : DelegatingOcrClient(inner)
     {
         public string Name => name;
-        public IOcrClient InnerClientPublic => base.InnerClient;
-        public List<string> Order => order;
+        public IOcrClient InnerClientPublic => InnerClient;
     }
 }

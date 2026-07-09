@@ -101,7 +101,7 @@ public class OcrClientDependencyInjectionPatterns
 
     public class SingletonMiddleware(IOcrClient inner, IServiceProvider services) : DelegatingOcrClient(inner)
     {
-        public IOcrClient InnerClientPublic => base.InnerClient;
+        public IOcrClient InnerClientPublic => InnerClient;
         public IServiceProvider Services => services;
     }
 }

@@ -18,7 +18,7 @@ public class DelegatingOcrClientTests
     }
 
     [Fact]
-    public async Task GetTextAsyncDefaultsToInnerClientAsync()
+    public async Task ExtractAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
         using var expectedDocument = new MemoryStream();
@@ -29,7 +29,7 @@ public class DelegatingOcrClientTests
         var expectedResponse = new OcrResult([]);
         using var inner = new TestOcrClient
         {
-            GetTextAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
             {
                 Assert.Same(expectedDocument, document);
                 Assert.Same(expectedMediaType, mediaType);
@@ -42,7 +42,7 @@ public class DelegatingOcrClientTests
         using var delegating = new NoOpDelegatingOcrClient(inner);
 
         // Act
-        var resultTask = delegating.GetTextAsync(expectedDocument, expectedMediaType, expectedOptions, null, expectedCancellationToken);
+        var resultTask = delegating.ExtractAsync(expectedDocument, expectedMediaType, expectedOptions, null, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);

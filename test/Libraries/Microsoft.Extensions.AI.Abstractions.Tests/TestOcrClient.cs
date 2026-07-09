@@ -23,7 +23,7 @@ public sealed class TestOcrClient : IOcrClient
         IProgress<OcrProgress>?,
         CancellationToken,
         Task<OcrResult>>?
-        GetTextAsyncCallback
+        ExtractAsyncCallback
     { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
@@ -31,13 +31,13 @@ public sealed class TestOcrClient : IOcrClient
     private object? DefaultGetServiceCallback(Type serviceType, object? serviceKey)
         => serviceType is not null && serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
 
-    public Task<OcrResult> GetTextAsync(
+    public Task<OcrResult> ExtractAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
         IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
-        => GetTextAsyncCallback!.Invoke(document, mediaType, options, progress, cancellationToken);
+        => ExtractAsyncCallback!.Invoke(document, mediaType, options, progress, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
         => GetServiceCallback!.Invoke(serviceType, serviceKey);

@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,21 +20,21 @@ public class OcrClientExtensionsTests
     }
 
     [Fact]
-    public async Task GetTextAsync_InvalidArgs_Throws()
+    public async Task ExtractAsync_InvalidArgs_Throws()
     {
         IOcrClient? client = null;
         var content = new DataContent("data:application/pdf;base64,AQIDBA==");
-        var ex1 = await Assert.ThrowsAsync<ArgumentNullException>(() => OcrClientExtensions.GetTextAsync(client!, content));
+        var ex1 = await Assert.ThrowsAsync<ArgumentNullException>(() => OcrClientExtensions.ExtractAsync(client!, content));
         Assert.Equal("client", ex1.ParamName);
 
         using var testClient = new TestOcrClient();
         DataContent? nullContent = null;
-        var ex2 = await Assert.ThrowsAsync<ArgumentNullException>(() => OcrClientExtensions.GetTextAsync(testClient, nullContent!));
+        var ex2 = await Assert.ThrowsAsync<ArgumentNullException>(() => OcrClientExtensions.ExtractAsync(testClient, nullContent!));
         Assert.Equal("document", ex2.ParamName);
     }
 
     [Fact]
-    public async Task GetTextAsync_DataContent_PassesStreamAndMediaTypeAsync()
+    public async Task ExtractAsync_DataContent_PassesStreamAndMediaTypeAsync()
     {
         // Arrange
         var expectedResponse = new OcrResult([new OcrPage(0, "hello")]);
@@ -44,7 +43,7 @@ public class OcrClientExtensionsTests
 
         using var client = new TestOcrClient
         {
-            GetTextAsyncCallback = async (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = async (document, mediaType, options, progress, cancellationToken) =>
             {
                 observedMediaType = mediaType;
                 using var ms = new MemoryStream();
@@ -55,7 +54,7 @@ public class OcrClientExtensionsTests
         };
 
         // Act
-        var result = await OcrClientExtensions.GetTextAsync(client, new DataContent("data:application/pdf;base64,AQIDBA=="));
+        var result = await OcrClientExtensions.ExtractAsync(client, new DataContent("data:application/pdf;base64,AQIDBA=="));
 
         // Assert
         Assert.Same(expectedResponse, result);

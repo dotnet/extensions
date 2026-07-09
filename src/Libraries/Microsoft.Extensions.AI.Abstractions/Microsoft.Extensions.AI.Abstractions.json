@@ -1852,11 +1852,11 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.DelegatingOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
-          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.DelegatingOcrClient.GetTextAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
           "Stage": "Experimental"
         }
       ],
@@ -3201,11 +3201,11 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "object? Microsoft.Extensions.AI.IOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.IOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.IOcrClient.GetTextAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "object? Microsoft.Extensions.AI.IOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
           "Stage": "Experimental"
         }
       ]
@@ -3403,11 +3403,19 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static TService? Microsoft.Extensions.AI.OcrClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.IOcrClient client, object? serviceKey = null);",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.DataContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrClientExtensions.GetTextAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.DataContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.UriContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractFromUriAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.UriContent document, System.Net.Http.HttpClient httpClient, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService? Microsoft.Extensions.AI.OcrClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.IOcrClient client, object? serviceKey = null);",
           "Stage": "Experimental"
         }
       ]
@@ -3432,6 +3440,34 @@
         },
         {
           "Member": "System.Uri? Microsoft.Extensions.AI.OcrClientMetadata.ProviderUri { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OcrImage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrImage.OcrImage();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion? Microsoft.Extensions.AI.OcrImage.BoundingRegion { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.OcrImage.Caption { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.AI.OcrImage.Confidence { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.DataContent? Microsoft.Extensions.AI.OcrImage.Content { get; set; }",
           "Stage": "Experimental"
         }
       ]
@@ -3484,6 +3520,10 @@
         },
         {
           "Member": "double? Microsoft.Extensions.AI.OcrPage.Confidence { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrImage> Microsoft.Extensions.AI.OcrPage.Images { get; set; }",
           "Stage": "Experimental"
         },
         {

@@ -282,7 +282,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.ConfigureOptionsOcrClient.GetTextAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.ConfigureOptionsOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]
@@ -1052,7 +1052,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.LoggingOcrClient.GetTextAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.LoggingOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ],
@@ -1432,11 +1432,11 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OpenTelemetryOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OpenTelemetryOcrClient.GetTextAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.IProgress<Microsoft.Extensions.AI.OcrProgress>? progress = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
           "Stage": "Experimental"
         }
       ],

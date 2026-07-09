@@ -44,7 +44,7 @@ public class LoggingOcrClientTests
     [InlineData(LogLevel.Trace)]
     [InlineData(LogLevel.Debug)]
     [InlineData(LogLevel.Information)]
-    public async Task GetTextAsync_LogsInvocationAndCompletion(LogLevel level)
+    public async Task ExtractAsync_LogsInvocationAndCompletion(LogLevel level)
     {
         var collector = new FakeLogCollector();
 
@@ -54,7 +54,7 @@ public class LoggingOcrClientTests
 
         using IOcrClient innerClient = new TestOcrClient
         {
-            GetTextAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
                 Task.FromResult(new OcrResult([new OcrPage(0, "blue whale")])),
         };
 
@@ -64,20 +64,20 @@ public class LoggingOcrClientTests
             .Build(services);
 
         using var document = new MemoryStream(new byte[] { 1, 2, 3, 4 });
-        await client.GetTextAsync(document, "application/pdf", new OcrOptions { ModelId = "mistral-ocr-4-0" });
+        await client.ExtractAsync(document, "application/pdf", new OcrOptions { ModelId = "mistral-ocr-4-0" });
 
         var logs = collector.GetSnapshot();
         if (level is LogLevel.Trace)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.GetTextAsync)} invoked:") && entry.Message.Contains("mistral-ocr-4-0")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.GetTextAsync)} completed:") && entry.Message.Contains("blue whale")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.ExtractAsync)} invoked:") && entry.Message.Contains("mistral-ocr-4-0")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.ExtractAsync)} completed:") && entry.Message.Contains("blue whale")));
         }
         else if (level is LogLevel.Debug)
         {
             Assert.Collection(logs,
-                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.GetTextAsync)} invoked.") && !entry.Message.Contains("mistral-ocr-4-0")),
-                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.GetTextAsync)} completed.") && !entry.Message.Contains("blue whale")));
+                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.ExtractAsync)} invoked.") && !entry.Message.Contains("mistral-ocr-4-0")),
+                entry => Assert.True(entry.Message.Contains($"{nameof(IOcrClient.ExtractAsync)} completed.") && !entry.Message.Contains("blue whale")));
         }
         else
         {

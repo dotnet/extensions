@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using OpenTelemetry.Trace;
 using Xunit;
@@ -34,7 +33,7 @@ public class OpenTelemetryOcrClientTests
 
         using var innerClient = new TestOcrClient
         {
-            GetTextAsyncCallback = async (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = async (document, mediaType, options, progress, cancellationToken) =>
             {
                 await Task.Yield();
                 return new OcrResult([new OcrPage(0, "This is the recognized text.")])
@@ -67,7 +66,7 @@ public class OpenTelemetryOcrClientTests
             },
         };
 
-        _ = await client.GetTextAsync(Stream.Null, "application/pdf", options);
+        _ = await client.ExtractAsync(Stream.Null, "application/pdf", options);
 
         var activity = Assert.Single(activities);
 

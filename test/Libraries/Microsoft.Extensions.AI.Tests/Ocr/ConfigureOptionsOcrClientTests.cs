@@ -38,7 +38,7 @@ public class ConfigureOptionsOcrClientTests
 
         using IOcrClient innerClient = new TestOcrClient
         {
-            GetTextAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
             {
                 Assert.Same(returnedOptions, options);
                 Assert.Equal(cts.Token, cancellationToken);
@@ -65,7 +65,7 @@ public class ConfigureOptionsOcrClientTests
             .Build();
 
         using var document = new MemoryStream(new byte[] { 1, 2, 3, 4 });
-        var result = await client.GetTextAsync(document, "application/pdf", providedOptions, null, cts.Token);
+        var result = await client.ExtractAsync(document, "application/pdf", providedOptions, null, cts.Token);
         Assert.Same(expectedResult, result);
     }
 }
