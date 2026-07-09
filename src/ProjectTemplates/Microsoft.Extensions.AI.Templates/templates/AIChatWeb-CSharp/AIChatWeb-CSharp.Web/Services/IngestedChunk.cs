@@ -7,6 +7,8 @@ public class IngestedChunk
 {
 #if (IsOllama)
     public const int VectorDimensions = 384; // 384 is the default vector size for the all-minilm embedding model
+#elif (IsFoundryLocal)
+    public const int VectorDimensions = 1024; // 1024 is the default vector size for the qwen3-embedding-0.6b embedding model
 #else
     public const int VectorDimensions = 1536; // 1536 is the default vector size for the OpenAI text-embedding-3-small model
 #endif
@@ -17,9 +19,15 @@ public class IngestedChunk
 #endif
     public const string CollectionName = "data-AIChatWeb-CSharp.Web-chunks";
 
+#if (IsQdrant)
     [VectorStoreKey(StorageName = "key")]
     [JsonPropertyName("key")]
     public required Guid Key { get; set; }
+#else
+    [VectorStoreKey(StorageName = "key")]
+    [JsonPropertyName("key")]
+    public required string Key { get; set; }
+#endif
 
     [VectorStoreData(StorageName = "documentid")]
     [JsonPropertyName("documentid")]

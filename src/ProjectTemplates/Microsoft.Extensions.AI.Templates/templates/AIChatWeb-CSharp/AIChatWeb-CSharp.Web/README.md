@@ -21,32 +21,6 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 
 #### ---#endif
 # Configure the AI Model Provider
-#### ---#if (IsGHModels)
-To use models hosted by GitHub Models, you will need to create a GitHub personal access token with `models:read` permissions, but no other scopes or permissions. See [Prototyping with AI models](https://docs.github.com/github-models/prototyping-with-ai-models) and [Managing your personal access tokens](https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) in the GitHub Docs for more information.
-
-#### ---#if (hostIdentifier == "vs")
-Configure your token for this project using .NET User Secrets:
-
-1. In Visual Studio, right-click on your project in the Solution Explorer and select "Manage User Secrets".
-2. This opens a `secrets.json` file where you can store your API keys without them being tracked in source control. Add the following key and value:
-
-   ```json
-   {
-     "GitHubModels:Token": "YOUR-TOKEN"
-   }
-   ```
-#### ---#else
-From the command line, configure your token for this project using .NET User Secrets by running the following commands:
-
-```sh
-cd <<your-project-directory>>
-dotnet user-secrets set GitHubModels:Token YOUR-TOKEN
-```
-#### ---#endif
-
-Learn more about [prototyping with AI models using GitHub Models](https://docs.github.com/github-models/prototyping-with-ai-models).
-
-#### ---#endif
 #### ---#if (IsOpenAI)
 ## Using OpenAI
 
@@ -91,6 +65,34 @@ ollama pull all-minilm
 
 ### 3. Learn more about Ollama
 Once the models are installed, you can start using them in your application. Refer to the [Ollama documentation](https://github.com/ollama/ollama/blob/main/docs/README.md) for detailed instructions on how to explore models locally.
+
+#### ---#endif
+#### ---#if (IsFoundryLocal)
+## Setting up a local environment using Foundry Local
+This project is configured to use Foundry Local, which runs models on your workstation through a local OpenAI-compatible endpoint. It does not need an API key.
+
+### 1. Install Foundry Local
+Install Foundry Local for your operating system by following the [Foundry Local documentation](https://learn.microsoft.com/azure/ai-foundry/foundry-local/).
+
+### 2. Run the app
+The app starts the Foundry Local service for you. On first run, it downloads the configured models, then loads them into the local service.
+
+The default chat model alias is `qwen3-4b`. The default embedding model alias is `qwen3-embedding-0.6b`.
+
+### 3. Override model aliases or the service URL
+You can change the defaults in `appsettings.json`, `appsettings.Development.json`, or user secrets:
+
+```json
+{
+  "FoundryLocal": {
+    "ChatModel": "qwen3-4b",
+    "EmbeddingModel": "qwen3-embedding-0.6b",
+    "ServiceUrl": "http://127.0.0.1:5273"
+  }
+}
+```
+
+Use `FoundryLocal:ServiceUrl` if another local process already uses the default port.
 
 #### ---#endif
 #### ---#if (IsAzureOpenAI)

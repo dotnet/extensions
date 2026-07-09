@@ -15,17 +15,16 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 
 # Configure the AI Model Provider
 
-## Using GitHub Models
-To use models hosted by GitHub Models, you will need to create a GitHub personal access token. The token should not have any scopes or permissions. See [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+## Using OpenAI
 
-From the command line, configure your token for this project using .NET User Secrets by running the following commands:
+To call the OpenAI REST API, you will need an API key. To obtain one, first [create a new OpenAI account](https://platform.openai.com/signup) or [log in](https://platform.openai.com/login). Next, navigate to the API key page and select "Create new secret key", optionally naming the key. Make sure to save your API key somewhere safe and do not share it with anyone.
+
+From the command line, configure your API key for this project using .NET User Secrets by running the following commands:
 
 ```sh
 cd aichatweb.AppHost
-dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://models.inference.ai.azure.com;Key=YOUR-API-KEY"
+dotnet user-secrets set ConnectionStrings:openai "Key=YOUR-API-KEY"
 ```
-
-Learn more about [prototyping with AI models using GitHub Models](https://docs.github.com/github-models/prototyping-with-ai-models).
 
 # Running the application
 

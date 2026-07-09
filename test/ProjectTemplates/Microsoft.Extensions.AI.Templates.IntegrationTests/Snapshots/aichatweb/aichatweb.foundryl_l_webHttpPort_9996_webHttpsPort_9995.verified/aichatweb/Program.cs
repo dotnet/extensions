@@ -1,4 +1,4 @@
-﻿using System.ClientModel;
+using System.ClientModel;
 using Microsoft.AI.Foundry.Local;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.AI;

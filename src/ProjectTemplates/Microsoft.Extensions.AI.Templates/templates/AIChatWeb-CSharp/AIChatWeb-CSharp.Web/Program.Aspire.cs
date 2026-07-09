@@ -1,5 +1,9 @@
+#if (IsFoundryLocal)
+// Foundry Local has no .NET Aspire hosting integration and is only supported without Aspire.
+#error Foundry Local is not supported with .NET Aspire. Re-create the project without --aspire and with a non-Qdrant vector store (Qdrant requires Aspire).
+#endif
 using Microsoft.Extensions.AI;
-#if (IsOpenAI || IsGHModels)
+#if (IsOpenAI)
 using OpenAI;
 #endif
 using AIChatWeb_CSharp.Web.Components;
@@ -19,7 +23,7 @@ builder.AddOllamaApiClient("chat")
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAIFoundry)
-#else // (IsOpenAI || IsAzureOpenAI || IsGHModels)
+#else // (IsOpenAI || IsAzureOpenAI)
 #if (IsOpenAI)
 var openai = builder.AddOpenAIClient("openai");
 #else

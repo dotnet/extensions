@@ -36,7 +36,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     public static IEnumerable<object[]> GetSupportedProjectConfigurations()
     {
         (string name, string[] values)[] allOptionValues = [
-            ("--provider",          ["azureopenai", "githubmodels", "ollama", "openai" /*, "azureaifoundry" */]),
+            ("--provider",          ["azureopenai", "ollama", "openai", "foundrylocal" /*, "azureaifoundry" */]),
             ("--vector-store",      ["azureaisearch", "local", "qdrant"]),
             ("--aspire",            ["true", "false"]),
             ("--managed-identity",  ["true", "false"]),
@@ -63,6 +63,13 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
 
             // Qdrant requires using Aspire orchestration
             if (HasOption(args, "--vector-store", "qdrant") && !HasOption(args, "--aspire"))
+            {
+                continue;
+            }
+
+            // Foundry Local is only supported without Aspire (Qdrant requires Aspire, so it's unsupported too)
+            if (HasOption(args, "--provider", "foundrylocal") &&
+                (HasOption(args, "--aspire") || HasOption(args, "--vector-store", "qdrant")))
             {
                 continue;
             }

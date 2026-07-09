@@ -7,19 +7,29 @@
     <UserSecretsId>d5681fae-b21b-4114-b781-48180f08c0c4</UserSecretsId>
   </PropertyGroup>
 
+<!--#if (IsFoundryLocal) -->
+  <PropertyGroup>
+    <!-- Foundry Local ships native runtime assets per RID, so restore must be RID-aware for the build to resolve them. -->
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+<!--#endif -->
   <ItemGroup>
 <!--#if (IsOllama && IsAspire)
     <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="${PackageVersion:CommunityToolkit.Aspire.OllamaSharp}" />
 #endif -->
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${PackageVersion:OllamaSharp}" />
-#elif ((IsGHModels || IsOpenAI) && !IsAspire)
+#elif (IsOpenAI && !IsAspire)
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
+#elif (IsFoundryLocal && !IsAspire)
+    <PackageReference Include="Microsoft.AI.Foundry.Local" Version="${PackageVersion:Microsoft.AI.Foundry.Local}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 #elif (IsAzureAIFoundry)
     <PackageReference Include="Azure.AI.Projects" Version="${PackageVersion:Azure.AI.Projects}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 #endif -->
-<!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
+<!--#if ((IsAzureOpenAI || IsOpenAI) && IsAspire) -->
     <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${PackageVersion:Aspire.Azure.AI.OpenAI}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 <!--#endif -->

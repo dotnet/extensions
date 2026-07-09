@@ -128,17 +128,12 @@
       "type": "parameter",
       "displayName": "_AI service provider",
       "datatype": "choice",
-      "defaultValue": "githubmodels",
+      "defaultValue": "foundrylocal",
       "choices": [
         {
           "choice": "azureopenai",
           "displayName": "Azure OpenAI",
           "description": "Uses Azure OpenAI service"
-        },
-        {
-          "choice": "githubmodels",
-          "displayName": "GitHub Models",
-          "description": "Uses GitHub Models"
         },
         {
           "choice": "ollama",
@@ -149,6 +144,11 @@
           "choice": "openai",
           "displayName": "OpenAI Platform",
           "description": "Uses the OpenAI Platform"
+        },
+        {
+          "choice": "foundrylocal",
+          "displayName": "Foundry Local (on-device)",
+          "description": "Uses Foundry Local with the qwen3-4b and qwen3-embedding-0.6b models"
         }
         // {
         //   "choice": "azureaifoundry",
@@ -215,13 +215,13 @@
       "type": "computed",
       "value": "(AiServiceProvider == \"openai\")"
     },
-    "IsGHModels": {
-      "type": "computed",
-      "value": "(AiServiceProvider == \"githubmodels\")"
-    },
     "IsOllama": {
       "type": "computed",
       "value": "(AiServiceProvider == \"ollama\")"
+    },
+    "IsFoundryLocal": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"foundrylocal\")"
     },
     "IsAzureAIFoundry": {
       "type": "computed",
@@ -316,6 +316,38 @@
         "fallbackVariableName": "OllamaEmbeddingModelDefault"
       },
       "replaces": "all-minilm"
+    },
+    "FoundryLocalChatModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "qwen3-4b"
+      }
+    },
+    "FoundryLocalEmbeddingModelDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "qwen3-embedding-0.6b"
+      }
+    },
+    "FoundryLocalChatModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "ChatModel",
+        "fallbackVariableName": "FoundryLocalChatModelDefault"
+      },
+      "replaces": "qwen3-4b"
+    },
+    "FoundryLocalEmbeddingModel": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "EmbeddingModel",
+        "fallbackVariableName": "FoundryLocalEmbeddingModelDefault"
+      },
+      "replaces": "qwen3-embedding-0.6b"
     },
     "webHttpPort": {
       "type": "parameter",

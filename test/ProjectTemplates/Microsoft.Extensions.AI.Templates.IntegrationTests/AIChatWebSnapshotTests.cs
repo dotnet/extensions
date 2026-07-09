@@ -27,10 +27,11 @@ public class AIChatWebSnapshotTests : TemplateSnapshotTestBase
     }
 
     [Theory]
-    [InlineData /* Defaults: --provider=githubmodels --vector-store=local */]
+    [InlineData /* Defaults: --provider=foundrylocal --vector-store=local */]
     [InlineData("--provider=ollama", "--vector-store=qdrant")]
     [InlineData("--provider=openai", "--vector-store=azureaisearch")]
-    [InlineData("--aspire")]
+    [InlineData("--provider=foundrylocal", "--vector-store=local", "--webHttpPort", "9996", "--webHttpsPort", "9995")]
+    [InlineData("--aspire", "--provider=openai")]
     [InlineData("--aspire", "--provider=azureopenai", "--vector-store=azureaisearch")]
     public async Task RunSnapshotTests(params string[] templateArgs)
     {
