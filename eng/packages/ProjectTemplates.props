@@ -19,11 +19,11 @@
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="13.0.0-beta.444" />
     <PackageVersion Include="CommunityToolkit.Aspire.OllamaSharp" Version="13.0.0-beta.444" />
     <PackageVersion Include="MessagePack" Version="2.5.301" />
-    <PackageVersion Include="Microsoft.Agents.AI" Version="1.3.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.DevUI" Version="1.3.0-preview.260423.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.Hosting" Version="1.3.0-preview.260423.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.3.0-alpha.260423.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.3.0" />
+    <PackageVersion Include="Microsoft.Agents.AI" Version="1.13.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.DevUI" Version="1.13.0-preview.260703.1" />
+    <PackageVersion Include="Microsoft.Agents.AI.Hosting" Version="1.13.0-preview.260703.1" />
+    <PackageVersion Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.13.0-alpha.260703.1" />
+    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.13.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="$(MicrosoftMLTokenizersVersion)" />
     <PackageVersion Include="CommunityToolkit.VectorData.AzureAISearch" Version="1.0.0-preview.3" />
