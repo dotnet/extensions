@@ -417,11 +417,10 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     }
 
     [Fact]
-    public void CreateContext_CopiesEveryPublicWritableProperty()
+    public void HybridCacheEntryContextConstructor_CopiesEveryPublicWritableOption()
     {
         // Guards against silent data loss when HybridCacheEntryContext (or HybridCacheEntryOptions)
-        // gains a new property and the seeding in DefaultHybridCache.CreateContext is not updated.
-        // Also exercises the UnsafeAccessor constructor path on net8.0+.
+        // gains a new property and the HybridCacheEntryContext(options) seeding constructor is not updated.
         var optionProps = typeof(HybridCacheEntryOptions)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanRead && p.CanWrite)
@@ -438,7 +437,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
             expected[prop.Name] = value;
         }
 
-        HybridCacheEntryContext context = DefaultHybridCache.CreateContext(source);
+        var context = new HybridCacheEntryContext(source);
 
         foreach (var prop in optionProps)
         {
@@ -473,7 +472,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
 
         throw new NotSupportedException(
             $"HybridCacheEntryOptions has a new property '{propName}' of type {underlying.FullName}. " +
-            $"Add a distinctive value generator here AND update DefaultHybridCache.CreateContext.");
+            $"Add a distinctive value generator here AND update the HybridCacheEntryContext(HybridCacheEntryOptions) constructor.");
     }
 
     private static int StableHash(string s)

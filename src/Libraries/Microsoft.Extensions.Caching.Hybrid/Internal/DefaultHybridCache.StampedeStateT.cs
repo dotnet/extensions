@@ -72,7 +72,7 @@ internal partial class DefaultHybridCache
             _state = state;
             _factoryWithContext = factory;
             _options = options;
-            _context = DefaultHybridCache.CreateContext(options);
+            _context = new HybridCacheEntryContext(options);
             _factoryContextRevision = _context.Revision;
 
 #if NETCOREAPP3_0_OR_GREATER
@@ -106,7 +106,7 @@ internal partial class DefaultHybridCache
             _state = state;
             _factoryWithContext = factory;
             _options = options;
-            _context = DefaultHybridCache.CreateContext(options);
+            _context = new HybridCacheEntryContext(options);
             _factoryContextRevision = _context.Revision;
 
             return BackgroundFetchAsync();

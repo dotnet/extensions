@@ -185,7 +185,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         {
             case GetOrCreateOutcome.NoCache:
                 return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
-                    ? factory(state, CreateContext(options), cancellationToken) : default;
+                    ? factory(state, new HybridCacheEntryContext(options), cancellationToken) : default;
             case GetOrCreateOutcome.L1Hit:
             case GetOrCreateOutcome.JoinedStampede:
                 return result;
@@ -288,23 +288,6 @@ internal sealed partial class DefaultHybridCache : HybridCache
             Throw.ArgumentException(nameof(options),
                 $"{nameof(HybridCacheEntryOptions)}.{nameof(HybridCacheEntryOptions.LocalSize)} must be non-negative.");
         }
-    }
-
-    // Creates and seeds the mutable HybridCacheEntryContext handed to a context-aware factory, copying every
-    // effective option so the factory observes the current values. Keep the seeding in sync when
-    // HybridCacheEntryContext gains a new property.
-    internal static HybridCacheEntryContext CreateContext(HybridCacheEntryOptions? options)
-    {
-        var context = new HybridCacheEntryContext();
-        if (options is not null)
-        {
-            context.Expiration = options.Expiration;
-            context.LocalCacheExpiration = options.LocalCacheExpiration;
-            context.Flags = options.Flags;
-            context.LocalSize = options.LocalSize;
-        }
-
-        return context;
     }
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
