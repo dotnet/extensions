@@ -567,18 +567,20 @@ public static partial class AIJsonUtilitiesTests
     [Fact]
     public static void CreateFunctionJsonSchema_AIFunctionNameAttribute_NotUsedForTitle()
     {
-        [AIFunctionName("my_tool")]
-        static void TestMethod(string param)
-        {
-            // Test method for schema generation
-        }
-
-        var method = ((Action<string>)TestMethod).Method;
+        MethodInfo method = ((Action)MethodWithAIFunctionName).Method;
         JsonElement schema = AIJsonUtilities.CreateFunctionJsonSchema(method);
 
         // The schema title is derived from the method name, not from AIFunctionNameAttribute.
         Assert.True(schema.TryGetProperty("title", out JsonElement titleElement));
-        Assert.Equal("TestMethod", titleElement.GetString());
+        Assert.Equal(nameof(MethodWithAIFunctionName), titleElement.GetString());
+        Assert.NotEqual("my_tool", titleElement.GetString());
+    }
+
+    // Local functions get unspeakable names; define as a private method instead.
+    [AIFunctionName("my_tool")]
+    private static void MethodWithAIFunctionName()
+    {
+        // Test method for schema generation
     }
 
     [Fact]
