@@ -19,9 +19,15 @@ public class IngestedChunk
 #endif
     public const string CollectionName = "data-AIChatWeb-CSharp.Web-chunks";
 
+#if (IsQdrant)
     [VectorStoreKey(StorageName = "key")]
     [JsonPropertyName("key")]
     public required Guid Key { get; set; }
+#else
+    [VectorStoreKey(StorageName = "key")]
+    [JsonPropertyName("key")]
+    public required string Key { get; set; }
+#endif
 
     [VectorStoreData(StorageName = "documentid")]
     [JsonPropertyName("documentid")]
