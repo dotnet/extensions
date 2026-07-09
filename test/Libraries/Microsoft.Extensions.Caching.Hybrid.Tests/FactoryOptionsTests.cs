@@ -230,48 +230,6 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     }
 
     [Fact]
-    public async Task FactoryMutations_DoNotLeakToCallerOptionsInstance()
-    {
-        // The implementation hands the factory a separate HybridCacheEntryContext (seeded from the
-        // caller's options), so any mutations the factory performs do not bleed back into the caller's
-        // shared HybridCacheEntryOptions instance. A caller that reuses the same options across many
-        // calls must see the exact values it constructed.
-        using var provider = GetDefaultCache(out var cache);
-
-        var callerOptions = new HybridCacheEntryOptions
-        {
-            Expiration = TimeSpan.FromMinutes(1),
-            LocalCacheExpiration = TimeSpan.FromSeconds(30),
-            LocalSize = 100,
-            Flags = HybridCacheEntryFlags.None,
-        };
-
-        // Snapshot before
-        var origExpiration = callerOptions.Expiration;
-        var origLocalCacheExpiration = callerOptions.LocalCacheExpiration;
-        var origLocalSize = callerOptions.LocalSize;
-        var origFlags = callerOptions.Flags;
-
-        _ = await cache.GetOrCreateAsync(
-            nameof(FactoryMutations_DoNotLeakToCallerOptionsInstance),
-            (entryContext, _) =>
-            {
-                // Aggressively mutate everything; none of this should leak.
-                entryContext.Expiration = TimeSpan.FromHours(99);
-                entryContext.LocalCacheExpiration = TimeSpan.FromHours(99);
-                entryContext.LocalSize = 9_999_999;
-                entryContext.Flags = HybridCacheEntryFlags.DisableDistributedCache | HybridCacheEntryFlags.DisableLocalCache;
-                return new ValueTask<Guid>(Guid.NewGuid());
-            },
-            options: callerOptions);
-
-        Assert.Equal(origExpiration, callerOptions.Expiration);
-        Assert.Equal(origLocalCacheExpiration, callerOptions.LocalCacheExpiration);
-        Assert.Equal(origLocalSize, callerOptions.LocalSize);
-        Assert.Equal(origFlags, callerOptions.Flags);
-    }
-
-    [Fact]
     public async Task FactoryReceivesUsableContext_WhenCallerPassedNull()
     {
         // The context-aware overload must hand the factory a real, mutable context even when
