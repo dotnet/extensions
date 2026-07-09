@@ -17,7 +17,9 @@
 #   4. Discovers the maintained draft PR and classifies it: OURS (carries our tracking marker),
 #      ADOPT (a human-bootstrapped automation+area-ai-templates draft PR on our branch with no marker
 #      yet), BLOCKED (a PR occupying our branch that fails a takeover gate), or NONE.
-#   5. Reads the PR's recorded agent-framework-version and computes a recommended lifecycle action.
+#   5. Reads the PR's recorded agent-framework-version and feedback-processed-through watermark,
+#      detects review activity newer than the watermark (author-agnostic wake gate; never reads
+#      comment bodies), and computes a recommended lifecycle action.
 #
 # Writes (under $AGENT_DIR, uploaded in the agent artifact):
 #   target.json                     resolved target + template versions + PR discovery + action
@@ -368,11 +370,37 @@ if [ -n "$pr" ]; then
 	fi
 fi
 
-# ---- 5. Read recorded state + action -----------------------------------------------
+# ---- 5. Read recorded state + wake gate + action -----------------------------------
 pr_recorded_version=""
 if [ -n "$pr" ] && [ "$classification" != "blocked" ] && [ "$body_ok" = "true" ]; then
 	watermark="$(printf '%s\n' "$body" | tracking_block | tracking_value "feedback-processed-through")"
 	pr_recorded_version="$(printf '%s\n' "$body" | tracking_block | tracking_value "agent-framework-version")"
+fi
+
+fetch_activity() {
+	local endpoint="$1" jqexpr="$2" fattempt scratch
+	scratch="$(mktemp)"
+	for fattempt in 1 2 3; do
+		if gh api "$endpoint" --paginate -q "$jqexpr" >"$scratch" 2>/dev/null; then
+			cat "$scratch" >>"$feedback_times"; rm -f "$scratch"; return 0
+		fi
+		[ "$fattempt" -lt 3 ] && sleep 2
+	done
+	rm -f "$scratch"; return 1
+}
+if [ -n "$pr" ] && [ "$classification" != "blocked" ]; then
+	feedback_times="$(mktemp)"
+	fetch_activity "repos/${REPO}/issues/${pr}/comments" '.[] | select(.user.type != "Bot") | .created_at'   || feedback_query_failed="true"
+	fetch_activity "repos/${REPO}/pulls/${pr}/comments"  '.[] | select(.user.type != "Bot") | .created_at'   || feedback_query_failed="true"
+	fetch_activity "repos/${REPO}/pulls/${pr}/reviews"   '.[] | select(.user.type != "Bot") | .submitted_at' || feedback_query_failed="true"
+	if [ "$feedback_query_failed" = "true" ]; then
+		echo "::warning::review-activity query failed for PR #${pr} after retries; opening the wake gate"
+		has_new_feedback="true"
+	else
+		new_count="$(awk -v since="$watermark" 'NF && (since=="" || $0 > since)' "$feedback_times" | grep -c . || true)"
+		[ "${new_count:-0}" -gt 0 ] && has_new_feedback="true"
+	fi
+	rm -f "$feedback_times"
 fi
 
 # Recommended lifecycle action. The agent's Step 3 remains authoritative and refines edge cases.
@@ -384,8 +412,8 @@ case "$classification" in
 		# Fresh only if main actually needs the bump; otherwise the template is already current.
 		[ "$main_needs_bump" = "true" ] && action="produce" || action="noop" ;;
 	ours|adopt)
-		# Caught up (an ours PR already at this release) -> no-op; else produce.
-		if [ "$classification" = "ours" ] && [ "$pr_recorded_version" = "$release_version" ]; then
+		# Caught up (PR already at this release) with no new feedback -> no-op; else produce.
+		if [ "$classification" = "ours" ] && [ "$pr_recorded_version" = "$release_version" ] && [ "$has_new_feedback" != "true" ]; then
 			action="noop"
 		else
 			action="produce"

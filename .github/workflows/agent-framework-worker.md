@@ -266,7 +266,8 @@ With `validated: true`, pick the path from `classification` and the PR state:
 |---|---|---|
 | `none` | -- | **Fresh PR** (Step 3a) |
 | `ours` / `adopt` | behind (`pr_recorded_version` != `release_version`), **draft** | **Incremental update** (Step 3b) |
-| `ours` / `adopt` | caught up (`pr_recorded_version` == `release_version`) | **No-op** (already handled by `action: noop`) |
+| `ours` / `adopt` | caught up (`pr_recorded_version` == `release_version`), `has_new_feedback` = true | **Feedback update** (Step 3c) |
+| `ours` / `adopt` | caught up, `has_new_feedback` = false | **No-op** (already handled by `action: noop`) |
 | `ours` | behind, **non-draft** | **Advisory only** (Step 3d) |
 
 For `adopt`, additionally write the **full tracking block** into the body this run so the PR becomes
@@ -324,6 +325,17 @@ git commit -m "Update Agent Framework to <release_version>"
 Emit **`push-to-pull-request-branch`** (target the PR), **`update-pull-request`** (full-body replace
 per Step 4; for `adopt`, this adds the tracking block), and one **`add-comment`** summarizing the
 delta (old -> new versions).
+
+### 3c. Feedback update (caught up, `has_new_feedback`)
+
+Address the approved reviewer feedback visible on the PR (the framework's `min-integrity: approved`
+filtering already screens who is trusted). Only act on feedback **created after `watermark`**, and
+only within the allowed files (`eng/packages/ProjectTemplates.props`,
+`src/ProjectTemplates/Microsoft.Agents.AI.ProjectTemplates/**`). Reject out-of-scope requests with a
+brief explanation. If the feedback yields a file change, checkout `pr_branch`, apply it, and
+`push-to-pull-request-branch`. Always **refresh the body** (`update-pull-request`, advancing
+`feedback-processed-through` to `run_started_at`) and post one **`add-comment`** summarizing what you
+did. If nothing was actionable, still refresh the body so the watermark advances.
 
 ### 3d. Advisory only (behind, non-draft, `ours`)
 
