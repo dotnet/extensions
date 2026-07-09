@@ -22,9 +22,10 @@ internal partial class DefaultHybridCache
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
         private Func<TState, CancellationToken, ValueTask<T>>? _factory; // main data factory
-        private Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>>? _factoryWithOptions; // options-aware data factory
+        private Func<TState, HybridCacheEntryContext, CancellationToken, ValueTask<T>>? _factoryWithContext; // context-aware data factory
         private HybridCacheEntryOptions? _options;
-        private int _factoryOptionsRevision; // initial Revision of the options instance passed to the factory; used to detect mutations
+        private HybridCacheEntryContext? _context; // mutable view handed to a context-aware factory
+        private int _factoryContextRevision; // initial Revision of the context passed to the factory; used to detect mutations
         private Task<T>? _sharedUnwrap; // allows multiple non-cancellable callers to share a single task (when no defensive copy needed)
 
         // ONLY set the result, without any other side-effects
@@ -62,16 +63,17 @@ internal partial class DefaultHybridCache
 #endif
         }
 
-        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions options)
+        public void QueueUserWorkItem(in TState state, Func<TState, HybridCacheEntryContext, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(_factoryWithOptions is null, "should not already have factory field");
+            Debug.Assert(_factoryWithContext is null, "should not already have factory field");
             Debug.Assert(factory is not null, "factory argument should be meaningful");
 
             // initialize the callback state
             _state = state;
-            _factoryWithOptions = factory;
+            _factoryWithContext = factory;
             _options = options;
-            _factoryOptionsRevision = _options.Revision;
+            _context = DefaultHybridCache.CreateContext(options);
+            _factoryContextRevision = _context.Revision;
 
 #if NETCOREAPP3_0_OR_GREATER
             ThreadPool.UnsafeQueueUserWorkItem(this, false);
@@ -95,16 +97,17 @@ internal partial class DefaultHybridCache
         }
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Cancellation is handled separately via SharedToken")]
-        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions options)
+        public Task ExecuteDirectAsync(in TState state, Func<TState, HybridCacheEntryContext, CancellationToken, ValueTask<T>> factory, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(_factoryWithOptions is null, "should not already have factory field");
+            Debug.Assert(_factoryWithContext is null, "should not already have factory field");
             Debug.Assert(factory is not null, "factory argument should be meaningful");
 
             // initialize the callback state
             _state = state;
-            _factoryWithOptions = factory;
+            _factoryWithContext = factory;
             _options = options;
-            _factoryOptionsRevision = _options.Revision;
+            _context = DefaultHybridCache.CreateContext(options);
+            _factoryContextRevision = _context.Revision;
 
             return BackgroundFetchAsync();
         }
@@ -305,9 +308,9 @@ internal partial class DefaultHybridCache
                             HybridCacheEventSource.Log.UnderlyingDataQueryStart();
                         }
 
-                        if (_factoryWithOptions is not null)
+                        if (_factoryWithContext is not null)
                         {
-                            newValue = await _factoryWithOptions(_state!, _options!, SharedToken).ConfigureAwait(false);
+                            newValue = await _factoryWithContext(_state!, _context!, SharedToken).ConfigureAwait(false);
                         }
                         else
                         {
@@ -336,11 +339,11 @@ internal partial class DefaultHybridCache
                         throw;
                     }
 
-                    // honor any mutations the factory made to the options it received; we use Revision
-                    // as a fast-path skip for the common case where the factory didn't touch them.
-                    if (_factoryWithOptions is not null && _options!.Revision != _factoryOptionsRevision)
+                    // honor any mutations the factory made to the context it received; we use Revision
+                    // as a fast-path skip for the common case where the factory didn't touch it.
+                    if (_factoryWithContext is not null && _context!.Revision != _factoryContextRevision)
                     {
-                        ApplyFactoryOptions(_options, mandatoryWriteSideFlags, ref activeFlags);
+                        ApplyFactoryContext(_context, mandatoryWriteSideFlags, ref activeFlags);
                     }
 
                     // check whether we're going to hit a timing problem with tag invalidation
@@ -533,9 +536,9 @@ internal partial class DefaultHybridCache
 
         private long? ResolveLocalSize()
         {
-            // factory mutations are applied directly to _options (which is a clone). null means "use
-            // implementation default", per the LocalSize API contract — which we honor by falling
-            // back to HybridCacheOptions.DefaultEntryOptions.LocalSize (also nullable).
+            // factory mutations are captured by rebuilding _options from the context (see ApplyFactoryContext).
+            // null means "use implementation default", per the LocalSize API contract — which we honor by
+            // falling back to HybridCacheOptions.DefaultEntryOptions.LocalSize (also nullable).
             return _options?.LocalSize ?? Cache._defaultLocalSize;
         }
 
@@ -624,22 +627,29 @@ internal partial class DefaultHybridCache
             HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite | HybridCacheEntryFlags.DisableCompression;
 
         /// <summary>
-        /// Applies factory mutations to the active flags after the factory callback has executed.
-        /// Only write-side flags are honored; read-side flags are ignored (reads already happened).
-        /// The factory's write-side flags fully replace the user-supplied write-side flags, but
-        /// <paramref name="mandatoryWriteSideFlags"/> are always preserved. Expiration / LocalCacheExpiration / LocalSize mutations need no
-        /// action here because the factory wrote directly to <see cref="_options"/>, which is read
-        /// by SetL1 / SetL2Async / ResolveLocalSize. LocalSize is validated via <see cref="ValidateOptions"/>
-        /// since this is the only point at which factory mutations are observed.
+        /// Applies factory mutations to the active flags and effective options after the factory callback
+        /// has executed. Only write-side flags are honored; read-side flags are ignored (reads already
+        /// happened). The factory's write-side flags fully replace the user-supplied write-side flags, but
+        /// <paramref name="mandatoryWriteSideFlags"/> are always preserved. Expiration / LocalCacheExpiration /
+        /// LocalSize mutations are captured by rebuilding <see cref="_options"/> from the context, which is
+        /// then read by SetL1 / SetL2Async / ResolveLocalSize. LocalSize is validated here since this is the
+        /// only point at which factory mutations are observed.
         /// </summary>
-        private static void ApplyFactoryOptions(
-            HybridCacheEntryOptions factoryOptions,
+        private void ApplyFactoryContext(
+            HybridCacheEntryContext context,
             HybridCacheEntryFlags mandatoryWriteSideFlags,
             ref HybridCacheEntryFlags activeFlags)
         {
-            ValidateOptions(factoryOptions);
+            _options = new HybridCacheEntryOptions
+            {
+                Expiration = context.Expiration,
+                LocalCacheExpiration = context.LocalCacheExpiration,
+                Flags = context.Flags,
+                LocalSize = context.LocalSize,
+            };
+            ValidateOptions(_options);
 
-            HybridCacheEntryFlags factoryFlags = factoryOptions.Flags ?? HybridCacheEntryFlags.None;
+            HybridCacheEntryFlags factoryFlags = context.Flags ?? HybridCacheEntryFlags.None;
             activeFlags = (activeFlags & ~WriteSideFlags) | (factoryFlags & WriteSideFlags) | mandatoryWriteSideFlags;
         }
     }

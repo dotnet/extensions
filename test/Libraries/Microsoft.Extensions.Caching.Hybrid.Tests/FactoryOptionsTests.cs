@@ -14,7 +14,7 @@ using static Microsoft.Extensions.Caching.Hybrid.Tests.L2Tests;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-// Covers mutations the factory makes to the HybridCacheEntryOptions it is handed.
+// Covers mutations the factory makes to the HybridCacheEntryContext it is handed.
 public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
@@ -171,10 +171,10 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
 
         string key = nameof(FactoryLocalCacheExpirationMutation_ShortensL1Only);
         int factoryCalls = 0;
-        Func<HybridCacheEntryOptions, CancellationToken, ValueTask<Guid>> factory = (entryOptions, _) =>
+        Func<HybridCacheEntryContext, CancellationToken, ValueTask<Guid>> factory = (entryContext, _) =>
         {
             Interlocked.Increment(ref factoryCalls);
-            entryOptions.LocalCacheExpiration = TimeSpan.FromSeconds(30);
+            entryContext.LocalCacheExpiration = TimeSpan.FromSeconds(30);
             return new ValueTask<Guid>(Guid.NewGuid());
         };
 
@@ -232,10 +232,10 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     [Fact]
     public async Task FactoryMutations_DoNotLeakToCallerOptionsInstance()
     {
-        // The implementation passes a clone of the caller's options to the
-        // factory so that any mutations the factory performs do not bleed back into the caller's
-        // shared instance. A caller that reuses the same options across many calls must see the
-        // exact values it constructed.
+        // The implementation hands the factory a separate HybridCacheEntryContext (seeded from the
+        // caller's options), so any mutations the factory performs do not bleed back into the caller's
+        // shared HybridCacheEntryOptions instance. A caller that reuses the same options across many
+        // calls must see the exact values it constructed.
         using var provider = GetDefaultCache(out var cache);
 
         var callerOptions = new HybridCacheEntryOptions
@@ -254,14 +254,13 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
 
         _ = await cache.GetOrCreateAsync(
             nameof(FactoryMutations_DoNotLeakToCallerOptionsInstance),
-            (entryOptions, _) =>
+            (entryContext, _) =>
             {
                 // Aggressively mutate everything; none of this should leak.
-                Assert.NotSame(callerOptions, entryOptions);
-                entryOptions.Expiration = TimeSpan.FromHours(99);
-                entryOptions.LocalCacheExpiration = TimeSpan.FromHours(99);
-                entryOptions.LocalSize = 9_999_999;
-                entryOptions.Flags = HybridCacheEntryFlags.DisableDistributedCache | HybridCacheEntryFlags.DisableLocalCache;
+                entryContext.Expiration = TimeSpan.FromHours(99);
+                entryContext.LocalCacheExpiration = TimeSpan.FromHours(99);
+                entryContext.LocalSize = 9_999_999;
+                entryContext.Flags = HybridCacheEntryFlags.DisableDistributedCache | HybridCacheEntryFlags.DisableLocalCache;
                 return new ValueTask<Guid>(Guid.NewGuid());
             },
             options: callerOptions);
@@ -275,19 +274,19 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     [Fact]
     public async Task FactoryReceivesUsableOptions_WhenCallerPassedNull()
     {
-        // The options-aware overload must hand the factory a real, mutable instance even when
-        // the caller did not supply one.
+        // The context-aware overload must hand the factory a real, mutable context even when
+        // the caller did not supply options.
         using var provider = BuildCacheWithL2(log, out var cache, out var localCache);
         string key = nameof(FactoryReceivesUsableOptions_WhenCallerPassedNull);
         int factoryCalls = 0;
 
         _ = await cache.GetOrCreateAsync<Guid>(
             key,
-            (entryOptions, _) =>
+            (entryContext, _) =>
             {
                 Interlocked.Increment(ref factoryCalls);
-                Assert.NotNull(entryOptions);
-                entryOptions.Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite;
+                Assert.NotNull(entryContext);
+                entryContext.Flags = HybridCacheEntryFlags.DisableDistributedCacheWrite;
                 return new ValueTask<Guid>(Guid.NewGuid());
             });
 
@@ -418,36 +417,34 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
     }
 
     [Fact]
-    public void CloneOptionsOrNew_CopiesEveryPublicWritableProperty()
+    public void CreateContext_CopiesEveryPublicWritableProperty()
     {
-        // Guards against silent data loss when HybridCacheEntryOptions
-        // gains a new property and the down-level branch of CloneOptionsOrNew is not updated.
-        // Also exercises the UnsafeAccessor path on net8.0+.
-        var writableProps = typeof(HybridCacheEntryOptions)
+        // Guards against silent data loss when HybridCacheEntryContext (or HybridCacheEntryOptions)
+        // gains a new property and the seeding in DefaultHybridCache.CreateContext is not updated.
+        // Also exercises the UnsafeAccessor constructor path on net8.0+.
+        var optionProps = typeof(HybridCacheEntryOptions)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanRead && p.CanWrite)
-            // Revision is an internal mutation counter used by StampedeStateT to detect
-            // factory mutations; a clone deliberately starts fresh so the diff is meaningful.
-            .Where(p => p.Name != "Revision")
             .ToArray();
 
-        Assert.NotEmpty(writableProps);
+        Assert.NotEmpty(optionProps);
 
         var source = new HybridCacheEntryOptions();
-        var expected = new Dictionary<string, object?>(writableProps.Length);
-        foreach (var prop in writableProps)
+        var expected = new Dictionary<string, object?>(optionProps.Length);
+        foreach (var prop in optionProps)
         {
             object? value = MakeDistinctiveValue(prop.PropertyType, prop.Name);
             prop.SetValue(source, value);
             expected[prop.Name] = value;
         }
 
-        var clone = DefaultHybridCache.CloneOptionsOrNew(source);
+        HybridCacheEntryContext context = DefaultHybridCache.CreateContext(source);
 
-        Assert.NotSame(source, clone);
-        foreach (var prop in writableProps)
+        foreach (var prop in optionProps)
         {
-            Assert.Equal(expected[prop.Name], prop.GetValue(clone));
+            PropertyInfo contextProp = typeof(HybridCacheEntryContext).GetProperty(prop.Name, BindingFlags.Public | BindingFlags.Instance)!;
+            Assert.NotNull(contextProp);
+            Assert.Equal(expected[prop.Name], contextProp.GetValue(context));
         }
     }
 
@@ -476,7 +473,7 @@ public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEven
 
         throw new NotSupportedException(
             $"HybridCacheEntryOptions has a new property '{propName}' of type {underlying.FullName}. " +
-            $"Add a distinctive value generator here AND update DefaultHybridCache.CloneOptionsOrNew.");
+            $"Add a distinctive value generator here AND update DefaultHybridCache.CreateContext.");
     }
 
     private static int StableHash(string s)

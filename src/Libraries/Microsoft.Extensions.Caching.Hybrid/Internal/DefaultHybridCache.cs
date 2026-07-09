@@ -170,28 +170,26 @@ internal sealed partial class DefaultHybridCache : HybridCache
     }
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state,
-        Func<TState, HybridCacheEntryOptions, CancellationToken, ValueTask<T>> factory,
+        Func<TState, HybridCacheEntryContext, CancellationToken, ValueTask<T>> factory,
         HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
     {
         GetOrCreateOutcome outcome = TryBeginGetOrCreate(key, options, tags, cancellationToken,
             out HybridCacheEntryFlags flags, out bool canBeCanceled, out StampedeState<TState, T>? stampede, out ValueTask<T> result);
 
-        // We always pass a clone (or fresh instance) to the factory so
-        // it can mutate the options without affecting the caller's instance.
-        // In the NoCache case, there's no cache to honor the mutations against, but the factory may rely on
-        // being able to mutate the parameter without surprising the caller.
+        // The factory receives a mutable HybridCacheEntryContext (seeded from the effective options) so it
+        // can influence the cache entry options without affecting the caller's HybridCacheEntryOptions instance.
+        // In the NoCache case there is no cache to honor the mutations against, but the factory may still rely
+        // on being able to inspect and mutate the context.
 
         switch (outcome)
         {
             case GetOrCreateOutcome.NoCache:
                 return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
-                    ? factory(state, CloneOptionsOrNew(options), cancellationToken) : default;
+                    ? factory(state, CreateContext(options), cancellationToken) : default;
             case GetOrCreateOutcome.L1Hit:
             case GetOrCreateOutcome.JoinedStampede:
                 return result;
         }
-
-        options = CloneOptionsOrNew(options);
 
         if (canBeCanceled)
         {
@@ -292,28 +290,21 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
     }
 
-    internal static HybridCacheEntryOptions CloneOptionsOrNew(HybridCacheEntryOptions? options)
+    // Creates and seeds the mutable HybridCacheEntryContext handed to a context-aware factory, copying every
+    // effective option so the factory observes the current values. Keep the seeding in sync when
+    // HybridCacheEntryContext gains a new property.
+    internal static HybridCacheEntryContext CreateContext(HybridCacheEntryOptions? options)
     {
-        if (options is null)
+        var context = new HybridCacheEntryContext();
+        if (options is not null)
         {
-            return new HybridCacheEntryOptions();
+            context.Expiration = options.Expiration;
+            context.LocalCacheExpiration = options.LocalCacheExpiration;
+            context.Flags = options.Flags;
+            context.LocalSize = options.LocalSize;
         }
 
-#if NET8_0_OR_GREATER
-        return Clone(options);
-
-        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = nameof(Clone))]
-        extern static HybridCacheEntryOptions Clone(HybridCacheEntryOptions options);
-#else
-        // Down-level TFMs cannot reach the internal Clone(); copy by hand.
-        return new HybridCacheEntryOptions
-        {
-            Expiration = options.Expiration,
-            LocalCacheExpiration = options.LocalCacheExpiration,
-            Flags = options.Flags,
-            LocalSize = options.LocalSize,
-        };
-#endif
+        return context;
     }
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
