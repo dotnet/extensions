@@ -5,7 +5,6 @@ import { useContext, createContext, useState, useEffect, useMemo, useRef } from 
 import { ScoreNode, ScoreSummary } from "./Summary";
 
 export type ReportView = 'overview' | 'cases' | 'history' | 'comparison';
-export type ScenarioSort = 'name' | 'passRate';
 
 export type ReportContextType = {
     dataset: Dataset,
@@ -29,8 +28,6 @@ export type ReportContextType = {
     setDarkMode: (darkMode: boolean) => void,
     failedOnly: boolean,
     setFailedOnly: (failedOnly: boolean) => void,
-    scenSort: ScenarioSort,
-    setScenSort: (scenSort: ScenarioSort) => void,
     casePage: number,
     setCasePage: (casePage: number) => void,
     cmpA?: string,
@@ -78,7 +75,6 @@ type PersistedUiIntent = {
     searchValue: string;
     selectedTags: string[];
     failedOnly: boolean;
-    scenSort: ScenarioSort;
     casePage: number;
     cmpA?: string;
     cmpB?: string;
@@ -118,7 +114,6 @@ const useProvideReportContext = (
     const [view, setView] = useState<ReportView>('overview');
     const [darkMode, setDarkMode] = useState<boolean>(false);
     const [failedOnly, setFailedOnly] = useState<boolean>(false);
-    const [scenSort, setScenSort] = useState<ScenarioSort>('name');
     const [casePage, setCasePage] = useState<number>(1);
     const [cmpA, setCmpA] = useState<string | undefined>(undefined);
     const [cmpB, setCmpB] = useState<string | undefined>(undefined);
@@ -138,7 +133,6 @@ const useProvideReportContext = (
         if (stored.searchValue !== undefined) setSearchValueRaw(stored.searchValue);
         if (stored.selectedTags !== undefined) setSelectedTags(stored.selectedTags);
         if (stored.failedOnly !== undefined) setFailedOnly(stored.failedOnly);
-        if (stored.scenSort !== undefined) setScenSort(stored.scenSort);
         if (stored.casePage !== undefined) setCasePage(stored.casePage);
         if (stored.cmpA !== undefined) setCmpA(stored.cmpA);
         if (stored.cmpB !== undefined) setCmpB(stored.cmpB);
@@ -150,9 +144,9 @@ const useProvideReportContext = (
 
     useEffect(() => {
         writePersisted(persistKey, {
-            view, darkMode, searchValue, selectedTags, failedOnly, scenSort, casePage, cmpA, cmpB, exec,
+            view, darkMode, searchValue, selectedTags, failedOnly, casePage, cmpA, cmpB, exec,
         });
-    }, [persistKey, view, darkMode, searchValue, selectedTags, failedOnly, scenSort, casePage, cmpA, cmpB, exec]);
+    }, [persistKey, view, darkMode, searchValue, selectedTags, failedOnly, casePage, cmpA, cmpB, exec]);
 
     const selectScenarioLevel = (key: string) => {
         if (key === selectedScenarioLevel) {
@@ -254,8 +248,6 @@ const useProvideReportContext = (
         setDarkMode,
         failedOnly,
         setFailedOnly,
-        scenSort,
-        setScenSort,
         casePage,
         setCasePage,
         cmpA,

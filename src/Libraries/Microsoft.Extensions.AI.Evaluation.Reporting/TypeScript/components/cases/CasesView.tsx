@@ -7,8 +7,6 @@ import {
     mergeClasses,
     Switch,
     SearchBox,
-    Dropdown,
-    Option,
     MenuButton,
     Button,
     Link,
@@ -41,7 +39,6 @@ const useStyles = makeStyles({
     },
     search: { width: '100%' },
     tagWrap: { position: 'relative' },
-    sortDrop: { minWidth: '168px' },
     tagOverlay: { position: 'fixed', inset: 0, zIndex: 40 },
     tagPopover: {
         position: 'absolute',
@@ -391,8 +388,6 @@ export const CasesView = () => {
         filterTree,
         failedOnly,
         setFailedOnly,
-        scenSort,
-        setScenSort,
         setCasePage,
         casePage,
         selectedTags,
@@ -474,12 +469,11 @@ export const CasesView = () => {
         const sorted = [...filtered];
         sorted.sort((a, b) => {
             if (a.scenOrder !== b.scenOrder) return a.scenOrder - b.scenOrder;
-            if (scenSort === 'passRate' && a.failed !== b.failed) return a.failed ? -1 : 1;
             if (a.isNew !== b.isNew) return a.isNew ? -1 : 1;
             return a.index - b.index;
         });
         return sorted;
-    }, [allRows, failedOnly, scenSort]);
+    }, [allRows, failedOnly]);
 
     // A row hides its scenario tag only when the scope is a single scenario (its tag would be
     // redundant); broader scopes keep tags.
@@ -598,20 +592,6 @@ export const CasesView = () => {
                 >
                     Collapse open
                 </Button>
-
-                <Dropdown
-                    aria-label="Sort cases"
-                    className={mergeClasses(classes.sortDrop, 'eval-fitbtn')}
-                    value={scenSort === 'passRate' ? 'Failing first' : 'Scenario order'}
-                    selectedOptions={[scenSort]}
-                    onOptionSelect={(_ev, data) => {
-                        setScenSort(data.optionValue === 'passRate' ? 'passRate' : 'name');
-                        setCasePage(1);
-                    }}
-                >
-                    <Option value="name">Scenario order</Option>
-                    <Option value="passRate">Failing first</Option>
-                </Dropdown>
 
                 <Switch
                     checked={failedOnly}
