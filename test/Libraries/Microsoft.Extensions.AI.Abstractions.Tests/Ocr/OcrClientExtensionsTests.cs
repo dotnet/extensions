@@ -47,7 +47,12 @@ public class OcrClientExtensionsTests
             {
                 observedMediaType = mediaType;
                 using var ms = new MemoryStream();
-                await document.CopyToAsync(ms, cancellationToken);
+                await document.CopyToAsync(
+                    ms,
+#if !NET
+                    80 * 1024, // same as the default buffer size
+#endif
+                    cancellationToken);
                 observedBytes = ms.ToArray();
                 return expectedResponse;
             }
