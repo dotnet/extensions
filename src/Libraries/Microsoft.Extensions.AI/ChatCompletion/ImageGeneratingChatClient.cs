@@ -319,7 +319,7 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         {
             List<AIContent>? newContents = null;
 
-            // Replace FunctionResultContent instances with generated image content
+            // Replace image-generation FunctionCallContent with ImageGenerationToolCallContent, and FunctionResultContent with generated image content
             for (int i = 0; i < contents.Count; i++)
             {
                 var content = contents[i];
