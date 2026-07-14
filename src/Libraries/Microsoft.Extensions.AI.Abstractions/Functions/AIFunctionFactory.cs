@@ -961,9 +961,10 @@ public static partial class AIFunctionFactory
             // JSON-stringified content that should be re-parsed. This is invariant per parameter, so it's
             // hoisted out of the per-invocation marshaller to keep that path effectively a no-op otherwise.
             // The excluded types are those that must receive a JSON string as-is rather than have its
-            // contents reinterpreted: string/object, and the JSON-native types JsonElement/JsonNode/JsonValue/
-            // JsonDocument. (object and JsonElement are additionally handled by the assignability arm below, so
-            // their exclusion here is defensive against future reordering of that switch.)
+            // contents reinterpreted: string/object, JsonElement, JsonDocument, JsonValue, and JsonNode itself.
+            // Note: derived JsonNode types like JsonObject/JsonArray are intentionally NOT excluded so a
+            // double-encoded object/array string can be recovered.
+            // (object and JsonElement are additionally handled by the assignability arm below, so
             bool tryReparseJsonElementStrings =
                 parameterType != typeof(string) &&
                 parameterType != typeof(object) &&
