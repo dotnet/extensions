@@ -86,64 +86,64 @@
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.18</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.26324.4</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.26326.116</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="net10">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftBclAsyncInterfacesNet10Version>10.0.9</MicrosoftBclAsyncInterfacesNet10Version>
-    <MicrosoftBclMemoryNet10Version>10.0.9</MicrosoftBclMemoryNet10Version>
-    <MicrosoftBclTimeProviderNet10Version>10.0.9</MicrosoftBclTimeProviderNet10Version>
-    <MicrosoftExtensionsCachingAbstractionsNet10Version>10.0.9</MicrosoftExtensionsCachingAbstractionsNet10Version>
-    <MicrosoftExtensionsCachingMemoryNet10Version>10.0.9</MicrosoftExtensionsCachingMemoryNet10Version>
-    <MicrosoftExtensionsConfigurationAbstractionsNet10Version>10.0.9</MicrosoftExtensionsConfigurationAbstractionsNet10Version>
-    <MicrosoftExtensionsConfigurationBinderNet10Version>10.0.9</MicrosoftExtensionsConfigurationBinderNet10Version>
-    <MicrosoftExtensionsConfigurationJsonNet10Version>10.0.9</MicrosoftExtensionsConfigurationJsonNet10Version>
-    <MicrosoftExtensionsConfigurationNet10Version>10.0.9</MicrosoftExtensionsConfigurationNet10Version>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsNet10Version>10.0.9</MicrosoftExtensionsDependencyInjectionAbstractionsNet10Version>
-    <MicrosoftExtensionsDependencyInjectionNet10Version>10.0.9</MicrosoftExtensionsDependencyInjectionNet10Version>
-    <MicrosoftExtensionsDiagnosticsNet10Version>10.0.9</MicrosoftExtensionsDiagnosticsNet10Version>
-    <MicrosoftExtensionsHostingAbstractionsNet10Version>10.0.9</MicrosoftExtensionsHostingAbstractionsNet10Version>
-    <MicrosoftExtensionsHostingNet10Version>10.0.9</MicrosoftExtensionsHostingNet10Version>
-    <MicrosoftExtensionsHttpNet10Version>10.0.9</MicrosoftExtensionsHttpNet10Version>
-    <MicrosoftExtensionsLoggingAbstractionsNet10Version>10.0.9</MicrosoftExtensionsLoggingAbstractionsNet10Version>
-    <MicrosoftExtensionsLoggingConfigurationNet10Version>10.0.9</MicrosoftExtensionsLoggingConfigurationNet10Version>
-    <MicrosoftExtensionsLoggingConsoleNet10Version>10.0.9</MicrosoftExtensionsLoggingConsoleNet10Version>
-    <MicrosoftExtensionsLoggingNet10Version>10.0.9</MicrosoftExtensionsLoggingNet10Version>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsNet10Version>10.0.9</MicrosoftExtensionsOptionsConfigurationExtensionsNet10Version>
-    <MicrosoftExtensionsOptionsNet10Version>10.0.9</MicrosoftExtensionsOptionsNet10Version>
-    <MicrosoftExtensionsPrimitivesNet10Version>10.0.9</MicrosoftExtensionsPrimitivesNet10Version>
-    <MicrosoftNETCoreAppRefNet10Version>10.0.9</MicrosoftNETCoreAppRefNet10Version>
-    <MicrosoftNETCoreAppRuntimewinx64Net10Version>10.0.9</MicrosoftNETCoreAppRuntimewinx64Net10Version>
-    <SystemCollectionsImmutableNet10Version>10.0.9</SystemCollectionsImmutableNet10Version>
-    <SystemConfigurationConfigurationManagerNet10Version>10.0.9</SystemConfigurationConfigurationManagerNet10Version>
-    <SystemDiagnosticsDiagnosticSourceNet10Version>10.0.9</SystemDiagnosticsDiagnosticSourceNet10Version>
-    <SystemDiagnosticsPerformanceCounterNet10Version>10.0.9</SystemDiagnosticsPerformanceCounterNet10Version>
-    <SystemIOHashingNet10Version>10.0.9</SystemIOHashingNet10Version>
-    <SystemIOPipelinesNet10Version>10.0.9</SystemIOPipelinesNet10Version>
-    <SystemMemoryDataNet10Version>10.0.9</SystemMemoryDataNet10Version>
-    <SystemNetHttpJsonNet10Version>10.0.9</SystemNetHttpJsonNet10Version>
-    <SystemRuntimeCachingNet10Version>10.0.9</SystemRuntimeCachingNet10Version>
-    <SystemSecurityCryptographyPkcsNet10Version>10.0.9</SystemSecurityCryptographyPkcsNet10Version>
-    <SystemSecurityCryptographyXmlNet10Version>10.0.9</SystemSecurityCryptographyXmlNet10Version>
-    <SystemTextEncodingsWebNet10Version>10.0.9</SystemTextEncodingsWebNet10Version>
-    <SystemNumericsTensorsNet10Version>10.0.9</SystemNumericsTensorsNet10Version>
-    <SystemTextJsonNet10Version>10.0.9</SystemTextJsonNet10Version>
-    <SystemThreadingChannelsNet10Version>10.0.9</SystemThreadingChannelsNet10Version>
+    <MicrosoftBclAsyncInterfacesNet10Version>10.0.10</MicrosoftBclAsyncInterfacesNet10Version>
+    <MicrosoftBclMemoryNet10Version>10.0.10</MicrosoftBclMemoryNet10Version>
+    <MicrosoftBclTimeProviderNet10Version>10.0.10</MicrosoftBclTimeProviderNet10Version>
+    <MicrosoftExtensionsCachingAbstractionsNet10Version>10.0.10</MicrosoftExtensionsCachingAbstractionsNet10Version>
+    <MicrosoftExtensionsCachingMemoryNet10Version>10.0.10</MicrosoftExtensionsCachingMemoryNet10Version>
+    <MicrosoftExtensionsConfigurationAbstractionsNet10Version>10.0.10</MicrosoftExtensionsConfigurationAbstractionsNet10Version>
+    <MicrosoftExtensionsConfigurationBinderNet10Version>10.0.10</MicrosoftExtensionsConfigurationBinderNet10Version>
+    <MicrosoftExtensionsConfigurationJsonNet10Version>10.0.10</MicrosoftExtensionsConfigurationJsonNet10Version>
+    <MicrosoftExtensionsConfigurationNet10Version>10.0.10</MicrosoftExtensionsConfigurationNet10Version>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsNet10Version>10.0.10</MicrosoftExtensionsDependencyInjectionAbstractionsNet10Version>
+    <MicrosoftExtensionsDependencyInjectionNet10Version>10.0.10</MicrosoftExtensionsDependencyInjectionNet10Version>
+    <MicrosoftExtensionsDiagnosticsNet10Version>10.0.10</MicrosoftExtensionsDiagnosticsNet10Version>
+    <MicrosoftExtensionsHostingAbstractionsNet10Version>10.0.10</MicrosoftExtensionsHostingAbstractionsNet10Version>
+    <MicrosoftExtensionsHostingNet10Version>10.0.10</MicrosoftExtensionsHostingNet10Version>
+    <MicrosoftExtensionsHttpNet10Version>10.0.10</MicrosoftExtensionsHttpNet10Version>
+    <MicrosoftExtensionsLoggingAbstractionsNet10Version>10.0.10</MicrosoftExtensionsLoggingAbstractionsNet10Version>
+    <MicrosoftExtensionsLoggingConfigurationNet10Version>10.0.10</MicrosoftExtensionsLoggingConfigurationNet10Version>
+    <MicrosoftExtensionsLoggingConsoleNet10Version>10.0.10</MicrosoftExtensionsLoggingConsoleNet10Version>
+    <MicrosoftExtensionsLoggingNet10Version>10.0.10</MicrosoftExtensionsLoggingNet10Version>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsNet10Version>10.0.10</MicrosoftExtensionsOptionsConfigurationExtensionsNet10Version>
+    <MicrosoftExtensionsOptionsNet10Version>10.0.10</MicrosoftExtensionsOptionsNet10Version>
+    <MicrosoftExtensionsPrimitivesNet10Version>10.0.10</MicrosoftExtensionsPrimitivesNet10Version>
+    <MicrosoftNETCoreAppRefNet10Version>10.0.10</MicrosoftNETCoreAppRefNet10Version>
+    <MicrosoftNETCoreAppRuntimewinx64Net10Version>10.0.10</MicrosoftNETCoreAppRuntimewinx64Net10Version>
+    <SystemCollectionsImmutableNet10Version>10.0.10</SystemCollectionsImmutableNet10Version>
+    <SystemConfigurationConfigurationManagerNet10Version>10.0.10</SystemConfigurationConfigurationManagerNet10Version>
+    <SystemDiagnosticsDiagnosticSourceNet10Version>10.0.10</SystemDiagnosticsDiagnosticSourceNet10Version>
+    <SystemDiagnosticsPerformanceCounterNet10Version>10.0.10</SystemDiagnosticsPerformanceCounterNet10Version>
+    <SystemIOHashingNet10Version>10.0.10</SystemIOHashingNet10Version>
+    <SystemIOPipelinesNet10Version>10.0.10</SystemIOPipelinesNet10Version>
+    <SystemMemoryDataNet10Version>10.0.10</SystemMemoryDataNet10Version>
+    <SystemNetHttpJsonNet10Version>10.0.10</SystemNetHttpJsonNet10Version>
+    <SystemRuntimeCachingNet10Version>10.0.10</SystemRuntimeCachingNet10Version>
+    <SystemSecurityCryptographyPkcsNet10Version>10.0.10</SystemSecurityCryptographyPkcsNet10Version>
+    <SystemSecurityCryptographyXmlNet10Version>10.0.10</SystemSecurityCryptographyXmlNet10Version>
+    <SystemTextEncodingsWebNet10Version>10.0.10</SystemTextEncodingsWebNet10Version>
+    <SystemNumericsTensorsNet10Version>10.0.10</SystemNumericsTensorsNet10Version>
+    <SystemTextJsonNet10Version>10.0.10</SystemTextJsonNet10Version>
+    <SystemThreadingChannelsNet10Version>10.0.10</SystemThreadingChannelsNet10Version>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefNet10Version>10.0.9</MicrosoftAspNetCoreAppRefNet10Version>
-    <MicrosoftAspNetCoreAppRuntimewinx64Net10Version>10.0.9</MicrosoftAspNetCoreAppRuntimewinx64Net10Version>
-    <MicrosoftAspNetCoreMvcTestingNet10Version>10.0.9</MicrosoftAspNetCoreMvcTestingNet10Version>
-    <MicrosoftAspNetCoreTestHostNet10Version>10.0.9</MicrosoftAspNetCoreTestHostNet10Version>
-    <MicrosoftExtensionsCachingSqlServerNet10Version>10.0.9</MicrosoftExtensionsCachingSqlServerNet10Version>
-    <MicrosoftExtensionsCachingStackExchangeRedisNet10Version>10.0.9</MicrosoftExtensionsCachingStackExchangeRedisNet10Version>
-    <MicrosoftExtensionsDiagnosticsHealthChecksNet10Version>10.0.9</MicrosoftExtensionsDiagnosticsHealthChecksNet10Version>
-    <MicrosoftExtensionsFeaturesNet10Version>10.0.9</MicrosoftExtensionsFeaturesNet10Version>
-    <MicrosoftExtensionsHttpPollyNet10Version>10.0.9</MicrosoftExtensionsHttpPollyNet10Version>
-    <MicrosoftExtensionsObjectPoolNet10Version>10.0.9</MicrosoftExtensionsObjectPoolNet10Version>
+    <MicrosoftAspNetCoreAppRefNet10Version>10.0.10</MicrosoftAspNetCoreAppRefNet10Version>
+    <MicrosoftAspNetCoreAppRuntimewinx64Net10Version>10.0.10</MicrosoftAspNetCoreAppRuntimewinx64Net10Version>
+    <MicrosoftAspNetCoreMvcTestingNet10Version>10.0.10</MicrosoftAspNetCoreMvcTestingNet10Version>
+    <MicrosoftAspNetCoreTestHostNet10Version>10.0.10</MicrosoftAspNetCoreTestHostNet10Version>
+    <MicrosoftExtensionsCachingSqlServerNet10Version>10.0.10</MicrosoftExtensionsCachingSqlServerNet10Version>
+    <MicrosoftExtensionsCachingStackExchangeRedisNet10Version>10.0.10</MicrosoftExtensionsCachingStackExchangeRedisNet10Version>
+    <MicrosoftExtensionsDiagnosticsHealthChecksNet10Version>10.0.10</MicrosoftExtensionsDiagnosticsHealthChecksNet10Version>
+    <MicrosoftExtensionsFeaturesNet10Version>10.0.10</MicrosoftExtensionsFeaturesNet10Version>
+    <MicrosoftExtensionsHttpPollyNet10Version>10.0.10</MicrosoftExtensionsHttpPollyNet10Version>
+    <MicrosoftExtensionsObjectPoolNet10Version>10.0.10</MicrosoftExtensionsObjectPoolNet10Version>
     <!-- Dependencies from https://github.com/dotnet/efcore -->
-    <MicrosoftEntityFrameworkCoreSqliteNet10Version>10.0.9</MicrosoftEntityFrameworkCoreSqliteNet10Version>
+    <MicrosoftEntityFrameworkCoreSqliteNet10Version>10.0.10</MicrosoftEntityFrameworkCoreSqliteNet10Version>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingNet10Version>10.0.0-beta.26270.133</MicrosoftDotNetBuildTasksTemplatingNet10Version>
+    <MicrosoftDotNetBuildTasksTemplatingNet10Version>10.0.0-beta.26326.116</MicrosoftDotNetBuildTasksTemplatingNet10Version>
   </PropertyGroup>
   <PropertyGroup Label="No longer automated Maestro dependency updates">
     <!-- Packages from dotnet/runtime -->
