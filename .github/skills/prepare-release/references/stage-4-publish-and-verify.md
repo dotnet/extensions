@@ -33,4 +33,4 @@ Each package reports `valid`, `sourcelink-FAILED`, `symbols-not-indexed`, or `no
 
 ## After the stage
 
-Stage 4 produces no repository commit. The remaining release activities (dotnet-public mirror, release notes and tag, the internal-to-public and release-to-main merges, and the support-page update) are outside the scope of these stages.
+Stage 4 produces no repository commit. The internal-to-public and release-to-main merges are handled by Stage 5. The remaining activities (dotnet-public mirror, release notes and tag, and the support-page update) are outside the scope of these stages.
