@@ -310,6 +310,18 @@ public static class ChatResponseExtensions
                     content.ProtectedData = protectedData;
                 }
 
+                // Preserve the provider-assigned reasoning item id (required to roundtrip encrypted reasoning in
+                // stateless scenarios). All contents in a coalesced run belong to the same reasoning item, so use
+                // the first available id.
+                for (int i = start; i < end; i++)
+                {
+                    if (((TextReasoningContent)contents[i]).ItemId is { } itemId)
+                    {
+                        content.ItemId = itemId;
+                        break;
+                    }
+                }
+
                 return content;
             });
 

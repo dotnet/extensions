@@ -32,12 +32,6 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
-    // AdditionalProperties key used to roundtrip a reasoning item's service-assigned id. Unlike
-    // RawRepresentation, AdditionalProperties survives both content coalescing and JSON serialization of the
-    // chat history, so the id is available when reconstructing the reasoning item for a subsequent request.
-    // Stateless (store=false) resume of encrypted reasoning requires this id or the service rejects the item.
-    private const string ReasoningItemIdKey = "reasoningItemId";
-
     // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
     // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
 
@@ -597,10 +591,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // so that it can be coalesced with the streamed text deltas and roundtripped.
                         // Since we may have already yielded reasoning deltas, we explicitly avoid setting
                         // the RawRepresentation here to avoid duplication, as when roundtripping that
-                        // raw representation will be preferred. The reasoning item's id is stashed in
-                        // AdditionalProperties (which survives coalescing and serialization, unlike
-                        // RawRepresentation) so that it can be sent back on a subsequent request; stateless
-                        // (store=false) resume of encrypted reasoning is rejected by the service without it.
+                        // raw representation will be preferred. The reasoning item's id is captured on the
+                        // content (TextReasoningContent.ItemId), which survives coalescing and serialization,
+                        // so it can be sent back on a subsequent request; stateless (store=false) resume of
+                        // encrypted reasoning is rejected by the service without it.
                         case ReasoningResponseItem rri when rri.EncryptedContent is { Length: > 0 } encryptedContent:
                             yield return CreateUpdate(CreateReasoningContent(text: null, encryptedContent, rri.Id));
                             break;
@@ -922,23 +916,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             _ => ChatRole.Assistant,
         };
 
-    /// <summary>Creates a <see cref="TextReasoningContent"/>, stashing the reasoning item's id (when available)
-    /// in <see cref="AIContent.AdditionalProperties"/> so it roundtrips back to the service.</summary>
-    private static TextReasoningContent CreateReasoningContent(string? text, string? protectedData, string? itemId, object? rawRepresentation = null)
-    {
-        TextReasoningContent content = new(text)
+    /// <summary>Creates a <see cref="TextReasoningContent"/>, capturing the reasoning item's id (when available)
+    /// so it roundtrips back to the service.</summary>
+    private static TextReasoningContent CreateReasoningContent(string? text, string? protectedData, string? itemId, object? rawRepresentation = null) =>
+        new(text)
         {
             ProtectedData = protectedData,
+            ItemId = itemId,
             RawRepresentation = rawRepresentation,
         };
-
-        if (!string.IsNullOrEmpty(itemId))
-        {
-            (content.AdditionalProperties ??= [])[ReasoningItemIdKey] = itemId;
-        }
-
-        return content;
-    }
 
     /// <summary>Creates a <see cref="ChatFinishReason"/> from a <see cref="ResponseIncompleteStatusReason"/>.</summary>
     private static ChatFinishReason? AsFinishReason(ResponseIncompleteStatusReason? statusReason) =>
@@ -1546,29 +1532,15 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case TextReasoningContent reasoningContent:
-                            ReasoningResponseItem reasoningResponseItem = new(reasoningContent.Text)
+                            yield return new ReasoningResponseItem(reasoningContent.Text)
                             {
                                 EncryptedContent = reasoningContent.ProtectedData,
+
+                                // Restore the reasoning item's id so that encrypted reasoning roundtrips in
+                                // stateless (store=false) scenarios, where the service rejects a reasoning item
+                                // that is missing its id.
+                                Id = reasoningContent.ItemId,
                             };
-
-                            // Restore the reasoning item's id (stashed in AdditionalProperties on the way in)
-                            // so that encrypted reasoning roundtrips in stateless (store=false) scenarios,
-                            // where the service rejects a reasoning item that is missing its id. The value may
-                            // be a string (in-process) or a JsonElement (after the history has been serialized
-                            // and rehydrated, e.g. a persisted human-in-the-loop approval session).
-                            if (reasoningContent.AdditionalProperties?.TryGetValue(ReasoningItemIdKey, out object? reasoningItemIdValue) is true)
-                            {
-                                string? reasoningItemId =
-                                    reasoningItemIdValue as string ??
-                                    (reasoningItemIdValue is JsonElement { ValueKind: JsonValueKind.String } jsonElement ? jsonElement.GetString() : null);
-
-                                if (!string.IsNullOrEmpty(reasoningItemId))
-                                {
-                                    reasoningResponseItem.Id = reasoningItemId;
-                                }
-                            }
-
-                            yield return reasoningResponseItem;
                             break;
 
                         case McpServerToolCallContent mstcc:
