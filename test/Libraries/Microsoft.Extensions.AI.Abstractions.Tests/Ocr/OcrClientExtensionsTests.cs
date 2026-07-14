@@ -37,7 +37,7 @@ public class OcrClientExtensionsTests
     public async Task ExtractAsync_DataContent_PassesStreamAndMediaTypeAsync()
     {
         // Arrange
-        var expectedResponse = new OcrResult([new OcrPage(0, "hello")]);
+        var expectedResponse = new OcrResult([new OcrPage(1, "hello")]);
         string? observedMediaType = null;
         byte[]? observedBytes = null;
 

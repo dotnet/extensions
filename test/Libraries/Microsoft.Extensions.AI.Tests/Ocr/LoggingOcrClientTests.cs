@@ -55,7 +55,7 @@ public class LoggingOcrClientTests
         using IOcrClient innerClient = new TestOcrClient
         {
             ExtractAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
-                Task.FromResult(new OcrResult([new OcrPage(0, "blue whale")])),
+                Task.FromResult(new OcrResult([new OcrPage(1, "blue whale")])),
         };
 
         using IOcrClient client = innerClient

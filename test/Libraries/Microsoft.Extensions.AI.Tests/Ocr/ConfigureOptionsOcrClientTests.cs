@@ -33,7 +33,7 @@ public class ConfigureOptionsOcrClientTests
     {
         OcrOptions? providedOptions = nullProvidedOptions ? null : new() { ModelId = "test" };
         OcrOptions? returnedOptions = null;
-        OcrResult expectedResult = new([new OcrPage(0, "blue whale")]);
+        OcrResult expectedResult = new([new OcrPage(1, "blue whale")]);
         using CancellationTokenSource cts = new();
 
         using IOcrClient innerClient = new TestOcrClient

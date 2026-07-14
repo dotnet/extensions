@@ -3371,11 +3371,71 @@
       ]
     },
     {
+      "Type": "readonly class Microsoft.Extensions.AI.OcrBoundingBox(float Left, float Top, float Right, float Bottom)",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingBox.OcrBoundingBox(float Left, float Top, float Right, float Bottom);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingBox.OcrBoundingBox();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OcrBoundingBox.Deconstruct(out float Left, out float Top, out float Right, out float Bottom);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.OcrBoundingBox.Equals(object obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.OcrBoundingBox.Equals(Microsoft.Extensions.AI.OcrBoundingBox other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.OcrBoundingBox.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrBoundingBox.operator ==(Microsoft.Extensions.AI.OcrBoundingBox left, Microsoft.Extensions.AI.OcrBoundingBox right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrBoundingBox.operator !=(Microsoft.Extensions.AI.OcrBoundingBox left, Microsoft.Extensions.AI.OcrBoundingBox right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.OcrBoundingBox.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Bottom { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Left { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Right { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Top { get; init; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.OcrBoundingRegion",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion.OcrBoundingRegion(int pageNumber, System.Collections.Generic.IReadOnlyList<float> polygon);",
+          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion.OcrBoundingRegion(int pageNumber, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrPoint> polygon);",
           "Stage": "Experimental"
         },
         {
@@ -3383,7 +3443,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "(float Left, float Top, float Right, float Bottom) Microsoft.Extensions.AI.OcrBoundingRegion.GetBounds();",
+          "Member": "Microsoft.Extensions.AI.OcrBoundingBox Microsoft.Extensions.AI.OcrBoundingRegion.GetBounds();",
           "Stage": "Experimental"
         }
       ],
@@ -3393,7 +3453,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<float> Microsoft.Extensions.AI.OcrBoundingRegion.Polygon { get; }",
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrPoint> Microsoft.Extensions.AI.OcrBoundingRegion.Polygon { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -3505,7 +3565,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.OcrPage.OcrPage(int index, string markdown);",
+          "Member": "Microsoft.Extensions.AI.OcrPage.OcrPage(int pageNumber, string markdown);",
           "Stage": "Experimental"
         }
       ],
@@ -3527,15 +3587,67 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "int Microsoft.Extensions.AI.OcrPage.Index { get; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "string Microsoft.Extensions.AI.OcrPage.Markdown { get; }",
           "Stage": "Experimental"
         },
         {
+          "Member": "int Microsoft.Extensions.AI.OcrPage.PageNumber { get; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrTable> Microsoft.Extensions.AI.OcrPage.Tables { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly class Microsoft.Extensions.AI.OcrPoint(float X, float Y)",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPoint.OcrPoint(float X, float Y);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPoint.OcrPoint();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OcrPoint.Deconstruct(out float X, out float Y);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.OcrPoint.Equals(object obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.OcrPoint.Equals(Microsoft.Extensions.AI.OcrPoint other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.OcrPoint.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrPoint.operator ==(Microsoft.Extensions.AI.OcrPoint left, Microsoft.Extensions.AI.OcrPoint right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrPoint.operator !=(Microsoft.Extensions.AI.OcrPoint left, Microsoft.Extensions.AI.OcrPoint right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.OcrPoint.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrPoint.X { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrPoint.Y { get; init; }",
           "Stage": "Experimental"
         }
       ]

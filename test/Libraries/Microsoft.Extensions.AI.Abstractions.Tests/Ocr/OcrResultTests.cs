@@ -17,7 +17,7 @@ public class OcrResultTests
     [Fact]
     public void Markdown_JoinsPerPageMarkdown()
     {
-        var result = new OcrResult([new OcrPage(0, "page one"), new OcrPage(1, "page two")])
+        var result = new OcrResult([new OcrPage(1, "page one"), new OcrPage(2, "page two")])
         {
             OcrSource = "test-engine",
             ModelId = "model-1",

@@ -36,7 +36,7 @@ public class OpenTelemetryOcrClientTests
             ExtractAsyncCallback = async (document, mediaType, options, progress, cancellationToken) =>
             {
                 await Task.Yield();
-                return new OcrResult([new OcrPage(0, "This is the recognized text.")])
+                return new OcrResult([new OcrPage(1, "This is the recognized text.")])
                 {
                     ModelId = "amazingmodel",
                     Usage = new() { PagesProcessed = 3 },

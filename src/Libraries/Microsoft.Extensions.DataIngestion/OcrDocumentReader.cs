@@ -56,7 +56,7 @@ public sealed class OcrDocumentReader : IngestionDocumentReader
         foreach (OcrPage page in ocrResult.Pages)
         {
             IngestionDocumentSection section = new();
-            int pageNumber = page.Index + 1;
+            int pageNumber = page.PageNumber;
 
             if (!string.IsNullOrWhiteSpace(page.Markdown))
             {
@@ -93,7 +93,7 @@ public sealed class OcrDocumentReader : IngestionDocumentReader
         {
             (float left, float top, float right, float bottom) = image.BoundingRegion.GetBounds();
             element.Metadata[BoundingBoxMetadataKey] = new[] { left, top, right, bottom };
-            element.Metadata[BoundingRegionMetadataKey] = image.BoundingRegion.Polygon.ToArray();
+            element.Metadata[BoundingRegionMetadataKey] = image.BoundingRegion.Polygon.SelectMany(static p => new[] { p.X, p.Y }).ToArray();
         }
 
         return element;

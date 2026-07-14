@@ -13,17 +13,17 @@ namespace Microsoft.Extensions.AI;
 public sealed class OcrPage
 {
     /// <summary>Initializes a new instance of the <see cref="OcrPage"/> class.</summary>
-    /// <param name="index">The zero-based page index.</param>
+    /// <param name="pageNumber">The one-based page number.</param>
     /// <param name="markdown">The structured markdown for this page.</param>
     /// <exception cref="System.ArgumentNullException"><paramref name="markdown"/> is <see langword="null"/>.</exception>
-    public OcrPage(int index, string markdown)
+    public OcrPage(int pageNumber, string markdown)
     {
-        Index = index;
+        PageNumber = pageNumber;
         Markdown = Throw.IfNull(markdown);
     }
 
-    /// <summary>Gets the zero-based page index.</summary>
-    public int Index { get; }
+    /// <summary>Gets the one-based page number.</summary>
+    public int PageNumber { get; }
 
     /// <summary>Gets the structured markdown for this page, with headings, tables, and reading order preserved.</summary>
     public string Markdown { get; }
