@@ -3,127 +3,25 @@ name: prepare-release
 description: Prepares the repository for an internal release branch. Use this when asked to "prepare for a release", "prepare internal release branch", or similar release preparation tasks.
 ---
 
-# Prepare Internal Release Branch
+# Prepare Release
 
-When preparing a public branch for internal release, apply the following changes:
+Prepares a `dotnet/extensions` public release branch (`release/<major>.<minor>`) for the internal release process on the corresponding `internal/release/<major>.<minor>` branch.
 
-## 1. Directory.Build.props
+The preparation is organized into ordered stages. Work through them in sequence, loading each stage's reference file only when you reach that stage.
 
-Add NU1507 warning suppression after the `TestNetCoreTargetFrameworks` PropertyGroup. Internal branches don't use package source mapping due to internal feeds:
+## Stage workflow
 
-```xml
-<!-- Internal branches don't use package source mapping feature due to internal feeds, so disable NU1507 warning saying it should be used. -->
-<PropertyGroup>
-  <NoWarn>$(NoWarn);NU1507</NoWarn>
-</PropertyGroup>
-```
+Complete stages strictly in order. Treat each stage -- and each sub-stage of a stage that has them -- as an independent, committable unit. For every stage or sub-stage:
 
-Insert this new PropertyGroup right after the closing `</PropertyGroup>` that contains `TestNetCoreTargetFrameworks`.
+1. Apply the changes described in the stage's reference file.
+2. Prompt the user to review the changes for that stage (summarize what changed and show the diff).
+3. Wait for the user's approval before committing.
+4. Create a single commit that contains only that stage's (or sub-stage's) changes.
 
-## 2. NuGet.config
+Every stage gets its own commit, and every sub-stage gets its own commit. Never combine multiple stages or sub-stages into a single commit.
 
-Remove the entire `<packageSourceMapping>` section. This section looks like:
+## Stage 1 - Prepare Internal Branch
 
-```xml
-<!-- Define mappings by adding package patterns beneath the target source.
-     https://aka.ms/nuget-package-source-mapping  -->
-<packageSourceMapping>
-  <packageSource key="dotnet-public">
-    <package pattern="*" />
-  </packageSource>
-  <packageSource key="dotnet-eng">
-    <package pattern="*" />
-  </packageSource>
-  <!-- ... more packageSource entries ... -->
-</packageSourceMapping>
-```
+Apply the internal-release infrastructure changes to the branch: suppress `NU1507`, remove the NuGet package source mapping, switch on stable/release versioning, add private-feed credential setup to the build template, comment out integration tests, and remove the code-coverage pipeline stage. Never change version numbers here -- those flow via Dependency Flow automation.
 
-**Important**: Do NOT add new internal feed sources to NuGet.config - those are managed by Dependency Flow automation and will be added automatically.
-
-## 3. eng/Versions.props
-
-Update these two properties (do NOT change any version numbers):
-
-Change `StabilizePackageVersion` from `false` to `true`:
-```xml
-<StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
-```
-
-Change `DotNetFinalVersionKind` from empty to `release`:
-```xml
-<DotNetFinalVersionKind>release</DotNetFinalVersionKind>
-```
-
-## 4. eng/pipelines/templates/BuildAndTest.yml
-
-### Add Private Feeds Credentials Setup
-
-After the Node.js setup task (the `NodeTool@0` task), add these two tasks to authenticate with private Azure DevOps feeds:
-
-```yaml
-  - task: PowerShell@2
-    displayName: Setup Private Feeds Credentials
-    condition: eq(variables['Agent.OS'], 'Windows_NT')
-    inputs:
-      filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
-      arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-    env:
-      Token: $(dn-bot-dnceng-artifact-feeds-rw)
-
-  - task: Bash@3
-    displayName: Setup Private Feeds Credentials
-    condition: ne(variables['Agent.OS'], 'Windows_NT')
-    inputs:
-      filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-      arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-    env:
-      Token: $(dn-bot-dnceng-artifact-feeds-rw)
-```
-
-### Comment Out Integration Tests
-
-Comment out the integration tests step as they require authentication to private feeds that isn't available during internal release builds:
-
-```yaml
-  - ${{ if ne(parameters.skipTests, 'true') }}:
-    # Skipping integration tests for now as they require authentication to the private feeds
-    # - script: ${{ parameters.buildScript }}
-    #           -integrationTest
-    #           -configuration ${{ parameters.buildConfig }}
-    #           -warnAsError 1
-    #           /bl:${{ parameters.repoLogPath }}/integration_tests.binlog
-    #           $(_OfficialBuildIdArgs)
-    #   displayName: Run integration tests
-```
-
-## 5. azure-pipelines.yml
-
-Remove the `codecoverage` stage entirely. This is the stage that:
-- Has `displayName: CodeCoverage`
-- Downloads code coverage reports from build jobs
-- Merges and validates combined test coverage
-- Contains a `CodeCoverageReport` job
-
-Also remove the `codecoverage` dependency from the post-build validation's `validateDependsOn` list:
-
-```yaml
-# Remove this conditional dependency block:
-- ${{ if eq(parameters.runTests, true) }}:
-  - codecoverage
-```
-
-## Files NOT to modify
-
-- **eng/Version.Details.xml**: Version updates are managed by Dependency Flow automation
-- **eng/Versions.props version numbers**: Package versions are managed by Dependency Flow automation
-- **NuGet.config feed sources**: Internal darc feeds are added automatically by Dependency Flow
-
-## Summary
-
-| File | Action |
-|------|--------|
-| Directory.Build.props | Add `NU1507` to `NoWarn` in new PropertyGroup |
-| NuGet.config | Remove entire `<packageSourceMapping>` section |
-| eng/Versions.props | Set `StabilizePackageVersion=true`, `DotNetFinalVersionKind=release` |
-| eng/pipelines/templates/BuildAndTest.yml | Add private feeds credentials setup tasks, comment out integration tests |
-| azure-pipelines.yml | Remove `codecoverage` stage and its post-build dependency |
+Read and follow [references/stage-1-prepare-internal-branch.md](references/stage-1-prepare-internal-branch.md).
