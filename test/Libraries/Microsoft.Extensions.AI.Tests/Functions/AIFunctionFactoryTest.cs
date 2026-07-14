@@ -191,6 +191,227 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public async Task Parameters_ToleratesJsonElementStringWrappingJson()
+    {
+        // An LLM may double-encode a tool-call argument, emitting "value":"{...}" instead of "value":{...}.
+        // First-party IChatClient bridges parse tool-call arguments into IDictionary<string, object?>, so the
+        // double-encoded argument arrives as a JsonElement whose ValueKind is String. It should still bind.
+        AIFunction func = AIFunctionFactory.Create((JsonWrappedObject value) => $"{value.A}:{value.B}", serializerOptions: JsonContext.Default.Options);
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("""{"A":"x","B":"y"}""", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, doubleEncoded.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults("x:y", result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingJson_StringParameterReceivesRawString()
+    {
+        // A genuinely string-typed parameter must keep receiving the raw string content, even if that
+        // content looks like JSON. The double-encoding tolerance must not hijack string parameters.
+        AIFunction func = AIFunctionFactory.Create((string value) => value, serializerOptions: JsonContext.Default.Options);
+        string raw = """{"A":"x","B":"y"}""";
+        JsonElement stringElement = JsonSerializer.SerializeToElement(raw, JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, stringElement.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = stringElement
+        });
+
+        AssertExtensions.EqualFunctionCallResults(raw, result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingInvalidJson_FallsThrough()
+    {
+        // A JsonElement string whose content looks like JSON but is invalid must fall through to the existing
+        // behavior without introducing a new exception type (a JsonException is still thrown, as before).
+        AIFunction func = AIFunctionFactory.Create((JsonWrappedObject value) => value.A, serializerOptions: JsonContext.Default.Options);
+        JsonElement invalid = JsonSerializer.SerializeToElement("""{"A":""", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, invalid.ValueKind);
+
+        await Assert.ThrowsAsync<JsonException>(async () => await func.InvokeAsync(new()
+        {
+            ["value"] = invalid
+        }));
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementObject_BindsWithoutReparsing()
+    {
+        // A properly-encoded (non-string) JsonElement must continue to bind directly, exercising the common
+        // path where the value kind is not String and no re-parsing is attempted.
+        AIFunction func = AIFunctionFactory.Create((JsonWrappedObject value) => $"{value.A}:{value.B}", serializerOptions: JsonContext.Default.Options);
+        JsonElement objectElement = JsonSerializer.SerializeToElement(new JsonWrappedObject { A = "x", B = "y" }, JsonContext.Default.JsonWrappedObject);
+        Assert.Equal(JsonValueKind.Object, objectElement.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = objectElement
+        });
+
+        AssertExtensions.EqualFunctionCallResults("x:y", result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringNonJson_BindsScalarViaFallThrough()
+    {
+        // A JsonElement string whose content is not JSON-looking (here, a GUID starting with a letter) must not
+        // be treated as re-parseable JSON; it falls through and binds via the normal string-to-scalar conversion.
+        AIFunction func = AIFunctionFactory.Create((Guid value) => value.ToString(), serializerOptions: JsonContext.Default.Options);
+        Guid expected = new("abcdef01-2345-6789-abcd-ef0123456789");
+        JsonElement guidStringElement = JsonSerializer.SerializeToElement(expected.ToString(), JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, guidStringElement.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = guidStringElement
+        });
+
+        AssertExtensions.EqualFunctionCallResults(expected.ToString(), result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingJson_JsonNodeReceivesRawString()
+    {
+        // JsonNode is a JSON-native type: a double-encoded JSON string must be preserved as a string-valued
+        // node, not re-parsed into an object graph. GetValueKind() must report String (not Object).
+        AIFunction func = AIFunctionFactory.Create((JsonNode value) => value.GetValueKind().ToString());
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("""{"A":"x","B":"y"}""", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, doubleEncoded.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults(JsonValueKind.String.ToString(), result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingJson_JsonDocumentReceivesRawString()
+    {
+        // JsonDocument is a JSON-native type: a double-encoded JSON string must be preserved as-is, so the
+        // root element's kind must remain String rather than being re-parsed into an object.
+        AIFunction func = AIFunctionFactory.Create((JsonDocument value) => value.RootElement.ValueKind.ToString());
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("""{"A":"x","B":"y"}""", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, doubleEncoded.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults(JsonValueKind.String.ToString(), result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingNumber_JsonValueReceivesRawString()
+    {
+        // JsonValue is a JSON-native scalar: a JSON string that merely looks like a number must be preserved as
+        // a string value, not re-parsed into a number (which would corrupt the kind, and re-parsing an object
+        // token into JsonValue would even throw InvalidOperationException rather than JsonException).
+        AIFunction func = AIFunctionFactory.Create((JsonValue value) => value.GetValueKind().ToString());
+        JsonElement numericString = JsonSerializer.SerializeToElement("42", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, numericString.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = numericString
+        });
+
+        AssertExtensions.EqualFunctionCallResults(JsonValueKind.String.ToString(), result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingObject_JsonObjectIsRecovered()
+    {
+        // JsonObject's schema constrains the argument to an object, so a double-encoded object string is an error
+        // to recover: unlike JsonNode/JsonValue, it is NOT excluded and must be re-parsed into a real object.
+        AIFunction func = AIFunctionFactory.Create((JsonObject value) => $"{value.GetValueKind()}:{value["a"]!.GetValue<int>()}");
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("""{"a":1}""", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, doubleEncoded.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults($"{JsonValueKind.Object}:1", result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingArray_JsonArrayIsRecovered()
+    {
+        // JsonArray's schema constrains the argument to an array, so a double-encoded array string is an error to
+        // recover: it is NOT excluded and must be re-parsed into a real array.
+        AIFunction func = AIFunctionFactory.Create((JsonArray value) => $"{value.GetValueKind()}:{value.Count}");
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("[1,2,3]", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, doubleEncoded.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults($"{JsonValueKind.Array}:3", result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementStringWrappingBoolean_ScalarIsReparsed()
+    {
+        // A scalar bool parameter: a double-encoded boolean string ("true") is an error to recover and must be
+        // re-parsed. The fallback path would otherwise fail to bind a string token to bool.
+        AIFunction func = AIFunctionFactory.Create((bool value) => value ? "yes" : "no");
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("true", JsonContext.Default.String);
+        Assert.Equal(JsonValueKind.String, doubleEncoded.ValueKind);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults("yes", result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementString_ObjectParameterReceivesElementAsIs()
+    {
+        // object is assignable from a boxed JsonElement, so the value is returned as-is by the assignability arm
+        // and never reaches the re-parse path -- its exclusion from re-parsing is therefore defensive only.
+        AIFunction func = AIFunctionFactory.Create((object value) => value is JsonElement e ? e.ValueKind.ToString() : "not-element");
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("""{"a":1}""", JsonContext.Default.String);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults(JsonValueKind.String.ToString(), result);
+    }
+
+    [Fact]
+    public async Task Parameters_JsonElementString_JsonElementParameterReceivesElementAsIs()
+    {
+        // JsonElement is assignable from a boxed JsonElement, so the value short-circuits at the assignability arm
+        // and is returned unchanged, never reaching the re-parse path.
+        AIFunction func = AIFunctionFactory.Create((JsonElement value) => value.ValueKind.ToString());
+        JsonElement doubleEncoded = JsonSerializer.SerializeToElement("""{"a":1}""", JsonContext.Default.String);
+
+        var result = await func.InvokeAsync(new()
+        {
+            ["value"] = doubleEncoded
+        });
+
+        AssertExtensions.EqualFunctionCallResults(JsonValueKind.String.ToString(), result);
+    }
+
+    [Fact]
     public async Task Parameters_MappedByType_Async()
     {
         using var cts = new CancellationTokenSource();
@@ -1760,7 +1981,14 @@ public partial class AIFunctionFactoryTest
     [JsonSerializable(typeof(B))]
     [JsonSerializable(typeof(int?))]
     [JsonSerializable(typeof(DateTime?))]
+    [JsonSerializable(typeof(JsonWrappedObject))]
     private partial class JsonContext : JsonSerializerContext;
+
+    private sealed class JsonWrappedObject
+    {
+        public string A { get; set; } = string.Empty;
+        public string B { get; set; } = string.Empty;
+    }
 
     private abstract class MyBaseType
     {

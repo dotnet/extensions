@@ -956,6 +956,21 @@ public static partial class AIFunctionFactory
             JsonTypeInfo? typeInfo = serializerOptions.GetTypeInfo(parameterType);
             bool hasDefaultValue = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out object? effectiveDefaultValue);
             string argumentName = AIJsonUtilities.GetParameterSchemaName(parameter);
+
+            // Determine once whether a JsonElement string argument for this parameter may itself contain
+            // JSON-stringified content that should be re-parsed. This is invariant per parameter, so it's
+            // hoisted out of the per-invocation marshaller to keep that path effectively a no-op otherwise.
+            // The excluded types are those that must receive a JSON string as-is rather than have its
+            // contents reinterpreted: string/object, and the JSON-native types JsonElement/JsonNode/JsonValue/
+            // JsonDocument. (object and JsonElement are additionally handled by the assignability arm below, so
+            // their exclusion here is defensive against future reordering of that switch.)
+            bool tryReparseJsonElementStrings =
+                parameterType != typeof(string) &&
+                parameterType != typeof(object) &&
+                parameterType != typeof(JsonElement) &&
+                parameterType != typeof(JsonNode) &&
+                parameterType != typeof(JsonValue) &&
+                parameterType != typeof(JsonDocument);
             return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
@@ -965,11 +980,39 @@ public static partial class AIFunctionFactory
                     {
                         null => null, // Return as-is if null -- if the parameter is a struct this will be handled by MethodInfo.Invoke
                         _ when parameterType.IsInstanceOfType(value) => value, // Do nothing if value is assignable to parameter type
-                        JsonElement element => JsonSerializer.Deserialize(element, typeInfo),
+                        JsonElement element => MarshallJsonElement(element),
                         JsonDocument doc => JsonSerializer.Deserialize(doc, typeInfo),
                         JsonNode node => JsonSerializer.Deserialize(node, typeInfo),
                         _ => MarshallViaJsonRoundtrip(value),
                     };
+
+                    object? MarshallJsonElement(JsonElement element)
+                    {
+                        // An LLM may double-encode a tool-call argument, emitting "input":"{...}" instead of "input":{...}.
+                        // In that case the argument arrives as a JsonElement whose ValueKind is String wrapping JSON-stringified
+                        // content. When the target type does not natively accept a JSON string, try to re-parse the string
+                        // content as JSON -- mirroring the raw-string tolerance in MarshallViaJsonRoundtrip below.
+                        if (tryReparseJsonElementStrings && element.ValueKind == JsonValueKind.String)
+                        {
+                            string json = element.GetString()!;
+                            if (IsPotentiallyJson(json))
+                            {
+                                try
+                                {
+                                    return JsonSerializer.Deserialize(json, typeInfo);
+                                }
+                                catch (JsonException)
+                                {
+                                    // If the string is not valid JSON for the target type, fall through to the
+                                    // default behavior. JSON-native types whose converters can throw a
+                                    // non-JsonException (e.g. JsonValue for a mismatched token) are excluded
+                                    // from re-parsing above, so only JsonException is possible here.
+                                }
+                            }
+                        }
+
+                        return JsonSerializer.Deserialize(element, typeInfo);
+                    }
 
                     object? MarshallViaJsonRoundtrip(object value)
                     {
