@@ -18,7 +18,7 @@ Complete stages strictly in order. Treat each stage -- and each sub-stage of a s
 3. Wait for the user's approval before committing, unless the stage's reference file directs automatic commits.
 4. Create a single commit that contains only that stage's (or sub-stage's) changes.
 
-Every stage gets its own commit, and every sub-stage gets its own commit. Never combine multiple stages or sub-stages into a single commit. Never push until the user explicitly instructs it, whatever a stage's commit cadence. Stage 3 is the exception: it is operational -- it pushes existing commits and queues pipelines rather than producing a commit of its own.
+Every stage gets its own commit, and every sub-stage gets its own commit. Never combine multiple stages or sub-stages into a single commit. Never push until the user explicitly instructs it, whatever a stage's commit cadence. Stages 3 and 4 are the exception: they are operational -- they push commits, queue pipelines, and publish/verify packages rather than producing a commit of their own.
 
 ## Stage 1 - Prepare Internal Branch
 
@@ -37,3 +37,9 @@ Read and follow [references/stage-2-update-dependencies.md](references/stage-2-u
 Validate the prepared `stage-release-<major>.<minor>` branch with an official build, then land it on the `internal/release/<major>.<minor>` branch. This stage is operational -- it pushes existing commits and queues the `official-build-pipeline` pipeline rather than creating new commits -- so it runs only on explicit user instruction and pauses before every push and land action. It gates landing on a green stage-branch pipeline and never auto-completes a pull request that needs elevation.
 
 Read and follow [references/stage-3-validate-and-land.md](references/stage-3-validate-and-land.md).
+
+## Stage 4 - Publish and Verify
+
+After Stage 3 lands the release and its official build produces the package artifacts, publish the packages to nuget.org and verify Source Link on the shipped symbols. Like Stage 3 this stage is operational and produces no commit; publishing is human-gated and irreversible, so the agent stages and reviews the package set but never runs the push or handles API keys, while the Source Link verification (via `scripts/Test-SourceLink.ps1`) is automated.
+
+Read and follow [references/stage-4-publish-and-verify.md](references/stage-4-publish-and-verify.md).
