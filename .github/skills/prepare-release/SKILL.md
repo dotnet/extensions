@@ -20,6 +20,8 @@ Complete stages strictly in order. Treat each stage -- and each sub-stage of a s
 
 Every stage gets its own commit, and every sub-stage gets its own commit. Never combine multiple stages or sub-stages into a single commit. Never push until the user explicitly instructs it, whatever a stage's commit cadence. Stages 3, 4, and 5 are the exception: they are operational -- they push commits, queue pipelines, publish/verify packages, and stage merge commits rather than producing an ordinary stage commit.
 
+Commits this skill creates land in public dotnet/extensions history -- the stage commits flow out through the non-squash internal-to-public merge, and Stage 5's reconciliation merge commits land directly. Keep the `Co-authored-by: Copilot` trailer on those commits but omit the `Copilot-Session` trailer.
+
 ## Stage 1 - Prepare Internal Branch
 
 Apply the internal-release infrastructure changes to the branch: suppress `NU1507`, remove the NuGet package source mapping, switch on stable/release versioning, add private-feed credential setup to the build template, comment out integration tests, and remove the code-coverage pipeline stage. Never change version numbers here -- those flow via Dependency Flow automation.
