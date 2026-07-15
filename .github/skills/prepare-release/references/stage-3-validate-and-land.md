@@ -59,7 +59,7 @@ git push <internal-remote> stage-release-<major>.<minor>:internal/release/<major
 ### Option 2 - Internal pull request
 
 - Create a pull request from `stage-release-<major>.<minor>` targeting `internal/release/<major>.<minor>` at `<internal-remote-url>`.
-- Complete it with a SQUASH commit titled `Prepare <major>.<minor> release`, with the detailed commit message cleared.
+- Complete it with **Rebase and fast-forward** (not Squash), preserving each sub-stage commit as a linear history so it matches Option 1's direct push and keeps each sub-stage's actions auditable. Do not squash.
 
 Never auto-complete a pull request that requires JIT elevation or repository admin-setting changes; hand those actions to the user.
 
