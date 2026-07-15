@@ -4,8 +4,8 @@
   the same two things nuget.info ("Valid with Symbol Server") checks.
 
 .DESCRIPTION
-  For each .nupkg: extracts a lib DLL, pulls the matching PDB from the NuGet symbol
-  server via dotnet-symbol, then runs `sourcelink test` on the PDB.
+  For each .nupkg: extracts a lib DLL, pulls the matching PDB from the Microsoft symbol
+  server (msdl) via dotnet-symbol, then runs `sourcelink test` on the PDB.
 
   Results:
     valid                 Source Link resolved and symbols were on the server
@@ -43,7 +43,7 @@ $results = foreach ($pkg in $pkgs) {
 
     $sd = Join-Path $ed 'sym'; New-Item -ItemType Directory -Path $sd | Out-Null
     Copy-Item $dll.FullName $sd
-    dotnet-symbol --symbols --server-path $SymbolServer --output $sd (Join-Path $sd $dll.Name) 2>&1 | Out-Null
+    dotnet-symbol --symbols --microsoft-symbol-server --server-path $SymbolServer --output $sd (Join-Path $sd $dll.Name) 2>&1 | Out-Null
     $pdb = Get-ChildItem -Path $sd -Filter '*.pdb' | Select-Object -First 1
     if (-not $pdb) { [pscustomobject]@{ Package = $pkg.Name; Result = 'symbols-not-indexed' }; continue }
 
