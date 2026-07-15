@@ -36,13 +36,26 @@ Carry the version bumps and internal product changes out to the public `release/
 
 4. Keep everything else staged, in particular the versioning changes (`eng/Version.Details.xml`, `eng/Versions.props`) and any internal-only product changes / backports.
 
-5. Review the staged diff: it should be version bumps + product changes, with **no** infrastructure changes. Then commit:
+5. Compare against the last five releases to check for anomalies vs. consistency. Look at the corresponding merge PRs from the previous five monthly releases (their titles vary -- e.g. "Merge published release into release/X.Y", "Merging internal changes into the release/X.Y branch", "Merge internal changes from X.Y"). Find them and list their changed files with `gh`:
+
+   ```
+   gh pr list --repo dotnet/extensions --base release/<earlier>.<minor> --state merged --json number,title
+   gh pr view <number> --repo dotnet/extensions --json files
+   ```
+
+   Compare this merge's staged file set (`git diff --cached --stat`) against them and flag anomalies to the user before committing:
+   - `eng/Version.Details.xml` and `eng/Versions.props` appear in every release and must be here too (including the stabilization flip).
+   - The internal-only infrastructure files (`Directory.Build.props`, `NuGet.config`, `azure-pipelines.yml`, `eng/pipelines/templates/BuildAndTest.yml`) are absent in every recent release and must be absent here too.
+   - `.github/skills/**` and other tooling files are excluded by recent releases -- flag if present.
+   - The remaining files should be version bumps plus intentional product/test backports. Flag anything unexpected: an unusually large or empty change set, missing versioning, leaked infrastructure, or files no prior release touched.
+
+6. Review the staged diff: it should be version bumps + product changes, with **no** infrastructure changes. Then commit:
 
    ```
    git commit -m "Merge published release into release/<major>.<minor>"
    ```
 
-6. Pushing (user-directed) to `dotnet` and opening the PR into `release/<major>.<minor>` -- title "Merge published release into release/<major>.<minor>", label `DO-NOT-SQUASH`, description "Merge using a merge commit. Do not squash." Do not enable auto-merge (squash). Completing the PR (JIT elevation, allow merge commits) is done by the user.
+7. Pushing (user-directed) to `dotnet` and opening the PR into `release/<major>.<minor>` -- title "Merge published release into release/<major>.<minor>", label `DO-NOT-SQUASH`, description "Merge using a merge commit. Do not squash." Do not enable auto-merge (squash). Completing the PR (JIT elevation, allow merge commits) is done by the user.
 
 ## Sub-stage 2 - Merge the public release branch into main
 
