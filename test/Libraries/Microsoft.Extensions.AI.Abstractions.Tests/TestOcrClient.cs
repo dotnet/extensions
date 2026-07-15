@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,10 +21,17 @@ public sealed class TestOcrClient : IOcrClient
     public Func<Stream,
         string,
         OcrOptions?,
-        IProgress<OcrProgress>?,
         CancellationToken,
         Task<OcrResult>>?
         ExtractAsyncCallback
+    { get; set; }
+
+    public Func<Stream,
+        string,
+        OcrOptions?,
+        CancellationToken,
+        IAsyncEnumerable<OcrResponseUpdate>>?
+        ExtractStreamingAsyncCallback
     { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
@@ -35,9 +43,15 @@ public sealed class TestOcrClient : IOcrClient
         Stream document,
         string mediaType,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
-        => ExtractAsyncCallback!.Invoke(document, mediaType, options, progress, cancellationToken);
+        => ExtractAsyncCallback!.Invoke(document, mediaType, options, cancellationToken);
+
+    public IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        Stream document,
+        string mediaType,
+        OcrOptions? options = null,
+        CancellationToken cancellationToken = default)
+        => ExtractStreamingAsyncCallback!.Invoke(document, mediaType, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
         => GetServiceCallback!.Invoke(serviceType, serviceKey);

@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// <c>ChatResponse</c> normalizes the common surface and preserves the raw.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OcrResult
+public class OcrResult
 {
     /// <summary>Initializes a new instance of the <see cref="OcrResult"/> class.</summary>
     /// <param name="pages">The per-page structured content.</param>
@@ -32,10 +32,6 @@ public sealed class OcrResult
 
     /// <summary>Gets the full-document markdown, formed by joining the per-page markdown.</summary>
     public string Markdown => string.Join("\n\n", Pages.Select(p => p.Markdown));
-
-    /// <summary>Gets or sets an identifier for the engine that produced this result.</summary>
-    /// <remarks>This typically flows downstream as an <c>ocr_source</c> metadata value.</remarks>
-    public string? OcrSource { get; set; }
 
     /// <summary>Gets or sets the model or deployment identifier that served the request.</summary>
     public string? ModelId { get; set; }

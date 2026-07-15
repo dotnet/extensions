@@ -28,7 +28,10 @@ public class OcrBoundingRegionTests
     {
         var region = new OcrBoundingRegion(1, [new OcrPoint(30, 40), new OcrPoint(100, 35), new OcrPoint(110, 90), new OcrPoint(25, 95)]);
 
-        var (left, top, right, bottom) = region.GetBounds();
+        var bounds = region.GetBounds();
+
+        Assert.NotNull(bounds);
+        var (left, top, right, bottom) = bounds.Value;
 
         Assert.Equal(25, left);
         Assert.Equal(35, top);
@@ -37,10 +40,10 @@ public class OcrBoundingRegionTests
     }
 
     [Fact]
-    public void GetBounds_EmptyPolygon_ReturnsDefault()
+    public void GetBounds_EmptyPolygon_ReturnsNull()
     {
         var region = new OcrBoundingRegion(1, []);
 
-        Assert.Equal(default, region.GetBounds());
+        Assert.Null(region.GetBounds());
     }
 }

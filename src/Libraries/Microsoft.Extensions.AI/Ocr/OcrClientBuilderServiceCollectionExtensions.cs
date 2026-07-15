@@ -18,6 +18,8 @@ public static class OcrClientBuilderServiceCollectionExtensions
     /// <param name="innerClient">The inner <see cref="IOcrClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="OcrClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     public static OcrClientBuilder AddOcrClient(
         this IServiceCollection serviceCollection,
         IOcrClient innerClient,
@@ -29,6 +31,8 @@ public static class OcrClientBuilderServiceCollectionExtensions
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IOcrClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="OcrClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     public static OcrClientBuilder AddOcrClient(
         this IServiceCollection serviceCollection,
         Func<IServiceProvider, IOcrClient> innerClientFactory,
@@ -48,6 +52,8 @@ public static class OcrClientBuilderServiceCollectionExtensions
     /// <param name="innerClient">The inner <see cref="IOcrClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="OcrClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClient"/> is <see langword="null"/>.</exception>
     public static OcrClientBuilder AddKeyedOcrClient(
         this IServiceCollection serviceCollection,
         object? serviceKey,
@@ -61,6 +67,8 @@ public static class OcrClientBuilderServiceCollectionExtensions
     /// <param name="innerClientFactory">A callback that produces the inner <see cref="IOcrClient"/> that represents the underlying backend.</param>
     /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>An <see cref="OcrClientBuilder"/> that can be used to build a pipeline around the inner client.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="serviceCollection"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="innerClientFactory"/> is <see langword="null"/>.</exception>
     public static OcrClientBuilder AddKeyedOcrClient(
         this IServiceCollection serviceCollection,
         object? serviceKey,

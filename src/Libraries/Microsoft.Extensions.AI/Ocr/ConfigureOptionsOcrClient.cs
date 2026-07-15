@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -40,10 +41,19 @@ public sealed class ConfigureOptionsOcrClient : DelegatingOcrClient
         Stream document,
         string mediaType,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        return await base.ExtractAsync(document, mediaType, Configure(options), progress, cancellationToken);
+        return await base.ExtractAsync(document, mediaType, Configure(options), cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        Stream document,
+        string mediaType,
+        OcrOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return base.ExtractStreamingAsync(document, mediaType, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="OcrOptions"/> to pass along to the inner client.</summary>

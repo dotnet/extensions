@@ -33,7 +33,7 @@ public class OpenTelemetryOcrClientTests
 
         using var innerClient = new TestOcrClient
         {
-            ExtractAsyncCallback = async (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = async (document, mediaType, options, cancellationToken) =>
             {
                 await Task.Yield();
                 return new OcrResult([new OcrPage(1, "This is the recognized text.")])

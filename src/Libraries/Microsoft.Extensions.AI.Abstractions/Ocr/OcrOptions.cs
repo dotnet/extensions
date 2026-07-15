@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AI;
 /// provider-specific settings, mirroring <c>ChatOptions</c>.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OcrOptions
+public class OcrOptions
 {
     /// <summary>Gets or sets the model or deployment identifier to use for this request.</summary>
     public string? ModelId { get; set; }

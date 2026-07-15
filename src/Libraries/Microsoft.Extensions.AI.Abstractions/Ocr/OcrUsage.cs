@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents usage details associated with an OCR request.</summary>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OcrUsage
+public class OcrUsage
 {
     /// <summary>Gets or sets the number of pages processed by the request, when known.</summary>
     public int? PagesProcessed { get; set; }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,7 @@ public class DelegatingOcrClientTests
         var expectedResponse = new OcrResult([]);
         using var inner = new TestOcrClient
         {
-            ExtractAsyncCallback = (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = (document, mediaType, options, cancellationToken) =>
             {
                 Assert.Same(expectedDocument, document);
                 Assert.Same(expectedMediaType, mediaType);
@@ -42,13 +43,61 @@ public class DelegatingOcrClientTests
         using var delegating = new NoOpDelegatingOcrClient(inner);
 
         // Act
-        var resultTask = delegating.ExtractAsync(expectedDocument, expectedMediaType, expectedOptions, null, expectedCancellationToken);
+        var resultTask = delegating.ExtractAsync(expectedDocument, expectedMediaType, expectedOptions, expectedCancellationToken);
 
         // Assert
         Assert.False(resultTask.IsCompleted);
         expectedResult.SetResult(expectedResponse);
         Assert.True(resultTask.IsCompleted);
         Assert.Same(expectedResponse, await resultTask);
+    }
+
+    [Fact]
+    public async Task ExtractStreamingAsyncDefaultsToInnerClientAsync()
+    {
+        // Arrange
+        using var expectedDocument = new MemoryStream();
+        var expectedMediaType = "application/pdf";
+        var expectedOptions = new OcrOptions();
+        using var cts = new CancellationTokenSource();
+        OcrResponseUpdate[] expectedUpdates =
+        [
+            new(new OcrPage(1, "page one")),
+            new(new OcrPage(2, "page two")),
+        ];
+
+        using var inner = new TestOcrClient
+        {
+            ExtractStreamingAsyncCallback = (document, mediaType, options, cancellationToken) =>
+            {
+                Assert.Same(expectedDocument, document);
+                Assert.Same(expectedMediaType, mediaType);
+                Assert.Same(expectedOptions, options);
+                Assert.Equal(cts.Token, cancellationToken);
+                return YieldAsync(expectedUpdates);
+            }
+        };
+
+        using var delegating = new NoOpDelegatingOcrClient(inner);
+
+        // Act
+        List<OcrResponseUpdate> received = [];
+        await foreach (var update in delegating.ExtractStreamingAsync(expectedDocument, expectedMediaType, expectedOptions, cts.Token))
+        {
+            received.Add(update);
+        }
+
+        // Assert
+        Assert.Equal(expectedUpdates, received);
+    }
+
+    private static async IAsyncEnumerable<OcrResponseUpdate> YieldAsync(IEnumerable<OcrResponseUpdate> updates)
+    {
+        foreach (var update in updates)
+        {
+            await Task.Yield();
+            yield return update;
+        }
     }
 
     [Fact]

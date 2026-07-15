@@ -43,7 +43,7 @@ public class OcrClientExtensionsTests
 
         using var client = new TestOcrClient
         {
-            ExtractAsyncCallback = async (document, mediaType, options, progress, cancellationToken) =>
+            ExtractAsyncCallback = async (document, mediaType, options, cancellationToken) =>
             {
                 observedMediaType = mediaType;
                 using var ms = new MemoryStream();

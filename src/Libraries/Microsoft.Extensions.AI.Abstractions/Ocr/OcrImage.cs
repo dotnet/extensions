@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// populate only <see cref="Caption"/>. This lets one shape serve both provider archetypes.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OcrImage
+public class OcrImage
 {
     /// <summary>Gets or sets the rendered image bytes, when the engine returns them.</summary>
     public DataContent? Content { get; set; }

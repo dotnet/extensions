@@ -19,12 +19,10 @@ public class OcrResultTests
     {
         var result = new OcrResult([new OcrPage(1, "page one"), new OcrPage(2, "page two")])
         {
-            OcrSource = "test-engine",
             ModelId = "model-1",
         };
 
         Assert.Equal("page one\n\npage two", result.Markdown);
-        Assert.Equal("test-engine", result.OcrSource);
         Assert.Equal("model-1", result.ModelId);
         Assert.Equal(2, result.Pages.Count);
     }

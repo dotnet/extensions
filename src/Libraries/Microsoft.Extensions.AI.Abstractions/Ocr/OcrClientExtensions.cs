@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
@@ -38,7 +39,6 @@ public static class OcrClientExtensions
     /// <param name="client">The client.</param>
     /// <param name="document">The document content to parse.</param>
     /// <param name="options">The OCR options to configure the request.</param>
-    /// <param name="progress">An optional progress reporter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The structured OCR result.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="document"/> is <see langword="null"/>.</exception>
@@ -46,7 +46,6 @@ public static class OcrClientExtensions
         this IOcrClient client,
         DataContent document,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
@@ -56,14 +55,13 @@ public static class OcrClientExtensions
             new MemoryStream(array.Array!, array.Offset, array.Count) :
             new MemoryStream(document.Data.ToArray());
 
-        return client.ExtractAsync(documentStream, document.MediaType, options, progress, cancellationToken);
+        return client.ExtractAsync(documentStream, document.MediaType, options, cancellationToken);
     }
 
     /// <summary>Runs OCR over a single document referenced by a <see cref="UriContent"/>.</summary>
     /// <param name="client">The client.</param>
     /// <param name="document">The document reference to parse.</param>
     /// <param name="options">The OCR options to configure the request.</param>
-    /// <param name="progress">An optional progress reporter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The structured OCR result.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="document"/> is <see langword="null"/>.</exception>
@@ -75,7 +73,7 @@ public static class OcrClientExtensions
     /// the bytes or hand the URL to the engine natively (for example Mistral <c>document_url</c> or Azure
     /// Document Intelligence <c>uriSource</c>) is an open design question the abstraction does not decide.
     /// To download a remote document explicitly, use
-    /// <see cref="ExtractFromUriAsync(IOcrClient, UriContent, HttpClient, OcrOptions?, IProgress{OcrProgress}?, CancellationToken)"/>
+    /// <see cref="ExtractFromUriAsync(IOcrClient, UriContent, HttpClient, OcrOptions?, CancellationToken)"/>
     /// with a caller-supplied <see cref="HttpClient"/>; or read the bytes yourself and pass a
     /// <see cref="Stream"/> or <see cref="DataContent"/>; or use an engine that accepts a URL directly.
     /// </remarks>
@@ -83,7 +81,6 @@ public static class OcrClientExtensions
         this IOcrClient client,
         UriContent document,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
@@ -93,7 +90,7 @@ public static class OcrClientExtensions
         if (uri.IsAbsoluteUri && string.Equals(uri.Scheme, "data", StringComparison.OrdinalIgnoreCase))
         {
             // Reuse DataContent's data: URI parsing, then defer to the DataContent overload.
-            return client.ExtractAsync(new DataContent(uri), options, progress, cancellationToken);
+            return client.ExtractAsync(new DataContent(uri), options, cancellationToken);
         }
 
         throw new NotSupportedException(
@@ -109,14 +106,13 @@ public static class OcrClientExtensions
     /// <param name="document">The document reference to download and parse.</param>
     /// <param name="httpClient">The <see cref="HttpClient"/> used to download remote (<c>http</c>/<c>https</c>) documents.</param>
     /// <param name="options">The OCR options to configure the request.</param>
-    /// <param name="progress">An optional progress reporter.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The structured OCR result.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/>, <paramref name="document"/>, or <paramref name="httpClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="NotSupportedException">The <paramref name="document"/> uses a scheme other than <c>data:</c>, <c>http</c>, or <c>https</c>.</exception>
     /// <remarks>
     /// This is the explicit, opt-in counterpart to
-    /// <see cref="ExtractAsync(IOcrClient, UriContent, OcrOptions?, IProgress{OcrProgress}?, CancellationToken)"/>,
+    /// <see cref="ExtractAsync(IOcrClient, UriContent, OcrOptions?, CancellationToken)"/>,
     /// which never touches the network. Self-contained <c>data:</c> URIs are handled inline (no download);
     /// <c>http</c>/<c>https</c> URIs are fetched with the supplied <paramref name="httpClient"/> and passed
     /// to the stream-based extraction path. The abstraction performs no ambient network IO: the caller owns
@@ -129,7 +125,6 @@ public static class OcrClientExtensions
         UriContent document,
         HttpClient httpClient,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
@@ -141,7 +136,7 @@ public static class OcrClientExtensions
         // Self-contained data: URIs carry their own bytes - no download needed.
         if (uri.IsAbsoluteUri && string.Equals(uri.Scheme, "data", StringComparison.OrdinalIgnoreCase))
         {
-            return await client.ExtractAsync(document, options, progress, cancellationToken).ConfigureAwait(false);
+            return await client.ExtractAsync(document, options, cancellationToken).ConfigureAwait(false);
         }
 
         if (!uri.IsAbsoluteUri ||
@@ -165,6 +160,64 @@ public static class OcrClientExtensions
 #else
         using Stream contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #endif
-        return await client.ExtractAsync(contentStream, mediaType, options, progress, cancellationToken).ConfigureAwait(false);
+        return await client.ExtractAsync(contentStream, mediaType, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Runs streaming OCR over a single document provided as a <see cref="DataContent"/>.</summary>
+    /// <param name="client">The client.</param>
+    /// <param name="document">The document content to parse.</param>
+    /// <param name="options">The OCR options to configure the request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The structured OCR updates representing the streamed output.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="document"/> is <see langword="null"/>.</exception>
+    public static IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        this IOcrClient client,
+        DataContent document,
+        OcrOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(client);
+        _ = Throw.IfNull(document);
+
+        var documentStream = MemoryMarshal.TryGetArray(document.Data, out var array) ?
+            new MemoryStream(array.Array!, array.Offset, array.Count) :
+            new MemoryStream(document.Data.ToArray());
+
+        return client.ExtractStreamingAsync(documentStream, document.MediaType, options, cancellationToken);
+    }
+
+    /// <summary>Runs streaming OCR over a single document referenced by a <see cref="UriContent"/>.</summary>
+    /// <param name="client">The client.</param>
+    /// <param name="document">The document reference to parse.</param>
+    /// <param name="options">The OCR options to configure the request.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The structured OCR updates representing the streamed output.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="document"/> is <see langword="null"/>.</exception>
+    /// <exception cref="NotSupportedException">The <paramref name="document"/> references a remote URI, which this overload does not fetch.</exception>
+    /// <remarks>
+    /// This is the streaming counterpart to
+    /// <see cref="ExtractAsync(IOcrClient, UriContent, OcrOptions?, CancellationToken)"/>; it handles only
+    /// self-contained <c>data:</c> URIs and does no file or network IO. For <c>file:</c> and remote URIs it
+    /// throws, for the same reasons documented on the unary overload.
+    /// </remarks>
+    public static IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        this IOcrClient client,
+        UriContent document,
+        OcrOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(client);
+        _ = Throw.IfNull(document);
+
+        Uri uri = document.Uri;
+        if (uri.IsAbsoluteUri && string.Equals(uri.Scheme, "data", StringComparison.OrdinalIgnoreCase))
+        {
+            // Reuse DataContent's data: URI parsing, then defer to the DataContent overload.
+            return client.ExtractStreamingAsync(new DataContent(uri), options, cancellationToken);
+        }
+
+        throw new NotSupportedException(
+            "This overload handles only self-contained data: URIs. For file or remote URIs, read the bytes " +
+            "and pass a stream or DataContent, or use an engine that accepts a URL natively.");
     }
 }

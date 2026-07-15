@@ -4,6 +4,7 @@
 #pragma warning disable MEAI001 // OCR abstractions are experimental.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -61,13 +62,19 @@ public class OcrDocumentReaderTests
             Stream document,
             string mediaType,
             OcrOptions? options = null,
-            IProgress<OcrProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
             MediaType = mediaType;
             Options = options;
             return Task.FromResult(result);
         }
+
+        public IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+            Stream document,
+            string mediaType,
+            OcrOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
 

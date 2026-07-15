@@ -10,12 +10,14 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents a table extracted from a document.</summary>
 /// <remarks>
 /// Cells are the primary, structured representation (row and column indices with spans, the Azure
-/// Document Intelligence shape). <see cref="MarkdownRepresentation"/> is the fallback for engines that
-/// only emit markdown or HTML (such as Mistral OCR). Consumers prefer <see cref="Cells"/> when present
-/// and fall back to <see cref="MarkdownRepresentation"/> otherwise.
+/// Document Intelligence shape) and are authoritative when non-<see langword="null"/>.
+/// <see cref="MarkdownRepresentation"/> is the fallback for engines that only emit markdown or HTML
+/// (such as Mistral OCR). Consumers prefer <see cref="Cells"/> when present and fall back to
+/// <see cref="MarkdownRepresentation"/> otherwise. On the markdown-only path <see cref="RowCount"/> and
+/// <see cref="ColumnCount"/> may be 0 because the structure was not enumerated.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OcrTable
+public class OcrTable
 {
     /// <summary>Initializes a new instance of the <see cref="OcrTable"/> class.</summary>
     /// <param name="rowCount">The number of rows in the table.</param>

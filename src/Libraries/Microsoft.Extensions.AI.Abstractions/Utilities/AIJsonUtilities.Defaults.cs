@@ -143,7 +143,7 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(OcrOptions))]
     [JsonSerializable(typeof(OcrClientMetadata))]
     [JsonSerializable(typeof(OcrResult))]
-    [JsonSerializable(typeof(OcrProgress))]
+    [JsonSerializable(typeof(OcrResponseUpdate))]
 
     // IHostedFileClient
     [JsonSerializable(typeof(HostedFileClientOptions))]

@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.AI;
 /// layout-block geometry and for field grounding, providing one region primitive across providers.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OcrBoundingRegion
+public class OcrBoundingRegion
 {
     /// <summary>Initializes a new instance of the <see cref="OcrBoundingRegion"/> class.</summary>
     /// <param name="pageNumber">The one-based page number the region is on.</param>
@@ -55,12 +55,16 @@ public sealed class OcrBoundingRegion
         ]);
 
     /// <summary>Computes the axis-aligned bounds of the polygon.</summary>
-    /// <returns>The axis-aligned bounds, or <see langword="default"/> when the polygon has no vertices.</returns>
-    public OcrBoundingBox GetBounds()
+    /// <returns>The axis-aligned bounds, or <see langword="null"/> when the polygon has no vertices.</returns>
+    /// <remarks>
+    /// Returning <see langword="null"/> for an empty polygon avoids conflating "no geometry" with a real
+    /// zero-size box located at the origin.
+    /// </remarks>
+    public OcrBoundingBox? GetBounds()
     {
         if (Polygon.Count == 0)
         {
-            return default;
+            return null;
         }
 
         float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;

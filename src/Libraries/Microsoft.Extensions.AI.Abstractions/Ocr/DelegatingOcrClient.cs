@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -43,10 +44,19 @@ public class DelegatingOcrClient : IOcrClient
         Stream document,
         string mediaType,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        return InnerClient.ExtractAsync(document, mediaType, options, progress, cancellationToken);
+        return InnerClient.ExtractAsync(document, mediaType, options, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public virtual IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        Stream document,
+        string mediaType,
+        OcrOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return InnerClient.ExtractStreamingAsync(document, mediaType, options, cancellationToken);
     }
 
     /// <inheritdoc />

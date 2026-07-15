@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -100,7 +101,6 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         Stream document,
         string mediaType,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(document);
@@ -113,7 +113,7 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         Exception? error = null;
         try
         {
-            response = await base.ExtractAsync(document, mediaType, options, progress, cancellationToken);
+            response = await base.ExtractAsync(document, mediaType, options, cancellationToken);
             return response;
         }
         catch (Exception ex)
@@ -124,6 +124,69 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         finally
         {
             TraceResponse(activity, requestModelId, response, error, stopwatch);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        Stream document,
+        string mediaType,
+        OcrOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(document);
+
+        using Activity? activity = CreateAndConfigureActivity(options);
+        Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
+        string? requestModelId = options?.ModelId ?? _defaultModelId;
+
+        IAsyncEnumerable<OcrResponseUpdate> updates;
+        try
+        {
+            updates = base.ExtractStreamingAsync(document, mediaType, options, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            TraceResponse(activity, requestModelId, response: null, ex, stopwatch);
+            throw;
+        }
+
+        var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
+        List<OcrResponseUpdate> trackedUpdates = [];
+        Exception? error = null;
+        try
+        {
+            while (true)
+            {
+                OcrResponseUpdate update;
+                try
+                {
+                    if (!await responseEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+
+                    update = responseEnumerator.Current;
+                }
+                catch (Exception ex)
+                {
+                    error = ex;
+                    throw;
+                }
+
+                trackedUpdates.Add(update);
+                yield return update;
+                if (activity is not null)
+                {
+                    Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
+                }
+            }
+        }
+        finally
+        {
+            TraceResponse(activity, requestModelId, trackedUpdates.ToOcrResult(), error, stopwatch);
+
+            await responseEnumerator.DisposeAsync();
         }
     }
 

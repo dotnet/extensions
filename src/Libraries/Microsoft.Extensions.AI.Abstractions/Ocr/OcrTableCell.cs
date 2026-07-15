@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a single cell within an <see cref="OcrTable"/>.</summary>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public sealed class OcrTableCell
+public class OcrTableCell
 {
     /// <summary>Initializes a new instance of the <see cref="OcrTableCell"/> class.</summary>
     /// <param name="rowIndex">The zero-based row index of the cell.</param>
@@ -23,8 +23,8 @@ public sealed class OcrTableCell
         Content = Throw.IfNull(content);
     }
 
-    /// <summary>Gets or sets the role of the cell, for example <c>columnHeader</c> or <c>content</c>.</summary>
-    public string? Kind { get; set; }
+    /// <summary>Gets or sets the role of the cell, for example <see cref="OcrTableCellKind.ColumnHeader"/> or <see cref="OcrTableCellKind.Content"/>.</summary>
+    public OcrTableCellKind? Kind { get; set; }
 
     /// <summary>Gets the zero-based row index of the cell.</summary>
     public int RowIndex { get; }

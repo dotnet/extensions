@@ -91,8 +91,12 @@ public sealed class OcrDocumentReader : IngestionDocumentReader
 
         if (image.BoundingRegion is not null)
         {
-            (float left, float top, float right, float bottom) = image.BoundingRegion.GetBounds();
-            element.Metadata[BoundingBoxMetadataKey] = new[] { left, top, right, bottom };
+            if (image.BoundingRegion.GetBounds() is { } bounds)
+            {
+                (float left, float top, float right, float bottom) = bounds;
+                element.Metadata[BoundingBoxMetadataKey] = new[] { left, top, right, bottom };
+            }
+
             element.Metadata[BoundingRegionMetadataKey] = image.BoundingRegion.Polygon.SelectMany(static p => new[] { p.X, p.Y }).ToArray();
         }
 

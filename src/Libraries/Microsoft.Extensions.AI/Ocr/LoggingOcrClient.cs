@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,7 +59,6 @@ public partial class LoggingOcrClient : DelegatingOcrClient
         Stream document,
         string mediaType,
         OcrOptions? options = null,
-        IProgress<OcrProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
@@ -74,7 +75,7 @@ public partial class LoggingOcrClient : DelegatingOcrClient
 
         try
         {
-            var result = await base.ExtractAsync(document, mediaType, options, progress, cancellationToken);
+            var result = await base.ExtractAsync(document, mediaType, options, cancellationToken);
 
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -102,6 +103,89 @@ public partial class LoggingOcrClient : DelegatingOcrClient
         }
     }
 
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        Stream document,
+        string mediaType,
+        OcrOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogInvokedSensitive(nameof(ExtractStreamingAsync), mediaType, AsJson(options), AsJson(this.GetService<OcrClientMetadata>()));
+            }
+            else
+            {
+                LogInvoked(nameof(ExtractStreamingAsync));
+            }
+        }
+
+        IAsyncEnumerator<OcrResponseUpdate> e;
+        try
+        {
+            e = base.ExtractStreamingAsync(document, mediaType, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            LogInvocationCanceled(nameof(ExtractStreamingAsync));
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogInvocationFailed(nameof(ExtractStreamingAsync), ex);
+            throw;
+        }
+
+        try
+        {
+            OcrResponseUpdate? update = null;
+            while (true)
+            {
+                try
+                {
+                    if (!await e.MoveNextAsync())
+                    {
+                        break;
+                    }
+
+                    update = e.Current;
+                }
+                catch (OperationCanceledException)
+                {
+                    LogInvocationCanceled(nameof(ExtractStreamingAsync));
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    LogInvocationFailed(nameof(ExtractStreamingAsync), ex);
+                    throw;
+                }
+
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    if (_logger.IsEnabled(LogLevel.Trace))
+                    {
+                        LogStreamingUpdateSensitive(AsJson(update));
+                    }
+                    else
+                    {
+                        LogStreamingUpdate();
+                    }
+                }
+
+                yield return update;
+            }
+
+            LogCompleted(nameof(ExtractStreamingAsync));
+        }
+        finally
+        {
+            await e.DisposeAsync();
+        }
+    }
+
     private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
@@ -115,6 +199,12 @@ public partial class LoggingOcrClient : DelegatingOcrClient
 
     [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {OcrResult}.")]
     private partial void LogCompletedSensitive(string methodName, string ocrResult);
+
+    [LoggerMessage(LogLevel.Debug, "ExtractStreamingAsync received update.")]
+    private partial void LogStreamingUpdate();
+
+    [LoggerMessage(LogLevel.Trace, "ExtractStreamingAsync received update: {OcrResponseUpdate}")]
+    private partial void LogStreamingUpdateSensitive(string ocrResponseUpdate);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);
