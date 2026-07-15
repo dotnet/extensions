@@ -16,6 +16,9 @@ import {
     DrawerBody,
     DrawerHeader,
     DrawerHeaderTitle,
+    useArrowNavigationGroup,
+    useRestoreFocusTarget,
+    useRestoreFocusSource,
 } from '@fluentui/react-components';
 import {
     Settings28Regular,
@@ -24,8 +27,9 @@ import {
     WeatherMoonRegular,
     WeatherSunnyRegular,
 } from '@fluentui/react-icons';
-import { MoverDirections, getTabsterAttribute } from 'tabster';
 import { useReportContext, type ReportView } from '../core/ReportContext';
+import { useAnnounce } from '../core/Announcer';
+import { srOnlyStyle } from '../styles/reportStyles';
 import { resolveTheme, detectHostDarkMode } from './theme';
 import { useAdoResize } from './useAdoResize';
 import { SidebarTree } from './SidebarTree';
@@ -42,6 +46,39 @@ const SIDEBAR_WIDTH = '274px';
 const TOPBAR_HEIGHT = '48px';
 
 const useStyles = makeStyles({
+    skipLink: {
+        position: 'absolute',
+        top: 0,
+        left: '8px',
+        zIndex: 1000,
+        boxSizing: 'border-box',
+        maxWidth: 'calc(100% - 16px)',
+        whiteSpace: 'nowrap',
+        paddingTop: '8px',
+        paddingBottom: '8px',
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        backgroundColor: 'var(--neutral-background-1)',
+        color: 'var(--neutral-foreground-1)',
+        boxShadow: 'var(--shadow-8, 0 2px 8px rgba(0, 0, 0, 0.25))',
+        borderTopLeftRadius: 'var(--radius-medium, 4px)',
+        borderTopRightRadius: 'var(--radius-medium, 4px)',
+        borderBottomLeftRadius: 'var(--radius-medium, 4px)',
+        borderBottomRightRadius: 'var(--radius-medium, 4px)',
+        textDecorationLine: 'none',
+        transform: 'translateY(calc(-100% - 12px))',
+        transitionProperty: 'transform',
+        transitionDuration: '0.15s',
+        ':focus': {
+            transform: 'translateY(8px)',
+        },
+        '@media (max-width: 640px)': {
+            whiteSpace: 'normal',
+            ':focus': {
+                transform: `translateY(calc(${TOPBAR_HEIGHT} + 8px))`,
+            },
+        },
+    },
     rootFill: {
         display: 'flex',
         flexDirection: 'column',
@@ -110,7 +147,7 @@ const useStyles = makeStyles({
         justifySelf: 'end',
         display: 'flex',
         alignItems: 'center',
-        gap: 'var(--spacing-xs)',
+        gap: 'var(--spacing-s)',
     },
 
     shell: {
@@ -176,6 +213,12 @@ const useStyles = makeStyles({
         position: 'relative',
         zIndex: 2,
         boxShadow: 'var(--shadow-8)',
+        scrollPaddingTop: 'calc(var(--eval-pivotbar-h, 49px) + var(--spacing-s))',
+        ':focus': { outline: 'none' },
+        ':focus-visible': {
+            outline: '2px solid var(--brand-80)',
+            outlineOffset: '-2px',
+        },
     },
     pivotbar: {
         flex: 'none',
@@ -190,12 +233,19 @@ const useStyles = makeStyles({
         display: 'flex',
         gap: 'var(--spacing-xs)',
         position: 'relative',
+        '@media (max-width: 640px)': {
+            overflowX: 'auto',
+            paddingTop: '2px',
+            paddingBottom: '2px',
+            scrollbarWidth: 'thin',
+        },
     },
     pivotIndicator: {
         position: 'absolute',
         zIndex: 1,
         left: 0,
         bottom: 0,
+        '@media (max-width: 640px)': { bottom: '2px' },
         height: '2px',
         borderRadius: 'var(--radius-circular)',
         backgroundColor: 'var(--compound-brand-background)',
@@ -218,8 +268,6 @@ const useStyles = makeStyles({
         color: 'var(--neutral-foreground-2)',
         fontWeight: 'var(--font-weight-regular)',
         transition: 'color var(--duration-faster) var(--curve-easy-ease)',
-        // Hover underline that fades in beneath the tab (the active tab uses the
-        // separately-animated slide indicator, not this ::before).
         '&::before': {
             content: '""',
             position: 'absolute',
@@ -233,6 +281,7 @@ const useStyles = makeStyles({
         },
         ':hover': { color: 'var(--neutral-foreground-1)' },
         '&:hover::before': { background: 'var(--neutral-stroke-1-hover)' },
+        '@media (max-width: 640px)': { flexShrink: 0 },
     },
     pivotActive: {
         color: 'var(--neutral-foreground-1)',
@@ -241,7 +290,6 @@ const useStyles = makeStyles({
     pivotLabel: {
         display: 'inline-flex',
         flexDirection: 'column',
-        // Reserves the bold-active width so switching tabs doesn't shift layout.
         '&::after': {
             content: 'attr(data-text)',
             fontWeight: 'var(--font-weight-semibold)',
@@ -306,12 +354,13 @@ const BrandMark = () => (
 
 const ThemeToggle = () => {
     const { darkMode, setDarkMode } = useReportContext();
+    const announce = useAnnounce();
     return (
         <Tooltip content={darkMode ? 'Switch to light theme' : 'Switch to dark theme'} relationship="label">
             <Button
                 appearance="subtle"
                 icon={darkMode ? <WeatherSunnyRegular /> : <WeatherMoonRegular />}
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={() => { const next = !darkMode; setDarkMode(next); announce(next ? 'Dark theme enabled' : 'Light theme enabled'); }}
                 aria-label={darkMode ? 'Switch to light theme' : 'Switch to dark theme'}
             />
         </Tooltip>
@@ -321,9 +370,30 @@ const ThemeToggle = () => {
 const PivotBar = ({ casesCount }: { casesCount: number }) => {
     const classes = useStyles();
     const { view, setView } = useReportContext();
+    // Every tab must keep tabIndex={0} for the Tabster Mover — a roving tabIndex kills arrow-nav.
+    const arrowNav = useArrowNavigationGroup({ axis: 'horizontal', circular: true });
+    const barRef = useRef<HTMLDivElement | null>(null);
     const trackRef = useRef<HTMLDivElement | null>(null);
     const indRef = useRef<HTMLSpanElement | null>(null);
     const placedRef = useRef(false);
+
+    useLayoutEffect(() => {
+        const bar = barRef.current;
+        const port = bar?.closest('main');
+        if (!bar || !port) return;
+        let last = '';
+        const publish = () => {
+            const next = `${Math.ceil(bar.getBoundingClientRect().height)}px`;
+            if (next === last) return;
+            last = next;
+            port.style.setProperty('--eval-pivotbar-h', next);
+        };
+        publish();
+        if (typeof ResizeObserver === 'undefined') return;
+        const ro = new ResizeObserver(publish);
+        ro.observe(bar);
+        return () => ro.disconnect();
+    }, []);
 
     useLayoutEffect(() => {
         const track = trackRef.current;
@@ -354,13 +424,13 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
     }, [view, casesCount]);
 
     return (
-        <div className={classes.pivotbar}>
+        <div className={classes.pivotbar} ref={barRef}>
             <div
                 className={classes.tablist}
                 role="tablist"
                 aria-label="Report views"
                 ref={trackRef}
-                {...getTabsterAttribute({ mover: { direction: MoverDirections.Horizontal, cyclic: true } })}
+                {...arrowNav}
             >
                 <span ref={indRef} className={classes.pivotIndicator} aria-hidden="true" />
                 {TAB_ITEMS.map((t) => {
@@ -370,8 +440,10 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
                             key={t.value}
                             type="button"
                             role="tab"
+                            id={`report-tab-${t.value}`}
                             aria-selected={active}
-                            tabIndex={active ? 0 : -1}
+                            aria-controls="report-tabpanel"
+                            tabIndex={0}
                             className={mergeClasses(classes.pivot, active && classes.pivotActive)}
                             onClick={() => setView(t.value)}
                         >
@@ -402,7 +474,7 @@ const Sidebar = () => {
     const selectedExec = activeExecution;
 
     return (
-        <aside className={mergeClasses(classes.sidebar, 'eval-sidebar')}>
+        <nav aria-label="Scenarios" className={mergeClasses(classes.sidebar, 'eval-sidebar')}>
             <div className={mergeClasses(classes.sidebarTree, 'eval-sidebar-tree')}>
                 <div className={classes.sidebarSectionLabel}>Scenarios</div>
                 <SidebarTree />
@@ -423,12 +495,14 @@ const Sidebar = () => {
                     ))}
                 </Dropdown>
             </div>
-        </aside>
+        </nav>
     );
 };
 
 const SettingsDrawer = () => {
     const classes = useStyles();
+    const restoreFocusSourceAttrs = useRestoreFocusSource();
+    const announce = useAnnounce();
     const {
         dataset, scoreSummary,
         isSettingsOpen, setIsSettingsOpen,
@@ -447,10 +521,11 @@ const SettingsDrawer = () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        announce('Report data downloaded as JSON');
     };
 
     return (
-        <Drawer open={isSettingsOpen} onOpenChange={(_ev, data) => setIsSettingsOpen(data.open)} position="end">
+        <Drawer open={isSettingsOpen} onOpenChange={(_ev, data) => setIsSettingsOpen(data.open)} position="end" {...restoreFocusSourceAttrs}>
             <DrawerHeader>
                 <DrawerHeaderTitle>Settings</DrawerHeaderTitle>
                 <Button
@@ -511,9 +586,12 @@ export const AppShell = ({
     children: React.ReactNode;
 }) => {
     const classes = useStyles();
-    const { dataset, scopedNode, setIsSettingsOpen } = useReportContext();
-    const { darkMode, setDarkMode } = useReportContext();
-    const { setView, clearScenarioLevel } = useReportContext();
+    const {
+        dataset, scopedNode, setIsSettingsOpen,
+        darkMode, setDarkMode,
+        view, setView, clearScenarioLevel,
+    } = useReportContext();
+    const restoreFocusTargetAttrs = useRestoreFocusTarget();
 
     const goHome = () => {
         setView('overview');
@@ -539,16 +617,15 @@ export const AppShell = ({
     const rootClassName = heightStrategy === 'auto-grow' ? classes.rootAutoGrow : classes.rootFill;
 
     return (
-        // FluentProvider carries only the theme class: Fluent copies a provider's
-        // className onto the FluentProviders it renders inside portals.
         <FluentProvider theme={fluentTheme} className={rootClass}>
             <div className={mergeClasses('eval-root', rootClassName)}>
+            <a href="#eval-main" className={classes.skipLink}>Skip to main content</a>
             <header className={mergeClasses(classes.topbar, 'eval-topbar')}>
                 <button
                     type="button"
                     className={classes.brand}
                     onClick={goHome}
-                    aria-label="Go to Overview, all scenarios"
+                    aria-label="AI Evaluation Report — go to Overview, all scenarios"
                 >
                     <BrandMark />
                     <span className={classes.brandText}>AI Evaluation Report</span>
@@ -556,16 +633,25 @@ export const AppShell = ({
                 <div className={classes.topbarActions}>
                     {themeSource === 'toggle' && <ThemeToggle />}
                     <Tooltip content="Settings" relationship="label">
-                        <Button icon={<Settings28Regular />} appearance="subtle" onClick={() => setIsSettingsOpen(true)} aria-label="Settings" />
+                        <Button icon={<Settings28Regular />} appearance="subtle" onClick={() => setIsSettingsOpen(true)} aria-label="Settings" {...restoreFocusTargetAttrs} />
                     </Tooltip>
                 </div>
             </header>
 
             <div className={mergeClasses(classes.shell, 'eval-shell')}>
                 <Sidebar />
-                <main className={mergeClasses(classes.main, 'eval-main')}>
+                <main id="eval-main" tabIndex={-1} className={mergeClasses(classes.main, 'eval-main')}>
+                    <h1 style={srOnlyStyle}>
+                        AI Evaluation Report
+                    </h1>
                     <PivotBar casesCount={casesCount} />
-                    <div className={mergeClasses(classes.contentInner, 'eval-content')} data-screen-label="content">
+                    <div
+                        className={mergeClasses(classes.contentInner, 'eval-content')}
+                        data-screen-label="content"
+                        role="tabpanel"
+                        id="report-tabpanel"
+                        aria-labelledby={`report-tab-${view}`}
+                    >
                         {children}
                     </div>
                     <footer className={classes.footer}>

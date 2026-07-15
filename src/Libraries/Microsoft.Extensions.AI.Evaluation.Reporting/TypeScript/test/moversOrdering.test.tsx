@@ -8,9 +8,9 @@ import {
     formatScore,
 } from '../components/core/viewModels';
 
-const E1 = 'run-alpha'; // chronologically earliest
-const E2 = 'run-bravo'; // middle
-const E3 = 'run-charlie'; // chronologically latest
+const E1 = 'run-alpha';
+const E2 = 'run-bravo';
+const E3 = 'run-charlie';
 
 const T1 = '2026-01-01T00:00:00.000Z';
 const T2 = '2026-02-01T00:00:00.000Z';
@@ -44,31 +44,24 @@ const row = (
         formatVersion: 1 as unknown as int,
     }) as ScenarioRunResult;
 
-// Scenario A: two accuracy cases per exec (E1:2,4→3; E2:3,5→4; E3:4,4→4) so mean-over-cases
-// is non-trivial. Scenario B: a fraction metric to exercise fraction formatting.
 const makeExec = (exec: string, t: string, accA: [number, number], fracB: number): ScenarioRunResult[] => [
     row('Group.ScenarioA', 'iteration1', exec, t, { accuracy: numeric('accuracy', accA[0]) }),
     row('Group.ScenarioA', 'iteration2', exec, t, { accuracy: numeric('accuracy', accA[1]) }),
     row('Group.ScenarioB', 'iteration1', exec, t, { coverage: numeric('coverage', fracB) }),
 ];
 
-// INSERTION ORDER: newest-first (E3, then E2, then E1) — the reverse of chrono.
 const dataset: Dataset = {
     generatorVersion: '0.0.1',
     createdAt: T3,
     scenarioRunResults: [
         ...makeExec(E3, T3, [4, 4], 0.9),
         ...makeExec(E2, T2, [3, 5], 0.5),
-        // Scenario B of the earliest run is inserted before scenario A, so the first E1 row seen
-        // isn't the "primary" one — proves min-over-rows (not first-row) picks the representative.
         row('Group.ScenarioB', 'iteration1', E1, T1, { coverage: numeric('coverage', 0.1) }),
         row('Group.ScenarioA', 'iteration1', E1, T1, { accuracy: numeric('accuracy', 2) }),
         row('Group.ScenarioA', 'iteration2', E1, T1, { accuracy: numeric('accuracy', 4) }),
     ],
 };
 
-// Inline mean-over-cases for one (scenario, metric, exec), computed independently of the view
-// so the parity assertion pins moversBetween to the same numbers by construction.
 const meanOf = (scenario: string, metricName: string, exec: string): number => {
     const vals = dataset.scenarioRunResults
         .filter((r) => r.executionName === exec && r.scenarioName === scenario)
@@ -82,10 +75,26 @@ describe('chronologicalExecutions — orders by min creationTime, not insertion 
         expect(chronologicalExecutions(dataset)).toEqual([E1, E2, E3]);
     });
 
-    it('reduces each execution to its MIN row creationTime (row order within an exec is irrelevant)', () => {
-        // E1 rows are inserted ScenarioB-first, yet E1 still sorts earliest.
-        const chrono = chronologicalExecutions(dataset);
-        expect(chrono[0]).toBe(E1);
+    it("orders by each execution's MIN row creationTime, not its first/last row or insertion order", () => {
+        const A = 'exec-A';
+        const B = 'exec-B';
+        const t10 = '2026-01-10T00:00:00.000Z';
+        const t20 = '2026-01-20T00:00:00.000Z';
+        const t30 = '2026-01-30T00:00:00.000Z';
+        // B is inserted first; A's rows are interleaved in time — a late t30 row appears
+        // before an early t10 row. Only a per-exec MIN reduction (A.min=t10 < B.min=t20)
+        // yields [A, B]. Insertion order, first-row time, and max-row time all give [B, A],
+        // so this fixture genuinely exercises the MIN logic (the old test could not).
+        const interleaved: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: t30,
+            scenarioRunResults: [
+                row('S.One', 'it1', B, t20, { m: numeric('m', 1) }),
+                row('S.One', 'it1', A, t30, { m: numeric('m', 2) }),
+                row('S.One', 'it2', A, t10, { m: numeric('m', 3) }),
+            ],
+        };
+        expect(chronologicalExecutions(interleaved)).toEqual([A, B]);
     });
 });
 
@@ -94,14 +103,10 @@ describe('moversBetween — baseline is the chronological predecessor', () => {
         const chrono = chronologicalExecutions(dataset);
         const selected = E3;
         const prev = chrono[chrono.indexOf(selected) - 1];
-        expect(prev).toBe(E2); // chronological predecessor of E3
+        expect(prev).toBe(E2);
 
-        // Guard direction explicitly: selecting E2 must baseline against E1 (chronological),
-        // never against E3, which is only insertion-newer.
         const moversE2 = moversBetween(dataset.scenarioRunResults, E2, chrono[chrono.indexOf(E2) - 1]);
         const accE2 = moversE2.find((m) => m.scenarioName === 'Group.ScenarioA' && m.metricName === 'accuracy')!;
-        // mean(E2)=4, mean(E1)=3 → delta = +1 (vs E1). If it baselined on E3
-        // (mean 4) the delta would be 0 — this pins the correct direction.
         expect(accE2.delta).toBeCloseTo(meanOf('Group.ScenarioA', 'accuracy', E2) - meanOf('Group.ScenarioA', 'accuracy', E1), 10);
         expect(accE2.delta).toBeCloseTo(1, 10);
     });
@@ -112,7 +117,6 @@ describe('moversBetween — baseline is the chronological predecessor', () => {
         const movers = moversBetween(dataset.scenarioRunResults, E3, prev, Infinity);
         const keys = movers.map((m) => `${m.scenarioName}::${m.metricName}`);
         expect(new Set(keys).size).toBe(keys.length);
-        // Scenario A has 2 cases per exec but must collapse to ONE accuracy row.
         expect(keys.filter((k) => k === 'Group.ScenarioA::accuracy').length).toBe(1);
     });
 
@@ -127,12 +131,12 @@ describe('moversBetween — baseline is the chronological predecessor', () => {
     it('per-pair value/delta equal an inline mean-over-cases recompute (parity, no view import)', () => {
         const chrono = chronologicalExecutions(dataset);
         const selected = E3;
-        const prev = chrono[chrono.indexOf(selected) - 1]; // E2
+        const prev = chrono[chrono.indexOf(selected) - 1];
         const movers = moversBetween(dataset.scenarioRunResults, selected, prev, Infinity);
 
         const acc = movers.find((m) => m.scenarioName === 'Group.ScenarioA' && m.metricName === 'accuracy')!;
-        const expectedSel = meanOf('Group.ScenarioA', 'accuracy', selected); // (4+4)/2 = 4
-        const expectedPrev = meanOf('Group.ScenarioA', 'accuracy', prev); // (3+5)/2 = 4
+        const expectedSel = meanOf('Group.ScenarioA', 'accuracy', selected);
+        const expectedPrev = meanOf('Group.ScenarioA', 'accuracy', prev);
         expect(expectedSel).toBe(4);
         expect(expectedPrev).toBe(4);
         expect(acc.value).toBeCloseTo(expectedSel, 10);

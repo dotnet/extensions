@@ -5,7 +5,8 @@ import { useMemo, useEffect, useState, useCallback } from 'react';
 import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluentui/react-components';
 import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
-import { useReportStyles } from '../styles/reportStyles';
+import { useAnnounce } from '../core/Announcer';
+import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
 import { metricScale, posOn, formatRaw, dumbbellStyles, STATUS_TEXT, type StatusKey, type MetricScaleKind } from './dumbbellGeometry';
 
@@ -23,6 +24,14 @@ const RATING_STATUS: Record<string, StatusKey> = {
 const statusKey = (rating: EvaluationRating | undefined): StatusKey =>
     RATING_STATUS[rating ?? 'unknown'] ?? 'neutral';
 
+const STATUS_WORD: Record<StatusKey, string> = {
+    success: 'good',
+    warning: 'fair',
+    caution: 'fair',
+    danger: 'weak',
+    neutral: '',
+};
+
 type MetricKind = MetricScaleKind;
 
 const metricKind = (m: NumericMetric): MetricKind => {
@@ -36,8 +45,6 @@ const metricKind = (m: NumericMetric): MetricKind => {
 
 const metricBetter = (m: NumericMetric): string => m.metadata?.better ?? 'high';
 
-// Per-scenario mean of each metric across its cases; scenario is the only grouping
-// key (no metric-family field in the data).
 type MetricAgg = { kind: MetricKind; better: string; sum: number; n: number; statusDist: Record<string, number> };
 type ScenAgg = { name: string; cases: number; metricAgg: Record<string, MetricAgg>; metricOrder: string[] };
 
@@ -88,6 +95,7 @@ type CmpRow = {
     a: string;
     b: string;
     bColor: string;
+    bStatus: StatusKey;
     delta: string;
     deltaColor: 'success' | 'danger' | 'subtle';
     connector: React.CSSProperties;
@@ -134,6 +142,7 @@ const buildCmpRow = (k: string, ba: MetricAgg | undefined, bb: MetricAgg | undef
         a: aStr,
         b: bStr,
         bColor: STATUS_TEXT[domB],
+        bStatus: domB,
         delta: x.txt,
         deltaColor: x.color,
         connector: db.connector,
@@ -148,6 +157,13 @@ const buildCmpRow = (k: string, ba: MetricAgg | undefined, bb: MetricAgg | undef
 };
 
 type SortKey = 'name' | 'a' | 'b' | 'change';
+
+const SORT_LABEL: Record<SortKey, string> = {
+    name: 'Metric',
+    a: 'Baseline',
+    b: 'Current',
+    change: 'Change',
+};
 
 const useLocalStyles = makeStyles({
     cmpRow: {
@@ -196,6 +212,7 @@ const CMP_COLS = '1.6fr 1.4fr 2fr';
 export const ComparisonView = () => {
     const local = useLocalStyles();
     const s = useReportStyles();
+    const announce = useAnnounce();
     const { dataset, scoreSummary, cmpA, setCmpA, cmpB, setCmpB, selectedScenarioLevel, scopedNode } = useReportContext();
 
     const [sortKey, setSortKey] = useState<SortKey>('name');
@@ -206,8 +223,6 @@ export const ComparisonView = () => {
         [scoreSummary],
     );
 
-    // Default by creationTime (oldest → newest): Current (B) = latest run,
-    // Baseline (A) = its predecessor. Users can still override via the dropdowns.
     const chrono = useMemo(() => chronologicalExecutions(dataset), [dataset]);
     const defaultB = chrono.length >= 1 ? chrono[chrono.length - 1] : undefined;
     const defaultA = chrono.length >= 2 ? chrono[chrono.length - 2] : undefined;
@@ -222,8 +237,6 @@ export const ComparisonView = () => {
 
     const hasTwoExecs = executions.length >= 2;
 
-    // The sidebar selection is a nodeKey, not a scenarioName; resolve it to the leaf
-    // scenarioNames under the scoped node. undefined = show all.
     const scopedScenarioNames = useMemo(() => {
         if (!selectedScenarioLevel) return undefined;
         return new Set(
@@ -323,12 +336,10 @@ export const ComparisonView = () => {
     ];
 
     const onSort = (key: SortKey) => {
-        if (sortKey === key) {
-            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-        } else {
-            setSortKey(key);
-            setSortDir('asc');
-        }
+        const dir: 'asc' | 'desc' = sortKey === key ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc';
+        setSortKey(key);
+        setSortDir(dir);
+        announce(`Sorted by ${SORT_LABEL[key]}, ${dir === 'asc' ? 'ascending' : 'descending'}`);
     };
     const sortArrow = (key: SortKey) => (sortKey === key ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '');
     const ariaSort = (key: SortKey): 'ascending' | 'descending' | 'none' =>
@@ -452,9 +463,9 @@ export const ComparisonView = () => {
                 <Card appearance="outline">
                     <div style={{ margin: '-12px' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 'var(--spacing-l)', padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', flexWrap: 'wrap' }}>
-                            <h3 style={{ margin: 0, fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
+                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
                                 Per-metric change
-                            </h3>
+                            </h2>
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-m)', fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', whiteSpace: 'nowrap', flexWrap: 'wrap' }}>
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
                                     <span aria-hidden="true" style={{ width: '8px', height: '8px', boxSizing: 'border-box', borderRadius: '50%', background: 'var(--neutral-background-1)', border: '1.5px solid var(--neutral-foreground-3)', display: 'inline-block', flex: 'none' }} /> baseline
@@ -469,58 +480,77 @@ export const ComparisonView = () => {
                             </span>
                         </div>
 
-                        <div className={s.tscroll}>
+                        <div className={s.tscroll} role="table" aria-label="Per-metric comparison" tabIndex={0}>
                             <div
                                 role="row"
                                 className="eval-grid3"
                                 style={{ display: 'grid', gridTemplateColumns: CMP_COLS, columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m-nudge) var(--spacing-xl)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}
                             >
-                                <button type="button" className={local.sortBtn} onClick={() => onSort('name')} aria-sort={ariaSort('name')} aria-label={ariaLabel('name', 'Metric')} style={{ whiteSpace: 'nowrap' }}>
-                                    Metric{sortArrow('name')}
-                                </button>
-                                <span style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 'var(--spacing-xs)', whiteSpace: 'nowrap' }}>
-                                    <button type="button" className={local.sortBtn} onClick={() => onSort('a')} aria-sort={ariaSort('a')} aria-label={ariaLabel('a', 'Baseline')} style={{ justifyContent: 'flex-end', textAlign: 'right' }}>
+                                <span role="columnheader" aria-sort={ariaSort('name')} style={{ display: 'flex' }}>
+                                    <button type="button" className={local.sortBtn} onClick={() => onSort('name')} aria-label={ariaLabel('name', 'Metric')} style={{ whiteSpace: 'nowrap' }}>
+                                        Metric{sortArrow('name')}
+                                    </button>
+                                </span>
+                                <span
+                                    role="columnheader"
+                                    aria-sort={sortKey === 'a' || sortKey === 'b' ? ariaSort(sortKey) : 'none'}
+                                    style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 'var(--spacing-xs)', whiteSpace: 'nowrap' }}
+                                >
+                                    <button type="button" className={local.sortBtn} onClick={() => onSort('a')} aria-label={ariaLabel('a', 'Baseline')} style={{ justifyContent: 'flex-end', textAlign: 'right' }}>
                                         Baseline{sortArrow('a')}
                                     </button>
                                     <span aria-hidden="true" style={{ color: 'var(--neutral-foreground-4)', fontWeight: 'var(--font-weight-regular)', textAlign: 'center' }}>→</span>
-                                    <button type="button" className={local.sortBtn} onClick={() => onSort('b')} aria-sort={ariaSort('b')} aria-label={ariaLabel('b', 'Current')} style={{ justifyContent: 'flex-start', textAlign: 'left' }}>
+                                    <button type="button" className={local.sortBtn} onClick={() => onSort('b')} aria-label={ariaLabel('b', 'Current')} style={{ justifyContent: 'flex-start', textAlign: 'left' }}>
                                         Current{sortArrow('b')}
                                     </button>
                                 </span>
-                                <button type="button" className={local.sortBtn} onClick={() => onSort('change')} aria-sort={ariaSort('change')} aria-label={ariaLabel('change', 'Δ run')} style={{ whiteSpace: 'nowrap', justifyContent: 'flex-end' }}>
-                                    Δ run{sortArrow('change')}
-                                </button>
+                                <span role="columnheader" aria-sort={ariaSort('change')} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button type="button" className={local.sortBtn} onClick={() => onSort('change')} aria-label={ariaLabel('change', 'Δ run')} style={{ whiteSpace: 'nowrap', justifyContent: 'flex-end' }}>
+                                        Δ run{sortArrow('change')}
+                                    </button>
+                                </span>
                             </div>
 
                             {groups.map((g) => (
-                                <div key={g.scenario}>
+                                <div key={g.scenario} role="rowgroup">
                                     {multiScenario && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s)', padding: 'var(--spacing-s) var(--spacing-xl)', background: 'var(--neutral-background-2)', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
-                                            <span style={{ fontSize: 'var(--font-size-200)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-2)', fontFamily: 'var(--font-family-base)', letterSpacing: '.2px' }}>
-                                                {g.scenario}
-                                            </span>
-                                            <span style={{ marginLeft: 'auto' }}>
-                                                <Badge appearance="tint" color="informative" shape="rounded">
-                                                    {g.cases} {g.cases === 1 ? 'case' : 'cases'}
-                                                </Badge>
+                                        <div role="row" style={{ padding: 'var(--spacing-s) var(--spacing-xl)', background: 'var(--neutral-background-2)', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+                                            <span role="cell" aria-colspan={3} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s)' }}>
+                                                <span style={{ fontSize: 'var(--font-size-200)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-2)', fontFamily: 'var(--font-family-base)', letterSpacing: '.2px' }}>
+                                                    {g.scenario}
+                                                </span>
+                                                <span style={{ marginLeft: 'auto' }}>
+                                                    <Badge appearance="tint" color="informative" shape="rounded">
+                                                        {g.cases} {g.cases === 1 ? 'case' : 'cases'}
+                                                    </Badge>
+                                                </span>
                                             </span>
                                         </div>
                                     )}
                                     {g.rows.map((m) => (
                                         <div
                                             key={`${g.scenario}-${m.name}`}
+                                            role="row"
                                             className={mergeClasses('eval-grid3', local.cmpRow)}
                                             style={{ display: 'grid', gridTemplateColumns: CMP_COLS, columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', borderBottom: '1px solid var(--neutral-stroke-3)', fontSize: 'var(--font-size-300)' }}
                                         >
-                                            <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--neutral-foreground-1)' }}>
+                                            <span role="cell" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--neutral-foreground-1)' }}>
                                                 {m.name}
                                             </span>
-                                            <span style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'baseline', gap: 'var(--spacing-s)', minWidth: 0, whiteSpace: 'nowrap' }}>
+                                            <span role="cell" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'baseline', gap: 'var(--spacing-s)', minWidth: 0, whiteSpace: 'nowrap' }}>
                                                 <span style={{ textAlign: 'right', color: 'var(--neutral-foreground-2)', fontVariantNumeric: 'tabular-nums' }}>{m.a}</span>
                                                 <span aria-hidden="true" style={{ textAlign: 'center', color: 'var(--neutral-foreground-4)' }}>→</span>
-                                                <span style={{ textAlign: 'left', fontWeight: 'var(--font-weight-bold)', color: m.bColor, fontVariantNumeric: 'tabular-nums' }}>{m.b}</span>
+                                                <span
+                                                    style={{ textAlign: 'left', fontWeight: 'var(--font-weight-bold)', color: m.bColor, fontVariantNumeric: 'tabular-nums' }}
+                                                    title={STATUS_WORD[m.bStatus] ? `Current ${m.b} — ${STATUS_WORD[m.bStatus]}` : undefined}
+                                                >
+                                                    {m.b}
+                                                    {STATUS_WORD[m.bStatus] && (
+                                                        <span style={srOnlyStyle}>{`, ${STATUS_WORD[m.bStatus]}`}</span>
+                                                    )}
+                                                </span>
                                             </span>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)' }}>
+                                            <span role="cell" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)' }}>
                                                 <span
                                                     role="img"
                                                     aria-label={`${m.name}: baseline ${effectiveA} ${m.a} → current ${effectiveB} ${m.b}`}

@@ -3,7 +3,6 @@ Licensed to the .NET Foundation under one or more agreements.
 The .NET Foundation licenses this file to you under the MIT license.
 */
 
-/* Fonts are local()-only, no url() sources — keeps the single-file build CSP-clean. */
 @font-face {
   font-family: "Aptos";
   src: local("Aptos"), local("Aptos Display");
@@ -41,7 +40,6 @@ body { background: var(--acrylic-fallback-light); }
 @media (prefers-color-scheme: dark) {
   body { background: rgb(30, 30, 30); }
 }
-/* Also flip the body background when dark is toggled in-app, not only via the OS setting. */
 body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 30); }
 
 :root {
@@ -473,14 +471,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
     color-mix(in srgb, var(--palette-teal-foreground) 6%, transparent) 58%,
     transparent 74%);
 }
-.fluent-dark.eval-root::before,
-[data-theme="dark"].eval-root::before {
-  background: radial-gradient(60rem 38rem at -4% -12%,
-    color-mix(in srgb, var(--palette-purple-foreground) 12%, transparent) 0%,
-    color-mix(in srgb, var(--brand-100) 14%, transparent) 32%,
-    color-mix(in srgb, var(--palette-teal-foreground) 5%, transparent) 56%,
-    transparent 72%);
-}
 
 .eval-root * { scrollbar-width: thin; scrollbar-color: var(--neutral-stroke-1) transparent; }
 .eval-root ::-webkit-scrollbar { width: 12px; height: 12px; }
@@ -497,12 +487,18 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 
 
 .eval-content .eval-new-badge {
-  background: color-mix(in srgb, var(--palette-berry-foreground) 14%, transparent);
-  color: var(--palette-berry-foreground);
+  background: color-mix(in srgb, var(--palette-berry-foreground) 16%, transparent);
+  color: color-mix(in srgb, var(--palette-berry-foreground) 72%, #000);
 }
 .fluent-dark .eval-content .eval-new-badge, [data-theme="dark"] .eval-content .eval-new-badge {
-  background: color-mix(in srgb, var(--palette-berry-background3) 24%, transparent);
-  color: var(--palette-berry-background3);
+  background: color-mix(in srgb, var(--palette-berry-background3) 22%, transparent);
+  color: color-mix(in srgb, var(--palette-berry-background3) 58%, #fff);
+}
+
+.eval-root .fui-Badge {
+  height: auto;
+  min-height: 20px;
+  line-height: calc(16 / 12);
 }
 
 .eval-content .fui-Card {
@@ -522,8 +518,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   border-radius: var(--radius-large);
 }
 
-/* The transcript Card (TranscriptBlock.tsx) must match the metrics-block "cardNested" surface
-   (reportStyles.ts) rather than the base card background set above. */
 .eval-content .eval-transcript.fui-Card, .eval-content .eval-transcript .fui-Card {
   background: var(--neutral-background-2);
 }
@@ -543,7 +537,10 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   }
 }
 
-.eval-grprate .fui-ProgressBar__bar { background: var(--eval-bar, var(--compound-brand-background)); border-radius: var(--radius-circular); }
+.eval-grprate .fui-ProgressBar__bar {
+  background: var(--eval-bar, var(--compound-brand-background));
+  border-radius: var(--radius-circular);
+}
 
 .fui-searchbox { width: 100%; }
 .eval-content .eval-cmp-drop { width: 100%; }
@@ -552,6 +549,9 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 .eval-sidebar .eval-exec-drop .fui-Dropdown__button { min-width: 0; }
 .eval-settings-pop { left: auto !important; right: 0 !important; }
 .eval-fitbtn .fui-button, .eval-fitbtn button { min-width: auto; }
+
+.eval-attn-name { min-width: 10ch; }
+@media (max-width: 560px) { .eval-attn-name { min-width: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   .eval-root *, .eval-root *::before, .eval-root *::after {

@@ -4,8 +4,6 @@
 import { ScoreNode, getScoreHistory, type ScoreSummary } from './Summary';
 import { isLeafFailed } from './scoring';
 
-// isLeafFailed lives in ./scoring to break the former Summary<->viewModels import cycle; re-exported here
-// so existing consumers (CasesView, OverviewView, tests, and the barrel) keep importing it from viewModels.
 export { isLeafFailed };
 
 export type RatingBucket = 'good' | 'fair' | 'weak' | 'unknown';

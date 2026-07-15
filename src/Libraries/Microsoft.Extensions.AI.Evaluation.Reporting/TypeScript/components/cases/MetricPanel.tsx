@@ -351,6 +351,7 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
                 className={mergeClasses(classes.row, classes.rowInteractive)}
                 aria-expanded={open}
                 aria-controls={panelId}
+                aria-label={`${metric.name}${failed ? ', failed' : ''}, ${ratingWord(rating)}${heroNum !== undefined ? `, ${heroNum}` : ''}`}
                 onClick={() => setOpen((v) => !v)}
             >
                 <ChevronRight16Regular className={mergeClasses(classes.caret, open && classes.caretOpen)} />
@@ -394,7 +395,7 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
                     {diagnostics.length > 0 && (
                         <div className={classes.subSection}>
                             <div className={classes.subHeader}>Diagnostics</div>
-                            <DiagnosticsContent diagnostics={diagnostics} />
+                            <DiagnosticsContent diagnostics={diagnostics} metricName={metric.name} />
                         </div>
                     )}
 

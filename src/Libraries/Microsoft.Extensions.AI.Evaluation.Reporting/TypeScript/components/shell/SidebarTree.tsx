@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
-import { Badge, makeStyles, mergeClasses } from '@fluentui/react-components';
+import { Badge, makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { MoverDirections, getTabsterAttribute } from 'tabster';
 import { useReportContext } from '../core/ReportContext';
 import { ScoreNode } from '../core/Summary';
 import { useReportStyles } from '../styles/reportStyles';
@@ -44,6 +43,15 @@ const useLocalStyles = makeStyles({
         cursor: 'pointer',
         color: 'inherit',
         outlineStyle: 'none',
+        minWidth: '24px',
+        minHeight: '24px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: '-4px',
+        marginBottom: '-4px',
+        marginLeft: '-4px',
+        marginRight: '-4px',
     },
     caretOpen: { transform: 'rotate(90deg)' },
     labelGroup: { textTransform: 'uppercase', letterSpacing: '0.5px' },
@@ -97,6 +105,7 @@ const pillProps = (passing: number, total: number) => {
 
 export const SidebarTree = () => {
     const local = useLocalStyles();
+    const treeNav = useArrowNavigationGroup({ axis: 'vertical', circular: true });
     const { activeNode, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
 
     const topGroupKeys = useMemo(
@@ -117,14 +126,11 @@ export const SidebarTree = () => {
         if (target !== (selectedScenarioLevel ?? '')) {
             selectScenarioLevel(target);
         }
-        // Selecting a scenario re-scopes the CURRENT tab — it does not jump to Cases.
     };
 
     const rows = useMemo<SidebarRowVM[]>(() => {
         const out: SidebarRowVM[] = [];
         const walk = (nodes: ScoreNode[], depth: number) => {
-            // The sidebar shows the Group > Scenario hierarchy only; it never descends into
-            // iteration leaves. A node is expandable only if it has non-leaf children.
             const branches = nodes.filter((n) => !n.isLeafNode);
             const sorted = [...branches].sort((a, b) => a.name.localeCompare(b.name));
             for (const node of sorted) {
@@ -150,7 +156,6 @@ export const SidebarTree = () => {
         };
         walk(activeNode.childNodes, 0);
         return out;
-        // walk/scopeTo/toggle are pure over the listed deps; adding them would rebuild rows every render.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeNode, expanded, selectedScenarioLevel]);
 
@@ -158,7 +163,7 @@ export const SidebarTree = () => {
         <div
             role="tree"
             aria-label="Scenarios"
-            {...getTabsterAttribute({ mover: { direction: MoverDirections.Vertical, cyclic: true } })}
+            {...treeNav}
         >
             <SidebarRow
                 label="All scenarios"
@@ -219,8 +224,6 @@ const SidebarRow = ({
     const s = useReportStyles();
     const local = useLocalStyles();
 
-    // The treeitem is a div, not a button, so the caret can be a real nested
-    // button — nesting a button inside a button is invalid HTML and swallows clicks.
     const onRowKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
             e.preventDefault();

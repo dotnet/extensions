@@ -3,6 +3,7 @@
 
 import { useContext, createContext, useState, useEffect, useMemo, useRef } from "react";
 import { ScoreNode, ScoreSummary } from "./Summary";
+import { AnnouncerProvider } from "./Announcer";
 
 export type ReportView = 'overview' | 'cases' | 'history' | 'comparison';
 
@@ -43,8 +44,6 @@ export type ReportContextType = {
     setIsSettingsOpen: (isSettingsOpen: boolean) => void,
 };
 
-// The provider always supplies a real value; `useReportContext` throws if a
-// consumer is rendered outside a `ReportContextProvider`.
 const ReportContext = createContext<ReportContextType | undefined>(undefined);
 
 export const ReportContextProvider = ({ dataset, scoreSummary, persistKey, children }:
@@ -54,7 +53,9 @@ export const ReportContextProvider = ({ dataset, scoreSummary, persistKey, child
 
     return (
         <ReportContext.Provider value={app}>
-            {children}
+            <AnnouncerProvider>
+                {children}
+            </AnnouncerProvider>
         </ReportContext.Provider>
     );
 };
@@ -96,7 +97,6 @@ const writePersisted = (persistKey: string | undefined, value: PersistedUiIntent
     try {
         sessionStorage.setItem(STORAGE_PREFIX + persistKey, JSON.stringify(value));
     } catch {
-        // Storage may be unavailable (quota exceeded / private mode); persistence is best-effort.
     }
 };
 

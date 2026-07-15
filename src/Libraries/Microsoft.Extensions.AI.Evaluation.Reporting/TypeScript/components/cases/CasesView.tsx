@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useAnnounce } from '../core/Announcer';
 import {
     makeStyles,
     mergeClasses,
@@ -10,9 +11,11 @@ import {
     MenuButton,
     Button,
     Link,
+    Popover,
+    PopoverTrigger,
+    PopoverSurface,
 } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { MoverDirections, getTabsterAttribute } from 'tabster';
 import { useReportStyles, statusSolidVar } from '../styles/reportStyles';
 import { useReportContext } from '../core/ReportContext';
 import { ScoreNode, getConversationDisplay } from '../core/Summary';
@@ -37,22 +40,12 @@ const useStyles = makeStyles({
         minWidth: '180px',
         display: 'flex',
     },
-    search: { width: '100%' },
-    tagWrap: { position: 'relative' },
-    tagOverlay: { position: 'fixed', inset: 0, zIndex: 40 },
-    tagPopover: {
-        position: 'absolute',
-        top: 'calc(100% + var(--spacing-xs))',
-        right: 0,
-        zIndex: 41,
-        backgroundColor: 'var(--neutral-background-1)',
-        border: '1px solid var(--neutral-stroke-1)',
-        borderRadius: 'var(--radius-large)',
-        boxShadow: 'var(--shadow-16)',
-        padding: 'var(--spacing-l)',
+    search: { width: '100%', minWidth: 0 },
+    tagSurface: {
         width: '312px',
+        maxWidth: 'calc(100vw - 66px)',
         maxHeight: '360px',
-        overflow: 'auto',
+        overflowY: 'auto',
     },
     tagMenuHead: {
         display: 'flex',
@@ -72,8 +65,6 @@ const useStyles = makeStyles({
         flexWrap: 'wrap',
         gap: 'var(--spacing-s-nudge)',
     },
-    // The base look of a tag pill is set inline (see below); these hover slots use
-    // !important to override that inline background on hover.
     tagOpt: {
         ':hover': { background: 'var(--neutral-background-3) !important' },
     },
@@ -83,7 +74,6 @@ const useStyles = makeStyles({
 
     rowlist: { overflow: 'hidden' },
     rowWrap: { borderTop: '1px solid var(--neutral-stroke-3)', '&:first-child': { borderTop: 'none' } },
-    // Animated left accent bar that slides in when the case is expanded.
     caseWrap: {
         position: 'relative',
         '&::before': {
@@ -258,8 +248,6 @@ type CaseRowVM = {
     scenario: ScenarioRunResult;
 };
 
-// prevKeys holds `scenarioName#iterationName` for the previous execution; a case is
-// New when its key isn't there. Undefined = earliest run.
 const buildRows = (root: ScoreNode, prevKeys: Set<string> | undefined): CaseRowVM[] => {
     const rows: CaseRowVM[] = [];
     const scenOrder = new Map<string, number>();
@@ -318,6 +306,8 @@ const CaseRow = ({
 }) => {
     const classes = useStyles();
     const s = useReportStyles();
+    // Deliberately NOT a Tabster Mover: it's plain content, not a composite widget. A Mover would
+    // make it one Tab stop and swallow arrow keys, hiding its controls and blocking table scroll.
     const detailRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -360,7 +350,6 @@ const CaseRow = ({
                     tabIndex={-1}
                     role="region"
                     aria-label={`${vm.label} detail`}
-                    {...getTabsterAttribute({ mover: { direction: MoverDirections.Both } })}
                 >
                     {metaLine && (
                         <div className={classes.metaLine}>
@@ -380,6 +369,7 @@ const CaseRow = ({
 export const CasesView = () => {
     const classes = useStyles();
     const s = useReportStyles();
+    const announce = useAnnounce();
     const {
         dataset,
         activeExecution,
@@ -439,7 +429,6 @@ export const CasesView = () => {
         }
     };
 
-    // Previous execution = the run immediately before the active one (same baseline Overview uses).
     const prevKeys = useMemo(() => {
         const execs: string[] = [];
         const seen = new Set<string>();
@@ -475,8 +464,6 @@ export const CasesView = () => {
         return sorted;
     }, [allRows, failedOnly]);
 
-    // A row hides its scenario tag only when the scope is a single scenario (its tag would be
-    // redundant); broader scopes keep tags.
     const selectedScenarioName = useMemo(() => {
         if (!selectedScenarioLevel) return undefined;
         const names = new Set(
@@ -502,6 +489,18 @@ export const CasesView = () => {
 
     const hasActiveFilter = selectedTags.length > 0 || !!searchValue || failedOnly;
     const searchCount = allRows.length;
+
+    const filterKey = `${searchValue}|${[...selectedTags].sort().join(',')}|${failedOnly}`;
+    const firstFilterRun = useRef(true);
+    useEffect(() => {
+        if (firstFilterRun.current) { firstFilterRun.current = false; return; }
+        const n = rows.length;
+        const id = setTimeout(() => {
+            announce(n === 0 ? 'No matching cases' : `${n} case${n === 1 ? '' : 's'} match your filters`);
+        }, 400);
+        return () => clearTimeout(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterKey]);
     const searchPlaceholder = `Search across ${searchCount} ${searchCount === 1 ? 'case' : 'cases'}`;
     const tagLabel = selectedTags.length > 0 ? `${selectedTags.length} selected` : 'All tags';
 
@@ -519,68 +518,67 @@ export const CasesView = () => {
                 </div>
 
                 {filterableTags.length > 0 && (
-                    <div className={mergeClasses(classes.tagWrap, 'eval-fitbtn')}>
-                        <MenuButton
-                            appearance="secondary"
-                            onClick={() => setTagMenuOpen((v) => !v)}
+                    <div className="eval-fitbtn">
+                        <Popover
+                            open={tagMenuOpen}
+                            onOpenChange={(_ev, data) => setTagMenuOpen(data.open)}
+                            positioning="below-end"
+                            trapFocus
                         >
-                            {tagLabel}
-                        </MenuButton>
-                        {tagMenuOpen && (
-                            <>
-                                <div className={classes.tagOverlay} onClick={() => setTagMenuOpen(false)} />
-                                <div className={classes.tagPopover}>
-                                    <div className={classes.tagMenuHead}>
-                                        <span className={classes.tagMenuTitle}>Filter by tag</span>
-                                        <Link
-                                            onClick={() => {
-                                                selectedTags.forEach((t) => handleTagClick(t));
-                                                setCasePage(1);
-                                            }}
-                                        >
-                                            Clear
-                                        </Link>
-                                    </div>
-                                    <div className={classes.tagGrid}>
-                                        {filterableTags.map(({ tag }) => {
-                                            const active = selectedTags.includes(tag);
-                                            return (
-                                                <button
-                                                    key={tag}
-                                                    type="button"
-                                                    className={active ? classes.tagOptActive : classes.tagOpt}
-                                                    aria-pressed={active}
-                                                    onClick={() => {
-                                                        handleTagClick(tag);
-                                                        setCasePage(1);
-                                                    }}
-                                                    style={{
-                                                        flex: '1 1 auto',
-                                                        boxSizing: 'border-box',
-                                                        border: active ? '1px solid var(--brand-stroke-1)' : '1px solid var(--neutral-stroke-1)',
-                                                        background: active ? 'var(--brand-background-2)' : 'transparent',
-                                                        color: active ? 'var(--brand-foreground-1)' : 'var(--neutral-foreground-2)',
-                                                        fontWeight: active ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
-                                                        borderRadius: 'var(--radius-circular)',
-                                                        padding: 'var(--spacing-xs) var(--spacing-l)',
-                                                        cursor: 'pointer',
-                                                        fontFamily: 'inherit',
-                                                        fontSize: 'var(--font-size-200)',
-                                                        lineHeight: 1.3,
-                                                        whiteSpace: 'nowrap',
-                                                        textAlign: 'center',
-                                                        transition:
-                                                            'background-color var(--duration-faster) var(--curve-easy-ease), border-color var(--duration-faster) var(--curve-easy-ease)',
-                                                    }}
-                                                >
-                                                    {tag}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                            <PopoverTrigger disableButtonEnhancement>
+                                <MenuButton appearance="secondary" aria-haspopup="dialog">{tagLabel}</MenuButton>
+                            </PopoverTrigger>
+                            <PopoverSurface aria-label="Filter by tag" className={classes.tagSurface}>
+                                <div className={classes.tagMenuHead}>
+                                    <span className={classes.tagMenuTitle}>Filter by tag</span>
+                                    <Link
+                                        onClick={() => {
+                                            selectedTags.forEach((t) => handleTagClick(t));
+                                            setCasePage(1);
+                                        }}
+                                    >
+                                        Clear
+                                    </Link>
                                 </div>
-                            </>
-                        )}
+                                <div className={classes.tagGrid}>
+                                    {filterableTags.map(({ tag }) => {
+                                        const active = selectedTags.includes(tag);
+                                        return (
+                                            <button
+                                                key={tag}
+                                                type="button"
+                                                className={active ? classes.tagOptActive : classes.tagOpt}
+                                                aria-pressed={active}
+                                                onClick={() => {
+                                                    handleTagClick(tag);
+                                                    setCasePage(1);
+                                                }}
+                                                style={{
+                                                    flex: '1 1 auto',
+                                                    boxSizing: 'border-box',
+                                                    border: active ? '1px solid var(--brand-stroke-1)' : '1px solid var(--neutral-stroke-1)',
+                                                    background: active ? 'var(--brand-background-2)' : 'transparent',
+                                                    color: active ? 'var(--brand-foreground-1)' : 'var(--neutral-foreground-2)',
+                                                    fontWeight: active ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
+                                                    borderRadius: 'var(--radius-circular)',
+                                                    padding: 'var(--spacing-xs) var(--spacing-l)',
+                                                    cursor: 'pointer',
+                                                    fontFamily: 'inherit',
+                                                    fontSize: 'var(--font-size-200)',
+                                                    lineHeight: 1.3,
+                                                    whiteSpace: 'nowrap',
+                                                    textAlign: 'center',
+                                                    transition:
+                                                        'background-color var(--duration-faster) var(--curve-easy-ease), border-color var(--duration-faster) var(--curve-easy-ease)',
+                                                }}
+                                            >
+                                                {tag}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </PopoverSurface>
+                        </Popover>
                     </div>
                 )}
 
@@ -640,7 +638,7 @@ export const CasesView = () => {
                         type="button"
                         className={classes.pagerBtn}
                         disabled={page <= 1}
-                        onClick={() => setCasePage(Math.max(1, page - 1))}
+                        onClick={() => { const p = Math.max(1, page - 1); setCasePage(p); announce(`Page ${p} of ${pageCount}`); }}
                     >
                         ‹ Prev
                     </button>
@@ -649,7 +647,7 @@ export const CasesView = () => {
                         type="button"
                         className={classes.pagerBtn}
                         disabled={page >= pageCount}
-                        onClick={() => setCasePage(Math.min(pageCount, page + 1))}
+                        onClick={() => { const p = Math.min(pageCount, page + 1); setCasePage(p); announce(`Page ${p} of ${pageCount}`); }}
                     >
                         Next ›
                     </button>

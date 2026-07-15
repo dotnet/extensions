@@ -16,8 +16,6 @@ const renderWith = (dataset: Dataset, ui: React.ReactElement) => {
     );
 };
 
-// Selects the sidebar node for `scenarioName` (resolving its leaf nodeKey at runtime).
-// selectScenarioLevel toggles, so only call it when the target isn't already active.
 const ScenarioSelector = ({ scenarioName, children }: { scenarioName: string; children: React.ReactNode }) => {
     const { activeNode, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
     const targetKey = activeNode.flattenedNodes.find(
@@ -27,28 +25,31 @@ const ScenarioSelector = ({ scenarioName, children }: { scenarioName: string; ch
         if (targetKey && selectedScenarioLevel !== targetKey) {
             selectScenarioLevel(targetKey);
         }
-        // selectScenarioLevel is a fresh reference each render and toggles, so it's excluded to avoid a loop.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [targetKey, selectedScenarioLevel]);
     return <>{children}</>;
 };
 
 describe('HistoryView — twoExecutionDataset', () => {
-    it('renders metric tabs for numeric metrics', () => {
+    it('renders one metric tab per numeric metric of the default scenario', () => {
+        // Default scenario = first leaf of the primary execution (Comparison.TextSummary),
+        // whose numeric metrics with ≥2-execution history are coherence and safety.
         renderWith(twoExecutionDataset, <HistoryView />);
         const tabs = screen.getAllByRole('tab');
-        expect(tabs.length).toBeGreaterThan(0);
+        expect(tabs.map((t) => t.textContent)).toEqual(['coherence', 'safety']);
     });
 
-    it('renders the trend chart SVG with role=img', () => {
+    it('renders exactly one trend chart (role=img) labelled for the active metric + scenario', () => {
         renderWith(twoExecutionDataset, <HistoryView />);
         const charts = screen.getAllByRole('img');
-        expect(charts.length).toBeGreaterThan(0);
+        expect(charts.length).toBe(1);
+        expect(charts[0]).toHaveAttribute(
+            'aria-label',
+            expect.stringMatching(/trend across executions for Comparison\./),
+        );
     });
 
     it('renders the run history section', () => {
         renderWith(twoExecutionDataset, <HistoryView />);
-        // Run history is a CSS grid, not a <table>.
         expect(screen.getByText(/run history/i)).toBeInTheDocument();
     });
 });
@@ -81,20 +82,15 @@ describe('ComparisonView — twoExecutionDataset', () => {
 
     it('renders the per-metric change section', () => {
         renderWith(twoExecutionDataset, <ComparisonView />);
-        // Per-metric change is a CSS grid, not a <table>.
         expect(screen.getByText(/per-metric change/i)).toBeInTheDocument();
     });
 
-    // Metric-name labels also appear in the "Biggest mover" KPI sub-label, so read the
-    // per-metric table rows directly instead of a free-text query. Data rows share the
-    // responsive .eval-grid3 class with the header, but only the header has role="row".
     const metricRowNames = (container: HTMLElement): string[] =>
-        [...container.querySelectorAll('.eval-grid3:not([role="row"])')].map(
+        [...container.querySelectorAll('[role="rowgroup"] .eval-grid3[role="row"]')].map(
             (row) => row.firstElementChild?.textContent?.trim() ?? '',
         );
 
-    it('scopes rows to the sidebar-selected scenario', () => {
-        // Unscoped: all four metrics from both scenarios are present in the rows.
+    it('renders all metric rows when no scenario is selected', () => {
         const { container } = renderWith(twoExecutionDataset, <ComparisonView />);
         expect(metricRowNames(container).sort()).toEqual(
             ['accuracy', 'coherence', 'fluency', 'safety'],
@@ -108,11 +104,58 @@ describe('ComparisonView — twoExecutionDataset', () => {
                 <ComparisonView />
             </ScenarioSelector>,
         );
-        // Only Comparison.TextSummary's metrics (coherence, safety) remain in the
-        // rows; QAAccuracy's (accuracy, fluency) are scoped out.
         await waitFor(() =>
             expect(metricRowNames(container).sort()).toEqual(['coherence', 'safety']),
         );
+    });
+});
+
+describe('ComparisonView — better direction inversion (lower-is-better / none)', () => {
+    const inv = (name: string, value: number, better: 'high' | 'low' | 'none'): NumericMetric =>
+        ({
+            $type: 'numeric',
+            name,
+            value,
+            reason: 'test',
+            interpretation: { rating: 'good', failed: false },
+            metadata: { better },
+        }) as NumericMetric;
+
+    const invRow = (executionName: string, creationTime: string, metrics: Record<string, NumericMetric>): ScenarioRunResult =>
+        ({
+            scenarioName: 'Inv.Scenario',
+            iterationName: 'iteration1',
+            executionName,
+            creationTime,
+            messages: [],
+            modelResponse: { messages: [] },
+            evaluationResult: { metrics },
+            formatVersion: 1 as unknown as int,
+        }) as ScenarioRunResult;
+
+    // Baseline (older) → current (newer). toxicity DROPS 5→2; with better:'low' that is an
+    // improvement. flat CHANGES 3→5 but better:'none' means neither improved nor regressed.
+    const inversionDataset: Dataset = {
+        generatorVersion: '0.0.1',
+        createdAt: '2026-04-01T00:00:00.000Z',
+        scenarioRunResults: [
+            invRow('exec-old', '2026-03-01T00:00:00.000Z', { toxicity: inv('toxicity', 5, 'low'), flat: inv('flat', 3, 'none') }),
+            invRow('exec-new', '2026-04-01T00:00:00.000Z', { toxicity: inv('toxicity', 2, 'low'), flat: inv('flat', 5, 'none') }),
+        ],
+    };
+
+    it('counts a decrease in a lower-is-better metric as an improvement, not a regression', () => {
+        renderWith(inversionDataset, <ComparisonView />);
+        // toxicity 5→2 (▼) is the single improvement; the better:'none' metric is not counted.
+        expect(screen.getByText('Metrics improved').nextElementSibling?.textContent).toBe('1');
+        expect(screen.getByText('Metrics regressed').nextElementSibling?.textContent).toBe('0');
+    });
+
+    it('surfaces the downward toxicity delta as the biggest (improving) mover', () => {
+        renderWith(inversionDataset, <ComparisonView />);
+        const biggest = screen.getByText('Biggest mover');
+        expect(biggest.nextElementSibling?.textContent).toContain('▼');
+        expect(biggest.nextElementSibling?.nextElementSibling?.textContent).toBe('toxicity');
     });
 });
 

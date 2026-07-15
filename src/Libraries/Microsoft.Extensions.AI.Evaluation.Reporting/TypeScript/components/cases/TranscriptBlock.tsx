@@ -81,11 +81,22 @@ type ToolSectionVM = {
 type BubbleVM = {
     tools: ToolSectionVM[];
     text: AIContent | null;
+    imageAlt?: string;
 };
 
 type GroupVM =
     | { kind: 'group'; role: 'user' | 'assistant'; bubbles: BubbleVM[]; participantName: string }
-    | { kind: 'system'; content: AIContent };
+    | { kind: 'system'; content: AIContent; imageAlt?: string };
+
+const roleLabel = (role: string): string => {
+    if (isUserSide(role)) return 'the user';
+    if (isSystemSide(role)) return 'the system';
+    if (isToolSide(role)) return 'a tool';
+    return 'the assistant';
+};
+
+const deriveImageAlt = (message: ChatMessageDisplay): string =>
+    `Image shared by ${roleLabel(message.role)}`;
 
 const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): GroupVM[] => {
     const groups: GroupVM[] = [];
@@ -103,7 +114,6 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
         const content = m.content;
 
         if (isFunctionResult(content)) {
-            // Merge into the most recent buffered call (adjacent call+result → one section).
             const last = pending[pending.length - 1];
             const resultText = safeJsonMaybeString(content.result, prettifyJson);
             if (last && !last.hasResult) {
@@ -146,24 +156,25 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
         if (isSystemSide(m.role)) {
             flushPending();
             openAssistant = null;
-            groups.push({ kind: 'system', content });
+            const imageAlt = isImageContent(content) ? deriveImageAlt(m) : undefined;
+            groups.push({ kind: 'system', content, imageAlt });
             continue;
         }
 
         if (isUserSide(m.role)) {
             flushPending();
             openAssistant = null;
+            const imageAlt = isImageContent(content) ? deriveImageAlt(m) : undefined;
             const prev = groups[groups.length - 1];
             if (prev && prev.kind === 'group' && prev.role === 'user') {
-                prev.bubbles.push({ tools: [], text: content });
+                prev.bubbles.push({ tools: [], text: content, imageAlt });
             } else {
-                groups.push({ kind: 'group', role: 'user', bubbles: [{ tools: [], text: content }], participantName: m.participantName });
+                groups.push({ kind: 'group', role: 'user', bubbles: [{ tools: [], text: content, imageAlt }], participantName: m.participantName });
             }
             continue;
         }
 
         if (isToolSide(m.role)) {
-            // A tool-role text turn with no function content — treat as buffered tool data.
             if (!openAssistant) {
                 openAssistant = { kind: 'group', role: 'assistant', bubbles: [], participantName: m.participantName };
                 groups.push(openAssistant);
@@ -172,12 +183,15 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
             continue;
         }
 
-        // assistant (or any non-user/system) reply text — attach pending tools + text.
         if (!openAssistant) {
             openAssistant = { kind: 'group', role: 'assistant', bubbles: [], participantName: m.participantName };
             groups.push(openAssistant);
         }
-        openAssistant.bubbles.push({ tools: pending, text: content });
+        openAssistant.bubbles.push({
+            tools: pending,
+            text: content,
+            imageAlt: isImageContent(content) ? deriveImageAlt(m) : undefined,
+        });
         pending = [];
     }
     flushPending();
@@ -187,14 +201,11 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
 
 const safeJsonMaybeString = (value: unknown, pretty: boolean): string => {
     if (typeof value === 'string') {
-        // A double-encoded JSON string result: parse + re-stringify with the flag
-        // so it pretty-prints. Genuinely-non-JSON strings fall through unchanged.
         const trimmed = value.trim();
         if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
             try {
                 return safeJson(JSON.parse(trimmed), pretty);
             } catch {
-                // not JSON — keep the raw string
             }
         }
         return value;
@@ -290,7 +301,7 @@ const CODE_STYLE: CSSProperties = {
     color: 'var(--neutral-foreground-1)',
 };
 
-const TextNode = ({ content }: { content: AIContent }) => {
+const TextNode = ({ content, altHint }: { content: AIContent; altHint?: string }) => {
     const { renderMarkdown, prettifyJson } = useReportContext();
 
     if (isTextContent(content)) {
@@ -299,7 +310,6 @@ const TextNode = ({ content }: { content: AIContent }) => {
             const parsed = JSON.parse(trimmed);
             return <pre style={CODE_STYLE}>{JSON.stringify(parsed, null, prettifyJson ? 2 : 0)}</pre>;
         } catch {
-            // not JSON — render as markdown / plain text below
         }
         return renderMarkdown ? (
             <div className="eval-md" style={MD_TEXT_STYLE}>
@@ -312,7 +322,7 @@ const TextNode = ({ content }: { content: AIContent }) => {
 
     if (isImageContent(content)) {
         const imageUrl = (content as UriContent | DataContent).uri;
-        return <img src={imageUrl} alt="Content" style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: 'var(--radius-small)' }} />;
+        return <img src={imageUrl} alt={altHint ?? 'Image from the conversation'} style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: 'var(--radius-small)' }} />;
     }
 
     return <pre style={CODE_STYLE}>{safeJson(content, prettifyJson)}</pre>;
@@ -432,7 +442,7 @@ const Bubble = ({ bubble, me, first }: { bubble: BubbleVM; me: boolean; first: b
                     <ToolSection key={`tool-${i}`} tool={t} />
                 ))}
                 {hasText && (
-                    <div style={textStyle}><TextNode content={bubble.text as AIContent} /></div>
+                    <div style={textStyle}><TextNode content={bubble.text as AIContent} altHint={bubble.imageAlt} /></div>
                 )}
             </div>
         </div>
@@ -499,7 +509,7 @@ const MessageGroup = ({ group, model, time }: { group: Extract<GroupVM, { kind: 
     );
 };
 
-const SystemGroup = ({ content }: { content: AIContent }) => {
+const SystemGroup = ({ content, imageAlt }: { content: AIContent; imageAlt?: string }) => {
     const wrapStyle: CSSProperties = {
         display: 'flex',
         flexDirection: 'column',
@@ -521,7 +531,7 @@ const SystemGroup = ({ content }: { content: AIContent }) => {
     };
     return (
         <div style={wrapStyle}>
-            <div style={bubbleStyle}><TextNode content={content} /></div>
+            <div style={bubbleStyle}><TextNode content={content} altHint={imageAlt} /></div>
         </div>
     );
 };
@@ -592,7 +602,7 @@ export const TranscriptBlock = ({ messages, model: modelProp }: { messages: Chat
                     )}
                     {groups.map((group, index) =>
                         group.kind === 'system' ? (
-                            <SystemGroup key={`grp-${index}`} content={group.content} />
+                            <SystemGroup key={`grp-${index}`} content={group.content} imageAlt={group.imageAlt} />
                         ) : (
                             <MessageGroup key={`grp-${index}`} group={group} model={model} time={time} />
                         ),

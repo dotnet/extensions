@@ -1,7 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import type { CSSProperties } from 'react';
 import { makeStyles } from '@fluentui/react-components';
+
+export const srOnlyStyle: CSSProperties = {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    padding: 0,
+    margin: '-1px',
+    overflow: 'hidden',
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    whiteSpace: 'nowrap',
+    border: 0,
+};
 
 export const useReportStyles = makeStyles({
     card: {
@@ -20,12 +34,13 @@ export const useReportStyles = makeStyles({
     sectionHeaderTitle: {
         margin: 0,
         fontSize: 'var(--font-size-400)',
-        lineHeight: 'var(--line-height-400)',
+        lineHeight: 'calc(22 / 16)',
         fontWeight: 'var(--font-weight-semibold)',
         color: 'var(--neutral-foreground-1)',
     },
     sectionHeaderSub: {
         fontSize: 'var(--font-size-200)',
+        lineHeight: 'calc(20 / 12)',
         color: 'var(--neutral-foreground-4)',
         whiteSpace: 'nowrap',
     },
@@ -71,6 +86,7 @@ export const useReportStyles = makeStyles({
         flex: '1 1 auto',
         minWidth: 0,
         fontSize: 'var(--font-size-300)',
+        lineHeight: 'calc(20 / 14)',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
@@ -128,7 +144,7 @@ export const useReportStyles = makeStyles({
         fontFamily: 'var(--font-family-base)',
         fontSize: 'var(--font-size-200)',
         fontWeight: 'var(--font-weight-semibold)',
-        lineHeight: 'var(--line-height-200)',
+        lineHeight: 'calc(16 / 12)',
         color: 'var(--brand-foreground-1)',
         backgroundColor: 'transparent',
         padding: 'var(--spacing-xs) var(--spacing-s)',
@@ -141,8 +157,6 @@ export const useReportStyles = makeStyles({
         '&:active': { backgroundColor: 'var(--brand-background-2-hover)' },
     },
 
-    // Wraps a wide grid/table so it scrolls horizontally instead of overflowing on
-    // narrow viewports. Shared by History, Overview, and Comparison run tables.
     tscroll: {
         '@media (max-width: 720px)': {
             overflowX: 'auto',

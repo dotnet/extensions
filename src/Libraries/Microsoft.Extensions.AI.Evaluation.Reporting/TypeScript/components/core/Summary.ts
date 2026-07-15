@@ -179,6 +179,21 @@ export class ReverseTextIndex {
 
 export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
 
+    // Defensive guard: an empty (or missing) scenarioRunResults list would otherwise
+    // leave `primaryResult` undefined below and throw on `.executionName`. Return a
+    // well-formed empty summary instead. Behavior for non-empty inputs is unchanged.
+    if (!dataset?.scenarioRunResults || dataset.scenarioRunResults.length === 0) {
+        const emptyRoot = new ScoreNode("All Evaluations", ScoreNodeType.Group, "root", "");
+        return {
+            primaryResult: emptyRoot,
+            includesReportHistory: false,
+            executionHistory: new Map<string, ScoreNode>(),
+            nodesByKey: new Map<string, Map<string, ScoreNode>>(),
+            reverseTextIndex: new ReverseTextIndex(),
+            reverseTextIndexByExecution: new Map<string, ReverseTextIndex>(),
+        } as ScoreSummary;
+    }
+
     const executionHistory = new Map<string, ScoreNode>();
     for (const scenario of dataset.scenarioRunResults) {
         const executionName = scenario.executionName;

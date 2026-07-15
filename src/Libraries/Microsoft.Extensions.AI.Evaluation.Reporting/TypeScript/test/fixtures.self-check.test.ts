@@ -34,6 +34,8 @@ describe('multiGroupDataset', () => {
                 }
             }
         }
+        // NOTE: hand-maintained mirror of the `EvaluationRating` union. If that union in
+        // components/EvalTypes.d.ts ever changes, this literal must be updated manually.
         const allRatings: EvaluationRating[] = [
             'unknown', 'inconclusive', 'exceptional', 'good', 'average', 'poor', 'unacceptable',
         ];
@@ -168,11 +170,11 @@ describe('richDataset', () => {
         expect(primaryExec.numFailingIterations).toBeGreaterThan(0);
     });
 
-    it('primary execution (exec-2026-06-30) has ≥4 scenarios', () => {
+    it('primary execution (exec-2026-06-30) has exactly 10 scenarios', () => {
         const primaryScenarios = richDataset.scenarioRunResults.filter(
             s => s.executionName === 'exec-2026-06-30',
         );
-        expect(primaryScenarios.length).toBeGreaterThanOrEqual(4);
+        expect(primaryScenarios.length).toBe(10);
     });
 
     it('has at least one scenario with tags', () => {

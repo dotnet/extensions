@@ -4,9 +4,12 @@
 import { DismissCircle16Regular, Warning16Regular, Info16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { Table, TableHeader, TableRow, TableHeaderCell, TableBody, TableCell, mergeClasses } from "@fluentui/react-components";
 import { useStyles } from "../styles/Styles";
+import { srOnlyStyle } from "../styles/reportStyles";
+import { useAnnounce } from "../core/Announcer";
 
-export const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDiagnostic[]; }) => {
+export const DiagnosticsContent = ({ diagnostics, metricName }: { diagnostics: EvaluationDiagnostic[]; metricName: string; }) => {
     const classes = useStyles();
+    const announce = useAnnounce();
 
     if (diagnostics.length === 0) {
         return null;
@@ -35,17 +38,27 @@ export const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDia
     };
 
     const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
+        navigator.clipboard.writeText(text).then(
+            () => announce('Diagnostic copied to clipboard'),
+            () => announce('Copy failed'),
+        );
     };
 
     return (
-        <div className={classes.tableContainer} tabIndex={0}>
+        <div
+            className={classes.tableContainer}
+            tabIndex={0}
+            role="region"
+            aria-label={`Diagnostics for ${metricName}`}
+        >
             <Table className={classes.autoWidthTable}>
                 <TableHeader>
                     <TableRow>
                         <TableHeaderCell className={mergeClasses(classes.tableHeaderCell, classes.diagnosticSeverityCell)}>Severity</TableHeaderCell>
                         <TableHeaderCell className={mergeClasses(classes.tableHeaderCell, classes.diagnosticMessageCell)}>Message</TableHeaderCell>
-                        <TableHeaderCell className={mergeClasses(classes.tableHeaderCell, classes.diagnosticCopyButtonCell)}></TableHeaderCell>
+                        <TableHeaderCell className={mergeClasses(classes.tableHeaderCell, classes.diagnosticCopyButtonCell)}>
+                            <span style={srOnlyStyle}>Actions</span>
+                        </TableHeaderCell>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -64,6 +77,7 @@ export const DiagnosticsContent = ({ diagnostics }: { diagnostics: EvaluationDia
                                     className={classes.copyButton}
                                     onClick={() => copyToClipboard(`${diag.severity}: ${diag.message}`)}
                                     title="Copy Diagnostic"
+                                    aria-label="Copy diagnostic"
                                 >
                                     <Copy16Regular />
                                 </button>

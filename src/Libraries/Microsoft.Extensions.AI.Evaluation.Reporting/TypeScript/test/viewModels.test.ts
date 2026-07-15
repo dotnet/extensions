@@ -34,15 +34,21 @@ describe('passRateByScenarioGroup — group rows reconcile to the whole (multiGr
         expect(sumTotal - sumPassing).toBe(treeFailing);
     });
 
-    it('produces one row per distinct scenario group', () => {
+    it('produces one row per distinct scenario group with literal pass rates', () => {
         const rows = passRateByScenarioGroup(multiGroupDataset);
-        const distinctGroups = new Set(
-            multiGroupDataset.scenarioRunResults.map(s => s.scenarioName.split('.')[0]),
-        );
-        expect(rows.length).toBe(distinctGroups.size);
-        for (const r of rows) {
-            expect(r.passRate).toBeCloseTo(r.total > 0 ? r.passing / r.total : 0, 10);
-        }
+
+        // Hardcoded expected groups (not re-derived from the source's split('.')[0]).
+        expect(rows.map(r => r.group).sort()).toEqual(['GroupA', 'GroupB', 'GroupC']);
+
+        // Literal pass rates read off the fixture (isLeafFailed per scenario):
+        //   GroupA: 2/2 pass · GroupB: 2/2 pass · GroupC: 2/3 pass (safety=unacceptable fails).
+        const byGroup = (g: string) => rows.find(r => r.group === g)!;
+        expect(byGroup('GroupA')).toMatchObject({ passing: 2, total: 2 });
+        expect(byGroup('GroupA').passRate).toBeCloseTo(1, 10);
+        expect(byGroup('GroupB')).toMatchObject({ passing: 2, total: 2 });
+        expect(byGroup('GroupB').passRate).toBeCloseTo(1, 10);
+        expect(byGroup('GroupC')).toMatchObject({ passing: 2, total: 3 });
+        expect(byGroup('GroupC').passRate).toBeCloseTo(2 / 3, 10);
     });
 });
 
@@ -50,22 +56,26 @@ describe('Overview derivations == Cases-tree counts (diagnosticsErrorDataset)', 
     it('KPI counts and group-sum counts equal the Cases-tree numPassing/numFailing', () => {
         const summary = createScoreSummary(diagnosticsErrorDataset);
         const tree = summary.primaryResult;
-        const treePassing = tree.numPassingIterations;
-        const treeFailing = tree.numFailingIterations;
 
+        // Concrete anchors: diagnosticsErrorDataset = 2 passing + 1 diagnostic-error failure.
+        expect(tree.numPassingIterations).toBe(2);
+        expect(tree.numFailingIterations).toBe(1);
+
+        // kpiCountsFromNode surfaces those counts plus a real pass-rate value (2/3),
+        // asserted against literals rather than re-read from the same tree fields.
         const kpi = kpiCountsFromNode(tree);
-        expect(kpi.passing).toBe(treePassing);
-        expect(kpi.failing).toBe(treeFailing);
-        expect(kpi.total).toBe(treePassing + treeFailing);
+        expect(kpi.passing).toBe(2);
+        expect(kpi.failing).toBe(1);
+        expect(kpi.total).toBe(3);
+        expect(kpi.passRate).toBeCloseTo(2 / 3, 10);
 
+        // Per-group sums reconcile to the same 2 passing / 1 failing via an
+        // independent code path (groupTallies, not ScoreNode.aggregate).
         const rows = passRateByScenarioGroup(diagnosticsErrorDataset);
         const groupPassing = rows.reduce((acc, r) => acc + r.passing, 0);
         const groupTotal = rows.reduce((acc, r) => acc + r.total, 0);
-        expect(groupPassing).toBe(treePassing);
-        expect(groupTotal - groupPassing).toBe(treeFailing);
-
-        expect(treeFailing).toBe(1);
-        expect(treePassing).toBe(2);
+        expect(groupPassing).toBe(2);
+        expect(groupTotal).toBe(3);
     });
 
     it('isLeafFailed alone flags the diagnostics-only failure and clears the clean pass', () => {
@@ -114,23 +124,53 @@ describe('ratingBucket + bucketMetrics', () => {
         expect(ratingBucket(undefined)).toBe('unknown');
     });
 
-    it('buckets every metric exactly once (counts sum to metric count)', () => {
+    it('buckets every metric into the exact good/fair/weak/unknown distribution', () => {
         const primary = multiGroupDataset.scenarioRunResults;
         const counts = bucketMetrics(primary);
+
+        // Exact distribution derived from every metric's interpretation.rating:
+        //   good    = coherence, relevance, groundedness       (exceptional/good) → 3
+        //   fair    = correctness, fidelity, fluency           (average)          → 3
+        //   weak    = codeStyle(poor), safety(unacceptable)                       → 2
+        //   unknown = creativity(inconclusive), knowledgeCheck(unknown)           → 2
+        expect(counts).toEqual({ good: 3, fair: 3, weak: 2, unknown: 2 });
+
+        // Conservation: all 10 metrics counted exactly once.
         const totalMetrics = primary.reduce(
             (acc, s) => acc + Object.values(s.evaluationResult.metrics).length,
             0,
         );
+        expect(totalMetrics).toBe(10);
         expect(counts.good + counts.fair + counts.weak + counts.unknown).toBe(totalMetrics);
     });
 });
 
 describe('passRateByScenarioGroup — deltaRun sign across two executions', () => {
-    it('deltaRun is signed current(primary) − previous and undefined for single execution', () => {
-        const rows = passRateByScenarioGroup(twoExecutionDataset);
-        for (const r of rows) {
-            expect(r.deltaRun).toBeDefined();
-        }
+    // twoExecutionDataset has one group ('Comparison'):
+    //   exec-v1 → 2/2 pass (passRate 1.0);  exec-v2 → 1/2 pass (safety fails → passRate 0.5).
+    // executionOrder = [exec-v1, exec-v2]. For the primary (exec-v1, idx 0) the "previous"
+    // is executions[1] (exec-v2); for exec-v2 the previous is the one before it (exec-v1).
+    // deltaRun = activePassRate − previousPassRate.
+
+    it('deltaRun is POSITIVE (+0.5) when the active exec outperforms its comparison', () => {
+        const rows = passRateByScenarioGroup(twoExecutionDataset); // default active = primary exec-v1
+        const comparison = rows.find(r => r.group === 'Comparison')!;
+        expect(comparison).toMatchObject({ passing: 2, total: 2 });
+        expect(comparison.passRate).toBeCloseTo(1, 10);
+        // 1.0 (exec-v1) − 0.5 (exec-v2) = +0.5
+        expect(comparison.deltaRun).toBeCloseTo(0.5, 10);
+    });
+
+    it('deltaRun is NEGATIVE (−0.5) when the active exec underperforms the previous', () => {
+        const rows = passRateByScenarioGroup(twoExecutionDataset, 'exec-v2');
+        const comparison = rows.find(r => r.group === 'Comparison')!;
+        expect(comparison).toMatchObject({ passing: 1, total: 2 });
+        expect(comparison.passRate).toBeCloseTo(0.5, 10);
+        // 0.5 (exec-v2) − 1.0 (exec-v1) = −0.5  → proves the sign is active − previous
+        expect(comparison.deltaRun).toBeCloseTo(-0.5, 10);
+    });
+
+    it('deltaRun is undefined for a single-execution dataset', () => {
         const single: Dataset = {
             ...twoExecutionDataset,
             scenarioRunResults: twoExecutionDataset.scenarioRunResults.filter(

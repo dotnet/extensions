@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { Badge, Card, ProgressBar } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
 import {
@@ -147,14 +147,16 @@ const SummaryCard = ({
     const s = useReportStyles();
     const passNow = pctInt(passRate);
     const fillStatus = rateStatus(passRate);
+    
+    const idPrefix = useId();
 
     return (
         <div className="eval-hero-acrylic" style={{ marginBottom: 'var(--spacing-l)' }}>
             <Card appearance="outline">
                 <div style={{ margin: '-12px', overflow: 'hidden', borderRadius: 'var(--radius-card)', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 'var(--spacing-xxl)', padding: 'var(--spacing-l) 0 var(--spacing-l) var(--spacing-xl)', flexWrap: 'wrap' }}>
-                        <div style={{ flex: 'none' }}>
-                            <div className={s.eyebrow}>Overall pass rate</div>
+                        <div role="group" aria-labelledby={`${idPrefix}-passrate`} style={{ flex: 'none' }}>
+                            <div className={s.eyebrow} id={`${idPrefix}-passrate`}>Overall pass rate</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-m)', marginTop: 'var(--spacing-xs)' }}>
                                 <span className="eval-hero-passrate" style={{ fontSize: 'var(--font-size-800)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>
                                     {passNow}
@@ -164,9 +166,9 @@ const SummaryCard = ({
                             </div>
                         </div>
                         <div className="eval-hero-kpis" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'stretch', borderLeft: '1px solid var(--neutral-stroke-2)' }}>
-                            {kpis.map((k) => (
-                                <div key={k.label} className="eval-hero-kpi" style={{ padding: '0 var(--spacing-xl)', borderRight: k.last ? 'none' : '1px solid var(--neutral-stroke-2)' }}>
-                                    <div className={s.eyebrow} style={{ whiteSpace: 'nowrap' }}>{k.label}</div>
+                            {kpis.map((k, i) => (
+                                <div key={k.label} role="group" aria-labelledby={`${idPrefix}-kpi-${i}`} className="eval-hero-kpi" style={{ padding: '0 var(--spacing-xl)', borderRight: k.last ? 'none' : '1px solid var(--neutral-stroke-2)' }}>
+                                    <div className={s.eyebrow} id={`${idPrefix}-kpi-${i}`} style={{ whiteSpace: 'nowrap' }}>{k.label}</div>
                                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-s)', marginTop: 'var(--spacing-xs)' }}>
                                         <span style={{ fontSize: 'var(--font-size-600)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, whiteSpace: 'nowrap', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>
                                             {k.value}
@@ -206,11 +208,19 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                         </svg>
                     </span>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-s-nudge)', minWidth: 0 }}>
-                        <h3 className={s.sectionHeaderTitle}>Biggest movers</h3>
-                        {compareLabel && <span className={s.sectionHeaderSub}>vs {compareLabel}</span>}
+                        <h2 className={s.sectionHeaderTitle}>Biggest movers</h2>
+                        {compareLabel && (
+                            <span
+                                className={s.sectionHeaderSub}
+                                title={`vs ${compareLabel}`}
+                                style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >
+                                vs {compareLabel}
+                            </span>
+                        )}
                     </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto auto', alignItems: 'center', columnGap: 'var(--spacing-m)', gridAutoRows: '44px', padding: 'var(--spacing-s) var(--spacing-xl)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto auto', alignItems: 'center', columnGap: 'var(--spacing-m)', gridAutoRows: 'minmax(44px, auto)', padding: 'var(--spacing-s) var(--spacing-xl)' }}>
                     {movers.map((m) => {
                         const dc = numDeltaChip(m.delta);
                         const dotStatus = chipToStatus(dc.status);
@@ -220,7 +230,7 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                                 <span style={auraDotStyle(dotStatus)} />
                                 <span
                                     title={`${m.scenarioName} · ${m.metricName}`}
-                                    style={{ fontSize: 'var(--font-size-300)', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}
+                                    style={{ fontSize: 'var(--font-size-300)', lineHeight: 'calc(20 / 14)', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}
                                 >
                                     {m.scenarioName} · {m.metricName}
                                 </span>
@@ -255,14 +265,14 @@ const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView:
                             <path d="M5 5 L11 11 M11 6.5 V11 H6.5" />
                         </svg>
                     </span>
-                    <h3 className={s.sectionHeaderTitle}>Needs attention</h3>
+                    <h2 className={s.sectionHeaderTitle}>Needs attention</h2>
                 </div>
                 {items.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', padding: 'var(--spacing-s)' }}>
                         {items.map((a) => (
-                            <div key={a.key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)', padding: '0 var(--spacing-m)', height: '44px' }}>
+                            <div key={a.key} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-m)', padding: 'var(--spacing-xxs) var(--spacing-m)', minHeight: '44px' }}>
                                 <span style={auraDotStyle(a.status)} />
-                                <span title={a.label} style={{ flex: 1, minWidth: 0, fontSize: 'var(--font-size-300)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}>
+                                <span title={a.label} className="eval-attn-name" style={{ flex: 1, fontSize: 'var(--font-size-300)', lineHeight: 'calc(20 / 14)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}>
                                     {a.label}
                                 </span>
                                 <span style={{ flex: 'none', fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
@@ -305,17 +315,17 @@ const GroupTable = ({
     return (
         <Card appearance="outline">
             <div style={{ margin: '-12px' }}>
-                <h3 style={{ margin: 0, padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
+                <h2 style={{ margin: 0, padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
                     Pass rate by scenario group
-                </h3>
-                <div className={s.tscroll}>
-                    <div className="eval-grid6" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, padding: 'var(--spacing-m-nudge) var(--spacing-xl)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
-                        <span>Scenario group</span>
-                        <span style={{ textAlign: 'right' }}>Good</span>
-                        <span style={{ textAlign: 'right' }}>Fair</span>
-                        <span style={{ textAlign: 'right' }}>Weak</span>
-                        <span style={{ textAlign: 'right', paddingRight: 'var(--spacing-l)' }}>Pass rate</span>
-                        <span style={{ textAlign: 'right' }}>Δ run</span>
+                </h2>
+                <div className={s.tscroll} role="table" aria-label="Pass rate by scenario group" tabIndex={0}>
+                    <div className="eval-grid6" role="row" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, padding: 'var(--spacing-m-nudge) var(--spacing-xl)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+                        <span role="columnheader">Scenario group</span>
+                        <span role="columnheader" style={{ textAlign: 'right' }}>Good</span>
+                        <span role="columnheader" style={{ textAlign: 'right' }}>Fair</span>
+                        <span role="columnheader" style={{ textAlign: 'right' }}>Weak</span>
+                        <span role="columnheader" style={{ textAlign: 'right', paddingRight: 'var(--spacing-l)' }}>Pass rate</span>
+                        <span role="columnheader" style={{ textAlign: 'right' }}>Δ run</span>
                     </div>
                     {rows.map((row) => {
                         const groupScenarios = activeScenarios.filter((sc) => sc.scenarioName.split('.')[0] === row.group);
@@ -324,15 +334,15 @@ const GroupTable = ({
                         const ratePct = pctInt(row.passRate);
                         const deltaBadgeChip = row.deltaRun !== undefined ? chip(Math.round(row.deltaRun * 100), { unit: '%' }) : { show: false, label: '', status: 'informative' as const };
                         return (
-                            <div key={row.group} className="eval-grid6" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', borderBottom: '1px solid var(--neutral-stroke-3)' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s)', fontSize: 'var(--font-size-300)', minWidth: 0 }}>
+                            <div key={row.group} className="eval-grid6" role="row" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', borderBottom: '1px solid var(--neutral-stroke-3)' }}>
+                                <span role="cell" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s)', fontSize: 'var(--font-size-300)', lineHeight: 'calc(20 / 14)', minWidth: 0 }}>
                                     <span style={auraDotStyle(status)} />
                                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.group}</span>
                                 </span>
-                                <span style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.good}</span>
-                                <span style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.fair}</span>
-                                <span style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.weak}</span>
-                                <span style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-s-nudge)', paddingLeft: 'var(--spacing-xxl)', paddingRight: 'var(--spacing-l)' }}>
+                                <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.good}</span>
+                                <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.fair}</span>
+                                <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.weak}</span>
+                                <span role="cell" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-s-nudge)', paddingLeft: 'var(--spacing-xxl)', paddingRight: 'var(--spacing-l)' }}>
                                     <span style={{ textAlign: 'right', fontSize: 'var(--font-size-200)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{ratePct}%</span>
                                     <ProgressBar
                                         value={ratePct / 100}
@@ -343,6 +353,7 @@ const GroupTable = ({
                                     />
                                 </span>
                                 <span
+                                    role="cell"
                                     style={{
                                         textAlign: 'right',
                                         fontSize: 'var(--font-size-300)',
@@ -356,15 +367,16 @@ const GroupTable = ({
                             </div>
                         );
                     })}
-                    <div className="eval-grid6" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', fontWeight: 'var(--font-weight-semibold)' }}>
-                        <span style={{ fontSize: 'var(--font-size-300)' }}>All scenarios</span>
-                        <span style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)' }}>{totalGoodPct}%</span>
-                        <span />
-                        <span />
-                        <span style={{ display: 'flex', alignItems: 'center', paddingRight: 'var(--spacing-l)', justifyContent: 'flex-end' }}>
+                    <div className="eval-grid6" role="row" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', fontWeight: 'var(--font-weight-semibold)' }}>
+                        <span role="cell" style={{ fontSize: 'var(--font-size-300)' }}>All scenarios</span>
+                        <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)' }}>{totalGoodPct}%</span>
+                        <span role="cell" />
+                        <span role="cell" />
+                        <span role="cell" style={{ display: 'flex', alignItems: 'center', paddingRight: 'var(--spacing-l)', justifyContent: 'flex-end' }}>
                             <span style={{ fontSize: 'var(--font-size-300)', textAlign: 'right' }}>{pctInt(totalKpi.passRate)}%</span>
                         </span>
                         <span
+                            role="cell"
                             style={{
                                 textAlign: 'right',
                                 fontSize: 'var(--font-size-300)',
@@ -415,8 +427,6 @@ export const OverviewView = () => {
         return kpi.passRate - prevPassing / totalTotal;
     }, [groupRows, kpi.passRate]);
 
-    // Compare against the chronologically-immediate predecessor (creationTime
-    // order), not an insertion index. The earliest run has no predecessor.
     const compareLabel = useMemo(() => {
         const chrono = chronologicalExecutions(dataset);
         const idx = chrono.indexOf(activeExecution);

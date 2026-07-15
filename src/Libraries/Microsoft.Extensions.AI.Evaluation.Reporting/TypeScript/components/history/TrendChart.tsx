@@ -12,8 +12,6 @@ export type BandPoint = {
     n: number;
 };
 
-// Metric axis kind. `score` spans a fixed 1–5 axis, `fraction` a fixed 0–1
-// axis; `count` (or anything else) is data-driven.
 export type MetricKind = 'score' | 'fraction' | 'count';
 
 type Domain = {
@@ -75,7 +73,6 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
 
     useEffect(() => {
         const el = wrapRef.current;
-        // ResizeObserver is browser-only; guard so non-DOM envs fall back to the fixed W below.
         if (!el || typeof ResizeObserver === 'undefined') return;
         const ro = new ResizeObserver((entries) => {
             const w = entries[0]?.contentRect.width;
@@ -169,7 +166,6 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
         </text>
     ));
 
-    // hollow donut swatch matching the chart marker geometry (r=3.25 + 1.5px stroke → 8px painted, = dumbbell dot)
     const donut = (stroke: string): React.CSSProperties => ({
         position: 'absolute',
         left: '50%',

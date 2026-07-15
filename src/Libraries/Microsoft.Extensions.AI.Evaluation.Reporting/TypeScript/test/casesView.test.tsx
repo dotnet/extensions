@@ -16,16 +16,22 @@ const renderCases = (dataset: Dataset) => {
     );
 };
 
+// Case rows label themselves "<name> (passed|failed)". Expanded MetricRow buttons use
+// ", failed" (no parens), so this parenthesized query never matches them and can't inflate.
+const CASE_ROW = /\((?:passed|failed)\)/i;
+
 describe('CasesView — rows + expand + focus contract', () => {
-    it('renders a case row for the single tool-call scenario', () => {
+    it('renders the single tool-call scenario as a passed case row', () => {
         renderCases(toolCallDataset);
-        const rows = screen.getAllByRole('button', { name: /passed|failed/i });
-        expect(rows.length).toBeGreaterThan(0);
+        const rows = screen.getAllByRole('button', { name: CASE_ROW });
+        expect(rows).toHaveLength(1);
+        // The tool-call scenario passes; a broken isLeafFailed would flip this to "(failed)".
+        expect(rows[0].getAttribute('aria-label')).toMatch(/\(passed\)/i);
     });
 
     it('expands the inline detail and focuses the detail heading on open', () => {
         renderCases(toolCallDataset);
-        const row = screen.getAllByRole('button', { name: /passed|failed/i })[0];
+        const row = screen.getAllByRole('button', { name: CASE_ROW })[0];
 
         expect(screen.queryByRole('region', { name: /detail/i })).not.toBeInTheDocument();
 
@@ -38,18 +44,26 @@ describe('CasesView — rows + expand + focus contract', () => {
         expect(detail).toHaveFocus();
     });
 
+    it('does not put a Tabster Mover on the expanded detail', () => {
+        renderCases(toolCallDataset);
+        fireEvent.click(screen.getAllByRole('button', { name: CASE_ROW })[0]);
+
+        const detail = screen.getByRole('region', { name: /detail/i });
+        expect(detail).not.toHaveAttribute('data-tabster');
+    });
+
     it('"Failing only" filters out passing cases', () => {
         renderCases(richDataset);
-        const allRows = screen.getAllByRole('button', { name: /passed|failed/i });
-        const failingBefore = allRows.filter((r) => /failed/i.test(r.getAttribute('aria-label') ?? ''));
+        const allRows = screen.getAllByRole('button', { name: CASE_ROW });
+        const failingBefore = allRows.filter((r) => /\(failed\)/i.test(r.getAttribute('aria-label') ?? ''));
         expect(failingBefore.length).toBeGreaterThan(0);
 
         fireEvent.click(screen.getByRole('switch', { name: /show failed/i }));
 
-        const afterRows = screen.getAllByRole('button', { name: /passed|failed/i });
+        const afterRows = screen.getAllByRole('button', { name: CASE_ROW });
         expect(afterRows.length).toBe(failingBefore.length);
         for (const r of afterRows) {
-            expect(r.getAttribute('aria-label')).toMatch(/failed/i);
+            expect(r.getAttribute('aria-label')).toMatch(/\(failed\)/i);
         }
     });
 });

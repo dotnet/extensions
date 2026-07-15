@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Card, makeStyles, mergeClasses } from '@fluentui/react-components';
+import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Card, makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
 import { useReportStyles } from '../styles/reportStyles';
 import { metricHistoryForScenario, chronologicalExecutions } from '../core/viewModels';
@@ -17,8 +17,6 @@ const metricKindOf = (metric: BaseEvaluationMetric, sampleValue: number): Metric
     return 'score';
 };
 
-// "high" (default) means larger-is-better; "low" flips improvement direction;
-// "none" means no direction (neutral deltas).
 const metricBetterOf = (metric: BaseEvaluationMetric): 'high' | 'low' | 'none' => {
     const b = metric.metadata?.better;
     return b === 'low' || b === 'none' ? b : 'high';
@@ -46,12 +44,10 @@ const aggregate = (values: number[]): BandPoint | undefined => {
 };
 
 const useLocalStyles = makeStyles({
-    // Hides the horizontal scrollbar on the metric segmented control.
     segTrack: {
         scrollbarWidth: 'none',
         '&::-webkit-scrollbar': { height: 0, width: 0 },
     },
-    // Hover affordance for a non-active segment button (active buttons don't get it).
     segBtn: {
         ':hover': {
             WebkitBackdropFilter: 'var(--eval-nav-bd-hover)',
@@ -59,8 +55,6 @@ const useLocalStyles = makeStyles({
             color: 'var(--neutral-foreground-1)',
         },
     },
-    // Reserves the width of the bold (active) label via a hidden ::after clone so the
-    // control doesn't reflow when a metric becomes active.
     segLabel: {
         display: 'inline-flex',
         flexDirection: 'column',
@@ -77,6 +71,7 @@ const useLocalStyles = makeStyles({
 export const HistoryView = () => {
     const s = useReportStyles();
     const local = useLocalStyles();
+    const idPrefix = useId();
     const { scoreSummary, dataset, selectedScenarioLevel } = useReportContext();
 
     const leafScenarios = useMemo(() => {
@@ -87,8 +82,6 @@ export const HistoryView = () => {
             .map((node) => ({ scenario: node.scenario!, nodeKey: node.nodeKey }));
     }, [scoreSummary]);
 
-    // History follows the sidebar selection (no in-panel picker). Resolve the selected
-    // node key — possibly a group — to the first leaf scenario under it.
     const selectedScenario = useMemo(() => {
         if (!selectedScenarioLevel) return leafScenarios[0]?.scenario;
         const match = leafScenarios.find(
@@ -108,7 +101,6 @@ export const HistoryView = () => {
     const activeMetric =
         selectedMetric && metricNames.includes(selectedMetric) ? selectedMetric : metricNames[0];
 
-    // Slide the pill indicator to track the active metric button.
     const trackRef = useRef<HTMLDivElement | null>(null);
     const indRef = useRef<HTMLSpanElement | null>(null);
     const placedRef = useRef(false);
@@ -142,7 +134,6 @@ export const HistoryView = () => {
             placedRef.current = true;
         };
         place();
-        // ResizeObserver is a browser-only enhancement; guard it so non-DOM envs (tests/SSR) no-op gracefully.
         let ro: ResizeObserver | undefined;
         if (typeof ResizeObserver !== 'undefined') {
             ro = new ResizeObserver(() => {
@@ -161,7 +152,6 @@ export const HistoryView = () => {
 
     const hasTrend = allSeries.length > 0;
 
-    // Executions for this scenario ordered oldest → newest (see chronologicalExecutions).
     const activeSeriesPoints = useMemo(() => {
         const points = activeMetric
             ? allSeries.find((series) => series.metricName === activeMetric)?.points ?? []
@@ -179,8 +169,6 @@ export const HistoryView = () => {
             .map((o) => o.pt);
     }, [allSeries, activeMetric, dataset]);
 
-    // Per-execution mean/median/min/max across ALL cases of the scenario (by scenarioName,
-    // not per-iteration) — that's what makes the min–max spread band appear.
     const band = useMemo(() => {
         if (!hasTrend || !activeMetric || !selectedScenario || activeSeriesPoints.length === 0) {
             return { points: [] as (BandPoint | undefined)[], kind: 'score' as MetricKind, better: 'high' as 'high' | 'low' | 'none' };
@@ -244,6 +232,8 @@ export const HistoryView = () => {
 
     const metricKindLabel = kind === 'fraction' ? 'fraction · 0–1' : kind === 'score' ? 'score · 1–5' : 'count';
 
+    const metricNav = useArrowNavigationGroup({ axis: 'horizontal', circular: true });
+
     const stats: { label: string; value: string; color: string }[] = [
         { label: 'First run score', value: first ? formatRaw(first.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
         { label: 'Last run score', value: last ? formatRaw(last.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
@@ -251,7 +241,6 @@ export const HistoryView = () => {
         { label: 'Peak', value: formatRaw(peak, kind), color: 'var(--neutral-foreground-1)' },
     ];
 
-    // Shared metric domain so every run's dumbbell normalizes on the same axis.
     const [hMin, hMax] = metricScale(kind, peak);
 
     let prev: BandPoint | undefined;
@@ -283,15 +272,18 @@ export const HistoryView = () => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             {metricNames.length > 0 && (
-                <div role="tablist" ref={trackRef} className={local.segTrack} style={segTrackStyle}>
+                <div role="tablist" aria-label="Metrics" ref={trackRef} className={local.segTrack} style={segTrackStyle} {...metricNav}>
                     <span ref={indRef} className={s.slideIndicatorPill} aria-hidden="true" />
-                    {metricNames.map((name) => {
+                    {metricNames.map((name, i) => {
                         const isActive = name === activeMetric;
                         return (
                             <button
                                 key={name}
                                 role="tab"
+                                id={`${idPrefix}metric-tab-${i}`}
                                 aria-selected={isActive}
+                                aria-controls={`${idPrefix}metric-tabpanel`}
+                                tabIndex={0}
                                 className={mergeClasses(s.segmentedPill, !isActive && local.segBtn, isActive && s.segmentedPillActive)}
                                 style={{ position: 'relative', zIndex: 1 }}
                                 onClick={() => setSelectedMetric(name)}
@@ -304,12 +296,17 @@ export const HistoryView = () => {
             )}
 
             {activeMetric && (
-                <Card appearance="outline">
+                <Card
+                    appearance="outline"
+                    role="tabpanel"
+                    id={`${idPrefix}metric-tabpanel`}
+                    aria-labelledby={`${idPrefix}metric-tab-${metricNames.indexOf(activeMetric)}`}
+                >
                     <div style={{ padding: 'var(--spacing-xs) var(--spacing-s)' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-m-nudge)', marginBottom: 'var(--spacing-xl)' }}>
-                            <h3 style={{ margin: 0, fontSize: 'var(--font-size-500)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
+                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-500)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
                                 {activeMetric}
-                            </h3>
+                            </h2>
                             <span style={{ fontSize: 'var(--font-size-100)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.3px' }}>
                                 {metricKindLabel}
                             </span>
@@ -338,20 +335,20 @@ export const HistoryView = () => {
                         </div>
 
                         <div style={{ marginTop: 'var(--spacing-xxl)' }}>
-                            <h3 style={{ fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', margin: '0 0 var(--spacing-m)' }}>
+                            <h2 style={{ fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', margin: '0 0 var(--spacing-m)' }}>
                                 Run history
-                            </h3>
-                            <div className={s.tscroll}>
-                                <div className="eval-grid4" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', padding: 'var(--spacing-m-nudge) 0', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
-                                    <span>Execution</span>
-                                    <span style={{ textAlign: 'center' }}>Metric score</span>
-                                    <span style={{ textAlign: 'right' }}>Δ run</span>
+                            </h2>
+                            <div className={s.tscroll} role="table" aria-label="Run history" tabIndex={0}>
+                                <div className="eval-grid4" role="row" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', padding: 'var(--spacing-m-nudge) 0', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+                                    <span role="columnheader">Execution</span>
+                                    <span role="columnheader" style={{ textAlign: 'center' }}>Metric score</span>
+                                    <span role="columnheader" style={{ textAlign: 'right' }}>Δ run</span>
                                 </div>
                                 {runs.map((rn) => (
-                                    <div key={rn.key} className="eval-grid4" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m) 0', borderBottom: '1px solid var(--neutral-stroke-3)', fontSize: 'var(--font-size-300)' }}>
-                                        <span style={{ color: 'var(--neutral-foreground-1)' }}>{rn.date}</span>
-                                        <span style={{ color: 'var(--neutral-foreground-1)', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{rn.scoreStr}</span>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-l)' }}>
+                                    <div key={rn.key} className="eval-grid4" role="row" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m) 0', borderBottom: '1px solid var(--neutral-stroke-3)', fontSize: 'var(--font-size-300)' }}>
+                                        <span role="cell" style={{ color: 'var(--neutral-foreground-1)' }}>{rn.date}</span>
+                                        <span role="cell" style={{ color: 'var(--neutral-foreground-1)', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{rn.scoreStr}</span>
+                                        <span role="cell" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-l)' }}>
                                             <span style={{ position: 'relative', flex: 1, minWidth: '110px', height: '16px' }}>
                                                 <span style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1.5px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)' }} />
                                                 <span style={rn.spread} />
