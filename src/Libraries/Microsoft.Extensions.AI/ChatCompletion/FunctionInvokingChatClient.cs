@@ -870,6 +870,16 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             c is ToolApprovalRequestContent { ToolCall: FunctionCallContent { InformationalOnly: false } }
             or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } });
 
+    /// <summary>
+    /// Determines whether <paramref name="message"/> contains any content that is neither an approval request nor an
+    /// approval response, i.e. genuine caller content (such as text) rather than approval machinery. Such content is
+    /// what causes the reconstructed tool-call/result block to be inserted before the approval message rather than
+    /// appended after it. Preserved approval content (for example MCP or informational-only approvals that survive
+    /// extraction) is intentionally not treated as this kind of content, so it stays ahead of the reconstructed block.
+    /// </summary>
+    private static bool MessageHasNonApprovalContent(ChatMessage message) =>
+        message.Contents.Any(static c => c is not (ToolApprovalRequestContent or ToolApprovalResponseContent));
+
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
         IList<ChatMessage> messages, [NotNullWhen(true)] ref List<FunctionCallContent>? functionCalls)
@@ -1320,22 +1330,36 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     private (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals, int approvedResultInsertIndex) ProcessFunctionApprovalResponses(
         List<ChatMessage> originalMessages, bool hasConversationId, string? toolMessageId, string? functionCallContentFallbackMessageId)
     {
-        // Determine how many trailing caller-supplied messages sit after the approval exchange before extraction
-        // removes it. Messages after the last message carrying approval content are trailing messages that must
-        // remain after the reconstructed tool-call/result block; everything else stays before it. This keeps the
-        // reconstructed tool-call and tool result adjacent and ahead of the trailing messages, which is required
-        // in service-managed mode where the assistant tool-call is held by the service and is not re-sent. When
-        // there are no trailing messages this reduces to appending at the end of the list.
+        // Determine where the reconstructed tool-call/tool-result block is inserted into the outgoing list.
+        //
+        // The block is anchored just before the last message that carries approval content. Everything from that
+        // message onwards - its residual content that survives extraction (if the approval response shared a message
+        // with other content), plus every message after it - ends up after the block; everything before it stays
+        // before. This keeps a reconstructed tool result adjacent to the assistant tool-call it belongs to (whether
+        // that tool-call is reconstructed by us in client-managed mode, or held by the service in service-managed
+        // mode) and ahead of any trailing or residual caller-supplied content.
+        //
+        // The count is computed before extraction. Any message positioned after lastApprovalIndex carries no
+        // extracted approval content - lastApprovalIndex is the last one that does - so extraction never removes
+        // those messages. The last approval message itself survives only when it has other, non-approval, content.
+        // That makes the trailing count stable across extraction, so the resulting insert index is always in range.
+        //
+        // Known limitation: content interleaved between multiple approval responses, or placed before an approval
+        // response, remains before the block (only the last approval position is used as the anchor). In
+        // service-managed mode - where the service holds every prior tool-call ahead of all new messages - such
+        // interleaved/leading content can therefore break tool_calls->tool adjacency. Interleaving other content
+        // among, or before, approval responses is not a supported usage pattern.
         int lastApprovalIndex = originalMessages.FindLastIndex(MessageHasApprovalContent);
-        int trailingMessageCount = lastApprovalIndex >= 0 ? originalMessages.Count - 1 - lastApprovalIndex : 0;
+        int trailingMessageCount = lastApprovalIndex >= 0
+            ? (originalMessages.Count - 1 - lastApprovalIndex) + (MessageHasNonApprovalContent(originalMessages[lastApprovalIndex]) ? 1 : 0)
+            : 0;
 
         // Extract any approval responses where we need to execute or reject the function calls.
         // The original messages are also modified to remove all approval requests and responses.
         var notInvokedResponses = ExtractAndRemoveApprovalRequestsAndResponses(originalMessages);
 
-        // The reconstructed function call/result messages are inserted just before the trailing caller-supplied
-        // messages. Those trailing messages contain no approval content and so are never removed by extraction,
-        // which means they remain at the tail and this index is always valid.
+        // Insert just before the last approval message's surviving content (see above). When there are no trailing
+        // or residual messages this reduces to appending at the end of the list.
         int insertIndex = originalMessages.Count - trailingMessageCount;
 
         // Wrap the function call content in message(s).

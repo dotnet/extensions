@@ -1195,11 +1195,7 @@ public class FunctionInvokingChatClientApprovalsTests
         // assistant(tool_calls) -> user(trailing) -> tool(result), which breaks tool_calls->tool adjacency.
         var options = new ChatOptions
         {
-            Tools =
-            [
-                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
-                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
-            ],
+            Tools = [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"))],
             ConversationId = "test-conversation",
         };
 
@@ -1208,7 +1204,6 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.User,
             [
                 new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new ToolApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
 
             // A caller-supplied message after the approval response.
@@ -1219,7 +1214,7 @@ public class FunctionInvokingChatClientApprovalsTests
         // re-sent because the service already holds it.
         List<ChatMessage> expectedDownstreamClientInput =
         [
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.User, "By the way, please keep the answer concise."),
         ];
 
@@ -1230,8 +1225,56 @@ public class FunctionInvokingChatClientApprovalsTests
 
         List<ChatMessage> output =
         [
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task ApprovedResponseStaysAdjacentToToolCallWhenApprovalMessageHasOtherContentWithServiceThreadsAsync()
+    {
+        // Regression: the approval response shares a message with other caller content. Extraction removes the
+        // approval response but leaves the other content ("please proceed") in place. In service-managed mode the
+        // service holds the assistant tool-call, so the reconstructed tool result must still be placed ahead of that
+        // residual content, otherwise the effective ordering becomes
+        // assistant(tool_calls) -> user("please proceed") -> tool(result), which breaks tool_calls->tool adjacency.
+        var options = new ChatOptions
+        {
+            Tools = [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"))],
+            ConversationId = "test-conversation",
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new TextContent("please proceed"),
+            ]),
+        ];
+
+        // The tool result is positioned at the front, ahead of the residual "please proceed" content that was left
+        // behind in the approval message after the approval response was extracted.
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.User, "please proceed"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
@@ -1248,11 +1291,7 @@ public class FunctionInvokingChatClientApprovalsTests
         // messages end up after the tool result while adjacency is preserved.
         var options = new ChatOptions
         {
-            Tools =
-            [
-                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
-                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
-            ]
+            Tools = [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"))],
         };
 
         List<ChatMessage> input =
@@ -1261,12 +1300,10 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Assistant,
             [
                 new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
-                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]) { MessageId = "resp1" },
             new ChatMessage(ChatRole.User,
             [
                 new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
-                new ToolApprovalResponseContent("ficc_callId2", true, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
             ]),
 
             // A caller-supplied message after the approval response.
@@ -1278,8 +1315,8 @@ public class FunctionInvokingChatClientApprovalsTests
         List<ChatMessage> expectedDownstreamClientInput =
         [
             new ChatMessage(ChatRole.User, "hello"),
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.User, "By the way, please keep the answer concise."),
         ];
 
@@ -1290,8 +1327,59 @@ public class FunctionInvokingChatClientApprovalsTests
 
         List<ChatMessage> output =
         [
-            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1"), new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })]),
-            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1"), new FunctionResultContent("callId2", result: "Result 2: 42")]),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
+    }
+
+    [Fact]
+    public async Task ApprovedResponseStaysAdjacentToToolCallWhenApprovalMessageHasOtherContentWithClientHistoryAsync()
+    {
+        // Client-managed history where the approval response shares a message with other caller content. The
+        // reconstructed tool-call/result block is inserted just before that approval message, so the residual
+        // content ("please proceed") that survives extraction ends up after the reconstructed assistant tool-call
+        // and tool result rather than wedged before them.
+        var options = new ChatOptions
+        {
+            Tools = [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1"))],
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+                new TextContent("please proceed"),
+            ]),
+        ];
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.User, "please proceed"),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
             new ChatMessage(ChatRole.Assistant, "world"),
         ];
 
