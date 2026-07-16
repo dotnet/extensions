@@ -454,7 +454,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
         }
 #pragma warning restore CA2214
 
-        public override async Task InitializeAsync()
+        public override async ValueTask InitializeAsync()
         {
             await base.InitializeAsync();
 

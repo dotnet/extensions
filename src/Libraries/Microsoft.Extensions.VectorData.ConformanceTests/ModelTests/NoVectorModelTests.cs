@@ -112,11 +112,11 @@ public abstract class NoVectorModelTests<TKey>(NoVectorModelTests<TKey>.Fixture 
         }
     }
 
-    public Task InitializeAsync()
-        => fixture.ReseedAsync();
+    public ValueTask InitializeAsync()
+        => new(fixture.ReseedAsync());
 
-    public Task DisposeAsync()
-        => Task.CompletedTask;
+    public ValueTask DisposeAsync()
+        => default;
 
     public static readonly TheoryData<bool> IncludeVectorsData = [false, true];
 }

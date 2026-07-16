@@ -35,7 +35,7 @@ public abstract class VectorStoreCollectionFixtureBase<TKey, TRecord> : VectorSt
     protected virtual VectorStoreCollection<TKey, TRecord> GetCollection()
         => TestStore.CreateCollection<TKey, TRecord>(CollectionName, CreateRecordDefinition());
 
-    public override async Task InitializeAsync()
+    public override async ValueTask InitializeAsync()
     {
         await base.InitializeAsync();
 
