@@ -20,7 +20,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" VersionOverride="$(XUnitVersion)" />
+    <PackageReference Include="xunit.v3.assert" VersionOverride="$(XUnitV3Version)" />
+    <PackageReference Include="xunit.v3.extensibility.core" VersionOverride="$(XUnitV3Version)" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="System.Linq.AsyncEnumerable" />
