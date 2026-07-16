@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.AI;
 
@@ -52,22 +51,6 @@ public sealed class TextReasoningContent : AIContent
     /// </para>
     /// </remarks>
     public string? ProtectedData { get; set; }
-
-    /// <summary>Gets or sets an optional provider-assigned identifier for this reasoning content.</summary>
-    /// <remarks>
-    /// <para>
-    /// Some providers assign an identifier to a reasoning item that must be sent back when the reasoning content
-    /// is included in a subsequent request. For example, the OpenAI Responses API rejects a replayed reasoning
-    /// item that omits its identifier in stateless (<c>store: false</c>) scenarios that carry encrypted reasoning
-    /// via <see cref="ProtectedData"/>.
-    /// </para>
-    /// <para>
-    /// Like <see cref="ProtectedData"/>, this value is provider-specific. Providers that do not assign such an
-    /// identifier leave it <see langword="null"/>.
-    /// </para>
-    /// </remarks>
-    [Experimental(DiagnosticIds.Experiments.AIReasoningItemId, UrlFormat = DiagnosticIds.UrlFormat)]
-    public string? ItemId { get; set; }
 
     /// <inheritdoc/>
     public override string ToString() => Text;
