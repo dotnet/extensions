@@ -602,7 +602,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // RawRepresentation) so that it can be sent back on a subsequent request; stateless
                         // (store=false) resume of encrypted reasoning is rejected by the service without it.
                         case ReasoningResponseItem rri when rri.EncryptedContent is { Length: > 0 } encryptedContent:
-                            yield return CreateUpdate(CreateReasoningContent(text: null, encryptedContent, rri.Id));
+                            yield return CreateUpdate(CreateReasoningContent(text: null, protectedData: encryptedContent, itemId: rri.Id));
                             break;
 
                         // For ResponseItems where we've already yielded partial deltas for the whole content,
