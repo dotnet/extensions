@@ -5,6 +5,7 @@ import { useId, useState } from 'react';
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { useReportStyles, type ReportStatus } from '../styles/reportStyles';
+import { metricKind as sharedMetricKind, scaleMaxOf, betterDirectionOf, type MetricKind } from '../core/metricModel';
 import { DiagnosticsContent } from './DiagnosticsContent';
 import { MetadataContent } from './MetadataContent';
 import { type MetricType } from './metricTypes';
@@ -59,22 +60,14 @@ const metricFailed = (metric: MetricType): boolean =>
     metric.interpretation?.failed === true ||
     (metric.diagnostics?.some((d) => d.severity === 'error') ?? false);
 
-type MetricKind = 'score' | 'fraction' | 'severity' | 'boolean' | 'none' | 'string';
 const metricKind = (metric: MetricType): MetricKind => {
-    if (metric.$type === 'boolean') return 'boolean';
-    if (metric.$type === 'string') return 'string';
-    if (metric.$type === 'none') return 'none';
-    const declared = metric.metadata?.kind as MetricKind | undefined;
-    if (declared) return declared;
-    const v = metric.value;
-    if (typeof v === 'number') {
-        if (v >= 0 && v <= 1) return 'fraction';
-        if (Number.isInteger(v) && v >= 1 && v <= 5) return 'score';
+    if (metric.$type === 'numeric' && !metric.metadata?.kind && typeof metric.value !== 'number') {
+        return 'score';
     }
-    return 'score';
+    return sharedMetricKind(metric, { trustDeclaredKind: true });
 };
 const betterLow = (metric: MetricType): boolean =>
-    metric.metadata?.better === 'low' || metricKind(metric) === 'severity';
+    betterDirectionOf(metric) === 'low' || metricKind(metric) === 'severity';
 
 const goodness = (metric: MetricType, kind: MetricKind): number => {
     const v = typeof metric.value === 'number' ? metric.value : 0;
@@ -82,9 +75,6 @@ const goodness = (metric: MetricType, kind: MetricKind): number => {
     if (kind === 'severity') return (7 - v) / 7;
     return betterLow(metric) ? 1 - v : v;
 };
-
-const scaleMaxOf = (kind: MetricKind): number | null =>
-    kind === 'score' ? 5 : kind === 'severity' ? 7 : kind === 'fraction' ? 1 : null;
 
 const displayValue = (metric: MetricType): string | undefined => {
     switch (metric.$type) {
@@ -350,7 +340,7 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
                 type="button"
                 className={mergeClasses(classes.row, classes.rowInteractive)}
                 aria-expanded={open}
-                aria-controls={panelId}
+                aria-controls={open ? panelId : undefined}
                 aria-label={`${metric.name}${failed ? ', failed' : ''}, ${ratingWord(rating)}${heroNum !== undefined ? `, ${heroNum}` : ''}`}
                 onClick={() => setOpen((v) => !v)}
             >

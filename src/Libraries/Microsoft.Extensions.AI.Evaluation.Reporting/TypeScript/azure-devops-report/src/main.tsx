@@ -11,11 +11,7 @@ import { Build, Attachment, BuildRestClient } from "./azure-devops-extension-api
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 
 const ErrorHtml = ({ message }: { message: string }) =>
-  <html>
-    <body>
-      <div className="error">{message}</div>
-    </body>
-  </html>;
+  <div className="error">{message}</div>;
 
 const ATTACHMENT_NAME = 'ai-eval-report';
 const ATTACHMENT_TYPE = 'ai-eval-report-json';
@@ -76,17 +72,14 @@ const run = async () => {
 
     } catch (e) {
 
-      if (e instanceof Error) {
-        const err = e as Error;
-        createRoot(document.getElementById('root')!).render(
-          <FluentProvider theme={webLightTheme}>
-            <StrictMode>
-              <ErrorHtml message={err.message} />
-            </StrictMode>
-          </FluentProvider>
-        );
-        return;
-      }
+      const message = e instanceof Error ? e.message : 'An unknown error occurred while loading the report.';
+      createRoot(document.getElementById('root')!).render(
+        <FluentProvider theme={webLightTheme}>
+          <StrictMode>
+            <ErrorHtml message={message} />
+          </StrictMode>
+        </FluentProvider>
+      );
     }
   });
 };

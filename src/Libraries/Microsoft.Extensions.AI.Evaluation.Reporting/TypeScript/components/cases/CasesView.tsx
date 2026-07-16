@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useAnnounce } from '../core/Announcer';
 import {
     makeStyles,
@@ -66,6 +66,19 @@ const useStyles = makeStyles({
         gap: 'var(--spacing-s-nudge)',
     },
     tagOpt: {
+        flex: '1 1 auto',
+        boxSizing: 'border-box',
+        borderRadius: 'var(--radius-circular)',
+        padding: 'var(--spacing-xs) var(--spacing-l)',
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        fontSize: 'var(--font-size-200)',
+        lineHeight: 1.3,
+        whiteSpace: 'nowrap',
+        textAlign: 'center',
+        transition:
+            'background-color var(--duration-faster) var(--curve-easy-ease), ' +
+            'border-color var(--duration-faster) var(--curve-easy-ease)',
         ':hover': { background: 'var(--neutral-background-3) !important' },
     },
     tagOptActive: {
@@ -306,9 +319,9 @@ const CaseRow = ({
 }) => {
     const classes = useStyles();
     const s = useReportStyles();
-    // Deliberately NOT a Tabster Mover: it's plain content, not a composite widget. A Mover would
-    // make it one Tab stop and swallow arrow keys, hiding its controls and blocking table scroll.
+    // Deliberately NOT a Tabster Mover: this is plain content, not a composite widget.
     const detailRef = useRef<HTMLDivElement>(null);
+    const regionId = useId();
 
     useEffect(() => {
         if (open && detailRef.current) {
@@ -327,6 +340,7 @@ const CaseRow = ({
                 ref={(el) => registerRowRef(vm.key, el)}
                 className={mergeClasses(classes.row, classes.rowInteractive)}
                 aria-expanded={open}
+                aria-controls={regionId}
                 aria-label={`${vm.label}${vm.failed ? ' (failed)' : ' (passed)'}`}
                 onClick={onToggle}
             >
@@ -346,6 +360,7 @@ const CaseRow = ({
             {open && conversation && (
                 <div
                     ref={detailRef}
+                    id={regionId}
                     className={classes.detail}
                     tabIndex={-1}
                     role="region"
@@ -465,12 +480,9 @@ export const CasesView = () => {
     }, [allRows, failedOnly]);
 
     const selectedScenarioName = useMemo(() => {
-        if (!selectedScenarioLevel) return undefined;
-        const names = new Set(
-            scopedNode.flattenedNodes.filter((n) => n.isLeafNode && n.scenario).map((n) => n.scenario!.scenarioName),
-        );
-        return names.size === 1 ? [...names][0] : undefined;
-    }, [selectedScenarioLevel, scopedNode]);
+        if (!scopedScenarioNames) return undefined;
+        return scopedScenarioNames.size === 1 ? [...scopedScenarioNames][0] : undefined;
+    }, [scopedScenarioNames]);
 
     const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
     useEffect(() => {
@@ -479,7 +491,10 @@ export const CasesView = () => {
         }
     }, [casePage, pageCount, setCasePage]);
     const page = Math.min(casePage, pageCount);
-    const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const pageRows = useMemo(
+        () => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+        [rows, page],
+    );
 
     useEffect(() => {
         if (openKey && !pageRows.some((r) => r.key === openKey)) {
@@ -547,29 +562,17 @@ export const CasesView = () => {
                                             <button
                                                 key={tag}
                                                 type="button"
-                                                className={active ? classes.tagOptActive : classes.tagOpt}
+                                                className={mergeClasses(classes.tagOpt, active && classes.tagOptActive)}
                                                 aria-pressed={active}
                                                 onClick={() => {
                                                     handleTagClick(tag);
                                                     setCasePage(1);
                                                 }}
                                                 style={{
-                                                    flex: '1 1 auto',
-                                                    boxSizing: 'border-box',
                                                     border: active ? '1px solid var(--brand-stroke-1)' : '1px solid var(--neutral-stroke-1)',
                                                     background: active ? 'var(--brand-background-2)' : 'transparent',
                                                     color: active ? 'var(--brand-foreground-1)' : 'var(--neutral-foreground-2)',
                                                     fontWeight: active ? 'var(--font-weight-semibold)' : 'var(--font-weight-regular)',
-                                                    borderRadius: 'var(--radius-circular)',
-                                                    padding: 'var(--spacing-xs) var(--spacing-l)',
-                                                    cursor: 'pointer',
-                                                    fontFamily: 'inherit',
-                                                    fontSize: 'var(--font-size-200)',
-                                                    lineHeight: 1.3,
-                                                    whiteSpace: 'nowrap',
-                                                    textAlign: 'center',
-                                                    transition:
-                                                        'background-color var(--duration-faster) var(--curve-easy-ease), border-color var(--duration-faster) var(--curve-easy-ease)',
                                                 }}
                                             >
                                                 {tag}

@@ -38,6 +38,10 @@ export const DiagnosticsContent = ({ diagnostics, metricName }: { diagnostics: E
     };
 
     const copyToClipboard = (text: string) => {
+        if (!navigator.clipboard) {
+            announce('Copy failed');
+            return;
+        }
         navigator.clipboard.writeText(text).then(
             () => announce('Diagnostic copied to clipboard'),
             () => announce('Copy failed'),

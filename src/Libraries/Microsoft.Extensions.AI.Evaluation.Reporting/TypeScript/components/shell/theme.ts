@@ -28,6 +28,7 @@ const parseRgb = (raw: string): [number, number, number] | null => {
             const r = parseInt(hex[0] + hex[0], 16);
             const g = parseInt(hex[1] + hex[1], 16);
             const b = parseInt(hex[2] + hex[2], 16);
+            if ([r, g, b].some(Number.isNaN)) return null;
             return [r, g, b];
         }
         if (hex.length === 6 || hex.length === 8) {

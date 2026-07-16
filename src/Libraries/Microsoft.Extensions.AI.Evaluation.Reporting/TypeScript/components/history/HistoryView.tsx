@@ -4,23 +4,11 @@
 import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Card, makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
-import { useReportStyles } from '../styles/reportStyles';
+import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { metricHistoryForScenario, chronologicalExecutions } from '../core/viewModels';
 import { TrendChart, type BandPoint, type MetricKind } from './TrendChart';
-import { metricScale, posOn, formatRaw, STATUS_TEXT, dumbbellStyles } from './dumbbellGeometry';
-
-const metricKindOf = (metric: BaseEvaluationMetric, sampleValue: number): MetricKind => {
-    const hint = metric.metadata?.kind;
-    if (hint === 'score' || hint === 'fraction' || hint === 'count') return hint;
-    if (sampleValue >= 0 && sampleValue <= 1) return 'fraction';
-    if (Number.isInteger(sampleValue) && sampleValue >= 1 && sampleValue <= 5) return 'score';
-    return 'score';
-};
-
-const metricBetterOf = (metric: BaseEvaluationMetric): 'high' | 'low' | 'none' => {
-    const b = metric.metadata?.better;
-    return b === 'low' || b === 'none' ? b : 'high';
-};
+import { metricScale, posOn, STATUS_TEXT, dumbbellStyles } from './dumbbellGeometry';
+import { metricKind, betterDirectionOf, formatScore } from '../core/metricModel';
 
 const deltaEpsilon = (kind: MetricKind): number =>
     kind === 'fraction' ? 0.005 : kind === 'score' ? 0.05 : 0.5;
@@ -44,7 +32,46 @@ const aggregate = (values: number[]): BandPoint | undefined => {
 };
 
 const useLocalStyles = makeStyles({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    emptyState: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'var(--spacing-xxl) var(--spacing-xl)',
+        gap: 'var(--spacing-m)',
+        color: 'var(--neutral-foreground-3)',
+        textAlign: 'center',
+        border: '1px dashed var(--neutral-stroke-2)',
+        borderRadius: 'var(--radius-large)',
+    },
+    emptyTitle: {
+        fontWeight: 'var(--font-weight-semibold)',
+        fontSize: 'var(--font-size-400)',
+        color: 'var(--neutral-foreground-2)',
+    },
+    emptySubtitle: {
+        fontSize: 'var(--font-size-300)',
+        color: 'var(--neutral-foreground-3)',
+    },
     segTrack: {
+        display: 'flex',
+        width: '100%',
+        boxSizing: 'border-box',
+        justifyContent: 'safe center',
+        gap: 'var(--spacing-xs)',
+        padding: 'var(--spacing-xs)',
+        overflowX: 'auto',
+        backgroundImage: 'var(--acrylic-fill-light)',
+        backdropFilter: 'var(--acrylic-blur)',
+        WebkitBackdropFilter: 'var(--acrylic-blur)',
+        border: '1px solid var(--neutral-stroke-1)',
+        borderRadius: 'var(--radius-large)',
+        marginBottom: 'var(--spacing-xl)',
+        position: 'relative',
         scrollbarWidth: 'none',
         '&::-webkit-scrollbar': { height: 0, width: 0 },
     },
@@ -54,6 +81,10 @@ const useLocalStyles = makeStyles({
             backdropFilter: 'var(--eval-nav-bd-hover)',
             color: 'var(--neutral-foreground-1)',
         },
+    },
+    pillPositioned: {
+        position: 'relative',
+        zIndex: 1,
     },
     segLabel: {
         display: 'inline-flex',
@@ -66,6 +97,125 @@ const useLocalStyles = makeStyles({
             visibility: 'hidden',
         },
     },
+    cardPadding: {
+        padding: 'var(--spacing-xs) var(--spacing-s)',
+    },
+    metricHeaderRow: {
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 'var(--spacing-m-nudge)',
+        marginBottom: 'var(--spacing-xl)',
+    },
+    metricTitle: {
+        margin: 0,
+        fontSize: 'var(--font-size-500)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-1)',
+    },
+    metricKindLabel: {
+        fontSize: 'var(--font-size-100)',
+        color: 'var(--neutral-foreground-4)',
+        textTransform: 'uppercase',
+        letterSpacing: '.3px',
+    },
+    statsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: 'var(--spacing-l)',
+        marginBottom: 'var(--spacing-xxl)',
+    },
+    statCard: {
+        background: 'var(--acrylic-fill-light)',
+        backdropFilter: 'var(--acrylic-blur)',
+        WebkitBackdropFilter: 'var(--acrylic-blur)',
+        border: '1px solid var(--neutral-stroke-1)',
+        borderRadius: 'var(--radius-large)',
+        padding: 'var(--spacing-l)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--spacing-s)',
+    },
+    statLabel: {
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-3)',
+        fontWeight: 'var(--font-weight-semibold)',
+    },
+    statValueBase: {
+        fontSize: 'var(--font-size-600)',
+        fontWeight: 'var(--font-weight-semibold)',
+        lineHeight: 1,
+        fontVariantNumeric: 'tabular-nums',
+    },
+    chartWrap: {
+        marginBottom: 'var(--spacing-s-nudge)',
+    },
+    historySection: {
+        marginTop: 'var(--spacing-xxl)',
+    },
+    historyHeading: {
+        fontSize: 'var(--font-size-400)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-1)',
+        margin: '0 0 var(--spacing-m)',
+    },
+    historyHeaderRow: {
+        display: 'grid',
+        gridTemplateColumns: '1.6fr 1.4fr 2fr',
+        columnGap: 'var(--spacing-l)',
+        padding: 'var(--spacing-m-nudge) 0',
+        fontSize: 'var(--font-size-100)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-4)',
+        textTransform: 'uppercase',
+        letterSpacing: '.5px',
+        borderBottom: '1px solid var(--neutral-stroke-2)',
+    },
+    colCenter: {
+        textAlign: 'center',
+    },
+    colRight: {
+        textAlign: 'right',
+    },
+    historyRow: {
+        display: 'grid',
+        gridTemplateColumns: '1.6fr 1.4fr 2fr',
+        columnGap: 'var(--spacing-l)',
+        alignItems: 'center',
+        padding: 'var(--spacing-m) 0',
+        borderBottom: '1px solid var(--neutral-stroke-3)',
+        fontSize: 'var(--font-size-300)',
+    },
+    cellDate: {
+        color: 'var(--neutral-foreground-1)',
+    },
+    cellScore: {
+        color: 'var(--neutral-foreground-1)',
+        textAlign: 'center',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    cellDeltaWrap: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-l)',
+    },
+    trackLine: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: '50%',
+        height: '1.5px',
+        transform: 'translateY(-50%)',
+        borderRadius: 'var(--radius-circular)',
+        background: 'var(--neutral-stroke-2)',
+    },
+    changeValueBase: {
+        flex: 'none',
+        minWidth: '52px',
+        textAlign: 'right',
+        fontSize: 'var(--font-size-300)',
+        fontVariantNumeric: 'tabular-nums',
+        fontWeight: 'var(--font-weight-semibold)',
+    },
 });
 
 export const HistoryView = () => {
@@ -73,6 +223,7 @@ export const HistoryView = () => {
     const local = useLocalStyles();
     const idPrefix = useId();
     const { scoreSummary, dataset, selectedScenarioLevel } = useReportContext();
+    const metricNav = useArrowNavigationGroup({ axis: 'horizontal', circular: true });
 
     const leafScenarios = useMemo(() => {
         const primaryRoot = [...scoreSummary.executionHistory.values()][0];
@@ -183,8 +334,10 @@ export const HistoryView = () => {
             if (!m || !isNumeric(m)) continue;
             const v = m.value!;
             if (!kindResolved) {
-                kind = metricKindOf(m, v);
-                better = metricBetterOf(m);
+                // metricKind's declared-kind/fallback branches only ever yield 'score' | 'fraction' | 'count'
+                // for the allowedDeclaredKinds passed here, matching this file's narrower MetricKind exactly.
+                kind = metricKind(m, { allowedDeclaredKinds: ['score', 'fraction', 'count'] }) as MetricKind;
+                better = betterDirectionOf(m);
                 kindResolved = true;
             }
             const arr = byExec.get(r.executionName);
@@ -197,9 +350,9 @@ export const HistoryView = () => {
 
     if (leafScenarios.length === 0) {
         return (
-            <div style={emptyStateStyle}>
-                <span style={emptyTitleStyle}>No scenario data</span>
-                <span style={{ fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-3)' }}>
+            <div className={local.emptyState}>
+                <span className={local.emptyTitle}>No scenario data</span>
+                <span className={local.emptySubtitle}>
                     No scenarios are available in this report.
                 </span>
             </div>
@@ -208,9 +361,9 @@ export const HistoryView = () => {
 
     if (!hasTrend) {
         return (
-            <div style={emptyStateStyle}>
-                <span style={emptyTitleStyle}>Needs at least 2 executions</span>
-                <span style={{ fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-3)' }}>
+            <div className={local.emptyState}>
+                <span className={local.emptyTitle}>Needs at least 2 executions</span>
+                <span className={local.emptySubtitle}>
                     Run this scenario across multiple executions to see metric trends over time.
                 </span>
             </div>
@@ -227,18 +380,22 @@ export const HistoryView = () => {
     const dMean = first && last ? last.mean - first.mean : 0;
     const netFlat = Math.abs(dMean) < eps;
     const netColor = good === null || netFlat ? 'var(--neutral-foreground-4)' : (dMean > 0) === good ? STATUS_TEXT.success : STATUS_TEXT.danger;
+    const netDirWord = netFlat ? undefined : dMean > 0 ? 'increased' : 'decreased';
     const netStr = netFlat ? 'stable' : (dMean > 0 ? '▲ ' : '▼ ') + deltaMagnitude(Math.abs(dMean), kind);
     const peak = valid.length ? Math.max(...valid.map((p) => p.mean)) : 0;
 
     const metricKindLabel = kind === 'fraction' ? 'fraction · 0–1' : kind === 'score' ? 'score · 1–5' : 'count';
 
-    const metricNav = useArrowNavigationGroup({ axis: 'horizontal', circular: true });
-
-    const stats: { label: string; value: string; color: string }[] = [
-        { label: 'First run score', value: first ? formatRaw(first.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
-        { label: 'Last run score', value: last ? formatRaw(last.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
-        { label: 'Net change', value: netStr, color: netColor },
-        { label: 'Peak', value: formatRaw(peak, kind), color: 'var(--neutral-foreground-1)' },
+    const stats: { label: string; value: string; color: string; srOnlySuffix?: string }[] = [
+        { label: 'First run score', value: first ? formatScore(first.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
+        { label: 'Last run score', value: last ? formatScore(last.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
+        {
+            label: 'Net change',
+            value: netStr,
+            color: netColor,
+            srOnlySuffix: netDirWord && `${netDirWord} ${deltaMagnitude(Math.abs(dMean), kind)}`,
+        },
+        { label: 'Peak', value: formatScore(peak, kind), color: 'var(--neutral-foreground-1)' },
     ];
 
     const [hMin, hMax] = metricScale(kind, peak);
@@ -246,9 +403,10 @@ export const HistoryView = () => {
     let prev: BandPoint | undefined;
     const runs = bandPoints.map((p, i) => {
         const date = activeSeriesPoints[i]?.executionName ?? `R${i + 1}`;
-        const scoreStr = p ? formatRaw(p.mean, kind) : '—';
+        const scoreStr = p ? formatScore(p.mean, kind) : '—';
         let changeStr = '—';
         let dir = 0;
+        let dirWord: string | undefined;
         let prevPos: number | null = null;
         const curPos = p ? posOn(p.mean, hMin, hMax) : 50;
         if (p && prev) {
@@ -256,7 +414,9 @@ export const HistoryView = () => {
             const d = p.mean - prev.mean;
             const flat = Math.abs(d) < eps;
             dir = good === null || flat ? 0 : (d > 0) === good ? 1 : -1;
-            changeStr = flat ? '—' : (d > 0 ? '▲ ' : '▼ ') + deltaMagnitude(Math.abs(d), kind);
+            const magnitude = deltaMagnitude(Math.abs(d), kind);
+            changeStr = flat ? '—' : (d > 0 ? '▲ ' : '▼ ') + magnitude;
+            dirWord = flat ? undefined : `${d > 0 ? 'increased' : 'decreased'} ${magnitude}`;
         }
         if (p) prev = p;
         const db = dumbbellStyles(prevPos, curPos, dir, changeStr !== '—');
@@ -266,13 +426,13 @@ export const HistoryView = () => {
             p && spR - spL > 0.5
                 ? { position: 'absolute', top: '50%', left: `${spL}%`, width: `${spR - spL}%`, height: '3px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: spreadTint(dir), pointerEvents: 'none' }
                 : { display: 'none' };
-        return { key: `${date}-${i}`, date, scoreStr, changeStr, numColor: STATUS_TEXT[db.sk], spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
+        return { key: `${date}-${i}`, date, scoreStr, changeStr, dirWord, numColor: STATUS_TEXT[db.sk], spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
     });
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className={local.root}>
             {metricNames.length > 0 && (
-                <div role="tablist" aria-label="Metrics" ref={trackRef} className={local.segTrack} style={segTrackStyle} {...metricNav}>
+                <div role="tablist" aria-label="Metrics" ref={trackRef} className={local.segTrack} {...metricNav}>
                     <span ref={indRef} className={s.slideIndicatorPill} aria-hidden="true" />
                     {metricNames.map((name, i) => {
                         const isActive = name === activeMetric;
@@ -284,8 +444,7 @@ export const HistoryView = () => {
                                 aria-selected={isActive}
                                 aria-controls={`${idPrefix}metric-tabpanel`}
                                 tabIndex={0}
-                                className={mergeClasses(s.segmentedPill, !isActive && local.segBtn, isActive && s.segmentedPillActive)}
-                                style={{ position: 'relative', zIndex: 1 }}
+                                className={mergeClasses(s.segmentedPill, local.pillPositioned, !isActive && local.segBtn, isActive && s.segmentedPillActive)}
                                 onClick={() => setSelectedMetric(name)}
                             >
                                 <span className={local.segLabel} data-text={name}>{name}</span>
@@ -302,30 +461,35 @@ export const HistoryView = () => {
                     id={`${idPrefix}metric-tabpanel`}
                     aria-labelledby={`${idPrefix}metric-tab-${metricNames.indexOf(activeMetric)}`}
                 >
-                    <div style={{ padding: 'var(--spacing-xs) var(--spacing-s)' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-m-nudge)', marginBottom: 'var(--spacing-xl)' }}>
-                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-500)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
+                    <div className={local.cardPadding}>
+                        <div className={local.metricHeaderRow}>
+                            <h2 className={local.metricTitle}>
                                 {activeMetric}
                             </h2>
-                            <span style={{ fontSize: 'var(--font-size-100)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.3px' }}>
+                            <span className={local.metricKindLabel}>
                                 {metricKindLabel}
                             </span>
                         </div>
 
-                        <div className="eval-hist-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-l)', marginBottom: 'var(--spacing-xxl)' }}>
+                        <div className={mergeClasses('eval-hist-stats', local.statsGrid)}>
                             {stats.map((st) => (
-                                <div key={st.label} style={statCardStyle}>
-                                    <div style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontWeight: 'var(--font-weight-semibold)' }}>
+                                <div key={st.label} className={local.statCard}>
+                                    <div className={local.statLabel}>
                                         {st.label}
                                     </div>
-                                    <div style={{ fontSize: 'var(--font-size-600)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, color: st.color, fontVariantNumeric: 'tabular-nums' }}>
+                                    <div
+                                        className={local.statValueBase}
+                                        style={{ color: st.color }}
+                                        aria-hidden={st.srOnlySuffix ? true : undefined}
+                                    >
                                         {st.value}
                                     </div>
+                                    {st.srOnlySuffix && <span style={srOnlyStyle}>{st.srOnlySuffix}</span>}
                                 </div>
                             ))}
                         </div>
 
-                        <div style={{ marginBottom: 'var(--spacing-s-nudge)' }}>
+                        <div className={local.chartWrap}>
                             <TrendChart
                                 points={bandPoints}
                                 kind={kind}
@@ -334,31 +498,36 @@ export const HistoryView = () => {
                             />
                         </div>
 
-                        <div style={{ marginTop: 'var(--spacing-xxl)' }}>
-                            <h2 style={{ fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', margin: '0 0 var(--spacing-m)' }}>
+                        <div className={local.historySection}>
+                            <h2 className={local.historyHeading}>
                                 Run history
                             </h2>
                             <div className={s.tscroll} role="table" aria-label="Run history" tabIndex={0}>
-                                <div className="eval-grid4" role="row" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', padding: 'var(--spacing-m-nudge) 0', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+                                <div className={mergeClasses('eval-grid4', local.historyHeaderRow)} role="row">
                                     <span role="columnheader">Execution</span>
-                                    <span role="columnheader" style={{ textAlign: 'center' }}>Metric score</span>
-                                    <span role="columnheader" style={{ textAlign: 'right' }}>Δ run</span>
+                                    <span role="columnheader" className={local.colCenter}>Metric score</span>
+                                    <span role="columnheader" className={local.colRight}>Δ run</span>
                                 </div>
                                 {runs.map((rn) => (
-                                    <div key={rn.key} className="eval-grid4" role="row" style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.4fr 2fr', columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m) 0', borderBottom: '1px solid var(--neutral-stroke-3)', fontSize: 'var(--font-size-300)' }}>
-                                        <span role="cell" style={{ color: 'var(--neutral-foreground-1)' }}>{rn.date}</span>
-                                        <span role="cell" style={{ color: 'var(--neutral-foreground-1)', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{rn.scoreStr}</span>
-                                        <span role="cell" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-l)' }}>
+                                    <div key={rn.key} className={mergeClasses('eval-grid4', local.historyRow)} role="row">
+                                        <span role="cell" className={local.cellDate}>{rn.date}</span>
+                                        <span role="cell" className={local.cellScore}>{rn.scoreStr}</span>
+                                        <span role="cell" className={local.cellDeltaWrap}>
                                             <span style={{ position: 'relative', flex: 1, minWidth: '110px', height: '16px' }}>
-                                                <span style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1.5px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)' }} />
+                                                <span className={local.trackLine} />
                                                 <span style={rn.spread} />
                                                 <span style={rn.connector} />
                                                 <span style={rn.dotB} />
                                                 <span style={rn.dotA} />
                                             </span>
-                                            <span style={{ flex: 'none', minWidth: '52px', textAlign: 'right', fontSize: 'var(--font-size-300)', fontVariantNumeric: 'tabular-nums', fontWeight: 'var(--font-weight-semibold)', color: rn.numColor }}>
+                                            <span
+                                                className={local.changeValueBase}
+                                                style={{ color: rn.numColor }}
+                                                aria-hidden={rn.dirWord ? true : undefined}
+                                            >
                                                 {rn.changeStr}
                                             </span>
+                                            {rn.dirWord && <span style={srOnlyStyle}>{rn.dirWord}</span>}
                                         </span>
                                     </div>
                                 ))}
@@ -371,50 +540,3 @@ export const HistoryView = () => {
     );
 };
 
-const emptyStateStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 'var(--spacing-xxl) var(--spacing-xl)',
-    gap: 'var(--spacing-m)',
-    color: 'var(--neutral-foreground-3)',
-    textAlign: 'center',
-    border: '1px dashed var(--neutral-stroke-2)',
-    borderRadius: 'var(--radius-large)',
-};
-
-const emptyTitleStyle: React.CSSProperties = {
-    fontWeight: 'var(--font-weight-semibold)',
-    fontSize: 'var(--font-size-400)',
-    color: 'var(--neutral-foreground-2)',
-};
-
-const segTrackStyle: React.CSSProperties = {
-    display: 'flex',
-    width: '100%',
-    boxSizing: 'border-box',
-    justifyContent: 'safe center',
-    gap: 'var(--spacing-xs)',
-    padding: 'var(--spacing-xs)',
-    overflowX: 'auto',
-    backgroundImage: 'var(--acrylic-fill-light)',
-    backdropFilter: 'var(--acrylic-blur)',
-    WebkitBackdropFilter: 'var(--acrylic-blur)',
-    border: '1px solid var(--neutral-stroke-1)',
-    borderRadius: 'var(--radius-large)',
-    marginBottom: 'var(--spacing-xl)',
-    position: 'relative',
-};
-
-const statCardStyle: React.CSSProperties = {
-    background: 'var(--acrylic-fill-light)',
-    backdropFilter: 'var(--acrylic-blur)',
-    WebkitBackdropFilter: 'var(--acrylic-blur)',
-    border: '1px solid var(--neutral-stroke-1)',
-    borderRadius: 'var(--radius-large)',
-    padding: 'var(--spacing-l)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 'var(--spacing-s)',
-};

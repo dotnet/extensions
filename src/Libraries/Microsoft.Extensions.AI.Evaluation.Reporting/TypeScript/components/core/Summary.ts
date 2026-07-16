@@ -127,22 +127,6 @@ export class ScoreNode {
         }
     }
 
-    collapseSingleChildNodes() {
-        if (this.isLeafNode) {
-            return;
-        }
-
-        while (this.childNodes.length === 1) {
-            const onlyChild = this.childNodes[0];
-            this.name += ` / ${onlyChild.name}`;
-            this.children = onlyChild.children;
-            this.scenario = onlyChild.scenario;
-        }
-
-        for (const child of this.childNodes) {
-            child.collapseSingleChildNodes();
-        }
-    }
 };
 
 export class ReverseTextIndex {
@@ -179,9 +163,6 @@ export class ReverseTextIndex {
 
 export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
 
-    // Defensive guard: an empty (or missing) scenarioRunResults list would otherwise
-    // leave `primaryResult` undefined below and throw on `.executionName`. Return a
-    // well-formed empty summary instead. Behavior for non-empty inputs is unchanged.
     if (!dataset?.scenarioRunResults || dataset.scenarioRunResults.length === 0) {
         const emptyRoot = new ScoreNode("All Evaluations", ScoreNodeType.Group, "root", "");
         return {
@@ -191,7 +172,7 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
             nodesByKey: new Map<string, Map<string, ScoreNode>>(),
             reverseTextIndex: new ReverseTextIndex(),
             reverseTextIndexByExecution: new Map<string, ReverseTextIndex>(),
-        } as ScoreSummary;
+        };
     }
 
     const executionHistory = new Map<string, ScoreNode>();
@@ -237,7 +218,7 @@ export const createScoreSummary = (dataset: Dataset): ScoreSummary => {
         nodesByKey,
         reverseTextIndex,
         reverseTextIndexByExecution,
-    } as ScoreSummary;
+    };
 };
 
 const buildReverseTextIndex = (index: ReverseTextIndex, root: ScoreNode): void => {

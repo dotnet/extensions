@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useId, useMemo } from 'react';
-import { Badge, Card, ProgressBar } from '@fluentui/react-components';
+import { Badge, Card, ProgressBar, makeStyles, mergeClasses } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
 import {
     useReportStyles,
@@ -26,11 +26,290 @@ import {
 
 const pctInt = (r: number) => Math.round(r * 100);
 
+const GROUP_COLS = '1.6fr 0.7fr 0.7fr 0.7fr 2.4fr 64px';
+
+const useLocalStyles = makeStyles({
+    mbL: { marginBottom: 'var(--spacing-l)' },
+    cardInset: { margin: '-12px' },
+    cardHeaderRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-m-nudge)',
+        padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)',
+        borderBottom: '1px solid var(--neutral-stroke-2)',
+    },
+    nowrap: { whiteSpace: 'nowrap' },
+
+    // SummaryCard
+    heroCardBody: {
+        margin: '-12px',
+        overflow: 'hidden',
+        borderRadius: 'var(--radius-card)',
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    heroRow: {
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-xxl)',
+        padding: 'var(--spacing-l) 0 var(--spacing-l) var(--spacing-xl)',
+        flexWrap: 'wrap',
+    },
+    flexNone: { flex: 'none' },
+    heroPassRow: {
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 'var(--spacing-m)',
+        marginTop: 'var(--spacing-xs)',
+    },
+    heroPassNum: {
+        fontSize: 'var(--font-size-800)',
+        fontWeight: 'var(--font-weight-semibold)',
+        lineHeight: 1,
+        color: 'var(--neutral-foreground-1)',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    heroPassPct: {
+        fontSize: 'var(--font-size-500)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-3)',
+    },
+    heroKpisWrap: {
+        marginLeft: 'auto',
+        display: 'flex',
+        alignItems: 'stretch',
+        borderLeft: '1px solid var(--neutral-stroke-2)',
+    },
+    kpiCell: { padding: '0 var(--spacing-xl)' },
+    kpiValueRow: {
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 'var(--spacing-s)',
+        marginTop: 'var(--spacing-xs)',
+    },
+    kpiValue: {
+        fontSize: 'var(--font-size-600)',
+        fontWeight: 'var(--font-weight-semibold)',
+        lineHeight: 1,
+        whiteSpace: 'nowrap',
+        color: 'var(--neutral-foreground-1)',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    kpiSub: {
+        fontSize: 'var(--font-size-100)',
+        color: 'var(--neutral-foreground-3)',
+        whiteSpace: 'nowrap',
+    },
+
+    // MoversCard
+    iconBadgeSuccess: {
+        flex: 'none',
+        width: '26px',
+        height: '26px',
+        borderRadius: '50%',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'color-mix(in srgb, var(--status-success-foreground-1) 15%, transparent)',
+    },
+    headerTitleRow: {
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 'var(--spacing-s-nudge)',
+        minWidth: 0,
+    },
+    headerSub: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' },
+    moversGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0,1fr) auto auto',
+        alignItems: 'center',
+        columnGap: 'var(--spacing-m)',
+        gridAutoRows: 'minmax(44px, auto)',
+        padding: 'var(--spacing-s) var(--spacing-xl)',
+    },
+    listitemContents: { display: 'contents' },
+    moverNameCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-m)',
+        minWidth: 0,
+    },
+    moverNameText: {
+        fontSize: 'var(--font-size-300)',
+        lineHeight: 'calc(20 / 14)',
+        minWidth: 0,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        color: 'var(--neutral-foreground-1)',
+    },
+    moverValueCell: {
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-4)',
+        fontVariantNumeric: 'tabular-nums',
+        textAlign: 'right',
+        justifySelf: 'end',
+    },
+    moverDeltaCell: { display: 'inline-flex', justifySelf: 'end' },
+    moverDeltaDash: {
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-3)',
+        fontVariantNumeric: 'tabular-nums',
+        justifySelf: 'end',
+    },
+
+    // NeedsAttentionCard
+    iconBadgeDanger: {
+        flex: 'none',
+        width: '26px',
+        height: '26px',
+        borderRadius: '50%',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'color-mix(in srgb, var(--status-danger-foreground-1) 15%, transparent)',
+    },
+    attnList: { display: 'flex', flexDirection: 'column', padding: 'var(--spacing-s)' },
+    attnRow: {
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 'var(--spacing-m)',
+        padding: 'var(--spacing-xxs) var(--spacing-m)',
+        minHeight: '44px',
+    },
+    attnName: {
+        flex: 1,
+        fontSize: 'var(--font-size-300)',
+        lineHeight: 'calc(20 / 14)',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        color: 'var(--neutral-foreground-1)',
+    },
+    attnStat: {
+        flex: 'none',
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-3)',
+        fontVariantNumeric: 'tabular-nums',
+        whiteSpace: 'nowrap',
+    },
+    attnViewWrap: { flex: 'none', display: 'inline-flex' },
+    attnEmpty: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-s-nudge)',
+        fontSize: 'var(--font-size-300)',
+        color: 'var(--status-success-foreground-1)',
+        padding: 'var(--spacing-l) var(--spacing-xl)',
+    },
+
+    // GroupTable
+    groupTitle: {
+        margin: 0,
+        padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)',
+        fontSize: 'var(--font-size-400)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-1)',
+    },
+    groupHeaderRow: {
+        display: 'grid',
+        gridTemplateColumns: GROUP_COLS,
+        padding: 'var(--spacing-m-nudge) var(--spacing-xl)',
+        fontSize: 'var(--font-size-100)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-4)',
+        textTransform: 'uppercase',
+        letterSpacing: '.5px',
+        borderBottom: '1px solid var(--neutral-stroke-2)',
+    },
+    textRight: { textAlign: 'right' },
+    passRateHeaderCell: { textAlign: 'right', paddingRight: 'var(--spacing-l)' },
+    groupRow: {
+        display: 'grid',
+        gridTemplateColumns: GROUP_COLS,
+        alignItems: 'center',
+        padding: 'var(--spacing-m) var(--spacing-xl)',
+        borderBottom: '1px solid var(--neutral-stroke-3)',
+    },
+    groupNameCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-s)',
+        fontSize: 'var(--font-size-300)',
+        lineHeight: 'calc(20 / 14)',
+        minWidth: 0,
+    },
+    groupNameText: { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    groupNumCell: {
+        textAlign: 'right',
+        fontSize: 'var(--font-size-300)',
+        color: 'var(--neutral-foreground-1)',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    passRateCell: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--spacing-s-nudge)',
+        paddingLeft: 'var(--spacing-xxl)',
+        paddingRight: 'var(--spacing-l)',
+    },
+    passRateText: {
+        textAlign: 'right',
+        fontSize: 'var(--font-size-200)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-1)',
+        fontVariantNumeric: 'tabular-nums',
+        lineHeight: 1,
+    },
+    deltaCell: {
+        textAlign: 'right',
+        fontSize: 'var(--font-size-300)',
+        fontWeight: 'var(--font-weight-semibold)',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    totalRow: {
+        display: 'grid',
+        gridTemplateColumns: GROUP_COLS,
+        alignItems: 'center',
+        padding: 'var(--spacing-m) var(--spacing-xl)',
+        fontWeight: 'var(--font-weight-semibold)',
+    },
+    totalLabelCell: { fontSize: 'var(--font-size-300)' },
+    totalGoodCell: {
+        textAlign: 'right',
+        fontSize: 'var(--font-size-300)',
+        color: 'var(--neutral-foreground-1)',
+    },
+    totalPassWrap: {
+        display: 'flex',
+        alignItems: 'center',
+        paddingRight: 'var(--spacing-l)',
+        justifyContent: 'flex-end',
+    },
+    totalPassText: { fontSize: 'var(--font-size-300)', textAlign: 'right' },
+
+    // OverviewView
+    twoPaneGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1.12fr 1fr',
+        gap: 'var(--spacing-l)',
+        alignItems: 'stretch',
+        marginBottom: 'var(--spacing-l)',
+    },
+});
+
 type DeltaChip = {
     show: boolean;
     label: string;
     status: 'success' | 'danger' | 'informative';
 };
+
+const deltaArrowSign = (delta: number): { arrow: string; sign: string } => ({
+    arrow: delta > 0 ? '▲' : '▼',
+    sign: delta > 0 ? '+' : '−',
+});
 
 const chip = (
     delta: number | undefined,
@@ -41,8 +320,7 @@ const chip = (
     }
     const unit = opts.unit ?? '';
     const good = opts.lowerBetter ? delta < 0 : delta > 0;
-    const arrow = delta > 0 ? '▲' : '▼';
-    const sign = delta > 0 ? '+' : '−';
+    const { arrow, sign } = deltaArrowSign(delta);
     return {
         show: true,
         label: `${arrow} ${sign}${Math.abs(delta)}${unit}`,
@@ -52,8 +330,7 @@ const chip = (
 
 const numDeltaChip = (d: number): DeltaChip => {
     if (Math.abs(d) < 0.05) return { show: true, label: '—', status: 'informative' };
-    const arrow = d > 0 ? '▲' : '▼';
-    const sign = d > 0 ? '+' : '−';
+    const { arrow, sign } = deltaArrowSign(d);
     return { show: true, label: `${arrow} ${sign}${Math.abs(d).toFixed(1)}`, status: d > 0 ? 'success' : 'danger' };
 };
 
@@ -76,13 +353,19 @@ const auraDotStyle = (status: ReportStatus): React.CSSProperties => {
     };
 };
 
-const chipToStatus = (s: DeltaChip['status']): ReportStatus =>
-    s === 'success' ? 'success' : s === 'danger' ? 'danger' : 'neutral';
+const CHIP_STATUS_TO_REPORT_STATUS: Record<DeltaChip['status'], ReportStatus> = {
+    success: 'success',
+    danger: 'danger',
+    informative: 'neutral',
+};
+const chipToStatus = (s: DeltaChip['status']): ReportStatus => CHIP_STATUS_TO_REPORT_STATUS[s];
 
-const deltaTextColor = (status: DeltaChip['status']): string =>
-    status === 'success' ? 'var(--status-success-foreground-1)'
-        : status === 'danger' ? 'var(--status-danger-foreground-1)'
-            : 'var(--neutral-foreground-3)';
+const CHIP_STATUS_TO_TEXT_COLOR: Record<DeltaChip['status'], string> = {
+    success: 'var(--status-success-foreground-1)',
+    danger: 'var(--status-danger-foreground-1)',
+    informative: 'var(--neutral-foreground-3)',
+};
+const deltaTextColor = (status: DeltaChip['status']): string => CHIP_STATUS_TO_TEXT_COLOR[status];
 
 type AttentionItem = {
     key: string;
@@ -94,12 +377,15 @@ type AttentionItem = {
     share: number;
 };
 
+const attentionKey = (scenarioName: string, metricName: string): string =>
+    JSON.stringify([scenarioName, metricName]);
+
 const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionItem[] => {
     const agg = new Map<string, { scenario: string; metric: string; danger: number; warning: number; total: number }>();
     for (const s of scenarios) {
         for (const [metricName, metric] of Object.entries(s.evaluationResult.metrics)) {
             const bucket = ratingBucket(metric?.interpretation?.rating);
-            const id = `${s.scenarioName}${metricName}`;
+            const id = attentionKey(s.scenarioName, metricName);
             const entry = agg.get(id) ?? { scenario: s.scenarioName, metric: metricName, danger: 0, warning: 0, total: 0 };
             entry.total += 1;
             if (bucket === 'weak') entry.danger += 1;
@@ -112,7 +398,9 @@ const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionIte
         .map(([key, a]) => {
             const bad = a.danger + a.warning;
             const status: ReportStatus = a.danger >= a.warning ? 'danger' : 'warning';
-            const weakPct = a.total > 0 ? Math.round((a.warning / a.total) * 100) : 0;
+            // a.danger tallies the 'weak' rating bucket, so "% weak" must be derived from it
+            // (previously derived from a.warning, the 'fair' bucket — mislabeled).
+            const weakPct = a.total > 0 ? Math.round((a.danger / a.total) * 100) : 0;
             return {
                 key,
                 label: `${a.scenario} · ${a.metric}`,
@@ -145,36 +433,37 @@ const SummaryCard = ({
     kpis: { label: string; value: string; sub: string; chip: DeltaChip; last?: boolean }[];
 }) => {
     const s = useReportStyles();
+    const local = useLocalStyles();
     const passNow = pctInt(passRate);
     const fillStatus = rateStatus(passRate);
-    
+
     const idPrefix = useId();
 
     return (
-        <div className="eval-hero-acrylic" style={{ marginBottom: 'var(--spacing-l)' }}>
+        <div className={mergeClasses('eval-hero-acrylic', local.mbL)}>
             <Card appearance="outline">
-                <div style={{ margin: '-12px', overflow: 'hidden', borderRadius: 'var(--radius-card)', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 'var(--spacing-xxl)', padding: 'var(--spacing-l) 0 var(--spacing-l) var(--spacing-xl)', flexWrap: 'wrap' }}>
-                        <div role="group" aria-labelledby={`${idPrefix}-passrate`} style={{ flex: 'none' }}>
+                <div className={local.heroCardBody}>
+                    <div className={local.heroRow}>
+                        <div role="group" aria-labelledby={`${idPrefix}-passrate`} className={local.flexNone}>
                             <div className={s.eyebrow} id={`${idPrefix}-passrate`}>Overall pass rate</div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-m)', marginTop: 'var(--spacing-xs)' }}>
-                                <span className="eval-hero-passrate" style={{ fontSize: 'var(--font-size-800)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>
+                            <div className={local.heroPassRow}>
+                                <span className={mergeClasses('eval-hero-passrate', local.heroPassNum)}>
                                     {passNow}
-                                    <span style={{ fontSize: 'var(--font-size-500)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-3)' }}>%</span>
+                                    <span className={local.heroPassPct}>%</span>
                                 </span>
                                 <DeltaBadge chip={passChip} size="medium" shape="circular" />
                             </div>
                         </div>
-                        <div className="eval-hero-kpis" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'stretch', borderLeft: '1px solid var(--neutral-stroke-2)' }}>
+                        <div className={mergeClasses('eval-hero-kpis', local.heroKpisWrap)}>
                             {kpis.map((k, i) => (
-                                <div key={k.label} role="group" aria-labelledby={`${idPrefix}-kpi-${i}`} className="eval-hero-kpi" style={{ padding: '0 var(--spacing-xl)', borderRight: k.last ? 'none' : '1px solid var(--neutral-stroke-2)' }}>
-                                    <div className={s.eyebrow} id={`${idPrefix}-kpi-${i}`} style={{ whiteSpace: 'nowrap' }}>{k.label}</div>
-                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-s)', marginTop: 'var(--spacing-xs)' }}>
-                                        <span style={{ fontSize: 'var(--font-size-600)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1, whiteSpace: 'nowrap', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>
+                                <div key={k.label} role="group" aria-labelledby={`${idPrefix}-kpi-${i}`} className={mergeClasses('eval-hero-kpi', local.kpiCell)} style={{ borderRight: k.last ? 'none' : '1px solid var(--neutral-stroke-2)' }}>
+                                    <div className={mergeClasses(s.eyebrow, local.nowrap)} id={`${idPrefix}-kpi-${i}`}>{k.label}</div>
+                                    <div className={local.kpiValueRow}>
+                                        <span className={local.kpiValue}>
                                             {k.value}
                                         </span>
                                         <DeltaBadge chip={k.chip} />
-                                        <span style={{ fontSize: 'var(--font-size-100)', color: 'var(--neutral-foreground-3)', whiteSpace: 'nowrap' }}>{k.sub}</span>
+                                        <span className={local.kpiSub}>{k.sub}</span>
                                     </div>
                                 </div>
                             ))}
@@ -195,55 +484,59 @@ const SummaryCard = ({
 
 const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel?: string }) => {
     const s = useReportStyles();
+    const local = useLocalStyles();
     return (
         <Card appearance="outline">
-            <div style={{ margin: '-12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m-nudge)', padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+            <div className={local.cardInset}>
+                <div className={local.cardHeaderRow}>
                     <span
                         aria-hidden="true"
-                        style={{ flex: 'none', width: '26px', height: '26px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--status-success-foreground-1) 15%, transparent)' }}
+                        className={local.iconBadgeSuccess}
                     >
                         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--status-success-foreground-1)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 11 L11 5 M6.5 5 H11 V9.5" />
                         </svg>
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--spacing-s-nudge)', minWidth: 0 }}>
+                    <div className={local.headerTitleRow}>
                         <h2 className={s.sectionHeaderTitle}>Biggest movers</h2>
                         {compareLabel && (
                             <span
-                                className={s.sectionHeaderSub}
+                                className={mergeClasses(s.sectionHeaderSub, local.headerSub)}
                                 title={`vs ${compareLabel}`}
-                                style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
                             >
                                 vs {compareLabel}
                             </span>
                         )}
                     </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto auto', alignItems: 'center', columnGap: 'var(--spacing-m)', gridAutoRows: 'minmax(44px, auto)', padding: 'var(--spacing-s) var(--spacing-xl)' }}>
+                <div role="list" className={local.moversGrid}>
                     {movers.map((m) => {
                         const dc = numDeltaChip(m.delta);
                         const dotStatus = chipToStatus(dc.status);
                         const valStr = formatScore(m.value, m.kind);
-                        return [
-                            <span key={`${m.scenarioName}-${m.metricName}-n`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)', minWidth: 0 }}>
-                                <span style={auraDotStyle(dotStatus)} />
-                                <span
-                                    title={`${m.scenarioName} · ${m.metricName}`}
-                                    style={{ fontSize: 'var(--font-size-300)', lineHeight: 'calc(20 / 14)', minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}
-                                >
-                                    {m.scenarioName} · {m.metricName}
+                        return (
+                            // display: contents keeps the 3 cells participating directly in the
+                            // parent CSS grid (unchanged layout) while grouping them as one listitem.
+                            <div key={`${m.scenarioName}-${m.metricName}`} role="listitem" className={local.listitemContents}>
+                                <span className={local.moverNameCell}>
+                                    <span aria-hidden="true" style={auraDotStyle(dotStatus)} />
+                                    <span
+                                        title={`${m.scenarioName} · ${m.metricName}`}
+                                        className={local.moverNameText}
+                                    >
+                                        {m.scenarioName} · {m.metricName}
+                                    </span>
                                 </span>
-                            </span>,
-                            <span key={`${m.scenarioName}-${m.metricName}-v`} style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-4)', fontVariantNumeric: 'tabular-nums', textAlign: 'right', justifySelf: 'end' }}>
-                                {valStr}
-                            </span>,
-                            <span key={`${m.scenarioName}-${m.metricName}-d`} style={{ display: 'inline-flex', justifySelf: 'end' }}>
-                                {dc.status === 'informative'
-                                    ? <span style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontVariantNumeric: 'tabular-nums', justifySelf: 'end' }}>—</span>
-                                    : <DeltaBadge chip={dc} shape="circular" appearance="tint" />}
-                            </span>,
-                        ];
+                                <span className={local.moverValueCell}>
+                                    {valStr}
+                                </span>
+                                <span className={local.moverDeltaCell}>
+                                    {dc.status === 'informative'
+                                        ? <span className={local.moverDeltaDash}>—</span>
+                                        : <DeltaBadge chip={dc} shape="circular" appearance="tint" />}
+                                </span>
+                            </div>
+                        );
                     })}
                 </div>
             </div>
@@ -253,13 +546,14 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
 
 const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView: (item: AttentionItem) => void }) => {
     const s = useReportStyles();
+    const local = useLocalStyles();
     return (
         <Card appearance="outline">
-            <div style={{ margin: '-12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m-nudge)', padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+            <div className={local.cardInset}>
+                <div className={local.cardHeaderRow}>
                     <span
                         aria-hidden="true"
-                        style={{ flex: 'none', width: '26px', height: '26px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--status-danger-foreground-1) 15%, transparent)' }}
+                        className={local.iconBadgeDanger}
                     >
                         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--status-danger-foreground-1)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 5 L11 11 M11 6.5 V11 H6.5" />
@@ -268,17 +562,17 @@ const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView:
                     <h2 className={s.sectionHeaderTitle}>Needs attention</h2>
                 </div>
                 {items.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', padding: 'var(--spacing-s)' }}>
+                    <div role="list" className={local.attnList}>
                         {items.map((a) => (
-                            <div key={a.key} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--spacing-m)', padding: 'var(--spacing-xxs) var(--spacing-m)', minHeight: '44px' }}>
-                                <span style={auraDotStyle(a.status)} />
-                                <span title={a.label} className="eval-attn-name" style={{ flex: 1, fontSize: 'var(--font-size-300)', lineHeight: 'calc(20 / 14)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--neutral-foreground-1)' }}>
+                            <div key={a.key} role="listitem" className={local.attnRow}>
+                                <span aria-hidden="true" style={auraDotStyle(a.status)} />
+                                <span title={a.label} className={mergeClasses('eval-attn-name', local.attnName)}>
                                     {a.label}
                                 </span>
-                                <span style={{ flex: 'none', fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                                <span className={local.attnStat}>
                                     {a.statStr}
                                 </span>
-                                <span style={{ flex: 'none', display: 'inline-flex' }}>
+                                <span className={local.attnViewWrap}>
                                     <button className={s.viewLink} onClick={() => onView(a)} aria-label={`View cases for ${a.label}`}>
                                         View
                                     </button>
@@ -287,7 +581,7 @@ const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView:
                         ))}
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s-nudge)', fontSize: 'var(--font-size-300)', color: 'var(--status-success-foreground-1)', padding: 'var(--spacing-l) var(--spacing-xl)' }}>
+                    <div className={local.attnEmpty}>
                         No fair or weak ratings in scope
                     </div>
                 )}
@@ -295,8 +589,6 @@ const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView:
         </Card>
     );
 };
-
-const GROUP_COLS = '1.6fr 0.7fr 0.7fr 0.7fr 2.4fr 64px';
 
 const GroupTable = ({
     rows,
@@ -312,20 +604,22 @@ const GroupTable = ({
     passChip: DeltaChip;
 }) => {
     const s = useReportStyles();
+    const local = useLocalStyles();
+    const titleId = useId();
     return (
         <Card appearance="outline">
-            <div style={{ margin: '-12px' }}>
-                <h2 style={{ margin: 0, padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
+            <div className={local.cardInset}>
+                <h2 id={titleId} className={local.groupTitle}>
                     Pass rate by scenario group
                 </h2>
-                <div className={s.tscroll} role="table" aria-label="Pass rate by scenario group" tabIndex={0}>
-                    <div className="eval-grid6" role="row" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, padding: 'var(--spacing-m-nudge) var(--spacing-xl)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
+                <div className={s.tscroll} role="table" aria-labelledby={titleId} tabIndex={0}>
+                    <div className={mergeClasses('eval-grid6', local.groupHeaderRow)} role="row">
                         <span role="columnheader">Scenario group</span>
-                        <span role="columnheader" style={{ textAlign: 'right' }}>Good</span>
-                        <span role="columnheader" style={{ textAlign: 'right' }}>Fair</span>
-                        <span role="columnheader" style={{ textAlign: 'right' }}>Weak</span>
-                        <span role="columnheader" style={{ textAlign: 'right', paddingRight: 'var(--spacing-l)' }}>Pass rate</span>
-                        <span role="columnheader" style={{ textAlign: 'right' }}>Δ run</span>
+                        <span role="columnheader" className={local.textRight}>Good</span>
+                        <span role="columnheader" className={local.textRight}>Fair</span>
+                        <span role="columnheader" className={local.textRight}>Weak</span>
+                        <span role="columnheader" className={local.passRateHeaderCell}>Pass rate</span>
+                        <span role="columnheader" className={local.textRight}>Δ run</span>
                     </div>
                     {rows.map((row) => {
                         const groupScenarios = activeScenarios.filter((sc) => sc.scenarioName.split('.')[0] === row.group);
@@ -334,16 +628,16 @@ const GroupTable = ({
                         const ratePct = pctInt(row.passRate);
                         const deltaBadgeChip = row.deltaRun !== undefined ? chip(Math.round(row.deltaRun * 100), { unit: '%' }) : { show: false, label: '', status: 'informative' as const };
                         return (
-                            <div key={row.group} className="eval-grid6" role="row" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', borderBottom: '1px solid var(--neutral-stroke-3)' }}>
-                                <span role="cell" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s)', fontSize: 'var(--font-size-300)', lineHeight: 'calc(20 / 14)', minWidth: 0 }}>
-                                    <span style={auraDotStyle(status)} />
-                                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.group}</span>
+                            <div key={row.group} className={mergeClasses('eval-grid6', local.groupRow)} role="row">
+                                <span role="cell" className={local.groupNameCell}>
+                                    <span aria-hidden="true" style={auraDotStyle(status)} />
+                                    <span className={local.groupNameText}>{row.group}</span>
                                 </span>
-                                <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.good}</span>
-                                <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.fair}</span>
-                                <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums' }}>{gb.weak}</span>
-                                <span role="cell" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-s-nudge)', paddingLeft: 'var(--spacing-xxl)', paddingRight: 'var(--spacing-l)' }}>
-                                    <span style={{ textAlign: 'right', fontSize: 'var(--font-size-200)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{ratePct}%</span>
+                                <span role="cell" className={local.groupNumCell}>{gb.good}</span>
+                                <span role="cell" className={local.groupNumCell}>{gb.fair}</span>
+                                <span role="cell" className={local.groupNumCell}>{gb.weak}</span>
+                                <span role="cell" className={local.passRateCell}>
+                                    <span className={local.passRateText}>{ratePct}%</span>
                                     <ProgressBar
                                         value={ratePct / 100}
                                         thickness="medium"
@@ -354,36 +648,26 @@ const GroupTable = ({
                                 </span>
                                 <span
                                     role="cell"
-                                    style={{
-                                        textAlign: 'right',
-                                        fontSize: 'var(--font-size-300)',
-                                        fontWeight: 'var(--font-weight-semibold)',
-                                        fontVariantNumeric: 'tabular-nums',
-                                        color: deltaTextColor(deltaBadgeChip.status),
-                                    }}
+                                    className={local.deltaCell}
+                                    style={{ color: deltaTextColor(deltaBadgeChip.status) }}
                                 >
                                     {deltaBadgeChip.show ? deltaBadgeChip.label : '—'}
                                 </span>
                             </div>
                         );
                     })}
-                    <div className="eval-grid6" role="row" style={{ display: 'grid', gridTemplateColumns: GROUP_COLS, alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', fontWeight: 'var(--font-weight-semibold)' }}>
-                        <span role="cell" style={{ fontSize: 'var(--font-size-300)' }}>All scenarios</span>
-                        <span role="cell" style={{ textAlign: 'right', fontSize: 'var(--font-size-300)', color: 'var(--neutral-foreground-1)' }}>{totalGoodPct}%</span>
+                    <div className={mergeClasses('eval-grid6', local.totalRow)} role="row">
+                        <span role="cell" className={local.totalLabelCell}>All scenarios</span>
+                        <span role="cell" className={local.totalGoodCell}>{totalGoodPct}%</span>
                         <span role="cell" />
                         <span role="cell" />
-                        <span role="cell" style={{ display: 'flex', alignItems: 'center', paddingRight: 'var(--spacing-l)', justifyContent: 'flex-end' }}>
-                            <span style={{ fontSize: 'var(--font-size-300)', textAlign: 'right' }}>{pctInt(totalKpi.passRate)}%</span>
+                        <span role="cell" className={local.totalPassWrap}>
+                            <span className={local.totalPassText}>{pctInt(totalKpi.passRate)}%</span>
                         </span>
                         <span
                             role="cell"
-                            style={{
-                                textAlign: 'right',
-                                fontSize: 'var(--font-size-300)',
-                                fontWeight: 'var(--font-weight-semibold)',
-                                fontVariantNumeric: 'tabular-nums',
-                                color: deltaTextColor(passChip.status),
-                            }}
+                            className={local.deltaCell}
+                            style={{ color: deltaTextColor(passChip.status) }}
                         >
                             {passChip.show ? passChip.label : '—'}
                         </span>
@@ -395,6 +679,7 @@ const GroupTable = ({
 };
 
 export const OverviewView = () => {
+    const local = useLocalStyles();
     const { dataset, scoreSummary, activeExecution, activeNode, scopedNode, selectedScenarioLevel, selectScenarioLevel, setView } = useReportContext();
 
     const activeScenarios = useMemo(() => {
@@ -418,20 +703,27 @@ export const OverviewView = () => {
         return all.filter((r) => scopedGroups.has(r.group));
     }, [dataset, activeExecution, activeScenarios, selectedScenarioLevel]);
 
-    const totalDeltaRun = useMemo(() => {
-        const rowsWithDelta = groupRows.filter((r) => r.deltaRun !== undefined);
-        if (rowsWithDelta.length === 0) return undefined;
-        const totalTotal = rowsWithDelta.reduce((sum, r) => sum + r.total, 0);
-        const prevPassing = rowsWithDelta.reduce((sum, r) => sum + (r.passing - (r.deltaRun ?? 0) * r.total), 0);
-        if (totalTotal === 0) return undefined;
-        return kpi.passRate - prevPassing / totalTotal;
-    }, [groupRows, kpi.passRate]);
-
     const compareLabel = useMemo(() => {
         const chrono = chronologicalExecutions(dataset);
         const idx = chrono.indexOf(activeExecution);
         return idx > 0 ? chrono[idx - 1] : undefined;
     }, [dataset, activeExecution]);
+
+    const totalDeltaRun = useMemo(() => {
+        const rowsWithDelta = groupRows.filter((r) => r.deltaRun !== undefined);
+        if (rowsWithDelta.length === 0) return undefined;
+        const totalTotal = rowsWithDelta.reduce((sum, r) => sum + r.total, 0);
+        if (totalTotal === 0) return undefined;
+        const prevGroupsByName = compareLabel
+            ? new Map(passRateByScenarioGroup(dataset, compareLabel).map((r) => [r.group, r]))
+            : undefined;
+        const prevPassing = rowsWithDelta.reduce((sum, r) => {
+            const prevGroup = prevGroupsByName?.get(r.group);
+            const prevGroupPassing = prevGroup ? prevGroup.passing : r.passing - (r.deltaRun ?? 0) * r.total;
+            return sum + prevGroupPassing;
+        }, 0);
+        return kpi.passRate - prevPassing / totalTotal;
+    }, [groupRows, kpi.passRate, dataset, compareLabel]);
 
     const movers = useMemo(() => {
         const rows = moversBetween(
@@ -509,14 +801,13 @@ export const OverviewView = () => {
 
             {hasMovers ? (
                 <div
-                    className="eval-twopane"
-                    style={{ display: 'grid', gridTemplateColumns: '1.12fr 1fr', gap: 'var(--spacing-l)', alignItems: 'stretch', marginBottom: 'var(--spacing-l)' }}
+                    className={mergeClasses('eval-twopane', local.twoPaneGrid)}
                 >
                     <MoversCard movers={movers} compareLabel={compareLabel} />
                     <NeedsAttentionCard items={attention} onView={openCasesForScenario} />
                 </div>
             ) : (
-                <div style={{ marginBottom: 'var(--spacing-l)' }}>
+                <div className={local.mbL}>
                     <NeedsAttentionCard items={attention} onView={openCasesForScenario} />
                 </div>
             )}

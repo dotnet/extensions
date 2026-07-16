@@ -8,9 +8,10 @@ import { useReportContext } from '../core/ReportContext';
 import { useAnnounce } from '../core/Announcer';
 import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
+import { metricKind, betterDirectionOf } from '../core/metricModel';
 import { metricScale, posOn, formatRaw, dumbbellStyles, STATUS_TEXT, type StatusKey, type MetricScaleKind } from './dumbbellGeometry';
 
-const BUCKET_ORDER: StatusKey[] = ['success', 'warning', 'danger', 'neutral'];
+const BUCKET_ORDER: StatusKey[] = ['success', 'warning', 'danger', 'caution', 'neutral'];
 
 const RATING_STATUS: Record<string, StatusKey> = {
     exceptional: 'success',
@@ -34,16 +35,8 @@ const STATUS_WORD: Record<StatusKey, string> = {
 
 type MetricKind = MetricScaleKind;
 
-const metricKind = (m: NumericMetric): MetricKind => {
-    const k = m.metadata?.kind as MetricKind | undefined;
-    if (k) return k;
-    const v = m.value ?? 0;
-    if (v >= 0 && v <= 1) return 'fraction';
-    if (Number.isInteger(v) && v >= 1 && v <= 5) return 'score';
-    return 'score';
-};
-
-const metricBetter = (m: NumericMetric): string => m.metadata?.better ?? 'high';
+const numericMetricKind = (metric: NumericMetric): MetricKind =>
+    metricKind(metric, { trustDeclaredKind: true }) as MetricKind;
 
 type MetricAgg = { kind: MetricKind; better: string; sum: number; n: number; statusDist: Record<string, number> };
 type ScenAgg = { name: string; cases: number; metricAgg: Record<string, MetricAgg>; metricOrder: string[] };
@@ -57,37 +50,36 @@ const scenarioMetrics = (results: ScenarioRunResult[]): { byScen: Record<string,
             byScen[sn] = { name: sn, cases: 0, metricAgg: {}, metricOrder: [] };
             order.push(sn);
         }
-        const S = byScen[sn];
-        S.cases++;
+        const scenAgg = byScen[sn];
+        scenAgg.cases++;
         for (const [k, m] of Object.entries(r.evaluationResult?.metrics ?? {})) {
             if (!m || m.$type !== 'numeric') continue;
-            const nm = m as NumericMetric;
-            if (typeof nm.value !== 'number') continue;
-            if (!S.metricAgg[k]) {
-                S.metricAgg[k] = { kind: metricKind(nm), better: metricBetter(nm), sum: 0, n: 0, statusDist: {} };
-                S.metricOrder.push(k);
+            const metric = m as NumericMetric;
+            if (typeof metric.value !== 'number') continue;
+            if (!scenAgg.metricAgg[k]) {
+                scenAgg.metricAgg[k] = { kind: numericMetricKind(metric), better: betterDirectionOf(metric), sum: 0, n: 0, statusDist: {} };
+                scenAgg.metricOrder.push(k);
             }
-            const a = S.metricAgg[k];
-            a.sum += nm.value;
-            a.n++;
-            const sk = statusKey(nm.interpretation?.rating);
-            a.statusDist[sk] = (a.statusDist[sk] ?? 0) + 1;
+            const entry = scenAgg.metricAgg[k];
+            entry.sum += metric.value;
+            entry.n++;
+            const sk = statusKey(metric.interpretation?.rating);
+            entry.statusDist[sk] = (entry.statusDist[sk] ?? 0) + 1;
         }
     }
     return { byScen, order };
 };
 
-type CmpDelta = { color: 'success' | 'danger' | 'subtle'; txt: string };
+type CmpDelta = { color: 'success' | 'danger' | 'subtle'; txt: string; magText: string };
 
-const deltaStyle = (d: number, unit: 'frac' | '', good: boolean | null): CmpDelta => {
-    const flat = Math.abs(d) < 0.0005;
-    const up = d > 0;
+const deltaStyle = (rawDelta: number, unit: 'frac' | '', good: boolean | null): CmpDelta => {
+    const flat = Math.abs(rawDelta) < 0.0005;
+    const up = rawDelta > 0;
     const sk: StatusKey = good === null || flat ? 'neutral' : up === good ? 'success' : 'danger';
     const color: CmpDelta['color'] = sk === 'success' ? 'success' : sk === 'danger' ? 'danger' : 'subtle';
-    const txt = flat
-        ? '—'
-        : (up ? '▲ ' : '▼ ') + Math.abs(d).toFixed(unit === 'frac' ? 3 : 2);
-    return { color, txt };
+    const magText = Math.abs(rawDelta).toFixed(unit === 'frac' ? 3 : 2);
+    const txt = flat ? '—' : (up ? '▲ ' : '▼ ') + magText;
+    return { color, txt, magText };
 };
 
 type CmpRow = {
@@ -98,61 +90,64 @@ type CmpRow = {
     bStatus: StatusKey;
     delta: string;
     deltaColor: 'success' | 'danger' | 'subtle';
+    deltaAriaLabel: string;
     connector: React.CSSProperties;
     dotB: React.CSSProperties;
     dotA: React.CSSProperties;
-    av: number;
-    bv: number;
-    d: number;
+    baselineAvg: number;
+    currentAvg: number;
+    rawDelta: number;
     dir: number;
     mag: number;
 };
 
-const buildCmpRow = (k: string, ba: MetricAgg | undefined, bb: MetricAgg | undefined): CmpRow => {
-    const kind = (bb ?? ba)!.kind;
-    const better = (bb ?? ba)!.better;
-    const hasA = !!(ba && ba.n);
-    const hasB = !!(bb && bb.n);
-    const av = hasA ? ba!.sum / ba!.n : 0;
-    const bv = hasB ? bb!.sum / bb!.n : 0;
-    const d = bv - av;
+const buildCmpRow = (k: string, baselineAgg: MetricAgg | undefined, currentAgg: MetricAgg | undefined): CmpRow => {
+    const kind = (currentAgg ?? baselineAgg)!.kind;
+    const better = (currentAgg ?? baselineAgg)!.better;
+    const hasA = !!(baselineAgg && baselineAgg.n);
+    const hasB = !!(currentAgg && currentAgg.n);
+    const baselineAvg = hasA ? baselineAgg!.sum / baselineAgg!.n : 0;
+    const currentAvg = hasB ? currentAgg!.sum / currentAgg!.n : 0;
+    const rawDelta = currentAvg - baselineAvg;
     const good = better === 'none' ? null : better !== 'low';
     const unit: 'frac' | '' = kind === 'fraction' ? 'frac' : '';
-    const x = deltaStyle(d, unit, good);
-    const [dmin, dmax] = metricScale(kind, Math.max(av, bv));
-    const isFlat = x.txt === '—';
-    const dir = good === null || isFlat || !hasA ? 0 : (d > 0) === good ? 1 : -1;
-    const prevPos = hasA ? posOn(av, dmin, dmax) : null;
-    const curPos = posOn(bv, dmin, dmax);
-    const db = dumbbellStyles(prevPos, curPos, dir, !isFlat, 0);
+    const deltaFmt = deltaStyle(rawDelta, unit, good);
+    const [dmin, dmax] = metricScale(kind, Math.max(baselineAvg, currentAvg));
+    const isFlat = deltaFmt.txt === '—';
+    const dir = good === null || isFlat || !hasA ? 0 : (rawDelta > 0) === good ? 1 : -1;
+    const prevPos = hasA ? posOn(baselineAvg, dmin, dmax) : null;
+    const curPos = posOn(currentAvg, dmin, dmax);
+    const dumbbell = dumbbellStyles(prevPos, curPos, dir, !isFlat, 0);
     let domB: StatusKey = 'neutral';
     let best = -1;
-    if (bb) {
+    if (currentAgg) {
         for (const sk of BUCKET_ORDER) {
-            if ((bb.statusDist[sk] ?? 0) > best) {
-                best = bb.statusDist[sk] ?? 0;
+            if ((currentAgg.statusDist[sk] ?? 0) > best) {
+                best = currentAgg.statusDist[sk] ?? 0;
                 domB = sk;
             }
         }
     }
-    const aStr = hasA ? formatRaw(av, kind) : '—';
-    const bStr = hasB ? formatRaw(bv, kind) : '—';
+    const aStr = hasA ? formatRaw(baselineAvg, kind) : '—';
+    const bStr = hasB ? formatRaw(currentAvg, kind) : '—';
+    const deltaAriaLabel = dir > 0 ? `improved by ${deltaFmt.magText}` : dir < 0 ? `regressed by ${deltaFmt.magText}` : 'no change';
     return {
         name: k,
         a: aStr,
         b: bStr,
         bColor: STATUS_TEXT[domB],
         bStatus: domB,
-        delta: x.txt,
-        deltaColor: x.color,
-        connector: db.connector,
-        dotB: db.dotB,
-        dotA: db.dotA,
-        av,
-        bv,
-        d,
+        delta: deltaFmt.txt,
+        deltaColor: deltaFmt.color,
+        deltaAriaLabel,
+        connector: dumbbell.connector,
+        dotB: dumbbell.dotB,
+        dotA: dumbbell.dotA,
+        baselineAvg,
+        currentAvg,
+        rawDelta,
         dir,
-        mag: Math.abs(d) / (dmax - dmin || 1),
+        mag: Math.abs(rawDelta) / (dmax - dmin || 1),
     };
 };
 
@@ -165,11 +160,154 @@ const SORT_LABEL: Record<SortKey, string> = {
     change: 'Change',
 };
 
+const CMP_COLS = '1.6fr 1.4fr 2fr';
+
 const useLocalStyles = makeStyles({
-    cmpRow: {
-        transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
-        ':hover': { background: 'var(--subtle-background-hover)' },
+    cmpHeaderCard: {
+        marginBottom: 'var(--spacing-xl)',
+        backgroundImage: 'var(--acrylic-fill-light)',
+        backdropFilter: 'var(--acrylic-blur)',
+        WebkitBackdropFilter: 'var(--acrylic-blur)',
+        border: '1px solid var(--neutral-stroke-1)',
+        borderRadius: 'var(--radius-card)',
+        width: '100%',
+        maxWidth: '100%',
+        position: 'relative',
+        zIndex: 20,
     },
+    cmpSelectorRow: {
+        display: 'flex',
+        alignItems: 'stretch',
+        gap: 0,
+        flexWrap: 'wrap',
+        padding: 'var(--spacing-m) var(--spacing-l)',
+    },
+    cmpColumn: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--spacing-s-nudge)',
+        minWidth: 0,
+        flex: 1,
+    },
+    cmpColumnLabel: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-s-nudge)',
+        fontSize: 'var(--font-size-100)',
+        fontWeight: 'var(--font-weight-semibold)',
+        textTransform: 'uppercase',
+        letterSpacing: '.5px',
+    },
+    cmpColumnLabelBaseline: { color: 'var(--neutral-foreground-3)' },
+    cmpColumnLabelCurrent: { color: 'var(--brand-foreground-1)' },
+    cmpColumnDot: {
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        flex: 'none',
+    },
+    cmpColumnDotBaseline: { background: 'var(--neutral-foreground-4)' },
+    cmpColumnDotCurrent: { background: 'var(--brand-background)' },
+    cmpDropdownWrap: { width: '100%' },
+    cmpArrowWrap: {
+        display: 'flex',
+        alignItems: 'flex-end',
+        padding: '0 var(--spacing-l)',
+    },
+    cmpArrowIcon: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '24px',
+        height: '32px',
+        color: 'var(--neutral-foreground-3)',
+    },
+    cmpHeadlineRow: {
+        display: 'flex',
+        alignItems: 'stretch',
+        borderTop: '1px solid var(--neutral-stroke-2)',
+    },
+    cmpHeadlineStat: {
+        flex: 1,
+        minWidth: 0,
+        padding: 'var(--spacing-m-nudge) var(--spacing-l)',
+    },
+    cmpHeadlineLabel: {
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-3)',
+        fontWeight: 'var(--font-weight-semibold)',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    cmpHeadlineValue: {
+        fontSize: 'var(--font-size-600)',
+        fontWeight: 'var(--font-weight-semibold)',
+        lineHeight: 1.1,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        marginTop: 'var(--spacing-xs)',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    cmpHeadlineSub: {
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-4)',
+        marginTop: 'var(--spacing-xxs)',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
+    cmpCardInner: { margin: '-12px' },
+    cmpSectionHeader: {
+        display: 'flex',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
+        gap: 'var(--spacing-l)',
+        padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)',
+        flexWrap: 'wrap',
+    },
+    cmpSectionTitle: {
+        margin: 0,
+        fontSize: 'var(--font-size-400)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-1)',
+    },
+    cmpLegend: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-m)',
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-3)',
+        whiteSpace: 'nowrap',
+        flexWrap: 'wrap',
+    },
+    cmpLegendItem: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-xs)',
+    },
+    cmpLegendDot: {
+        width: '8px',
+        height: '8px',
+        boxSizing: 'border-box',
+        borderRadius: '50%',
+        display: 'inline-block',
+        flex: 'none',
+    },
+    cmpLegendDotBaseline: {
+        background: 'var(--neutral-background-1)',
+        border: '1.5px solid var(--neutral-foreground-3)',
+    },
+    cmpLegendDotCurrent: { background: 'var(--status-success-background-3)' },
+    cmpLegendDivider: {
+        width: '1px',
+        height: 'var(--spacing-m)',
+        background: 'var(--neutral-stroke-2)',
+    },
+    cmpLegendUp: { color: 'var(--status-success-foreground-1)' },
+    cmpLegendDown: { color: 'var(--status-danger-foreground-1)' },
+    cmpLegendSep: { color: 'var(--neutral-foreground-4)' },
     sortBtn: {
         display: 'inline-flex',
         alignItems: 'center',
@@ -185,6 +323,120 @@ const useLocalStyles = makeStyles({
         textTransform: 'inherit',
         transition: 'color var(--duration-faster) var(--curve-easy-ease)',
         '&:hover': { color: 'var(--neutral-foreground-2)' },
+    },
+    cmpTableHeaderRow: {
+        display: 'grid',
+        gridTemplateColumns: CMP_COLS,
+        columnGap: 'var(--spacing-l)',
+        alignItems: 'center',
+        padding: 'var(--spacing-m-nudge) var(--spacing-xl)',
+        fontSize: 'var(--font-size-100)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-4)',
+        textTransform: 'uppercase',
+        letterSpacing: '.5px',
+        borderBottom: '1px solid var(--neutral-stroke-2)',
+    },
+    cmpColHeaderName: { display: 'flex' },
+    cmpColHeaderNameBtn: { whiteSpace: 'nowrap' },
+    cmpColHeaderValue: {
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
+        gap: 'var(--spacing-xs)',
+        whiteSpace: 'nowrap',
+    },
+    cmpColHeaderValueBtnRight: { justifyContent: 'flex-end', textAlign: 'right' },
+    cmpColHeaderValueBtnLeft: { justifyContent: 'flex-start', textAlign: 'left' },
+    cmpColHeaderValueArrow: {
+        color: 'var(--neutral-foreground-4)',
+        fontWeight: 'var(--font-weight-regular)',
+        textAlign: 'center',
+    },
+    cmpColHeaderChange: { display: 'flex', justifyContent: 'flex-end' },
+    cmpColHeaderChangeBtn: { whiteSpace: 'nowrap', justifyContent: 'flex-end' },
+    cmpScenarioRow: {
+        padding: 'var(--spacing-s) var(--spacing-xl)',
+        background: 'var(--neutral-background-2)',
+        borderBottom: '1px solid var(--neutral-stroke-2)',
+    },
+    cmpScenarioCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-s)',
+    },
+    cmpScenarioName: {
+        fontSize: 'var(--font-size-200)',
+        fontWeight: 'var(--font-weight-semibold)',
+        color: 'var(--neutral-foreground-2)',
+        fontFamily: 'var(--font-family-base)',
+        letterSpacing: '.2px',
+    },
+    cmpScenarioBadgeWrap: { marginLeft: 'auto' },
+    cmpRow: {
+        display: 'grid',
+        gridTemplateColumns: CMP_COLS,
+        columnGap: 'var(--spacing-l)',
+        alignItems: 'center',
+        padding: 'var(--spacing-m) var(--spacing-xl)',
+        borderBottom: '1px solid var(--neutral-stroke-3)',
+        fontSize: 'var(--font-size-300)',
+        transition: 'background-color var(--duration-faster) var(--curve-easy-ease)',
+        ':hover': { background: 'var(--subtle-background-hover)' },
+    },
+    cmpNameCell: {
+        minWidth: 0,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        color: 'var(--neutral-foreground-1)',
+    },
+    cmpValueCell: {
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'baseline',
+        gap: 'var(--spacing-s)',
+        minWidth: 0,
+        whiteSpace: 'nowrap',
+    },
+    cmpValueA: {
+        textAlign: 'right',
+        color: 'var(--neutral-foreground-2)',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    cmpValueArrow: { textAlign: 'center', color: 'var(--neutral-foreground-4)' },
+    cmpValueB: {
+        textAlign: 'left',
+        fontWeight: 'var(--font-weight-bold)',
+        fontVariantNumeric: 'tabular-nums',
+    },
+    cmpDumbbellCell: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-m)',
+    },
+    cmpDumbbellTrack: {
+        flex: 1,
+        minWidth: '60px',
+        position: 'relative',
+        height: '16px',
+    },
+    cmpDumbbellLine: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: '50%',
+        height: '1.5px',
+        transform: 'translateY(-50%)',
+        borderRadius: 'var(--radius-circular)',
+        background: 'var(--neutral-stroke-2)',
+    },
+    cmpDeltaCell: {
+        width: '64px',
+        textAlign: 'right',
+        fontSize: 'var(--font-size-300)',
+        fontWeight: 'var(--font-weight-semibold)',
+        fontVariantNumeric: 'tabular-nums',
     },
     emptyCard: {
         display: 'flex',
@@ -207,13 +459,20 @@ const useLocalStyles = makeStyles({
     },
 });
 
-const CMP_COLS = '1.6fr 1.4fr 2fr';
-
 export const ComparisonView = () => {
     const local = useLocalStyles();
     const s = useReportStyles();
     const announce = useAnnounce();
     const { dataset, scoreSummary, cmpA, setCmpA, cmpB, setCmpB, selectedScenarioLevel, scopedNode } = useReportContext();
+
+    const emptyState = (title: string, reason: string) => (
+        <div className={s.card}>
+            <div className={local.emptyCard}>
+                <span className={local.emptyTitle}>{title}</span>
+                <span className={local.emptyReason}>{reason}</span>
+            </div>
+        </div>
+    );
 
     const [sortKey, setSortKey] = useState<SortKey>('name');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -267,20 +526,24 @@ export const ComparisonView = () => {
             return rows.slice().sort((p, q) => {
                 let r = 0;
                 if (sortKey === 'name') r = p.name.localeCompare(q.name);
-                else if (sortKey === 'a') r = p.av - q.av;
-                else if (sortKey === 'b') r = p.bv - q.bv;
-                else if (sortKey === 'change') r = p.d - q.d;
+                else if (sortKey === 'a') r = p.baselineAvg - q.baselineAvg;
+                else if (sortKey === 'b') r = p.currentAvg - q.currentAvg;
+                else if (sortKey === 'change') r = p.rawDelta - q.rawDelta;
                 return r * sdir;
             });
         };
 
         return scenNames
             .map((sn) => {
-                const A = scnA.byScen[sn];
-                const B = scnB.byScen[sn];
-                const order = B && B.metricOrder.length ? B.metricOrder : A ? A.metricOrder : [];
-                const rows = sortRows(order.map((k) => buildCmpRow(k, A?.metricAgg[k], B?.metricAgg[k])));
-                return { scenario: sn, rows, cases: (B ?? A ?? { cases: 0 }).cases };
+                const scenarioBaseline = scnA.byScen[sn];
+                const scenarioCurrent = scnB.byScen[sn];
+                const order = scenarioCurrent && scenarioCurrent.metricOrder.length
+                    ? scenarioCurrent.metricOrder
+                    : scenarioBaseline
+                        ? scenarioBaseline.metricOrder
+                        : [];
+                const rows = sortRows(order.map((k) => buildCmpRow(k, scenarioBaseline?.metricAgg[k], scenarioCurrent?.metricAgg[k])));
+                return { scenario: sn, rows, cases: (scenarioCurrent ?? scenarioBaseline ?? { cases: 0 }).cases };
             })
             .filter((g) => g.rows.length > 0);
     }, [resultsFor, effectiveA, effectiveB, hasTwoExecs, sortKey, sortDir]);
@@ -350,44 +613,24 @@ export const ComparisonView = () => {
             : `Sort by ${label}`;
 
     if (!hasTwoExecs) {
-        return (
-            <div className={s.card}>
-                <div className={local.emptyCard}>
-                    <span className={local.emptyTitle}>Needs at least 2 executions</span>
-                    <span className={local.emptyReason}>
-                        Run the evaluation suite across multiple executions to compare results side by side.
-                    </span>
-                </div>
-            </div>
+        return emptyState(
+            'Needs at least 2 executions',
+            'Run the evaluation suite across multiple executions to compare results side by side.',
         );
     }
 
     return (
         <div>
-            <div
-                style={{
-                    marginBottom: 'var(--spacing-xl)',
-                    backgroundImage: 'var(--acrylic-fill-light)',
-                    backdropFilter: 'var(--acrylic-blur)',
-                    WebkitBackdropFilter: 'var(--acrylic-blur)',
-                    border: '1px solid var(--neutral-stroke-1)',
-                    borderRadius: 'var(--radius-card)',
-                    width: '100%',
-                    maxWidth: '100%',
-                    position: 'relative',
-                    zIndex: 20,
-                }}
-            >
+            <div className={local.cmpHeaderCard}>
                 <div
-                    className="eval-cmp-selector"
-                    style={{ display: 'flex', alignItems: 'stretch', gap: 0, flexWrap: 'wrap', padding: 'var(--spacing-m) var(--spacing-l)' }}
+                    className={mergeClasses('eval-cmp-selector', local.cmpSelectorRow)}
                 >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-s-nudge)', minWidth: 0, flex: 1 }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s-nudge)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--neutral-foreground-3)' }}>
-                            <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neutral-foreground-4)', flex: 'none' }} />
+                    <div className={local.cmpColumn}>
+                        <span className={mergeClasses(local.cmpColumnLabel, local.cmpColumnLabelBaseline)}>
+                            <span aria-hidden="true" className={mergeClasses(local.cmpColumnDot, local.cmpColumnDotBaseline)} />
                             Baseline
                         </span>
-                        <div style={{ width: '100%' }}>
+                        <div className={local.cmpDropdownWrap}>
                             <Dropdown
                                 className="eval-cmp-drop"
                                 aria-label="Baseline execution"
@@ -402,18 +645,18 @@ export const ComparisonView = () => {
                         </div>
                     </div>
 
-                    <div className="eval-cmp-arrowwrap" style={{ display: 'flex', alignItems: 'flex-end', padding: '0 var(--spacing-l)' }}>
-                        <span className="eval-cmp-arrow" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '32px', color: 'var(--neutral-foreground-3)' }}>
+                    <div className={mergeClasses('eval-cmp-arrowwrap', local.cmpArrowWrap)}>
+                        <span className={mergeClasses('eval-cmp-arrow', local.cmpArrowIcon)}>
                             <ChevronRight20Regular />
                         </span>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-s-nudge)', minWidth: 0, flex: 1 }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s-nudge)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--brand-foreground-1)' }}>
-                            <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-background)', flex: 'none' }} />
+                    <div className={local.cmpColumn}>
+                        <span className={mergeClasses(local.cmpColumnLabel, local.cmpColumnLabelCurrent)}>
+                            <span aria-hidden="true" className={mergeClasses(local.cmpColumnDot, local.cmpColumnDotCurrent)} />
                             Current
                         </span>
-                        <div style={{ width: '100%' }}>
+                        <div className={local.cmpDropdownWrap}>
                             <Dropdown
                                 className="eval-cmp-drop"
                                 aria-label="Current execution"
@@ -430,16 +673,16 @@ export const ComparisonView = () => {
                 </div>
 
                 {effectiveA !== effectiveB && allRows.length > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'stretch', borderTop: '1px solid var(--neutral-stroke-2)' }}>
+                    <div className={local.cmpHeadlineRow}>
                         {headline.map((c) => (
-                            <div key={c.label} style={{ flex: 1, minWidth: 0, padding: 'var(--spacing-m-nudge) var(--spacing-l)', borderRight: c.borderRight }}>
-                                <div style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', fontWeight: 'var(--font-weight-semibold)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <div key={c.label} className={local.cmpHeadlineStat} style={{ borderRight: c.borderRight }}>
+                                <div className={local.cmpHeadlineLabel}>
                                     {c.label}
                                 </div>
-                                <div style={{ fontSize: 'var(--font-size-600)', fontWeight: 'var(--font-weight-semibold)', lineHeight: 1.1, color: c.valueColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 'var(--spacing-xs)', fontVariantNumeric: 'tabular-nums' }}>
+                                <div className={local.cmpHeadlineValue} style={{ color: c.valueColor }}>
                                     {c.value}
                                 </div>
-                                <div style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-4)', marginTop: 'var(--spacing-xxs)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <div className={local.cmpHeadlineSub}>
                                     {c.sub}
                                 </div>
                             </div>
@@ -448,34 +691,28 @@ export const ComparisonView = () => {
                 )}
             </div>
 
-            {effectiveA === effectiveB && (
-                <div className={s.card}>
-                    <div className={local.emptyCard}>
-                        <span className={local.emptyTitle}>Select two different executions</span>
-                        <span className={local.emptyReason}>
-                            The baseline and current executions are the same. Choose different executions to see the delta.
-                        </span>
-                    </div>
-                </div>
+            {effectiveA === effectiveB && emptyState(
+                'Select two different executions',
+                'The baseline and current executions are the same. Choose different executions to see the delta.',
             )}
 
             {effectiveA !== effectiveB && allRows.length > 0 && (
                 <Card appearance="outline">
-                    <div style={{ margin: '-12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 'var(--spacing-l)', padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)', flexWrap: 'wrap' }}>
-                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-400)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-1)' }}>
+                    <div className={local.cmpCardInner}>
+                        <div className={local.cmpSectionHeader}>
+                            <h2 className={local.cmpSectionTitle}>
                                 Per-metric change
                             </h2>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-m)', fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)', whiteSpace: 'nowrap', flexWrap: 'wrap' }}>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
-                                    <span aria-hidden="true" style={{ width: '8px', height: '8px', boxSizing: 'border-box', borderRadius: '50%', background: 'var(--neutral-background-1)', border: '1.5px solid var(--neutral-foreground-3)', display: 'inline-block', flex: 'none' }} /> baseline
+                            <span className={local.cmpLegend}>
+                                <span className={local.cmpLegendItem}>
+                                    <span aria-hidden="true" className={mergeClasses(local.cmpLegendDot, local.cmpLegendDotBaseline)} /> baseline
                                 </span>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
-                                    <span aria-hidden="true" style={{ width: '8px', height: '8px', boxSizing: 'border-box', borderRadius: '50%', background: 'var(--status-success-background-3)', display: 'inline-block', flex: 'none' }} /> current
+                                <span className={local.cmpLegendItem}>
+                                    <span aria-hidden="true" className={mergeClasses(local.cmpLegendDot, local.cmpLegendDotCurrent)} /> current
                                 </span>
-                                <span style={{ width: '1px', height: 'var(--spacing-m)', background: 'var(--neutral-stroke-2)' }} />
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-xs)' }}>
-                                    <span aria-hidden="true" style={{ color: 'var(--status-success-foreground-1)' }}>▲</span> improved <span aria-hidden="true" style={{ color: 'var(--neutral-foreground-4)' }}>·</span> <span aria-hidden="true" style={{ color: 'var(--status-danger-foreground-1)' }}>▼</span> regressed
+                                <span className={local.cmpLegendDivider} />
+                                <span className={local.cmpLegendItem}>
+                                    <span aria-hidden="true" className={local.cmpLegendUp}>▲</span> improved <span aria-hidden="true" className={local.cmpLegendSep}>·</span> <span aria-hidden="true" className={local.cmpLegendDown}>▼</span> regressed
                                 </span>
                             </span>
                         </div>
@@ -483,29 +720,28 @@ export const ComparisonView = () => {
                         <div className={s.tscroll} role="table" aria-label="Per-metric comparison" tabIndex={0}>
                             <div
                                 role="row"
-                                className="eval-grid3"
-                                style={{ display: 'grid', gridTemplateColumns: CMP_COLS, columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m-nudge) var(--spacing-xl)', fontSize: 'var(--font-size-100)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-4)', textTransform: 'uppercase', letterSpacing: '.5px', borderBottom: '1px solid var(--neutral-stroke-2)' }}
+                                className={mergeClasses('eval-grid3', local.cmpTableHeaderRow)}
                             >
-                                <span role="columnheader" aria-sort={ariaSort('name')} style={{ display: 'flex' }}>
-                                    <button type="button" className={local.sortBtn} onClick={() => onSort('name')} aria-label={ariaLabel('name', 'Metric')} style={{ whiteSpace: 'nowrap' }}>
+                                <span role="columnheader" aria-sort={ariaSort('name')} className={local.cmpColHeaderName}>
+                                    <button type="button" className={mergeClasses(local.sortBtn, local.cmpColHeaderNameBtn)} onClick={() => onSort('name')} aria-label={ariaLabel('name', 'Metric')}>
                                         Metric{sortArrow('name')}
                                     </button>
                                 </span>
                                 <span
                                     role="columnheader"
                                     aria-sort={sortKey === 'a' || sortKey === 'b' ? ariaSort(sortKey) : 'none'}
-                                    style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 'var(--spacing-xs)', whiteSpace: 'nowrap' }}
+                                    className={local.cmpColHeaderValue}
                                 >
-                                    <button type="button" className={local.sortBtn} onClick={() => onSort('a')} aria-label={ariaLabel('a', 'Baseline')} style={{ justifyContent: 'flex-end', textAlign: 'right' }}>
+                                    <button type="button" className={mergeClasses(local.sortBtn, local.cmpColHeaderValueBtnRight)} onClick={() => onSort('a')} aria-label={ariaLabel('a', 'Baseline')}>
                                         Baseline{sortArrow('a')}
                                     </button>
-                                    <span aria-hidden="true" style={{ color: 'var(--neutral-foreground-4)', fontWeight: 'var(--font-weight-regular)', textAlign: 'center' }}>→</span>
-                                    <button type="button" className={local.sortBtn} onClick={() => onSort('b')} aria-label={ariaLabel('b', 'Current')} style={{ justifyContent: 'flex-start', textAlign: 'left' }}>
+                                    <span aria-hidden="true" className={local.cmpColHeaderValueArrow}>→</span>
+                                    <button type="button" className={mergeClasses(local.sortBtn, local.cmpColHeaderValueBtnLeft)} onClick={() => onSort('b')} aria-label={ariaLabel('b', 'Current')}>
                                         Current{sortArrow('b')}
                                     </button>
                                 </span>
-                                <span role="columnheader" aria-sort={ariaSort('change')} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                    <button type="button" className={local.sortBtn} onClick={() => onSort('change')} aria-label={ariaLabel('change', 'Δ run')} style={{ whiteSpace: 'nowrap', justifyContent: 'flex-end' }}>
+                                <span role="columnheader" aria-sort={ariaSort('change')} className={local.cmpColHeaderChange}>
+                                    <button type="button" className={mergeClasses(local.sortBtn, local.cmpColHeaderChangeBtn)} onClick={() => onSort('change')} aria-label={ariaLabel('change', 'Δ run')}>
                                         Δ run{sortArrow('change')}
                                     </button>
                                 </span>
@@ -514,12 +750,12 @@ export const ComparisonView = () => {
                             {groups.map((g) => (
                                 <div key={g.scenario} role="rowgroup">
                                     {multiScenario && (
-                                        <div role="row" style={{ padding: 'var(--spacing-s) var(--spacing-xl)', background: 'var(--neutral-background-2)', borderBottom: '1px solid var(--neutral-stroke-2)' }}>
-                                            <span role="cell" aria-colspan={3} style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-s)' }}>
-                                                <span style={{ fontSize: 'var(--font-size-200)', fontWeight: 'var(--font-weight-semibold)', color: 'var(--neutral-foreground-2)', fontFamily: 'var(--font-family-base)', letterSpacing: '.2px' }}>
+                                        <div role="row" className={local.cmpScenarioRow}>
+                                            <span role="cell" aria-colspan={3} className={local.cmpScenarioCell}>
+                                                <span className={local.cmpScenarioName}>
                                                     {g.scenario}
                                                 </span>
-                                                <span style={{ marginLeft: 'auto' }}>
+                                                <span className={local.cmpScenarioBadgeWrap}>
                                                     <Badge appearance="tint" color="informative" shape="rounded">
                                                         {g.cases} {g.cases === 1 ? 'case' : 'cases'}
                                                     </Badge>
@@ -532,16 +768,16 @@ export const ComparisonView = () => {
                                             key={`${g.scenario}-${m.name}`}
                                             role="row"
                                             className={mergeClasses('eval-grid3', local.cmpRow)}
-                                            style={{ display: 'grid', gridTemplateColumns: CMP_COLS, columnGap: 'var(--spacing-l)', alignItems: 'center', padding: 'var(--spacing-m) var(--spacing-xl)', borderBottom: '1px solid var(--neutral-stroke-3)', fontSize: 'var(--font-size-300)' }}
                                         >
-                                            <span role="cell" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--neutral-foreground-1)' }}>
+                                            <span role="cell" className={local.cmpNameCell}>
                                                 {m.name}
                                             </span>
-                                            <span role="cell" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'baseline', gap: 'var(--spacing-s)', minWidth: 0, whiteSpace: 'nowrap' }}>
-                                                <span style={{ textAlign: 'right', color: 'var(--neutral-foreground-2)', fontVariantNumeric: 'tabular-nums' }}>{m.a}</span>
-                                                <span aria-hidden="true" style={{ textAlign: 'center', color: 'var(--neutral-foreground-4)' }}>→</span>
+                                            <span role="cell" className={local.cmpValueCell}>
+                                                <span className={local.cmpValueA}>{m.a}</span>
+                                                <span aria-hidden="true" className={local.cmpValueArrow}>→</span>
                                                 <span
-                                                    style={{ textAlign: 'left', fontWeight: 'var(--font-weight-bold)', color: m.bColor, fontVariantNumeric: 'tabular-nums' }}
+                                                    className={local.cmpValueB}
+                                                    style={{ color: m.bColor }}
                                                     title={STATUS_WORD[m.bStatus] ? `Current ${m.b} — ${STATUS_WORD[m.bStatus]}` : undefined}
                                                 >
                                                     {m.b}
@@ -550,25 +786,22 @@ export const ComparisonView = () => {
                                                     )}
                                                 </span>
                                             </span>
-                                            <span role="cell" style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-m)' }}>
+                                            <span role="cell" className={local.cmpDumbbellCell}>
                                                 <span
                                                     role="img"
                                                     aria-label={`${m.name}: baseline ${effectiveA} ${m.a} → current ${effectiveB} ${m.b}`}
                                                     title={`baseline ${effectiveA} (${m.a}) → current ${effectiveB} (${m.b})`}
-                                                    style={{ flex: 1, minWidth: '60px', position: 'relative', height: '16px' }}
+                                                    className={local.cmpDumbbellTrack}
                                                 >
-                                                    <span aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: '1.5px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)' }} />
+                                                    <span aria-hidden="true" className={local.cmpDumbbellLine} />
                                                     <span aria-hidden="true" style={m.connector} />
                                                     <span aria-hidden="true" style={m.dotB} />
                                                     <span aria-hidden="true" style={m.dotA} />
                                                 </span>
                                                 <span
+                                                    aria-label={m.deltaAriaLabel}
+                                                    className={local.cmpDeltaCell}
                                                     style={{
-                                                        width: '64px',
-                                                        textAlign: 'right',
-                                                        fontSize: 'var(--font-size-300)',
-                                                        fontWeight: 'var(--font-weight-semibold)',
-                                                        fontVariantNumeric: 'tabular-nums',
                                                         color:
                                                             m.deltaColor === 'success'
                                                                 ? 'var(--status-success-foreground-1)'
@@ -577,7 +810,7 @@ export const ComparisonView = () => {
                                                                     : 'var(--neutral-foreground-3)',
                                                     }}
                                                 >
-                                                    {m.delta}
+                                                    <span aria-hidden="true">{m.delta}</span>
                                                 </span>
                                             </span>
                                         </div>
@@ -589,15 +822,9 @@ export const ComparisonView = () => {
                 </Card>
             )}
 
-            {effectiveA !== effectiveB && allRows.length === 0 && (
-                <div className={s.card}>
-                    <div className={local.emptyCard}>
-                        <span className={local.emptyTitle}>No comparable numeric metrics</span>
-                        <span className={local.emptyReason}>
-                            The selected executions share no numeric metrics that can be compared.
-                        </span>
-                    </div>
-                </div>
+            {effectiveA !== effectiveB && allRows.length === 0 && emptyState(
+                'No comparable numeric metrics',
+                'The selected executions share no numeric metrics that can be compared.',
             )}
         </div>
     );

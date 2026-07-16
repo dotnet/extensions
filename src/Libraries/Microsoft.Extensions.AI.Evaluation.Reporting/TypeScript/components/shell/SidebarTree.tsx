@@ -83,6 +83,8 @@ type SidebarRowVM = {
     isTopGroup: boolean;
     passing: number;
     total: number;
+    posInSet: number;
+    setSize: number;
     onSelect: () => void;
     onToggle: () => void;
 };
@@ -103,7 +105,7 @@ const pillProps = (passing: number, total: number) => {
     return { appearance: 'tint' as const, color: passing / total < 0.5 ? ('danger' as const) : ('warning' as const) };
 };
 
-export const SidebarTree = () => {
+export const SidebarTree = ({ labelledBy }: { labelledBy: string }) => {
     const local = useLocalStyles();
     const treeNav = useArrowNavigationGroup({ axis: 'vertical', circular: true });
     const { activeNode, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
@@ -128,12 +130,15 @@ export const SidebarTree = () => {
         }
     };
 
+    // "All scenarios" occupies position 1 of the top-level set; top-level branches follow it.
+    const topBranchCount = activeNode.childNodes.filter((n) => !n.isLeafNode).length;
+
     const rows = useMemo<SidebarRowVM[]>(() => {
         const out: SidebarRowVM[] = [];
-        const walk = (nodes: ScoreNode[], depth: number) => {
+        const walk = (nodes: ScoreNode[], depth: number, posOffset: number, setSize: number) => {
             const branches = nodes.filter((n) => !n.isLeafNode);
             const sorted = [...branches].sort((a, b) => a.name.localeCompare(b.name));
-            for (const node of sorted) {
+            sorted.forEach((node, i) => {
                 const hasChildren = node.childNodes.some((c) => !c.isLeafNode);
                 const isExpanded = expanded.has(node.nodeKey);
                 out.push({
@@ -146,15 +151,18 @@ export const SidebarTree = () => {
                     isTopGroup: depth === 0 && hasChildren,
                     passing: node.numPassingIterations,
                     total: node.numPassingIterations + node.numFailingIterations,
+                    posInSet: posOffset + i + 1,
+                    setSize,
                     onSelect: () => scopeTo(node.nodeKey),
                     onToggle: () => toggle(node.nodeKey),
                 });
                 if (hasChildren && isExpanded) {
-                    walk(node.childNodes, depth + 1);
+                    const childSetSize = node.childNodes.filter((c) => !c.isLeafNode).length;
+                    walk(node.childNodes, depth + 1, 0, childSetSize);
                 }
-            }
+            });
         };
-        walk(activeNode.childNodes, 0);
+        walk(activeNode.childNodes, 0, 1, topBranchCount + 1);
         return out;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeNode, expanded, selectedScenarioLevel]);
@@ -162,7 +170,7 @@ export const SidebarTree = () => {
     return (
         <div
             role="tree"
-            aria-label="Scenarios"
+            aria-labelledby={labelledBy}
             {...treeNav}
         >
             <SidebarRow
@@ -172,6 +180,8 @@ export const SidebarTree = () => {
                 expanded={false}
                 selected={!selectedScenarioLevel}
                 isTopGroup={false}
+                posInSet={1}
+                setSize={topBranchCount + 1}
                 onSelect={() => scopeTo(undefined)}
             />
 
@@ -189,6 +199,8 @@ export const SidebarTree = () => {
                         isTopGroup={row.isTopGroup}
                         passing={row.passing}
                         total={row.total}
+                        posInSet={row.posInSet}
+                        setSize={row.setSize}
                         onSelect={row.onSelect}
                         onToggle={row.onToggle}
                     />
@@ -207,6 +219,8 @@ const SidebarRow = ({
     isTopGroup,
     passing,
     total,
+    posInSet,
+    setSize,
     onSelect,
     onToggle,
 }: {
@@ -218,6 +232,8 @@ const SidebarRow = ({
     isTopGroup: boolean;
     passing?: number;
     total?: number;
+    posInSet: number;
+    setSize: number;
     onSelect: () => void;
     onToggle?: () => void;
 }) => {
@@ -230,9 +246,53 @@ const SidebarRow = ({
             onSelect();
             return;
         }
-        if (!hasChildren || !onToggle) return;
-        if (e.key === 'ArrowRight' && !expanded) { e.preventDefault(); onToggle(); }
-        else if (e.key === 'ArrowLeft' && expanded) { e.preventDefault(); onToggle(); }
+
+        const treeItems = () => {
+            const container = e.currentTarget.closest('[role="tree"]');
+            return container ? Array.from(container.querySelectorAll<HTMLElement>('[role="treeitem"]')) : [];
+        };
+
+        if (e.key === 'Home' || e.key === 'End') {
+            const items = treeItems();
+            if (items.length > 0) {
+                e.preventDefault();
+                (e.key === 'Home' ? items[0] : items[items.length - 1]).focus();
+            }
+            return;
+        }
+
+        if (e.key === 'ArrowRight') {
+            if (hasChildren && onToggle && !expanded) {
+                e.preventDefault();
+                onToggle();
+            } else if (hasChildren && expanded) {
+                const items = treeItems();
+                const index = items.indexOf(e.currentTarget);
+                if (index >= 0 && index + 1 < items.length) {
+                    e.preventDefault();
+                    items[index + 1].focus();
+                }
+            }
+            return;
+        }
+        if (e.key === 'ArrowLeft') {
+            if (hasChildren && onToggle && expanded) {
+                e.preventDefault();
+                onToggle();
+            } else {
+                const items = treeItems();
+                const index = items.indexOf(e.currentTarget);
+                const currentLevel = depth + 1;
+                for (let i = index - 1; i >= 0; i--) {
+                    const level = Number(items[i].getAttribute('aria-level'));
+                    if (level < currentLevel) {
+                        e.preventDefault();
+                        items[i].focus();
+                        break;
+                    }
+                }
+            }
+        }
     };
 
     const onCaretClick = (e: MouseEvent<HTMLButtonElement>) => {
@@ -252,6 +312,8 @@ const SidebarRow = ({
             tabIndex={0}
             aria-level={depth + 1}
             aria-selected={selected}
+            aria-setsize={setSize}
+            aria-posinset={posInSet}
             {...(hasChildren ? { 'aria-expanded': expanded } : {})}
             title={label}
             className={mergeClasses(s.sidebarItem, local.tocRow, selected && local.tocRowSelected)}

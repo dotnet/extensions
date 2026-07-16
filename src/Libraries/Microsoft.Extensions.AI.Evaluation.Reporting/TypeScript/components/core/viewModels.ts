@@ -3,8 +3,9 @@
 
 import { ScoreNode, getScoreHistory, type ScoreSummary } from './Summary';
 import { isLeafFailed } from './scoring';
+import { metricKind, formatScore, type MetricKind } from './metricModel';
 
-export { isLeafFailed };
+export { isLeafFailed, formatScore };
 
 export type RatingBucket = 'good' | 'fair' | 'weak' | 'unknown';
 
@@ -211,25 +212,10 @@ export type MoverRow = {
     delta: number;
 };
 
-const metricKind = (metric: NumericMetric): MoverMetricKind => {
-    const declared = metric.metadata?.kind as MoverMetricKind | undefined;
-    if (declared === 'fraction' || declared === 'score' || declared === 'severity' || declared === 'count') {
-        return declared;
-    }
-    const v = metric.value ?? 0;
-    if (v >= 0 && v <= 1) return 'fraction';
-    return 'score';
-};
+const MOVER_METRIC_KINDS: readonly MetricKind[] = ['fraction', 'score', 'severity', 'count'];
 
-const scaleMaxOf = (kind: MoverMetricKind): number =>
-    kind === 'severity' ? 7 : 5;
-
-export const formatScore = (value: number, kind: MoverMetricKind): string => {
-    if (kind === 'fraction') return value.toFixed(3);
-    const num = value % 1 === 0 ? '' + value : value.toFixed(1);
-    if (kind === 'count') return num;
-    return `${num}/${scaleMaxOf(kind)}`;
-};
+const metricKindForMover = (metric: NumericMetric): MoverMetricKind =>
+    metricKind(metric, { allowedDeclaredKinds: MOVER_METRIC_KINDS }) as MoverMetricKind;
 
 type MoverAgg = { scenarioName: string; metricName: string; kind: MoverMetricKind; sum: number; n: number };
 
@@ -244,7 +230,7 @@ const meanByScenarioMetric = (results: ScenarioRunResult[]): Map<string, MoverAg
             const key = pairKey(r.scenarioName, metric.name);
             const entry =
                 agg.get(key) ??
-                { scenarioName: r.scenarioName, metricName: metric.name, kind: metricKind(metric), sum: 0, n: 0 };
+                { scenarioName: r.scenarioName, metricName: metric.name, kind: metricKindForMover(metric), sum: 0, n: 0 };
             entry.sum += metric.value!;
             entry.n += 1;
             agg.set(key, entry);

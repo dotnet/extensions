@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import type { CSSProperties } from 'react';
+import type { MetricKind } from '../core/metricModel';
 
 const DUMBBELL_D = 8;
 const DUMBBELL_RING = 1.5;
 const DUMBBELL_CONN = 1.5;
 
-export type MetricScaleKind = 'fraction' | 'score' | 'severity' | 'count';
+// Re-exported from the shared classifier for a single MetricKind union across the app.
+export type MetricScaleKind = MetricKind;
 
 export const metricScale = (kind: MetricScaleKind, peak: number): [number, number] =>
     kind === 'fraction' ? [0, 1] : kind === 'score' ? [1, 5] : [0, Math.max(1, peak || 1)];
@@ -15,6 +17,9 @@ export const metricScale = (kind: MetricScaleKind, peak: number): [number, numbe
 export const posOn = (v: number, min: number, max: number): number =>
     max > min ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : 50;
 
+// NOTE: unlike the shared `formatScore` in core/metricModel.ts, this intentionally omits the
+// '/7' suffix for 'severity' — it falls into the generic numeric branch below. Do not replace
+// with `formatScore`; that would change the rendered value for severity metrics.
 export const formatRaw = (v: number, kind: MetricScaleKind): string => {
     if (kind === 'fraction') return v.toFixed(3);
     if (kind === 'score') return (v % 1 === 0 ? `${v}` : v.toFixed(1)) + '/5';

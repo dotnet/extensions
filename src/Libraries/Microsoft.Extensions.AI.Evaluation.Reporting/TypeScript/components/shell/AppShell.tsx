@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef } from 'react';
 import {
     FluentProvider,
     makeStyles,
@@ -45,6 +45,14 @@ export type ThemeSource =
 const SIDEBAR_WIDTH = '274px';
 const TOPBAR_HEIGHT = '48px';
 
+const rootBase = {
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: 'var(--acrylic-fallback-light)',
+    color: 'var(--neutral-foreground-1)',
+    fontFamily: 'var(--font-family-base)',
+} as const;
+
 const useStyles = makeStyles({
     skipLink: {
         position: 'absolute',
@@ -80,23 +88,15 @@ const useStyles = makeStyles({
         },
     },
     rootFill: {
-        display: 'flex',
-        flexDirection: 'column',
+        ...rootBase,
         height: '100vh',
         minHeight: 0,
         overflow: 'hidden',
-        backgroundColor: 'var(--acrylic-fallback-light)',
-        color: 'var(--neutral-foreground-1)',
-        fontFamily: 'var(--font-family-base)',
     },
     rootAutoGrow: {
-        display: 'flex',
-        flexDirection: 'column',
+        ...rootBase,
         height: '100%',
         minHeight: '100%',
-        backgroundColor: 'var(--acrylic-fallback-light)',
-        color: 'var(--neutral-foreground-1)',
-        fontFamily: 'var(--font-family-base)',
     },
 
     topbar: {
@@ -466,6 +466,8 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
 const Sidebar = () => {
     const classes = useStyles();
     const { scoreSummary, setExec, activeExecution } = useReportContext();
+    const scenariosLabelId = useId();
+    const executionLabelId = useId();
 
     const executions = useMemo(
         () => [...scoreSummary.executionHistory.keys()],
@@ -476,13 +478,13 @@ const Sidebar = () => {
     return (
         <nav aria-label="Scenarios" className={mergeClasses(classes.sidebar, 'eval-sidebar')}>
             <div className={mergeClasses(classes.sidebarTree, 'eval-sidebar-tree')}>
-                <div className={classes.sidebarSectionLabel}>Scenarios</div>
-                <SidebarTree />
+                <div id={scenariosLabelId} className={classes.sidebarSectionLabel}>Scenarios</div>
+                <SidebarTree labelledBy={scenariosLabelId} />
             </div>
             <div className={classes.sidebarFooter}>
-                <span className={classes.sidebarSectionLabel} style={{ padding: '0 var(--spacing-xxs)' }}>Execution</span>
+                <span id={executionLabelId} className={classes.sidebarSectionLabel} style={{ padding: '0 var(--spacing-xxs)' }}>Execution</span>
                 <Dropdown
-                    aria-label="Execution"
+                    aria-labelledby={executionLabelId}
                     className="eval-exec-drop"
                     positioning={{ position: 'above', align: 'start', matchTargetSize: 'width' }}
                     value={selectedExec}
@@ -603,8 +605,7 @@ export const AppShell = ({
         scopedNode.numPassingIterations +
         scopedNode.numFailingIterations;
 
-    const results = dataset.scenarioRunResults ?? [];
-    const resultCount = results.length;
+    const resultCount = (dataset.scenarioRunResults ?? []).length;
     const executionCount = useMemo(
         () => new Set((dataset.scenarioRunResults ?? []).map((r) => r.executionName)).size,
         [dataset.scenarioRunResults],

@@ -3,8 +3,8 @@
 
 import React from 'react';
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { createScoreSummary, ReportContextProvider, HistoryView } from '../components';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { createScoreSummary, ReportContextProvider, useReportContext, HistoryView } from '../components';
 
 const E1 = 'EvaluationRun-alpha';
 const E2 = 'EvaluationRun-bravo';
@@ -112,5 +112,69 @@ describe('HistoryView — chronological ordering', () => {
         expect(lefts.length).toBe(2);
         const [prevPct, curPct] = lefts;
         expect(prevPct).toBeLessThan(curPct);
+    });
+});
+
+describe('HistoryView — switching scenarios does not violate the Rules of Hooks', () => {
+    const multiRow = (executionName: string, creationTime: string, quality: number): ScenarioRunResult =>
+        ({
+            scenarioName: 'Group.Multi',
+            iterationName: 'iteration1',
+            executionName,
+            creationTime,
+            messages: [],
+            modelResponse: { messages: [] },
+            evaluationResult: { metrics: { quality: numeric('quality', quality) } },
+            formatVersion: 1 as unknown as int,
+        }) as ScenarioRunResult;
+
+    const soloRow: ScenarioRunResult = {
+        scenarioName: 'Group.Solo',
+        iterationName: 'iteration1',
+        executionName: E1,
+        creationTime: T1,
+        messages: [],
+        modelResponse: { messages: [] },
+        evaluationResult: { metrics: { quality: numeric('quality', 3) } },
+        formatVersion: 1 as unknown as int,
+    } as ScenarioRunResult;
+
+    const mixedDataset: Dataset = {
+        generatorVersion: '0.0.1',
+        createdAt: T2,
+        scenarioRunResults: [multiRow(E1, T1, 2), multiRow(E2, T2, 4), soloRow],
+    };
+
+    const ScenarioButtons = () => {
+        const { activeNode, selectScenarioLevel } = useReportContext();
+        const keyFor = (scenarioName: string): string | undefined =>
+            activeNode.flattenedNodes.find((n) => n.isLeafNode && n.scenario?.scenarioName === scenarioName)?.nodeKey;
+        return (
+            <>
+                <button onClick={() => { const k = keyFor('Group.Multi'); if (k) selectScenarioLevel(k); }}>
+                    select-multi
+                </button>
+                <button onClick={() => { const k = keyFor('Group.Solo'); if (k) selectScenarioLevel(k); }}>
+                    select-solo
+                </button>
+            </>
+        );
+    };
+
+    it('renders the trend for a multi-execution scenario, then the empty state for a single-execution one, without crashing', () => {
+        const scoreSummary = createScoreSummary(mixedDataset);
+        render(
+            <ReportContextProvider dataset={mixedDataset} scoreSummary={scoreSummary}>
+                <ScenarioButtons />
+                <HistoryView />
+            </ReportContextProvider>,
+        );
+
+        fireEvent.click(screen.getByText('select-multi'));
+        expect(screen.getAllByRole('tab').length).toBeGreaterThan(0);
+
+        expect(() => fireEvent.click(screen.getByText('select-solo'))).not.toThrow();
+        expect(screen.getByText(/needs at least 2 executions/i)).toBeInTheDocument();
+        expect(screen.queryAllByRole('tab').length).toBe(0);
     });
 });

@@ -19,7 +19,9 @@ if (!import.meta.env.PROD) {
   // This pattern avoids XSS vulnerabilities that can occur when embedding JSON in script blocks.
   const datasetJson = rootElement.getAttribute('data-dataset');
   if (datasetJson) {
-    dataset = JSON.parse(datasetJson) as Dataset;
+    try {
+      dataset = JSON.parse(datasetJson) as Dataset;
+    } catch { }
   }
 }
 

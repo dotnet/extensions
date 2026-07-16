@@ -293,10 +293,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --brand-stroke-1: var(--brand-80);
   --brand-stroke-2: var(--brand-140);
 
-  --link-foreground: var(--brand-70);
-  --link-foreground-hover: var(--brand-60);
-  --link-foreground-pressed: var(--brand-50);
-
   --compound-brand-background: var(--brand-80);
   --compound-brand-background-hover: var(--brand-70);
   --compound-brand-background-pressed: var(--brand-60);
@@ -308,32 +304,23 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --status-danger-background-1: var(--palette-red-background1);
   --status-danger-background-2: var(--palette-red-background2);
   --status-danger-background-3: var(--palette-red-background3);
-  --status-danger-border-1: var(--palette-red-border1);
-  --status-danger-border-2: var(--palette-red-border2);
 
   --status-success-foreground-1: var(--palette-green-foreground1);
   --status-success-foreground-2: var(--palette-green-foreground3);
   --status-success-background-1: var(--palette-green-background1);
   --status-success-background-2: var(--palette-green-background2);
   --status-success-background-3: var(--palette-green-background3);
-  --status-success-border-1: var(--palette-green-border1);
-  --status-success-border-2: var(--palette-green-border2);
 
   --status-warning-foreground-1: var(--palette-orange-foreground1);
   --status-warning-foreground-2: var(--palette-orange-foreground2);
   --status-warning-background-1: var(--palette-yellow-background1);
   --status-warning-background-2: var(--palette-yellow-background2);
   --status-warning-background-3: var(--palette-yellow-background3);
-  --status-warning-border-1: var(--palette-yellow-border1);
-  --status-warning-border-2: var(--palette-orange-border2);
 
   --status-info-foreground: var(--grey-38);
   --status-info-background: var(--grey-92);
 
-  --meter-track: var(--grey-88);
-
   --background-overlay: rgba(0, 0, 0, 0.4);
-  --scrim: rgba(0, 0, 0, 0.4);
 
   --acrylic-fill-light:
     linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)),
@@ -403,10 +390,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --brand-stroke-1: var(--brand-100);
   --brand-stroke-2: var(--brand-50);
 
-  --link-foreground: var(--brand-100);
-  --link-foreground-hover: var(--brand-110);
-  --link-foreground-pressed: var(--brand-120);
-
   --compound-brand-background: var(--brand-100);
   --compound-brand-background-hover: var(--brand-110);
   --compound-brand-background-pressed: var(--brand-90);
@@ -416,10 +399,7 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --status-info-foreground: var(--grey-68);
   --status-info-background: var(--grey-20);
 
-  --meter-track: var(--grey-24);
-
   --background-overlay: rgba(0, 0, 0, 0.5);
-  --scrim: rgba(0, 0, 0, 0.5);
 
   --acrylic-fill-light:
     linear-gradient(rgba(51, 51, 51, 0.6), rgba(51, 51, 51, 0.6)),
@@ -452,7 +432,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --status-warning-foreground-2: #ec6a31;
   --status-warning-background-1: #241a08;
   --status-warning-background-2: #3d2c10;
-  --status-warning-border-2: #8a5a20;
 
   --shadow-2: 0 0 2px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.28);
   --shadow-4: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28);
@@ -547,7 +526,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 .eval-sidebar .eval-exec-drop { width: 100%; }
 .eval-sidebar .eval-exec-drop .eval-exec-text { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .eval-sidebar .eval-exec-drop .fui-Dropdown__button { min-width: 0; }
-.eval-settings-pop { left: auto !important; right: 0 !important; }
 .eval-fitbtn .fui-button, .eval-fitbtn button { min-width: auto; }
 
 .eval-attn-name { min-width: 10ch; }

@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useEffect, useRef, useState } from 'react';
+import { makeStyles } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
+import type { MetricKind } from '../core/metricModel';
 
 export type BandPoint = {
     mean: number;
@@ -12,7 +14,11 @@ export type BandPoint = {
     n: number;
 };
 
-export type MetricKind = 'score' | 'fraction' | 'count';
+// Re-exported from the shared classifier for a single MetricKind union across the app. Every
+// caller here still only ever constructs 'score' | 'fraction' | 'count' — domainFor's catch-all
+// branch below treats any other kind exactly like 'count', so the wider type is a no-op for
+// this file's actual behavior.
+export type { MetricKind };
 
 type Domain = {
     min: number;
@@ -65,8 +71,85 @@ export type TrendChartProps = {
     showLegend?: boolean;
 };
 
+const useLocalStyles = makeStyles({
+    legend: {
+        display: 'flex',
+        gap: 'var(--spacing-xl)',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        marginTop: 'var(--spacing-m)',
+        paddingLeft: '34px',
+    },
+    legendItem: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-s)',
+    },
+    legendLabel: {
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-3)',
+    },
+    meanSwatch: {
+        position: 'relative',
+        display: 'inline-block',
+        width: '22px',
+        height: '2px',
+        background: 'var(--brand-foreground-1)',
+        borderRadius: '2px',
+    },
+    medianSwatch: {
+        position: 'relative',
+        display: 'inline-block',
+        width: '22px',
+        height: '5.5px',
+    },
+    medianDash: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: '50%',
+        height: 0,
+        borderTop: '1.5px dashed var(--neutral-foreground-3)',
+        transform: 'translateY(-50%)',
+    },
+    spreadSwatch: {
+        display: 'inline-block',
+        width: '22px',
+        height: '13px',
+        borderRadius: '3px',
+        background: 'color-mix(in srgb, var(--brand-foreground-1) 13%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--brand-foreground-1) 32%, transparent)',
+        boxSizing: 'border-box',
+    },
+    donutMean: {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        background: 'var(--neutral-background-1)',
+        border: '1.5px solid var(--brand-foreground-1)',
+        transform: 'translate(-50%,-50%)',
+        boxSizing: 'border-box',
+    },
+    donutMedian: {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        background: 'var(--neutral-background-1)',
+        border: '1.5px solid var(--neutral-foreground-3)',
+        transform: 'translate(-50%,-50%)',
+        boxSizing: 'border-box',
+    },
+});
+
 export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: TrendChartProps) => {
     const { darkMode } = useReportContext();
+    const local = useLocalStyles();
 
     const wrapRef = useRef<HTMLDivElement | null>(null);
     const [measuredW, setMeasuredW] = useState<number | undefined>(undefined);
@@ -166,19 +249,6 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
         </text>
     ));
 
-    const donut = (stroke: string): React.CSSProperties => ({
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        width: '8px',
-        height: '8px',
-        borderRadius: '50%',
-        background: 'var(--neutral-background-1)',
-        border: `1.5px solid ${stroke}`,
-        transform: 'translate(-50%,-50%)',
-        boxSizing: 'border-box',
-    });
-
     return (
         <div ref={wrapRef} style={{ display: 'flex', flexDirection: 'column' }}>
             <svg
@@ -197,33 +267,23 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
             </svg>
 
             {showLegend && (
-                <div style={{ display: 'flex', gap: 'var(--spacing-xl)', alignItems: 'center', flexWrap: 'wrap', marginTop: 'var(--spacing-m)', paddingLeft: '34px' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-s)' }}>
-                        <span style={{ position: 'relative', display: 'inline-block', width: '22px', height: '2px', background: color, borderRadius: '2px' }}>
-                            <span style={donut(color)} />
+                <div className={local.legend}>
+                    <span className={local.legendItem}>
+                        <span className={local.meanSwatch}>
+                            <span className={local.donutMean} />
                         </span>
-                        <span style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)' }}>Mean per run</span>
+                        <span className={local.legendLabel}>Mean per run</span>
                     </span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-s)' }}>
-                        <span style={{ position: 'relative', display: 'inline-block', width: '22px', height: '5.5px' }}>
-                            <span style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 0, borderTop: '1.5px dashed var(--neutral-foreground-3)', transform: 'translateY(-50%)' }} />
-                            <span style={donut('var(--neutral-foreground-3)')} />
+                    <span className={local.legendItem}>
+                        <span className={local.medianSwatch}>
+                            <span className={local.medianDash} />
+                            <span className={local.donutMedian} />
                         </span>
-                        <span style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)' }}>Median per run</span>
+                        <span className={local.legendLabel}>Median per run</span>
                     </span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--spacing-s)' }}>
-                        <span
-                            style={{
-                                display: 'inline-block',
-                                width: '22px',
-                                height: '13px',
-                                borderRadius: '3px',
-                                background: `color-mix(in srgb, ${color} 13%, transparent)`,
-                                border: `1px solid color-mix(in srgb, ${color} 32%, transparent)`,
-                                boxSizing: 'border-box',
-                            }}
-                        />
-                        <span style={{ fontSize: 'var(--font-size-200)', color: 'var(--neutral-foreground-3)' }}>Min–max spread across cases</span>
+                    <span className={local.legendItem}>
+                        <span className={local.spreadSwatch} />
+                        <span className={local.legendLabel}>Min–max spread across cases</span>
                     </span>
                 </div>
             )}

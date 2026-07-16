@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { useContext, createContext, useState, useEffect, useMemo, useRef } from "react";
+import { useContext, createContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { ScoreNode, ScoreSummary } from "./Summary";
 import { AnnouncerProvider } from "./Announcer";
 
@@ -97,6 +97,7 @@ const writePersisted = (persistKey: string | undefined, value: PersistedUiIntent
     try {
         sessionStorage.setItem(STORAGE_PREFIX + persistKey, JSON.stringify(value));
     } catch {
+        // storage may be unavailable (private browsing, quota exceeded); persistence is best-effort.
     }
 };
 
@@ -193,7 +194,7 @@ const useProvideReportContext = (
         return activeNode.flattenedNodes.find(n => n.nodeKey === selectedScenarioLevel) ?? activeNode;
     }, [activeNode, selectedScenarioLevel]);
 
-    const filterTree = (node: ScoreNode): ScoreNode | null => {
+    const filterTree = useCallback((node: ScoreNode): ScoreNode | null => {
         if (selectedTags.length === 0 && searchValue === "") {
             return node;
         }
@@ -224,7 +225,7 @@ const useProvideReportContext = (
         };
 
         return srch(node);
-    }
+    }, [selectedTags, searchValue, scoreSummary, activeExecution]);
 
     return {
         dataset,

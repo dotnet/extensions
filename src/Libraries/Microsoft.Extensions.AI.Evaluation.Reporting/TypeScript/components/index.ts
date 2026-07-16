@@ -18,9 +18,15 @@ export {
     isImageContent,
 } from './core/Summary';
 export type { ScoreSummary, ConversationDisplay, ChatMessageDisplay } from './core/Summary';
-export * from './core/viewModels';
+export {
+    bucketMetrics,
+    passRateByScenarioGroup,
+    scenariosForExecution,
+    kpiCountsFromNode,
+    weakestMetrics,
+} from './core/viewModels';
 
 export { CasesView } from './cases/CasesView';
+export { TranscriptBlock } from './cases/TranscriptBlock';
 export { HistoryView } from './history/HistoryView';
 export { ComparisonView } from './history/ComparisonView';
-export { TranscriptBlock } from './cases/TranscriptBlock';
