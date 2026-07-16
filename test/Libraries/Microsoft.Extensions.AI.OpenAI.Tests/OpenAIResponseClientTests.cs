@@ -642,7 +642,7 @@ public class OpenAIResponseClientTests
 
         // Simulate persisting and rehydrating the session between turns (as a hosted, human-in-the-loop
         // approval flow does). This drops RawRepresentation (which is [JsonIgnore]), so the reasoning item's
-        // id must survive via a serialized field (TextReasoningContent.ItemId) to roundtrip.
+        // id must survive via a serialized field (AdditionalProperties) to roundtrip.
         string serializedHistory = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(List<ChatMessage>)));
         chatHistory = (List<ChatMessage>)JsonSerializer.Deserialize(serializedHistory, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(List<ChatMessage>)))!;
         chatHistory.Add(new ChatMessage(ChatRole.User, "Are you sure?"));
