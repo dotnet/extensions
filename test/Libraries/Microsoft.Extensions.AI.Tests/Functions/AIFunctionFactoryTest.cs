@@ -426,6 +426,21 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public void Parameters_AIParameterNameAttribute_PercentEncodesJsonPointerRef()
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
+
+        AIFunction func = AIFunctionFactory.Create(
+            ([AIParameterName("hello%20world")] AIParameterNameAttributeRecursiveNode node) => node.ToString(),
+            new AIFunctionFactoryOptions { SerializerOptions = options });
+
+        string schema = func.JsonSchema.ToString();
+
+        Assert.Contains("#/properties/hello%2520world", schema);
+        Assert.DoesNotContain("#/properties/hello%20world", schema);
+    }
+
+    [Fact]
     public void Parameters_AIParameterNameAttribute_DuplicateNames_Throw()
     {
         ArgumentException ex = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(

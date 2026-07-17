@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
@@ -875,23 +874,8 @@ public static partial class AIJsonUtilities
 
     private static string EscapeJsonPointerSegment(string segment)
     {
-        if (segment.IndexOfAny(['~', '/']) < 0)
-        {
-            return segment;
-        }
-
-        StringBuilder sb = new(segment.Length + 2);
-        foreach (char c in segment)
-        {
-            _ = c switch
-            {
-                '~' => sb.Append("~0"),
-                '/' => sb.Append("~1"),
-                _ => sb.Append(c),
-            };
-        }
-
-        return sb.ToString();
+        string escaped = segment.Replace("~", "~0", StringComparison.Ordinal).Replace("/", "~1", StringComparison.Ordinal);
+        return Uri.EscapeDataString(escaped);
     }
 
     /// <summary>

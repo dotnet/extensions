@@ -657,6 +657,21 @@ public static partial class AIJsonUtilitiesTests
     }
 
     [Fact]
+    public static void CreateFunctionJsonSchema_AIParameterNameAttribute_PercentEncodesJsonPointerSegment()
+    {
+        JsonSerializerOptions options = new() { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
+        static void TestMethod([AIParameterName("hello%20world")] RecursiveNode node)
+        {
+            // Test method for schema generation
+        }
+
+        string schema = AIJsonUtilities.CreateFunctionJsonSchema(((Action<RecursiveNode>)TestMethod).Method, serializerOptions: options).ToString();
+
+        Assert.Contains("#/properties/hello%2520world", schema);
+        Assert.DoesNotContain("#/properties/hello%20world", schema);
+    }
+
+    [Fact]
     public static void CreateJsonSchema_CanBeBoolean()
     {
         JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(object));
