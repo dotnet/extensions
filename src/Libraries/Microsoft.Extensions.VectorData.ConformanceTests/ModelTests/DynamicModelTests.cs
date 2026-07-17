@@ -440,7 +440,10 @@ public abstract class DynamicModelTests<TKey>(DynamicModelTests<TKey>.Fixture fi
         => new(fixture.ReseedAsync());
 
     public ValueTask DisposeAsync()
-        => default;
+    {
+        GC.SuppressFinalize(this);
+        return default;
+    }
 
     public static readonly TheoryData<bool> IncludeVectorsData = [false, true];
 }

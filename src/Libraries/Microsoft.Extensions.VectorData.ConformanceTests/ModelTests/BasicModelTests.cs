@@ -550,7 +550,10 @@ public abstract class BasicModelTests<TKey>(BasicModelTests<TKey>.Fixture fixtur
         => new(fixture.ReseedAsync());
 
     public ValueTask DisposeAsync()
-        => default;
+    {
+        GC.SuppressFinalize(this);
+        return default;
+    }
 
     public static readonly TheoryData<bool> IncludeVectorsData = [false, true];
 }

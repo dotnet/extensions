@@ -111,5 +111,9 @@ public abstract class CollectionManagementTests<TKey>(VectorStoreFixture fixture
             ]
         };
 
-    public ValueTask DisposeAsync() => default;
+    public ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        return default;
+    }
 }
