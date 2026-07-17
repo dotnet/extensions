@@ -323,6 +323,9 @@ internal partial class DefaultHybridCache
                     // SizeLimit (we can't know - it is an abstraction), and for *that* we need to know the item size.
                     // Likewise, if we're writing to a MutableCacheItem, we'll be serializing *anyway* for the payload.
                     //
+                    // Rephrasing that: the only scenario in which we *do not* need to serialize is if:
+                    // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
+                    // - we're not writing to L2
                     CacheItem cacheItem = CacheItem;
                     bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (activeFlags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
 
