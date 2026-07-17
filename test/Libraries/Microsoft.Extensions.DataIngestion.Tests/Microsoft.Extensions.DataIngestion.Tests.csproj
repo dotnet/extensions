@@ -31,11 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Suppress NU1903 for SQLitePCLRaw.lib.e_sqlite3, a transitive dependency of CommunityToolkit.VectorData.SqliteVec (GHSA-2m69-gcr7-jv3q). -->
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestChatClient.cs" />
     <Compile Include="..\Microsoft.Extensions.AI.Abstractions.Tests\TestEmbeddingGenerator.cs" />
     <!-- We don't run Sqlite tests on Full Framework due to some native dependency issues -->
