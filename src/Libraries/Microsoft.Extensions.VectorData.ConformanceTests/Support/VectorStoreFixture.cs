@@ -20,7 +20,10 @@ public abstract class VectorStoreFixture : IAsyncLifetime
         => new(TestStore.ReferenceCountingStartAsync());
 
     public virtual ValueTask DisposeAsync()
-        => new(TestStore.ReferenceCountingStopAsync());
+    {
+        GC.SuppressFinalize(this);
+        return new(TestStore.ReferenceCountingStopAsync());
+    }
 
     public virtual TKey GenerateNextKey<TKey>()
         => TestStore.GenerateKey<TKey>(Interlocked.Increment(ref _nextKeyValue));
