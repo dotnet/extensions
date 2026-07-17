@@ -27,7 +27,7 @@ public class HybridCacheOptions
 
     /// <summary>
     /// Gets or sets a value indicating whether values stored in the local cache should be returned by reference
-    /// instead of being serialized and deserialized to provide defensive copies.
+    /// instead of using serialization round-trips to create defensive copies.
     /// </summary>
     /// <remarks>
     /// When enabled, mutable values may be shared between callers and changes made to a cached value are visible
