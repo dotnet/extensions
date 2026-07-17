@@ -874,7 +874,7 @@ public static partial class AIJsonUtilities
 
     private static string EscapeJsonPointerSegment(string segment)
     {
-        string escaped = segment.Replace("~", "~0", StringComparison.Ordinal).Replace("/", "~1", StringComparison.Ordinal);
+        string escaped = segment.Replace("~", "~0").Replace("/", "~1");
         return Uri.EscapeDataString(escaped);
     }
 
