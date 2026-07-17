@@ -31,13 +31,13 @@ internal partial class DefaultHybridCache
             => _result?.TrySetResult(value);
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, bool canBeCanceled)
-            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), canBeCanceled)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags, cache.Options.DisableLocalCacheSerialization), canBeCanceled)
         {
             _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, CancellationToken token)
-            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), token)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags, cache.Options.DisableLocalCacheSerialization), token)
         {
             // no TCS in this case - this is for SetValue only
         }
@@ -323,9 +323,6 @@ internal partial class DefaultHybridCache
                     // SizeLimit (we can't know - it is an abstraction), and for *that* we need to know the item size.
                     // Likewise, if we're writing to a MutableCacheItem, we'll be serializing *anyway* for the payload.
                     //
-                    // Rephrasing that: the only scenario in which we *do not* need to serialize is if:
-                    // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
-                    // - we're not writing to L2
                     CacheItem cacheItem = CacheItem;
                     bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (activeFlags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
 

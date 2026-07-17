@@ -26,6 +26,18 @@ public class HybridCacheOptions
     public bool DisableCompression { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether values stored in the local cache should be returned by reference
+    /// instead of being serialized and deserialized to provide defensive copies.
+    /// </summary>
+    /// <remarks>
+    /// When enabled, mutable values may be shared between callers and changes made to a cached value are visible
+    /// to subsequent callers. Values are still serialized when required for the distributed cache. Local cache
+    /// size accounting continues to use the serialized payload size and may not reflect the size of the retained
+    /// object graph.
+    /// </remarks>
+    public bool DisableLocalCacheSerialization { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum size of cache items.
     /// </summary>
     /// <value>
