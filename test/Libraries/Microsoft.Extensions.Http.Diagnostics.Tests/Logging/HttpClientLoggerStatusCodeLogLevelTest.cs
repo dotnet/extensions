@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Diagnostics.Test.Logging.Internal;
 using Microsoft.Extensions.Http.Logging.Internal;
