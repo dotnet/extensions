@@ -64,7 +64,9 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
         _pathParametersRedactionSkipped = options.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None;
-        _statusCodeLogLevelRules = options.StatusCodeLogLevelRules as IReadOnlyList<HttpStatusCodeLogLevelRule> ?? options.StatusCodeLogLevelRules.ToArray();
+        _statusCodeLogLevelRules = options.StatusCodeLogLevelRules is { } rules
+            ? rules as IReadOnlyList<HttpStatusCodeLogLevelRule> ?? rules.ToArray()
+            : [];
         _exceptionLogLevel = options.ExceptionLogLevel;
     }
 
