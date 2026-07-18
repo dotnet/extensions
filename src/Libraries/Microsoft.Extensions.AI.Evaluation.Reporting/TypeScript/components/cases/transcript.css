@@ -81,18 +81,3 @@ The .NET Foundation licenses this file to you under the MIT license.
   border-top: 1px solid var(--neutral-stroke-2);
   margin: var(--spacing-s) 0;
 }
-
-.eval-cite {
-  display: inline-block;
-  vertical-align: super;
-  font-size: var(--font-size-100);
-  line-height: 1;
-  font-weight: var(--font-weight-semibold);
-  min-width: 14px;
-  padding: 1px var(--spacing-xxs);
-  margin: 0 1px;
-  text-align: center;
-  border-radius: var(--radius-small);
-  background: var(--brand-background-2);
-  color: var(--brand-foreground-1);
-}

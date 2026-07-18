@@ -6,11 +6,11 @@ const INT1 = 1 as unknown as int;
 const txt = (text: string): AIContent =>
     ({ $type: 'text', text }) as unknown as AIContent;
 
-const functionCall = (callId: string, name: string, args: Record<string, unknown>): AIContent =>
-    ({ $type: 'functionCall', callId, name, arguments: args }) as unknown as AIContent;
+const functionCall = (callId: string, name: string, args: Record<string, unknown>): FunctionCallContent =>
+    ({ $type: 'functionCall', callId, name, arguments: args });
 
-const functionResult = (callId: string, result: unknown): AIContent =>
-    ({ $type: 'functionResult', callId, result }) as unknown as AIContent;
+const functionResult = (callId: string, result: unknown): FunctionResultContent =>
+    ({ $type: 'functionResult', callId, result });
 
 const metric = (
     name: string,

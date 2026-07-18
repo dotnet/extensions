@@ -2,13 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useId, useMemo } from 'react';
-import { Badge, Card, ProgressBar, makeStyles, mergeClasses } from '@fluentui/react-components';
+import { Card, ProgressBar, makeStyles, mergeClasses } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
 import {
     useReportStyles,
     statusSolidVar,
+    srOnlyStyle,
     type ReportStatus,
 } from '../styles/reportStyles';
+import { StatusPill } from '../styles/StatusPill';
 import {
     kpiCountsFromNode,
     bucketMetrics,
@@ -16,13 +18,14 @@ import {
     passRateByScenarioGroup,
     chronologicalExecutions,
     moversBetween,
-    formatScore,
     scenariosForExecution,
     isLeafFailed,
     type MoverRow,
     type ScenarioGroupPassRate,
     type KpiCounts,
 } from '../core/viewModels';
+import { formatNumber } from '../core/metricModel';
+import { judgmentWord, type DeltaJudgment } from '../core/metricDirection';
 
 const pctInt = (r: number) => Math.round(r * 100);
 
@@ -111,7 +114,7 @@ const useLocalStyles = makeStyles({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'color-mix(in srgb, var(--status-success-foreground-1) 15%, transparent)',
+        background: 'color-mix(in srgb, var(--status-success-background-3) 15%, transparent)',
     },
     headerTitleRow: {
         display: 'flex',
@@ -168,7 +171,7 @@ const useLocalStyles = makeStyles({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'color-mix(in srgb, var(--status-danger-foreground-1) 15%, transparent)',
+        background: 'color-mix(in srgb, var(--status-danger-background-3) 15%, transparent)',
     },
     attnList: { display: 'flex', flexDirection: 'column', padding: 'var(--spacing-s)' },
     attnRow: {
@@ -201,7 +204,7 @@ const useLocalStyles = makeStyles({
         alignItems: 'center',
         gap: 'var(--spacing-s-nudge)',
         fontSize: 'var(--font-size-300)',
-        color: 'var(--status-success-foreground-1)',
+        color: 'var(--status-success-background-3)',
         padding: 'var(--spacing-l) var(--spacing-xl)',
     },
 
@@ -328,10 +331,26 @@ const chip = (
     };
 };
 
-const numDeltaChip = (d: number): DeltaChip => {
+const JUDGMENT_TO_CHIP: Record<DeltaJudgment, DeltaChip['status']> = {
+    success: 'success',
+    danger: 'danger',
+    neutral: 'informative',
+};
+
+// Good/bad of a value delta comes from the metric's inferred direction (learned from the
+// library's own ratings); an indeterminate metric stays informational. Sub-threshold changes
+// render as a neutral dash regardless.
+const numDeltaChip = (d: number, judgment: DeltaJudgment): DeltaChip => {
     if (Math.abs(d) < 0.05) return { show: true, label: '—', status: 'informative' };
     const { arrow, sign } = deltaArrowSign(d);
-    return { show: true, label: `${arrow} ${sign}${Math.abs(d).toFixed(1)}`, status: d > 0 ? 'success' : 'danger' };
+    return { show: true, label: `${arrow} ${sign}${formatNumber(Math.abs(d))}`, status: JUDGMENT_TO_CHIP[judgment] };
+};
+
+const numDeltaAriaLabel = (d: number, judgment: DeltaJudgment): string => {
+    if (Math.abs(d) < 0.05) return 'no change';
+    const direction = d > 0 ? `increased by ${formatNumber(Math.abs(d))}` : `decreased by ${formatNumber(Math.abs(d))}`;
+    const word = judgmentWord(judgment);
+    return word ? `${direction}, ${word}` : direction;
 };
 
 const rateStatus = (rate: number): ReportStatus =>
@@ -361,8 +380,8 @@ const CHIP_STATUS_TO_REPORT_STATUS: Record<DeltaChip['status'], ReportStatus> = 
 const chipToStatus = (s: DeltaChip['status']): ReportStatus => CHIP_STATUS_TO_REPORT_STATUS[s];
 
 const CHIP_STATUS_TO_TEXT_COLOR: Record<DeltaChip['status'], string> = {
-    success: 'var(--status-success-foreground-1)',
-    danger: 'var(--status-danger-foreground-1)',
+    success: 'var(--status-success-background-3)',
+    danger: 'var(--status-danger-background-3)',
     informative: 'var(--neutral-foreground-3)',
 };
 const deltaTextColor = (status: DeltaChip['status']): string => CHIP_STATUS_TO_TEXT_COLOR[status];
@@ -418,9 +437,9 @@ const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionIte
 
 const DeltaBadge = ({ chip, size = 'medium', shape = 'rounded', appearance = 'ghost' }: { chip: DeltaChip; size?: 'small' | 'medium'; shape?: 'rounded' | 'circular'; appearance?: 'ghost' | 'tint' }) =>
     chip.show ? (
-        <Badge appearance={appearance} color={chip.status} size={size} shape={shape}>
+        <StatusPill status={chipToStatus(chip.status)} appearance={appearance} size={size} shape={shape}>
             {chip.label}
-        </Badge>
+        </StatusPill>
     ) : null;
 
 const SummaryCard = ({
@@ -493,7 +512,7 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                         aria-hidden="true"
                         className={local.iconBadgeSuccess}
                     >
-                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--status-success-foreground-1)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--status-success-background-3)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 11 L11 5 M6.5 5 H11 V9.5" />
                         </svg>
                     </span>
@@ -511,9 +530,10 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                 </div>
                 <div role="list" className={local.moversGrid}>
                     {movers.map((m) => {
-                        const dc = numDeltaChip(m.delta);
+                        const dc = numDeltaChip(m.delta, m.status);
                         const dotStatus = chipToStatus(dc.status);
-                        const valStr = formatScore(m.value, m.kind);
+                        const valStr = formatNumber(m.value);
+                        const isZeroDelta = dc.label === '—';
                         return (
                             // display: contents keeps the 3 cells participating directly in the
                             // parent CSS grid (unchanged layout) while grouping them as one listitem.
@@ -531,9 +551,14 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                                     {valStr}
                                 </span>
                                 <span className={local.moverDeltaCell}>
-                                    {dc.status === 'informative'
-                                        ? <span className={local.moverDeltaDash}>—</span>
-                                        : <DeltaBadge chip={dc} shape="circular" appearance="tint" />}
+                                    {isZeroDelta ? (
+                                        <span className={local.moverDeltaDash}>—</span>
+                                    ) : (
+                                        <>
+                                            <span aria-hidden="true"><DeltaBadge chip={dc} shape="circular" appearance="tint" /></span>
+                                            <span style={srOnlyStyle}>{numDeltaAriaLabel(m.delta, m.status)}</span>
+                                        </>
+                                    )}
                                 </span>
                             </div>
                         );
@@ -555,7 +580,7 @@ const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView:
                         aria-hidden="true"
                         className={local.iconBadgeDanger}
                     >
-                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--status-danger-foreground-1)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--status-danger-background-3)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 5 L11 11 M11 6.5 V11 H6.5" />
                         </svg>
                     </span>

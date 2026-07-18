@@ -126,6 +126,10 @@ const useStyles = makeStyles({
         font: 'inherit',
         color: 'inherit',
         textAlign: 'left',
+        transition: 'filter 120ms ease',
+        ':hover': {
+            filter: 'brightness(1.2)',
+        },
         ':focus-visible': {
             outline: '2px solid var(--brand-80)',
             outlineOffset: '2px',

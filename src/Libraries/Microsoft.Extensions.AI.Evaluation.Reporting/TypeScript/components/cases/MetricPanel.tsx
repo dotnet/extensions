@@ -4,11 +4,20 @@
 import { useId, useState } from 'react';
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { useReportStyles, type ReportStatus } from '../styles/reportStyles';
-import { metricKind as sharedMetricKind, scaleMaxOf, betterDirectionOf, type MetricKind } from '../core/metricModel';
+import { useReportStyles, statusSolidVar, type ReportStatus } from '../styles/reportStyles';
+import { formatValue } from '../core/metricModel';
 import { DiagnosticsContent } from './DiagnosticsContent';
 import { MetadataContent } from './MetadataContent';
 import { type MetricType } from './metricTypes';
+
+// The 5-segment meter fills to the rating ordinal.
+const RATING_PIP: Partial<Record<EvaluationRating, number>> = {
+    exceptional: 5,
+    good: 4,
+    average: 3,
+    poor: 2,
+    unacceptable: 1,
+};
 
 const statusKeyOf = (rating: EvaluationRating | undefined): ReportStatus => {
     switch (rating) {
@@ -44,50 +53,15 @@ const ratingWord = (rating: EvaluationRating | undefined): string => {
     }
 };
 
-const solidVarOf = (sk: ReportStatus): string =>
-    sk === 'success' ? 'var(--status-success-background-3)'
-        : sk === 'warning' ? 'var(--status-warning-foreground-2)'
-            : sk === 'danger' ? 'var(--status-danger-background-3)'
-                : 'var(--neutral-foreground-4)';
-
 const textVarOf = (sk: ReportStatus): string =>
-    sk === 'success' ? 'var(--status-success-foreground-1)'
+    sk === 'success' ? 'var(--status-success-background-3)'
         : sk === 'warning' ? 'var(--status-warning-foreground-1)'
-            : sk === 'danger' ? 'var(--status-danger-foreground-1)'
+            : sk === 'danger' ? 'var(--status-danger-background-3)'
                 : 'var(--neutral-foreground-3)';
 
 const metricFailed = (metric: MetricType): boolean =>
     metric.interpretation?.failed === true ||
     (metric.diagnostics?.some((d) => d.severity === 'error') ?? false);
-
-const metricKind = (metric: MetricType): MetricKind => {
-    if (metric.$type === 'numeric' && !metric.metadata?.kind && typeof metric.value !== 'number') {
-        return 'score';
-    }
-    return sharedMetricKind(metric, { trustDeclaredKind: true });
-};
-const betterLow = (metric: MetricType): boolean =>
-    betterDirectionOf(metric) === 'low' || metricKind(metric) === 'severity';
-
-const goodness = (metric: MetricType, kind: MetricKind): number => {
-    const v = typeof metric.value === 'number' ? metric.value : 0;
-    if (kind === 'score') return v / 5;
-    if (kind === 'severity') return (7 - v) / 7;
-    return betterLow(metric) ? 1 - v : v;
-};
-
-const displayValue = (metric: MetricType): string | undefined => {
-    switch (metric.$type) {
-        case 'string':
-            return metric.value ?? undefined;
-        case 'boolean':
-            return metric.value === undefined || metric.value === null ? undefined : metric.value ? 'Yes' : 'No';
-        case 'numeric':
-            return metric.value === undefined || metric.value === null ? undefined : String(metric.value);
-        default:
-            return undefined;
-    }
-};
 
 const useStyles = makeStyles({
     headerRow: {
@@ -165,14 +139,6 @@ const useStyles = makeStyles({
         height: '16px',
         gap: '4px',
     },
-    trackBar: {
-        flex: 'none',
-        position: 'relative',
-        width: '96px',
-        height: '16px',
-        borderRadius: '2px',
-        backgroundColor: 'var(--eval-seg-empty)',
-    },
     seg: { flex: '1 1 0', minWidth: 0, borderRadius: '2px' },
     segCenter: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
     segIcon: { fontSize: '11px', lineHeight: 1, fontWeight: 700 },
@@ -234,22 +200,24 @@ const useStyles = makeStyles({
     },
 });
 
-const SegmentTrack = ({ metric, kind, sk }: { metric: MetricType; kind: MetricKind; sk: ReportStatus }) => {
+const SegmentTrack = ({ metric, sk }: { metric: MetricType; sk: ReportStatus }) => {
     const classes = useStyles();
-    const solid = solidVarOf(sk);
+    const solid = statusSolidVar(sk);
     const aura = `0 0 0 3px color-mix(in srgb, ${solid} 18%, transparent)`;
 
-    if (sk === 'neutral') {
-        return (
-            <span className={classes.track} aria-hidden="true">
-                <span className={mergeClasses(classes.seg, classes.segCenter)} style={{ backgroundColor: 'var(--eval-seg-empty)' }}>
-                    <span className={classes.segIcon} style={{ color: 'var(--neutral-foreground-3)' }}>?</span>
-                </span>
+    const neutralTrack = (
+        <span className={classes.track} aria-hidden="true">
+            <span className={mergeClasses(classes.seg, classes.segCenter)} style={{ backgroundColor: 'var(--eval-seg-empty)' }}>
+                <span className={classes.segIcon} style={{ color: 'var(--neutral-foreground-3)' }}>?</span>
             </span>
-        );
+        </span>
+    );
+
+    if (sk === 'neutral') {
+        return neutralTrack;
     }
 
-    if (kind === 'boolean') {
+    if (metric.$type === 'boolean') {
         const good = sk === 'success';
         return (
             <span className={classes.track} aria-hidden="true">
@@ -260,43 +228,28 @@ const SegmentTrack = ({ metric, kind, sk }: { metric: MetricType; kind: MetricKi
         );
     }
 
-    const scaleMax = kind === 'score' ? 5 : kind === 'severity' ? 7 : 0;
-    if (scaleMax) {
-        const segCount = Math.min(scaleMax, 10);
-        const filled = Math.round(goodness(metric, kind) * segCount);
-        return (
-            <span className={classes.track} aria-hidden="true">
-                {Array.from({ length: segCount }, (_, i) => {
-                    const on = i < filled;
-                    return (
-                        <span
-                            key={i}
-                            className={classes.seg}
-                            style={{ backgroundColor: on ? solid : 'var(--eval-seg-empty)', boxShadow: on ? aura : undefined }}
-                        />
-                    );
-                })}
-            </span>
-        );
+    // string/none metrics carry no scale to plot — no meter, matching real-data rendering.
+    if (metric.$type !== 'numeric') {
+        return null;
     }
 
-    const f = Math.max(0, Math.min(1, goodness(metric, kind)));
+    const pip = RATING_PIP[metric.interpretation?.rating as EvaluationRating];
+    if (pip === undefined) {
+        return neutralTrack;
+    }
+
     return (
-        <span className={classes.trackBar} aria-hidden="true">
-            {f > 0.005 && (
-                <span
-                    style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        height: '100%',
-                        width: `${(f * 100).toFixed(1)}%`,
-                        borderRadius: '2px',
-                        backgroundColor: solid,
-                        boxShadow: aura,
-                    }}
-                />
-            )}
+        <span className={classes.track} aria-hidden="true">
+            {Array.from({ length: 5 }, (_, i) => {
+                const on = i < pip;
+                return (
+                    <span
+                        key={i}
+                        className={classes.seg}
+                        style={{ backgroundColor: on ? solid : 'var(--eval-seg-empty)', boxShadow: on ? aura : undefined }}
+                    />
+                );
+            })}
         </span>
     );
 };
@@ -309,8 +262,7 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
     const rating = metric.interpretation?.rating;
     const failed = metricFailed(metric);
     const sk: ReportStatus = failed ? 'danger' : statusKeyOf(rating);
-    const kind = metricKind(metric);
-    const solid = solidVarOf(sk);
+    const solid = statusSolidVar(sk);
     const textColor = textVarOf(sk);
 
     const dotStyle =
@@ -324,15 +276,10 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
     const metadata = metric.metadata ?? {};
     const hasMetadata = Object.keys(metadata).length > 0;
 
-    const scaleMax = scaleMaxOf(kind);
-    const value = displayValue(metric);
-    const heroNum =
-        typeof metric.value === 'number' && (kind === 'score' || kind === 'severity')
-            ? `${metric.value % 1 === 0 ? metric.value : metric.value.toFixed(1)} / ${scaleMax}`
-            : value;
-
-    const heroFillW = scaleMax ? `${(Math.max(0, Math.min(1, goodness(metric, kind))) * 100).toFixed(1)}%` : '100%';
-    const showHeroBar = kind !== 'boolean' && kind !== 'string';
+    const heroNum = formatValue(metric);
+    const pip = metric.$type === 'numeric' ? RATING_PIP[rating as EvaluationRating] : undefined;
+    const heroFillW = pip !== undefined ? `${(pip / 5) * 100}%` : '100%';
+    const showHeroBar = pip !== undefined;
 
     return (
         <div className={classes.rowWrap}>
@@ -349,7 +296,7 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
                     <span className={classes.dot} style={dotStyle} />
                 </span>
                 <span className={classes.rowName}>{metric.name}</span>
-                <SegmentTrack metric={metric} kind={kind} sk={sk} />
+                <SegmentTrack metric={metric} sk={sk} />
             </button>
 
             {open && (

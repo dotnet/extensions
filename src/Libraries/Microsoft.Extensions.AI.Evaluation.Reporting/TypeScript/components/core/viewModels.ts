@@ -3,9 +3,14 @@
 
 import { ScoreNode, getScoreHistory, type ScoreSummary } from './Summary';
 import { isLeafFailed } from './scoring';
-import { metricKind, formatScore, type MetricKind } from './metricModel';
+import {
+    inferBetterDirections,
+    judgeValueDelta,
+    ratingGoodness,
+    type DeltaJudgment,
+} from './metricDirection';
 
-export { isLeafFailed, formatScore };
+export { isLeafFailed };
 
 export type RatingBucket = 'good' | 'fair' | 'weak' | 'unknown';
 
@@ -53,18 +58,6 @@ export type ScenarioGroupPassRate = {
 
 const groupKey = (scenario: ScenarioRunResult): string => scenario.scenarioName.split('.')[0];
 
-const executionOrder = (results: ScenarioRunResult[]): string[] => {
-    const seen: string[] = [];
-    const set = new Set<string>();
-    for (const r of results) {
-        if (!set.has(r.executionName)) {
-            set.add(r.executionName);
-            seen.push(r.executionName);
-        }
-    }
-    return seen;
-};
-
 export const chronologicalExecutions = (dataset: Dataset): string[] => {
     const results = dataset.scenarioRunResults ?? [];
     const minTime = new Map<string, string>();
@@ -106,7 +99,7 @@ export const passRateByScenarioGroup = (
     execName?: string,
 ): ScenarioGroupPassRate[] => {
     const results = dataset.scenarioRunResults ?? [];
-    const executions = executionOrder(results);
+    const executions = chronologicalExecutions(dataset);
     const primaryExec = executions[0];
 
     const activeExec = execName ?? primaryExec;
@@ -140,7 +133,7 @@ export const passRateByScenarioGroup = (
 
 export const scenariosForExecution = (dataset: Dataset, execName?: string): ScenarioRunResult[] => {
     const results = dataset.scenarioRunResults ?? [];
-    const activeExec = execName ?? executionOrder(results)[0];
+    const activeExec = execName ?? chronologicalExecutions(dataset)[0];
     return results.filter((r) => r.executionName === activeExec);
 };
 
@@ -202,22 +195,22 @@ export const metricHistoryForScenario = (
     return [...series.entries()].map(([metricName, points]) => ({ metricName, points }));
 };
 
-export type MoverMetricKind = 'fraction' | 'score' | 'severity' | 'count';
-
 export type MoverRow = {
     scenarioName: string;
     metricName: string;
-    kind: MoverMetricKind;
     value: number;
     delta: number;
+    status: DeltaJudgment;
 };
 
-const MOVER_METRIC_KINDS: readonly MetricKind[] = ['fraction', 'score', 'severity', 'count'];
-
-const metricKindForMover = (metric: NumericMetric): MoverMetricKind =>
-    metricKind(metric, { allowedDeclaredKinds: MOVER_METRIC_KINDS }) as MoverMetricKind;
-
-type MoverAgg = { scenarioName: string; metricName: string; kind: MoverMetricKind; sum: number; n: number };
+type MoverAgg = {
+    scenarioName: string;
+    metricName: string;
+    sum: number;
+    n: number;
+    goodnessSum: number;
+    goodnessN: number;
+};
 
 const pairKey = (scenarioName: string, metricName: string): string =>
     JSON.stringify([scenarioName, metricName]);
@@ -230,14 +223,22 @@ const meanByScenarioMetric = (results: ScenarioRunResult[]): Map<string, MoverAg
             const key = pairKey(r.scenarioName, metric.name);
             const entry =
                 agg.get(key) ??
-                { scenarioName: r.scenarioName, metricName: metric.name, kind: metricKindForMover(metric), sum: 0, n: 0 };
+                { scenarioName: r.scenarioName, metricName: metric.name, sum: 0, n: 0, goodnessSum: 0, goodnessN: 0 };
             entry.sum += metric.value!;
             entry.n += 1;
+            const goodness = ratingGoodness(metric.interpretation?.rating);
+            if (goodness !== undefined) {
+                entry.goodnessSum += goodness;
+                entry.goodnessN += 1;
+            }
             agg.set(key, entry);
         }
     }
     return agg;
 };
+
+const goodnessMean = (agg: MoverAgg): number | undefined =>
+    agg.goodnessN > 0 ? agg.goodnessSum / agg.goodnessN : undefined;
 
 export const moversBetween = (
     results: ScenarioRunResult[],
@@ -247,6 +248,7 @@ export const moversBetween = (
 ): MoverRow[] => {
     if (!selectedExec || !prevExec) return [];
 
+    const directions = inferBetterDirections(results);
     const selectedAgg = meanByScenarioMetric(results.filter((r) => r.executionName === selectedExec));
     const prevAgg = meanByScenarioMetric(results.filter((r) => r.executionName === prevExec));
 
@@ -256,12 +258,17 @@ export const moversBetween = (
         if (!prev || prev.n === 0 || sel.n === 0) continue;
         const selMean = sel.sum / sel.n;
         const prevMean = prev.sum / prev.n;
+        const delta = selMean - prevMean;
+        const selGoodness = goodnessMean(sel);
+        const prevGoodness = goodnessMean(prev);
+        const goodnessDelta =
+            selGoodness !== undefined && prevGoodness !== undefined ? selGoodness - prevGoodness : undefined;
         rows.push({
             scenarioName: sel.scenarioName,
             metricName: sel.metricName,
-            kind: sel.kind,
             value: selMean,
-            delta: selMean - prevMean,
+            delta,
+            status: judgeValueDelta(directions.get(sel.metricName) ?? 'none', delta, goodnessDelta),
         });
     }
 

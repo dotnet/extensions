@@ -55,7 +55,6 @@ type AIContent = {
     $type: string;
 };
 
-// TODO: Model other types of AIContent such as function calls, function call results, audio etc.
 type TextContent = AIContent & {
     $type: "text";
     text: string;
@@ -70,6 +69,19 @@ type UriContent = AIContent & {
 type DataContent = AIContent & {
     $type: "data";
     uri: string;
+};
+
+type FunctionCallContent = AIContent & {
+    $type: "functionCall";
+    callId: string;
+    name: string;
+    arguments?: { [K: string]: unknown };
+};
+
+type FunctionResultContent = AIContent & {
+    $type: "functionResult";
+    callId: string;
+    result?: unknown;
 };
 
 type EvaluationResult = {

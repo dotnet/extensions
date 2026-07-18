@@ -6,39 +6,21 @@ import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluent
 import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { useAnnounce } from '../core/Announcer';
-import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
+import { useReportStyles } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
-import { metricKind, betterDirectionOf } from '../core/metricModel';
-import { metricScale, posOn, formatRaw, dumbbellStyles, STATUS_TEXT, type StatusKey, type MetricScaleKind } from './dumbbellGeometry';
+import { formatNumber } from '../core/metricModel';
+import {
+    inferBetterDirections,
+    judgeValueDelta,
+    judgmentWord,
+    ratingGoodness,
+    type BetterDirection,
+    type DeltaJudgment,
+} from '../core/metricDirection';
+import { posOn, dumbbellStyles, STATUS_TEXT } from './dumbbellGeometry';
+import { axisDomain } from './axisDomain';
 
-const BUCKET_ORDER: StatusKey[] = ['success', 'warning', 'danger', 'caution', 'neutral'];
-
-const RATING_STATUS: Record<string, StatusKey> = {
-    exceptional: 'success',
-    good: 'success',
-    average: 'warning',
-    poor: 'danger',
-    unacceptable: 'danger',
-    inconclusive: 'caution',
-};
-
-const statusKey = (rating: EvaluationRating | undefined): StatusKey =>
-    RATING_STATUS[rating ?? 'unknown'] ?? 'neutral';
-
-const STATUS_WORD: Record<StatusKey, string> = {
-    success: 'good',
-    warning: 'fair',
-    caution: 'fair',
-    danger: 'weak',
-    neutral: '',
-};
-
-type MetricKind = MetricScaleKind;
-
-const numericMetricKind = (metric: NumericMetric): MetricKind =>
-    metricKind(metric, { trustDeclaredKind: true }) as MetricKind;
-
-type MetricAgg = { kind: MetricKind; better: string; sum: number; n: number; statusDist: Record<string, number> };
+type MetricAgg = { sum: number; n: number; goodnessSum: number; goodnessN: number };
 type ScenAgg = { name: string; cases: number; metricAgg: Record<string, MetricAgg>; metricOrder: string[] };
 
 const scenarioMetrics = (results: ScenarioRunResult[]): { byScen: Record<string, ScenAgg>; order: string[] } => {
@@ -57,29 +39,29 @@ const scenarioMetrics = (results: ScenarioRunResult[]): { byScen: Record<string,
             const metric = m as NumericMetric;
             if (typeof metric.value !== 'number') continue;
             if (!scenAgg.metricAgg[k]) {
-                scenAgg.metricAgg[k] = { kind: numericMetricKind(metric), better: betterDirectionOf(metric), sum: 0, n: 0, statusDist: {} };
+                scenAgg.metricAgg[k] = { sum: 0, n: 0, goodnessSum: 0, goodnessN: 0 };
                 scenAgg.metricOrder.push(k);
             }
             const entry = scenAgg.metricAgg[k];
             entry.sum += metric.value;
             entry.n++;
-            const sk = statusKey(metric.interpretation?.rating);
-            entry.statusDist[sk] = (entry.statusDist[sk] ?? 0) + 1;
+            const goodness = ratingGoodness(metric.interpretation?.rating);
+            if (goodness !== undefined) {
+                entry.goodnessSum += goodness;
+                entry.goodnessN += 1;
+            }
         }
     }
     return { byScen, order };
 };
 
-type CmpDelta = { color: 'success' | 'danger' | 'subtle'; txt: string; magText: string };
+type CmpDelta = { txt: string; magText: string };
 
-const deltaStyle = (rawDelta: number, unit: 'frac' | '', good: boolean | null): CmpDelta => {
+const deltaStyle = (rawDelta: number): CmpDelta => {
     const flat = Math.abs(rawDelta) < 0.0005;
-    const up = rawDelta > 0;
-    const sk: StatusKey = good === null || flat ? 'neutral' : up === good ? 'success' : 'danger';
-    const color: CmpDelta['color'] = sk === 'success' ? 'success' : sk === 'danger' ? 'danger' : 'subtle';
-    const magText = Math.abs(rawDelta).toFixed(unit === 'frac' ? 3 : 2);
-    const txt = flat ? '—' : (up ? '▲ ' : '▼ ') + magText;
-    return { color, txt, magText };
+    const magText = formatNumber(Math.abs(rawDelta));
+    const txt = flat ? '—' : (rawDelta > 0 ? '▲ ' : '▼ ') + magText;
+    return { txt, magText };
 };
 
 type CmpRow = {
@@ -87,10 +69,9 @@ type CmpRow = {
     a: string;
     b: string;
     bColor: string;
-    bStatus: StatusKey;
     delta: string;
-    deltaColor: 'success' | 'danger' | 'subtle';
     deltaAriaLabel: string;
+    status: DeltaJudgment;
     connector: React.CSSProperties;
     dotB: React.CSSProperties;
     dotA: React.CSSProperties;
@@ -101,45 +82,44 @@ type CmpRow = {
     mag: number;
 };
 
-const buildCmpRow = (k: string, baselineAgg: MetricAgg | undefined, currentAgg: MetricAgg | undefined): CmpRow => {
-    const kind = (currentAgg ?? baselineAgg)!.kind;
-    const better = (currentAgg ?? baselineAgg)!.better;
+const buildCmpRow = (
+    k: string,
+    baselineAgg: MetricAgg | undefined,
+    currentAgg: MetricAgg | undefined,
+    direction: BetterDirection,
+): CmpRow => {
     const hasA = !!(baselineAgg && baselineAgg.n);
     const hasB = !!(currentAgg && currentAgg.n);
     const baselineAvg = hasA ? baselineAgg!.sum / baselineAgg!.n : 0;
     const currentAvg = hasB ? currentAgg!.sum / currentAgg!.n : 0;
     const rawDelta = currentAvg - baselineAvg;
-    const good = better === 'none' ? null : better !== 'low';
-    const unit: 'frac' | '' = kind === 'fraction' ? 'frac' : '';
-    const deltaFmt = deltaStyle(rawDelta, unit, good);
-    const [dmin, dmax] = metricScale(kind, Math.max(baselineAvg, currentAvg));
+    const deltaFmt = deltaStyle(rawDelta);
+    const domain = axisDomain(hasA ? [baselineAvg, currentAvg] : [currentAvg]);
     const isFlat = deltaFmt.txt === '—';
-    const dir = good === null || isFlat || !hasA ? 0 : (rawDelta > 0) === good ? 1 : -1;
-    const prevPos = hasA ? posOn(baselineAvg, dmin, dmax) : null;
-    const curPos = posOn(currentAvg, dmin, dmax);
-    const dumbbell = dumbbellStyles(prevPos, curPos, dir, !isFlat, 0);
-    let domB: StatusKey = 'neutral';
-    let best = -1;
-    if (currentAgg) {
-        for (const sk of BUCKET_ORDER) {
-            if ((currentAgg.statusDist[sk] ?? 0) > best) {
-                best = currentAgg.statusDist[sk] ?? 0;
-                domB = sk;
-            }
-        }
-    }
-    const aStr = hasA ? formatRaw(baselineAvg, kind) : '—';
-    const bStr = hasB ? formatRaw(currentAvg, kind) : '—';
-    const deltaAriaLabel = dir > 0 ? `improved by ${deltaFmt.magText}` : dir < 0 ? `regressed by ${deltaFmt.magText}` : 'no change';
+    const dir = isFlat || !hasA ? 0 : rawDelta > 0 ? 1 : -1;
+    const baselineGoodness = hasA && baselineAgg!.goodnessN > 0 ? baselineAgg!.goodnessSum / baselineAgg!.goodnessN : undefined;
+    const currentGoodness = hasB && currentAgg!.goodnessN > 0 ? currentAgg!.goodnessSum / currentAgg!.goodnessN : undefined;
+    const goodnessDelta =
+        baselineGoodness !== undefined && currentGoodness !== undefined ? currentGoodness - baselineGoodness : undefined;
+    const status: DeltaJudgment = dir === 0 ? 'neutral' : judgeValueDelta(direction, rawDelta, goodnessDelta);
+    const prevPos = hasA ? posOn(baselineAvg, domain.min, domain.max) : null;
+    const curPos = posOn(currentAvg, domain.min, domain.max);
+    const dumbbell = dumbbellStyles(prevPos, curPos, !isFlat, status, 0);
+    const aStr = hasA ? formatNumber(baselineAvg) : '—';
+    const bStr = hasB ? formatNumber(currentAvg) : '—';
+    const word = judgmentWord(status);
+    const deltaAriaLabel =
+        dir === 0
+            ? 'no change'
+            : `${dir > 0 ? 'increased' : 'decreased'} by ${deltaFmt.magText}${word ? `, ${word}` : ''}`;
     return {
         name: k,
         a: aStr,
         b: bStr,
-        bColor: STATUS_TEXT[domB],
-        bStatus: domB,
+        bColor: STATUS_TEXT[status],
         delta: deltaFmt.txt,
-        deltaColor: deltaFmt.color,
         deltaAriaLabel,
+        status,
         connector: dumbbell.connector,
         dotB: dumbbell.dotB,
         dotA: dumbbell.dotA,
@@ -147,7 +127,7 @@ const buildCmpRow = (k: string, baselineAgg: MetricAgg | undefined, currentAgg: 
         currentAvg,
         rawDelta,
         dir,
-        mag: Math.abs(rawDelta) / (dmax - dmin || 1),
+        mag: Math.abs(rawDelta) / (domain.max - domain.min || 1),
     };
 };
 
@@ -305,8 +285,7 @@ const useLocalStyles = makeStyles({
         height: 'var(--spacing-m)',
         background: 'var(--neutral-stroke-2)',
     },
-    cmpLegendUp: { color: 'var(--status-success-foreground-1)' },
-    cmpLegendDown: { color: 'var(--status-danger-foreground-1)' },
+    cmpLegendDirection: { color: 'var(--neutral-foreground-3)' },
     cmpLegendSep: { color: 'var(--neutral-foreground-4)' },
     sortBtn: {
         display: 'inline-flex',
@@ -483,6 +462,7 @@ export const ComparisonView = () => {
     );
 
     const chrono = useMemo(() => chronologicalExecutions(dataset), [dataset]);
+    const directions = useMemo(() => inferBetterDirections(dataset.scenarioRunResults ?? []), [dataset]);
     const defaultB = chrono.length >= 1 ? chrono[chrono.length - 1] : undefined;
     const defaultA = chrono.length >= 2 ? chrono[chrono.length - 2] : undefined;
 
@@ -542,17 +522,18 @@ export const ComparisonView = () => {
                     : scenarioBaseline
                         ? scenarioBaseline.metricOrder
                         : [];
-                const rows = sortRows(order.map((k) => buildCmpRow(k, scenarioBaseline?.metricAgg[k], scenarioCurrent?.metricAgg[k])));
+                const rows = sortRows(order.map((k) =>
+                    buildCmpRow(k, scenarioBaseline?.metricAgg[k], scenarioCurrent?.metricAgg[k], directions.get(k) ?? 'none')));
                 return { scenario: sn, rows, cases: (scenarioCurrent ?? scenarioBaseline ?? { cases: 0 }).cases };
             })
             .filter((g) => g.rows.length > 0);
-    }, [resultsFor, effectiveA, effectiveB, hasTwoExecs, sortKey, sortDir]);
+    }, [resultsFor, effectiveA, effectiveB, hasTwoExecs, sortKey, sortDir, directions]);
 
     const allRows = useMemo(() => groups.reduce<CmpRow[]>((acc, g) => acc.concat(g.rows), []), [groups]);
     const multiScenario = groups.length > 1;
 
-    const improved = allRows.filter((r) => r.dir > 0).length;
-    const regressed = allRows.filter((r) => r.dir < 0).length;
+    const increased = allRows.filter((r) => r.dir > 0).length;
+    const decreased = allRows.filter((r) => r.dir < 0).length;
     const biggest = useMemo(() => {
         let b: CmpRow | null = null;
         let bestMag = -1;
@@ -568,29 +549,29 @@ export const ComparisonView = () => {
     const DIV = '1px solid var(--neutral-stroke-2)';
     const headline = [
         {
-            label: 'Metrics improved',
-            value: '' + improved,
-            valueColor: improved ? STATUS_TEXT.success : 'var(--neutral-foreground-1)',
+            label: 'Metrics increased',
+            value: '' + increased,
+            valueColor: 'var(--neutral-foreground-1)',
             sub: 'of ' + allRows.length + ' metrics',
             borderRight: DIV,
         },
         {
-            label: 'Metrics regressed',
-            value: '' + regressed,
-            valueColor: regressed ? STATUS_TEXT.danger : 'var(--neutral-foreground-1)',
+            label: 'Metrics decreased',
+            value: '' + decreased,
+            valueColor: 'var(--neutral-foreground-1)',
             sub: 'of ' + allRows.length + ' metrics',
             borderRight: DIV,
         },
         biggest
             ? {
-                  label: 'Biggest mover',
+                  label: 'Biggest change',
                   value: biggest.delta,
-                  valueColor: biggest.dir > 0 ? STATUS_TEXT.success : STATUS_TEXT.danger,
+                  valueColor: STATUS_TEXT[biggest.status],
                   sub: biggest.name,
                   borderRight: 'none',
               }
             : {
-                  label: 'Biggest mover',
+                  label: 'Biggest change',
                   value: 'stable',
                   valueColor: 'var(--neutral-foreground-1)',
                   sub: 'no significant change',
@@ -712,7 +693,7 @@ export const ComparisonView = () => {
                                 </span>
                                 <span className={local.cmpLegendDivider} />
                                 <span className={local.cmpLegendItem}>
-                                    <span aria-hidden="true" className={local.cmpLegendUp}>▲</span> improved <span aria-hidden="true" className={local.cmpLegendSep}>·</span> <span aria-hidden="true" className={local.cmpLegendDown}>▼</span> regressed
+                                    <span aria-hidden="true" className={local.cmpLegendDirection}>▲</span> increased <span aria-hidden="true" className={local.cmpLegendSep}>·</span> <span aria-hidden="true" className={local.cmpLegendDirection}>▼</span> decreased
                                 </span>
                             </span>
                         </div>
@@ -778,12 +759,8 @@ export const ComparisonView = () => {
                                                 <span
                                                     className={local.cmpValueB}
                                                     style={{ color: m.bColor }}
-                                                    title={STATUS_WORD[m.bStatus] ? `Current ${m.b} — ${STATUS_WORD[m.bStatus]}` : undefined}
                                                 >
                                                     {m.b}
-                                                    {STATUS_WORD[m.bStatus] && (
-                                                        <span style={srOnlyStyle}>{`, ${STATUS_WORD[m.bStatus]}`}</span>
-                                                    )}
                                                 </span>
                                             </span>
                                             <span role="cell" className={local.cmpDumbbellCell}>
@@ -801,14 +778,7 @@ export const ComparisonView = () => {
                                                 <span
                                                     aria-label={m.deltaAriaLabel}
                                                     className={local.cmpDeltaCell}
-                                                    style={{
-                                                        color:
-                                                            m.deltaColor === 'success'
-                                                                ? 'var(--status-success-foreground-1)'
-                                                                : m.deltaColor === 'danger'
-                                                                    ? 'var(--status-danger-foreground-1)'
-                                                                    : 'var(--neutral-foreground-3)',
-                                                    }}
+                                                    style={{ color: STATUS_TEXT[m.status] }}
                                                 >
                                                     <span aria-hidden="true">{m.delta}</span>
                                                 </span>

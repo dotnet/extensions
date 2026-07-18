@@ -79,13 +79,13 @@ describe('HistoryView — chronological ordering', () => {
 
     it('labels First run score = oldest run and Last run score = newest run', () => {
         renderHistory();
-        expect(statValue('First run score')).toBe('2/5');
-        expect(statValue('Last run score')).toBe('4/5');
+        expect(statValue('First run score')).toBe('2');
+        expect(statValue('Last run score')).toBe('4');
     });
 
     it('reports Net change as newest − oldest (an improvement, not a decline)', () => {
         renderHistory();
-        expect(statValue('Net change')).toBe('▲ 2.0');
+        expect(statValue('Net change')).toBe('▲ 2');
     });
 
     it("the middle row's dumbbell baselines against the chronologically-earlier run", () => {
@@ -99,7 +99,7 @@ describe('HistoryView — chronological ordering', () => {
         const changeSpan = [...middle.querySelectorAll('span')].find(
             (s) => /[▲▼]/.test(s.textContent ?? '') && s.children.length === 0,
         );
-        expect(changeSpan?.textContent?.trim()).toBe('▲ 1.0');
+        expect(changeSpan?.textContent?.trim()).toBe('▲ 1');
 
         const track = middle.querySelector('span[style*="min-width"]');
         const lefts = track

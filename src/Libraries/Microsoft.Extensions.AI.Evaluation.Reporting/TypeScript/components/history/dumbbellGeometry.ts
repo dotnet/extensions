@@ -2,45 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import type { CSSProperties } from 'react';
-import type { MetricKind } from '../core/metricModel';
 
 const DUMBBELL_D = 8;
 const DUMBBELL_RING = 1.5;
 const DUMBBELL_CONN = 1.5;
 
-// Re-exported from the shared classifier for a single MetricKind union across the app.
-export type MetricScaleKind = MetricKind;
-
-export const metricScale = (kind: MetricScaleKind, peak: number): [number, number] =>
-    kind === 'fraction' ? [0, 1] : kind === 'score' ? [1, 5] : [0, Math.max(1, peak || 1)];
-
 export const posOn = (v: number, min: number, max: number): number =>
     max > min ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : 50;
-
-// NOTE: unlike the shared `formatScore` in core/metricModel.ts, this intentionally omits the
-// '/7' suffix for 'severity' — it falls into the generic numeric branch below. Do not replace
-// with `formatScore`; that would change the rendered value for severity metrics.
-export const formatRaw = (v: number, kind: MetricScaleKind): string => {
-    if (kind === 'fraction') return v.toFixed(3);
-    if (kind === 'score') return (v % 1 === 0 ? `${v}` : v.toFixed(1)) + '/5';
-    return v % 1 === 0 ? `${v}` : v.toFixed(1);
-};
 
 export type StatusKey = 'success' | 'warning' | 'danger' | 'caution' | 'neutral';
 
 const STATUS_SOLID: Record<StatusKey, string> = {
     success: 'var(--status-success-background-3)',
-    warning: 'var(--status-warning-foreground-2)',
-    danger: 'var(--status-danger-foreground-2)',
-    caution: 'var(--palette-yellow-foreground1)',
+    warning: 'var(--palette-orange-background3)',
+    danger: 'var(--status-danger-background-3)',
+    caution: 'var(--status-warning-background-3)',
     neutral: 'var(--neutral-foreground-4)',
 };
 
 export const STATUS_TEXT: Record<StatusKey, string> = {
-    success: 'var(--status-success-foreground-1)',
-    warning: 'var(--status-warning-foreground-1)',
-    danger: 'var(--status-danger-foreground-1)',
-    caution: 'var(--palette-yellow-foreground1)',
+    success: 'var(--status-success-background-3)',
+    warning: 'var(--palette-orange-background3)',
+    danger: 'var(--status-danger-background-3)',
+    caution: 'var(--status-warning-background-3)',
     neutral: 'var(--neutral-foreground-3)',
 };
 
@@ -54,11 +38,11 @@ export type DumbbellStyles = {
 export const dumbbellStyles = (
     prevPos: number | null,
     currPos: number,
-    dir: number,
     hasDelta: boolean,
+    status: StatusKey = 'neutral',
     connEpsilon = 0.01,
 ): DumbbellStyles => {
-    const sk: StatusKey = dir > 0 ? 'success' : dir < 0 ? 'danger' : 'neutral';
+    const sk: StatusKey = status;
     const color = STATUS_SOLID[sk];
     const halo = '0 0 0 2px var(--neutral-background-1)';
     const hasPrev = prevPos !== null && prevPos !== undefined && Number.isFinite(prevPos);

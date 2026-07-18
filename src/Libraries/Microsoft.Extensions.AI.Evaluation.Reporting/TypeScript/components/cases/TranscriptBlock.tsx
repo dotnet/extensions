@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import type { CSSProperties, ReactNode } from 'react';
-import { Fragment, useId } from 'react';
+import type { CSSProperties } from 'react';
+import { useId } from 'react';
 import { Card, makeStyles, mergeClasses } from '@fluentui/react-components';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -29,12 +29,9 @@ const isFunctionCall = (content: AIContent): content is FunctionCallLike =>
 const isFunctionResult = (content: AIContent): content is FunctionResultLike =>
     content?.$type === 'functionResult';
 
-const KNOWN_CONTENT_TYPES = new Set(['text', 'uri', 'data', 'functionCall', 'functionResult']);
+const KNOWN_TOOL_CONTENT_TYPES = new Set(['functionCall', 'functionResult', 'toolCall', 'toolResult']);
 
-const isToolish = (content: AIContent): boolean => {
-    const t = content?.$type ?? '';
-    return !KNOWN_CONTENT_TYPES.has(t) && /call|result|tool|function/i.test(t);
-};
+const isToolish = (content: AIContent): boolean => KNOWN_TOOL_CONTENT_TYPES.has(content?.$type ?? '');
 
 const T_ACCENT = 'var(--tool-accent-text)';
 const T_TINT = 'color-mix(in srgb, var(--palette-teal-foreground) 7%, var(--neutral-background-1))';
@@ -212,6 +209,7 @@ const safeJsonMaybeString = (value: unknown, pretty: boolean): string => {
             try {
                 return safeJson(JSON.parse(trimmed), pretty);
             } catch {
+                // not valid JSON after all; fall through and render the raw string.
             }
         }
         return value;
@@ -451,41 +449,9 @@ const WrenchIcon = () => {
     );
 };
 
-const CITE_RE = /\[\[(\d+)\]\]/g;
-
-const withCitations = (children: ReactNode): ReactNode => {
-    let key = 0;
-    const transform = (node: ReactNode): ReactNode => {
-        if (typeof node === 'string') {
-            if (!CITE_RE.test(node)) return node;
-            CITE_RE.lastIndex = 0;
-            const out: ReactNode[] = [];
-            let last = 0;
-            let m: RegExpExecArray | null;
-            while ((m = CITE_RE.exec(node)) !== null) {
-                if (m.index > last) out.push(node.slice(last, m.index));
-                out.push(<sup className="eval-cite" key={`c-${key++}`}>{m[1]}</sup>);
-                last = m.index + m[0].length;
-            }
-            if (last < node.length) out.push(node.slice(last));
-            return <Fragment key={`f-${key++}`}>{out}</Fragment>;
-        }
-        if (Array.isArray(node)) return node.map((n) => transform(n));
-        return node;
-    };
-    return transform(children);
-};
-
 const MD_COMPONENTS: Components = {
-    p: ({ children }) => <p>{withCitations(children)}</p>,
-    li: ({ children }) => <li>{withCitations(children)}</li>,
-    td: ({ children }) => <td>{withCitations(children)}</td>,
-    th: ({ children }) => <th>{withCitations(children)}</th>,
-    blockquote: ({ children }) => <blockquote>{withCitations(children)}</blockquote>,
-    em: ({ children }) => <em>{withCitations(children)}</em>,
-    strong: ({ children }) => <strong>{withCitations(children)}</strong>,
     a: ({ children, href }) => (
-        <a href={href} target="_blank" rel="noopener noreferrer">{withCitations(children)}</a>
+        <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
     ),
 };
 
@@ -499,6 +465,7 @@ const TextNode = ({ content, altHint }: { content: AIContent; altHint?: string }
             const parsed = JSON.parse(trimmed);
             return <pre className={classes.codeBlock}>{JSON.stringify(parsed, null, prettifyJson ? 2 : 0)}</pre>;
         } catch {
+            // not valid JSON after all; fall through and render as markdown/plain text.
         }
         return renderMarkdown ? (
             <div className={mergeClasses('eval-md', classes.mdText)}>

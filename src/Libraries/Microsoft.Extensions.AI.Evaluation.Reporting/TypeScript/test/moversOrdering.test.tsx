@@ -5,8 +5,8 @@ import { describe, it, expect } from 'vitest';
 import {
     chronologicalExecutions,
     moversBetween,
-    formatScore,
 } from '../components/core/viewModels';
+import { formatNumber } from '../components/core/metricModel';
 
 const E1 = 'run-alpha';
 const E2 = 'run-bravo';
@@ -151,22 +151,3 @@ describe('moversBetween — baseline is the chronological predecessor', () => {
     });
 });
 
-describe('formatScore — renders value on its natural scale', () => {
-    it('score → N/5 (integer) and x.x/5 (fractional)', () => {
-        expect(formatScore(4, 'score')).toBe('4/5');
-        expect(formatScore(4.2, 'score')).toBe('4.2/5');
-    });
-
-    it('severity → /7 and fraction → toFixed(3)', () => {
-        expect(formatScore(5, 'severity')).toBe('5/7');
-        expect(formatScore(0.5, 'fraction')).toBe('0.500');
-    });
-
-    it("the accuracy mover renders as an N/5 score string", () => {
-        const chrono = chronologicalExecutions(dataset);
-        const movers = moversBetween(dataset.scenarioRunResults, E3, chrono[chrono.indexOf(E3) - 1], Infinity);
-        const acc = movers.find((m) => m.metricName === 'accuracy')!;
-        expect(acc.kind).toBe('score');
-        expect(formatScore(acc.value, acc.kind)).toBe('4/5');
-    });
-});

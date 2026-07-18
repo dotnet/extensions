@@ -47,6 +47,15 @@ const none = (name: string, rating: EvaluationRating): MetricWithNoValue => ({
     metadata: {},
 });
 
+const string = (name: string, value: string, rating: EvaluationRating): StringMetric => ({
+    $type: 'string',
+    name,
+    value,
+    reason: `Reason for ${name}.`,
+    interpretation: { rating, failed: false },
+    metadata: {},
+});
+
 // The score/severity track renders one <span> per scale segment inside a single track span;
 // filled segments carry a non-empty boxShadow ("aura"), empty ones leave it unset.
 const segmentTrack = (button: HTMLElement): HTMLElement => {
@@ -81,37 +90,56 @@ describe('MetricPanel — boolean metrics', () => {
     });
 });
 
-describe('MetricPanel — score metrics', () => {
-    it('shows an "N / 5" hero and fills round(goodness * segCount) segments', () => {
+describe('MetricPanel — numeric metrics (rating-ordinal meter)', () => {
+    it('shows the raw value and fills the meter to the rating ordinal', () => {
         render(<MetricPanel scenario={scenarioWith({ quality: numeric('quality', 4, 'good', false) })} />);
 
         const button = screen.getByRole('button');
         const track = segmentTrack(button);
-        // score: segCount = 5, goodness = 4/5 = 0.8, filled = round(0.8 * 5) = 4
         expect(track.querySelectorAll(':scope > span')).toHaveLength(5);
         expect(filledCount(track)).toBe(4);
 
         fireEvent.click(button);
-        expect(screen.getByText('4 / 5')).toBeInTheDocument();
+        expect(screen.getByText('4')).toBeInTheDocument();
     });
-});
 
-describe('MetricPanel — severity metrics', () => {
-    it('inverts goodness for severity (betterLow): a low value fills most segments', () => {
-        render(
-            <MetricPanel
-                scenario={scenarioWith({ toxicity: numeric('toxicity', 2, 'good', false, undefined, { kind: 'severity' }) })}
-            />,
-        );
+    it('renders a value whose interpretation has no ordinal rating as raw text with a neutral meter', () => {
+        render(<MetricPanel scenario={scenarioWith({ tokenCount: numeric('tokenCount', 842, 'unknown', false) })} />);
+
+        expect(screen.getByText('?')).toBeInTheDocument();
+
+        const button = screen.getByRole('button');
+        expect(button.getAttribute('aria-label')).toContain('842');
+
+        fireEvent.click(button);
+        expect(screen.getByText('842')).toBeInTheDocument();
+    });
+
+    it('fills the meter to 1/5 and colours the dot danger for an unacceptable rating', () => {
+        render(<MetricPanel scenario={scenarioWith({ toxicity: numeric('toxicity', 6, 'unacceptable', true) })} />);
 
         const button = screen.getByRole('button');
         const track = segmentTrack(button);
-        // severity: segCount = 7, goodness = (7 - 2)/7 ≈ 0.714, filled = round(0.714 * 7) = 5
-        expect(track.querySelectorAll(':scope > span')).toHaveLength(7);
-        expect(filledCount(track)).toBe(5);
+        expect(track.querySelectorAll(':scope > span')).toHaveLength(5);
+        expect(filledCount(track)).toBe(1); // unacceptable -> 1/5
+
+        const dotStyle = button.querySelector('span span')?.getAttribute('style') ?? '';
+        expect(dotStyle).toContain('status-danger-background-3');
 
         fireEvent.click(button);
-        expect(screen.getByText('2 / 7')).toBeInTheDocument();
+        expect(screen.getByText('6')).toBeInTheDocument();
+    });
+});
+
+describe('MetricPanel — string metrics', () => {
+    it('renders the raw string value with no meter/track', () => {
+        render(<MetricPanel scenario={scenarioWith({ verdict: string('verdict', 'PASS', 'good') })} />);
+
+        const button = screen.getByRole('button');
+        expect(() => segmentTrack(button)).toThrow();
+
+        fireEvent.click(button);
+        expect(screen.getByText('PASS')).toBeInTheDocument();
     });
 });
 
@@ -207,7 +235,7 @@ describe('MetricPanel — rating vocabulary and status mapping', () => {
         };
 
         expect(dotStyleOf('goodM')).toContain('status-success-background-3'); // statusKeyOf good -> success
-        expect(dotStyleOf('avgM')).toContain('status-warning-foreground-2'); // statusKeyOf average -> warning
+        expect(dotStyleOf('avgM')).toContain('palette-orange-background3'); // statusKeyOf average -> warning (reportStyles.statusSolidVar)
         expect(dotStyleOf('weakM')).toContain('status-danger-background-3'); // statusKeyOf unacceptable -> danger
         expect(dotStyleOf('unkM')).toContain('neutral-foreground-4'); // statusKeyOf unknown -> neutral
     });

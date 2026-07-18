@@ -6,18 +6,13 @@ import { Card, makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluent
 import { useReportContext } from '../core/ReportContext';
 import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { metricHistoryForScenario, chronologicalExecutions } from '../core/viewModels';
-import { TrendChart, type BandPoint, type MetricKind } from './TrendChart';
-import { metricScale, posOn, STATUS_TEXT, dumbbellStyles } from './dumbbellGeometry';
-import { metricKind, betterDirectionOf, formatScore } from '../core/metricModel';
+import { inferBetterDirections, judgeValueDelta, judgmentWord, ratingGoodness, type DeltaJudgment } from '../core/metricDirection';
+import { TrendChart, type BandPoint } from './TrendChart';
+import { posOn, STATUS_TEXT, dumbbellStyles } from './dumbbellGeometry';
+import { axisDomain } from './axisDomain';
+import { formatNumber } from '../core/metricModel';
 
-const deltaEpsilon = (kind: MetricKind): number =>
-    kind === 'fraction' ? 0.005 : kind === 'score' ? 0.05 : 0.5;
-
-const deltaMagnitude = (v: number, kind: MetricKind): string =>
-    v.toFixed(kind === 'fraction' ? 3 : kind === 'score' ? 1 : 0);
-
-const spreadTint = (dir: number): string =>
-    dir > 0 ? 'var(--spread-tint-pos)' : dir < 0 ? 'var(--spread-tint-neg)' : 'var(--spread-tint-flat)';
+const DELTA_EPSILON = 0.0005;
 
 const isNumeric = (m: BaseEvaluationMetric): m is NumericMetric =>
     m.$type === 'numeric' && typeof (m as NumericMetric).value === 'number';
@@ -112,12 +107,6 @@ const useLocalStyles = makeStyles({
         fontWeight: 'var(--font-weight-semibold)',
         color: 'var(--neutral-foreground-1)',
     },
-    metricKindLabel: {
-        fontSize: 'var(--font-size-100)',
-        color: 'var(--neutral-foreground-4)',
-        textTransform: 'uppercase',
-        letterSpacing: '.3px',
-    },
     statsGrid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
@@ -157,6 +146,44 @@ const useLocalStyles = makeStyles({
         fontWeight: 'var(--font-weight-semibold)',
         color: 'var(--neutral-foreground-1)',
         margin: '0 0 var(--spacing-m)',
+    },
+    histLegend: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-m)',
+        fontSize: 'var(--font-size-200)',
+        color: 'var(--neutral-foreground-3)',
+        whiteSpace: 'nowrap',
+        flexWrap: 'wrap',
+        margin: '0 0 var(--spacing-m)',
+    },
+    histLegendItem: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-xs)',
+    },
+    histLegendDot: {
+        width: '8px',
+        height: '8px',
+        boxSizing: 'border-box',
+        borderRadius: '50%',
+        display: 'inline-block',
+        flex: 'none',
+    },
+    histLegendDotPrev: {
+        background: 'var(--neutral-background-1)',
+        border: '1.5px solid var(--neutral-foreground-3)',
+    },
+    histLegendDotCurr: { background: 'var(--neutral-foreground-3)' },
+    histLegendGlyph: { color: 'var(--neutral-foreground-3)' },
+    histLegendSep: { color: 'var(--neutral-foreground-4)' },
+    histLegendSpread: {
+        width: '18px',
+        height: '6px',
+        borderRadius: 'var(--radius-circular)',
+        background: 'var(--neutral-stroke-2)',
+        display: 'inline-block',
+        flex: 'none',
     },
     historyHeaderRow: {
         display: 'grid',
@@ -322,31 +349,37 @@ export const HistoryView = () => {
 
     const band = useMemo(() => {
         if (!hasTrend || !activeMetric || !selectedScenario || activeSeriesPoints.length === 0) {
-            return { points: [] as (BandPoint | undefined)[], kind: 'score' as MetricKind, better: 'high' as 'high' | 'low' | 'none' };
+            return { points: [] as (BandPoint | undefined)[], goodnessMean: new Map<string, number>() };
         }
         const byExec = new Map<string, number[]>();
-        let kind: MetricKind = 'score';
-        let better: 'high' | 'low' | 'none' = 'high';
-        let kindResolved = false;
+        const goodnessByExec = new Map<string, { sum: number; n: number }>();
         for (const r of dataset.scenarioRunResults ?? []) {
             if (r.scenarioName !== selectedScenario.scenarioName) continue;
             const m = r.evaluationResult?.metrics?.[activeMetric];
             if (!m || !isNumeric(m)) continue;
             const v = m.value!;
-            if (!kindResolved) {
-                // metricKind's declared-kind/fallback branches only ever yield 'score' | 'fraction' | 'count'
-                // for the allowedDeclaredKinds passed here, matching this file's narrower MetricKind exactly.
-                kind = metricKind(m, { allowedDeclaredKinds: ['score', 'fraction', 'count'] }) as MetricKind;
-                better = betterDirectionOf(m);
-                kindResolved = true;
-            }
             const arr = byExec.get(r.executionName);
             if (arr) arr.push(v);
             else byExec.set(r.executionName, [v]);
+            const goodness = ratingGoodness(m.interpretation?.rating);
+            if (goodness !== undefined) {
+                const g = goodnessByExec.get(r.executionName) ?? { sum: 0, n: 0 };
+                g.sum += goodness;
+                g.n += 1;
+                goodnessByExec.set(r.executionName, g);
+            }
         }
         const points = activeSeriesPoints.map((pt) => aggregate(byExec.get(pt.executionName) ?? []));
-        return { points, kind, better };
+        const goodnessMean = new Map<string, number>();
+        for (const [ex, g] of goodnessByExec) goodnessMean.set(ex, g.sum / g.n);
+        return { points, goodnessMean };
     }, [dataset, activeMetric, selectedScenario, activeSeriesPoints, hasTrend]);
+
+    const directions = useMemo(
+        () => inferBetterDirections(dataset.scenarioRunResults ?? []),
+        [dataset],
+    );
+    const activeDirection = activeMetric ? directions.get(activeMetric) ?? 'none' : 'none';
 
     if (leafScenarios.length === 0) {
         return (
@@ -370,61 +403,72 @@ export const HistoryView = () => {
         );
     }
 
-    const { points: bandPoints, kind, better } = band;
-    const valid = bandPoints.filter((p): p is BandPoint => !!p);
+    const { points: bandPoints, goodnessMean } = band;
+    const validWithExec: { p: BandPoint; exec: string | undefined }[] = [];
+    bandPoints.forEach((p, i) => {
+        if (p) validWithExec.push({ p, exec: activeSeriesPoints[i]?.executionName });
+    });
+    const valid = validWithExec.map((x) => x.p);
     const first = valid[0];
     const last = valid[valid.length - 1];
-    const good = better === 'none' ? null : better !== 'low';
-    const eps = deltaEpsilon(kind);
 
     const dMean = first && last ? last.mean - first.mean : 0;
-    const netFlat = Math.abs(dMean) < eps;
-    const netColor = good === null || netFlat ? 'var(--neutral-foreground-4)' : (dMean > 0) === good ? STATUS_TEXT.success : STATUS_TEXT.danger;
+    const netFlat = Math.abs(dMean) < DELTA_EPSILON;
+    const firstGoodness = validWithExec[0]?.exec ? goodnessMean.get(validWithExec[0].exec!) : undefined;
+    const lastGoodness = validWithExec[validWithExec.length - 1]?.exec ? goodnessMean.get(validWithExec[validWithExec.length - 1].exec!) : undefined;
+    const netGoodnessDelta = firstGoodness !== undefined && lastGoodness !== undefined ? lastGoodness - firstGoodness : undefined;
+    const netStatus: DeltaJudgment = netFlat ? 'neutral' : judgeValueDelta(activeDirection, dMean, netGoodnessDelta);
+    const netColor = netFlat ? 'var(--neutral-foreground-4)' : STATUS_TEXT[netStatus];
+    const netWord = judgmentWord(netStatus);
     const netDirWord = netFlat ? undefined : dMean > 0 ? 'increased' : 'decreased';
-    const netStr = netFlat ? 'stable' : (dMean > 0 ? '▲ ' : '▼ ') + deltaMagnitude(Math.abs(dMean), kind);
+    const netStr = netFlat ? 'stable' : (dMean > 0 ? '▲ ' : '▼ ') + formatNumber(Math.abs(dMean));
     const peak = valid.length ? Math.max(...valid.map((p) => p.mean)) : 0;
 
-    const metricKindLabel = kind === 'fraction' ? 'fraction · 0–1' : kind === 'score' ? 'score · 1–5' : 'count';
-
     const stats: { label: string; value: string; color: string; srOnlySuffix?: string }[] = [
-        { label: 'First run score', value: first ? formatScore(first.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
-        { label: 'Last run score', value: last ? formatScore(last.mean, kind) : '—', color: 'var(--neutral-foreground-1)' },
+        { label: 'First run score', value: first ? formatNumber(first.mean) : '—', color: 'var(--neutral-foreground-1)' },
+        { label: 'Last run score', value: last ? formatNumber(last.mean) : '—', color: 'var(--neutral-foreground-1)' },
         {
             label: 'Net change',
             value: netStr,
             color: netColor,
-            srOnlySuffix: netDirWord && `${netDirWord} ${deltaMagnitude(Math.abs(dMean), kind)}`,
+            srOnlySuffix: netDirWord && `${netDirWord} by ${formatNumber(Math.abs(dMean))}${netWord ? `, ${netWord}` : ''}`,
         },
-        { label: 'Peak', value: formatScore(peak, kind), color: 'var(--neutral-foreground-1)' },
+        { label: 'Peak', value: formatNumber(peak), color: 'var(--neutral-foreground-1)' },
     ];
 
-    const [hMin, hMax] = metricScale(kind, peak);
+    const domain = axisDomain(valid.flatMap((p) => [p.lo, p.hi]));
 
     let prev: BandPoint | undefined;
+    let prevExec: string | undefined;
     const runs = bandPoints.map((p, i) => {
-        const date = activeSeriesPoints[i]?.executionName ?? `R${i + 1}`;
-        const scoreStr = p ? formatScore(p.mean, kind) : '—';
+        const exec = activeSeriesPoints[i]?.executionName;
+        const date = exec ?? `R${i + 1}`;
+        const scoreStr = p ? formatNumber(p.mean) : '—';
         let changeStr = '—';
-        let dir = 0;
         let dirWord: string | undefined;
         let prevPos: number | null = null;
-        const curPos = p ? posOn(p.mean, hMin, hMax) : 50;
+        let rowStatus: DeltaJudgment = 'neutral';
+        const curPos = p ? posOn(p.mean, domain.min, domain.max) : 50;
         if (p && prev) {
-            prevPos = posOn(prev.mean, hMin, hMax);
+            prevPos = posOn(prev.mean, domain.min, domain.max);
             const d = p.mean - prev.mean;
-            const flat = Math.abs(d) < eps;
-            dir = good === null || flat ? 0 : (d > 0) === good ? 1 : -1;
-            const magnitude = deltaMagnitude(Math.abs(d), kind);
+            const flat = Math.abs(d) < DELTA_EPSILON;
+            const magnitude = formatNumber(Math.abs(d));
+            const currGoodness = exec ? goodnessMean.get(exec) : undefined;
+            const prevGoodness = prevExec ? goodnessMean.get(prevExec) : undefined;
+            const goodnessDelta = currGoodness !== undefined && prevGoodness !== undefined ? currGoodness - prevGoodness : undefined;
+            rowStatus = flat ? 'neutral' : judgeValueDelta(activeDirection, d, goodnessDelta);
+            const word = judgmentWord(rowStatus);
             changeStr = flat ? '—' : (d > 0 ? '▲ ' : '▼ ') + magnitude;
-            dirWord = flat ? undefined : `${d > 0 ? 'increased' : 'decreased'} ${magnitude}`;
+            dirWord = flat ? undefined : `${d > 0 ? 'increased' : 'decreased'} by ${magnitude}${word ? `, ${word}` : ''}`;
         }
-        if (p) prev = p;
-        const db = dumbbellStyles(prevPos, curPos, dir, changeStr !== '—');
-        const spL = p ? posOn(p.lo, hMin, hMax) : 50;
-        const spR = p ? posOn(p.hi, hMin, hMax) : 50;
+        if (p) { prev = p; prevExec = exec; }
+        const db = dumbbellStyles(prevPos, curPos, changeStr !== '—', rowStatus);
+        const spL = p ? posOn(p.lo, domain.min, domain.max) : 50;
+        const spR = p ? posOn(p.hi, domain.min, domain.max) : 50;
         const spread: React.CSSProperties =
             p && spR - spL > 0.5
-                ? { position: 'absolute', top: '50%', left: `${spL}%`, width: `${spR - spL}%`, height: '3px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: spreadTint(dir), pointerEvents: 'none' }
+                ? { position: 'absolute', top: '50%', left: `${spL}%`, width: `${spR - spL}%`, height: '3px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)', pointerEvents: 'none' }
                 : { display: 'none' };
         return { key: `${date}-${i}`, date, scoreStr, changeStr, dirWord, numColor: STATUS_TEXT[db.sk], spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
     });
@@ -466,9 +510,6 @@ export const HistoryView = () => {
                             <h2 className={local.metricTitle}>
                                 {activeMetric}
                             </h2>
-                            <span className={local.metricKindLabel}>
-                                {metricKindLabel}
-                            </span>
                         </div>
 
                         <div className={mergeClasses('eval-hist-stats', local.statsGrid)}>
@@ -492,7 +533,7 @@ export const HistoryView = () => {
                         <div className={local.chartWrap}>
                             <TrendChart
                                 points={bandPoints}
-                                kind={kind}
+                                domain={domain}
                                 ariaLabel={`${activeMetric} trend across executions${selectedScenario ? ` for ${selectedScenario.scenarioName}` : ''}`}
                                 showLegend
                             />
@@ -502,6 +543,20 @@ export const HistoryView = () => {
                             <h2 className={local.historyHeading}>
                                 Run history
                             </h2>
+                            <div className={local.histLegend}>
+                                <span className={local.histLegendItem}>
+                                    <span aria-hidden="true" className={mergeClasses(local.histLegendDot, local.histLegendDotPrev)} /> previous
+                                </span>
+                                <span className={local.histLegendItem}>
+                                    <span aria-hidden="true" className={mergeClasses(local.histLegendDot, local.histLegendDotCurr)} /> current
+                                </span>
+                                <span className={local.histLegendItem}>
+                                    <span aria-hidden="true" className={local.histLegendGlyph}>▲</span> increased <span aria-hidden="true" className={local.histLegendSep}>·</span> <span aria-hidden="true" className={local.histLegendGlyph}>▼</span> decreased
+                                </span>
+                                <span className={local.histLegendItem}>
+                                    <span aria-hidden="true" className={local.histLegendSpread} /> min–max
+                                </span>
+                            </div>
                             <div className={s.tscroll} role="table" aria-label="Run history" tabIndex={0}>
                                 <div className={mergeClasses('eval-grid4', local.historyHeaderRow)} role="row">
                                     <span role="columnheader">Execution</span>

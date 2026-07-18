@@ -4,7 +4,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
-import type { MetricKind } from '../core/metricModel';
+import { formatNumber } from '../core/metricModel';
+import type { AxisDomain } from './axisDomain';
 
 export type BandPoint = {
     mean: number;
@@ -12,49 +13,6 @@ export type BandPoint = {
     lo: number;
     hi: number;
     n: number;
-};
-
-// Re-exported from the shared classifier for a single MetricKind union across the app. Every
-// caller here still only ever constructs 'score' | 'fraction' | 'count' — domainFor's catch-all
-// branch below treats any other kind exactly like 'count', so the wider type is a no-op for
-// this file's actual behavior.
-export type { MetricKind };
-
-type Domain = {
-    min: number;
-    max: number;
-    fmt: (v: number) => string;
-    unit: string;
-    ticks: number;
-};
-
-const domainFor = (kind: MetricKind, pts: (BandPoint | undefined)[]): Domain => {
-    if (kind !== 'score' && kind !== 'fraction') {
-        let lo = Infinity;
-        let hi = -Infinity;
-        for (const p of pts) {
-            if (p) {
-                lo = Math.min(lo, p.lo);
-                hi = Math.max(hi, p.hi);
-            }
-        }
-        if (!Number.isFinite(lo)) {
-            lo = 0;
-            hi = 1;
-        }
-        const pad = Math.max(1, (hi - lo) * 0.2);
-        lo = Math.max(0, Math.floor(lo - pad));
-        hi = Math.ceil(hi + pad);
-        if (lo === hi) hi = lo + 1;
-        return { min: lo, max: hi, fmt: (v) => `${Math.round(v)}`, unit: '', ticks: 4 };
-    }
-    const score = kind === 'score';
-    const min = score ? 1 : 0;
-    const max = score ? 5 : 1;
-    const unit = score ? '/5' : '';
-    const fmt = score ? (v: number) => v.toFixed(0) : (v: number) => v.toFixed(1);
-    const ticks = score ? Math.max(1, Math.round(max - min)) : Math.max(1, Math.round((max - min) / 0.2));
-    return { min, max, fmt, unit, ticks };
 };
 
 const W_FALLBACK = 760;
@@ -66,7 +24,7 @@ const PAD_B = 22;
 
 export type TrendChartProps = {
     points: (BandPoint | undefined)[];
-    kind: MetricKind;
+    domain: AxisDomain;
     ariaLabel: string;
     showLegend?: boolean;
 };
@@ -147,7 +105,7 @@ const useLocalStyles = makeStyles({
     },
 });
 
-export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: TrendChartProps) => {
+export const TrendChart = ({ points, domain, ariaLabel, showLegend = true }: TrendChartProps) => {
     const { darkMode } = useReportContext();
     const local = useLocalStyles();
 
@@ -172,11 +130,14 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
     const color = 'var(--brand-foreground-1)';
     const medColor = 'var(--neutral-foreground-3)';
 
-    const dom = domainFor(kind, points);
+    const dom = domain;
     const n = points.length;
     const xOf = (i: number) =>
         PAD_L + (n <= 1 ? (W - PAD_L - PAD_R) / 2 : (i * (W - PAD_L - PAD_R)) / (n - 1));
-    const yOf = (v: number) => PAD_T + (1 - (v - dom.min) / (dom.max - dom.min)) * (H - PAD_T - PAD_B);
+    const yOf = (v: number) => {
+        const y = PAD_T + (1 - (v - dom.min) / (dom.max - dom.min)) * (H - PAD_T - PAD_B);
+        return Math.max(PAD_T, Math.min(H - PAD_B, y));
+    };
 
     const gridEls: React.ReactNode[] = [];
     for (let g = 0; g <= dom.ticks; g++) {
@@ -187,7 +148,7 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
         );
         gridEls.push(
             <text key={`gl${g}`} x={PAD_L - 6} y={y + 3} textAnchor="end" fontSize={10} style={{ fill: 'var(--neutral-foreground-4)' }}>
-                {dom.fmt(v) + (g === dom.ticks ? dom.unit : '')}
+                {dom.fmt(v)}
             </text>,
         );
     }
@@ -238,7 +199,7 @@ export const TrendChart = ({ points, kind, ariaLabel, showLegend = true }: Trend
     for (const o of valid) {
         meanEls.push(
             <circle key={`d${o.i}`} cx={xOf(o.i)} cy={yOf(o.p.mean)} r={3.25} strokeWidth={1.5} style={{ fill: 'var(--neutral-background-1)', stroke: color }}>
-                <title>{`R${o.i + 1}: mean ${o.p.mean.toFixed(kind === 'fraction' ? 3 : 1)}`}</title>
+                <title>{`R${o.i + 1}: mean ${formatNumber(o.p.mean)}`}</title>
             </circle>,
         );
     }

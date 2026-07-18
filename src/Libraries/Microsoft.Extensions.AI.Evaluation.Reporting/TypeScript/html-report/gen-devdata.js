@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 let seed = 4242;
 const rng = () => {
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    seed = (Math.imul(seed, 1103515245) + 12345) & 0x7fffffff;
     return seed / 0x7fffffff;
 };
 
@@ -47,7 +47,7 @@ const casesForRun = (cases, tag, grow, execIdx) =>
     seededOrder(cases, tag).slice(0, visibleCount(cases.length, grow, execIdx));
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-const fmtRaw = (v, kind) => (kind === 'fraction' ? v.toFixed(3) : (v % 1 === 0 ? v + '/5' : v.toFixed(1) + '/5'));
+const fmtRaw = (v, kind) => (kind === 'fraction' ? v.toFixed(3) : (v % 1 === 0 ? String(v) : v.toFixed(1)));
 
 const ratingForScore = (v) => (v >= 4.5 ? 'exceptional' : v >= 4 ? 'good' : v >= 3 ? 'average' : v >= 2 ? 'poor' : 'unacceptable');
 const ratingForFraction = (v, better) => {
@@ -103,7 +103,7 @@ const answerMetrics = [
     { key: 'Correctness', kind: 'score', group: 'Quality', better: 'high', base: 3, ctx: 'reference', judge: true, corrPenalty: true,
         def: 'Whether the answer is factually equivalent to the gold reference answer — same key facts, no contradictions.' },
     { key: 'Citation Rate', kind: 'fraction', group: 'Citations', better: 'high', base: 0.85, deterministic: true,
-        def: 'Deterministic: did the answer include at least one inline [[…]] citation. Averaged, this is the citation rate.' },
+        def: 'Deterministic: did the answer include at least one inline citation. Averaged, this is the citation rate.' },
 ];
 const searchMetrics = [
     { key: 'Recall At R', kind: 'fraction', group: 'Retrieval', better: 'high', base: 0.50,
@@ -142,27 +142,27 @@ const answerCases = [
     { id: 'rolling-bluegreen-canary-when-to-choose-004', tag: 'difficulty:hard', q: 0.0, correctPenalty: -3,
         tool: { name: 'search_docs', arguments: { query: 'deployment strategy new service', topK: 4 }, result: '2 chunks from 09 DevOps/Deployment Strategies.md' },
         question: 'For a new service, when should I choose rolling, blue-green, canary, linear, or all-at-once deployment strategies?',
-        answer: '## Deployment Strategy Recommendation\n\nFor a new service, the source recommends **starting with In-Place (Rolling)** because it is the Kubernetes default, costs nothing extra, and “handles most cases.” [[1]]\n\nBlue-Green fits **high-availability, payment flows** but requires **2× capacity during deploy**. [[2]]\n\n### Comparison\n\n| Strategy | Rollback speed | Extra capacity | Best for |\n|---|---|---|---|\n| Rolling | Slow | None | General services |\n| Blue-Green | Instant | 2× during deploy | High-availability, payment flows |\n| Canary | Fast | ~1.1× | Gradual risk control |\n\n> Rule of thumb: default to Rolling unless you have a specific reason to pay for Blue-Green’s extra capacity.\n\nThe sources do **not** cover canary, linear, or all-at-once for a new service, so I can’t justify those tradeoffs from the provided chunks.',
+        answer: '## Deployment Strategy Recommendation\n\nFor a new service, the source recommends **starting with In-Place (Rolling)** because it is the Kubernetes default, costs nothing extra, and “handles most cases.”\n\nBlue-Green fits **high-availability, payment flows** but requires **2× capacity during deploy**.\n\n### Comparison\n\n| Strategy | Rollback speed | Extra capacity | Best for |\n|---|---|---|---|\n| Rolling | Slow | None | General services |\n| Blue-Green | Instant | 2× during deploy | High-availability, payment flows |\n| Canary | Fast | ~1.1× | Gradual risk control |\n\n> Rule of thumb: default to Rolling unless you have a specific reason to pay for Blue-Green’s extra capacity.\n\nThe sources do **not** cover canary, linear, or all-at-once for a new service, so I can’t justify those tradeoffs from the provided chunks.',
         reference: 'For a new service, start with In-Place (Rolling) because it is the Kubernetes default, costs nothing extra, and handles most cases. Choose Blue-Green when rollback speed is critical; use canary/linear for gradual risk control and all-at-once only for stateless low-risk jobs.',
         sources: '[1] 09 DevOps/Deployment Strategies.md #Decision Rule: **Start with In-Place (Rolling)** for any new service — it’s the Kubernetes default, costs nothing extra, and handles most cases.\n[2] 09 DevOps/Deployment Strategies.md #Comparison: Blue-Green | Instant (flip) | 2× during deploy | High-availability, payment flows' },
     { id: 'okta-sso-pro-plan-011', tag: 'difficulty:easy', q: 0.7,
         question: 'Does the Pro plan support single sign-on with Okta?',
-        answer: 'Yes — the Pro plan includes SAML-based SSO with Okta, Azure AD, and Google Workspace, configurable from the admin console. [[1]]\n\nTo enable it:\n\n1. Open **Admin Console → Security → SSO**\n2. Select *Okta* as the identity provider\n3. Paste your IdP metadata URL\n   1. This can be found under Okta’s *Sign On* tab\n4. Click **Save** and test with a single user before rolling out org-wide\n\nSee the [SSO setup guide](https://example.com/docs/sso-okta) for screenshots.',
+        answer: 'Yes — the Pro plan includes SAML-based SSO with Okta, Azure AD, and Google Workspace, configurable from the admin console.\n\nTo enable it:\n\n1. Open **Admin Console → Security → SSO**\n2. Select *Okta* as the identity provider\n3. Paste your IdP metadata URL\n   1. This can be found under Okta’s *Sign On* tab\n4. Click **Save** and test with a single user before rolling out org-wide\n\nSee the [SSO setup guide](https://example.com/docs/sso-okta) for screenshots.',
         reference: 'Yes. The Pro plan supports SAML SSO with Okta, Azure AD, and Google Workspace, set up from the admin console.',
         sources: '[1] 04 Account/Plans.md #SSO: Pro and above include SAML SSO with Okta, Azure AD, and Google Workspace.' },
     { id: 'refund-defective-headphones-027', tag: 'difficulty:medium', q: 0.3,
         question: 'I bought headphones 40 days ago and they broke. Can I get a refund?',
-        answer: 'The standard refund window is *30 days*, so a refund isn’t available at 40 days — that request would be ~~approved~~ declined under the base policy. However defective items are covered by a 12-month warranty for repair or replacement. [[1]]\n\nTo start a warranty claim, call `POST /v1/warranty-claims` with your order id:\n\n```json\n{\n  "orderId": "ORD-40921",\n  "reason": "defective",\n  "resolution": "repair"\n}\n```\n\n- Repair: typically 5–7 business days\n- Replacement: ships same-day if in stock',
+        answer: 'The standard refund window is *30 days*, so a refund isn’t available at 40 days — that request would be ~~approved~~ declined under the base policy. However defective items are covered by a 12-month warranty for repair or replacement.\n\nTo start a warranty claim, call `POST /v1/warranty-claims` with your order id:\n\n```json\n{\n  "orderId": "ORD-40921",\n  "reason": "defective",\n  "resolution": "repair"\n}\n```\n\n- Repair: typically 5–7 business days\n- Replacement: ships same-day if in stock',
         reference: 'Refunds are limited to 30 days, but defective items are covered for 12 months under warranty — offer repair or replacement.',
         sources: '[1] 02 Policies/Returns.md #Window: Refunds within 30 days. Defective items: 12-month warranty, repair or replace.' },
     { id: 'reset-2fa-lost-device-039', tag: 'difficulty:medium', q: 0.55,
         question: 'How do I reset two-factor authentication if I lost my phone?',
-        answer: 'Use one of your saved backup codes at sign-in, then re-enroll a new device under Security settings. If you have no backup codes, contact support to verify identity. [[1]]',
+        answer: 'Use one of your saved backup codes at sign-in, then re-enroll a new device under Security settings. If you have no backup codes, contact support to verify identity.',
         reference: 'Sign in with a backup code and re-enroll under Security; without codes, contact support for identity verification.',
         sources: '[1] 04 Account/Security.md #2FA Recovery: Use a backup code, then re-enroll a device. No codes — contact support.' },
     { id: 'rate-limits-tier-comparison-052', tag: 'difficulty:hard', q: -0.4, correctPenalty: -2,
         question: 'What are the API rate limits on the Team tier versus Enterprise?',
-        answer: 'Team allows 600 requests/minute. Enterprise has no rate limit — you can send unlimited requests. [[1]]',
+        answer: 'Team allows 600 requests/minute. Enterprise has no rate limit — you can send unlimited requests.',
         reference: 'Team: 600 req/min. Enterprise: 6,000 req/min with org-wide burst pooling and a configurable ceiling.',
         sources: '[1] 05 API/Limits.md #Tiers: Team 600 rpm · Enterprise 6,000 rpm with burst pooling.' },
     { id: 'cancel-subscription-prorate-061', tag: 'difficulty:medium', q: -0.5, correctPenalty: -3,
@@ -187,7 +187,7 @@ const answerCases = [
         sources: '[1] 06 Security/GDPR.md #Erasure: Live data deleted within 30 days; backup purge up to 90 days on rotation.' },
     { id: 'webhook-retry-backoff-101', tag: 'difficulty:medium', q: 0.45,
         question: 'How does the platform retry failed webhook deliveries?',
-        answer: '## Webhook Retry Behavior\n\nFailed webhooks are retried with exponential backoff for up to 24 hours, then moved to a dead-letter queue you can replay from the dashboard. [[1]]\n\nRetry schedule (approximate):\n\n1. Immediate retry\n2. 30s\n3. 5m\n4. 1h\n5. 6h\n6. 24h — then dead-lettered\n\nTo manually replay a dead-lettered delivery from the CLI:\n\n```bash\ncurl -X POST https://api.example.com/webhooks/replay/evt_7741 \\\n  -H "Authorization: Bearer $API_KEY"\n```\n\n> Replays count against your normal webhook rate limit, so batch large replays. [[2]]',
+        answer: '## Webhook Retry Behavior\n\nFailed webhooks are retried with exponential backoff for up to 24 hours, then moved to a dead-letter queue you can replay from the dashboard.\n\nRetry schedule (approximate):\n\n1. Immediate retry\n2. 30s\n3. 5m\n4. 1h\n5. 6h\n6. 24h — then dead-lettered\n\nTo manually replay a dead-lettered delivery from the CLI:\n\n```bash\ncurl -X POST https://api.example.com/webhooks/replay/evt_7741 \\\n  -H "Authorization: Bearer $API_KEY"\n```\n\n> Replays count against your normal webhook rate limit, so batch large replays.',
         reference: 'Failed webhooks retry with exponential backoff up to 24 hours, then land in a dead-letter queue that can be replayed from the dashboard.',
         sources: '[1] 05 API/Webhooks.md #Retries: Exponential backoff up to 24h, then dead-letter queue with manual replay.\n[2] 05 API/Webhooks.md #Replay: Manual replays are subject to the standard per-key webhook rate limit.' },
     { id: 'audit-log-retention-114', tag: 'difficulty:hard', q: -0.35, correctPenalty: -2,
@@ -199,7 +199,7 @@ const answerCases = [
         tool: { name: 'search_docs', arguments: { query: 'migration checklist rollback plan', topK: 3 },
             result: JSON.stringify({ chunks: 2, source: '09 DevOps/Migration Guide.md', matched: ['#Checklist', '#Rollback'] }) },
         question: 'Give me a full pre-migration checklist, including rollback steps and links to the relevant docs.',
-        answer: '## Pre-Migration Checklist\n\nHere is the **full** checklist compiled from the *Migration Guide*. Items marked ~~optional~~ are only needed for cross-region migrations. [[1]]\n\n### Preparation\n\n- Confirm backup completed within the last 24h\n- Verify `maintenance_mode` is available in the config\n- Notify stakeholders via the `#deploys` channel\n  - Include the estimated downtime window\n  - Include the rollback contact\n\n### Execution steps\n\n1. Enable maintenance mode\n2. Run the migration script:\n   ```bash\n   ./migrate.sh --env prod --dry-run=false\n   ```\n3. Verify row counts match the pre-migration snapshot\n4. Disable maintenance mode\n\n### Rollback plan\n\n> If verification fails at step 3, do **not** disable maintenance mode — run `./migrate.sh --rollback` immediately and page the on-call engineer. [[2]]\n\n### Reference table\n\n| Step | Owner | Est. time |\n|---|---|---|\n| Backup verification | DBA on-call | 10 min |\n| Migration run | Release engineer | 15–30 min |\n| Row-count check | Release engineer | 5 min |\n| Rollback (if needed) | On-call engineer | 10 min |\n\nSee the [full migration runbook](https://example.com/docs/migration-runbook) for environment-specific overrides.',
+        answer: '## Pre-Migration Checklist\n\nHere is the **full** checklist compiled from the *Migration Guide*. Items marked ~~optional~~ are only needed for cross-region migrations.\n\n### Preparation\n\n- Confirm backup completed within the last 24h\n- Verify `maintenance_mode` is available in the config\n- Notify stakeholders via the `#deploys` channel\n  - Include the estimated downtime window\n  - Include the rollback contact\n\n### Execution steps\n\n1. Enable maintenance mode\n2. Run the migration script:\n   ```bash\n   ./migrate.sh --env prod --dry-run=false\n   ```\n3. Verify row counts match the pre-migration snapshot\n4. Disable maintenance mode\n\n### Rollback plan\n\n> If verification fails at step 3, do **not** disable maintenance mode — run `./migrate.sh --rollback` immediately and page the on-call engineer.\n\n### Reference table\n\n| Step | Owner | Est. time |\n|---|---|---|\n| Backup verification | DBA on-call | 10 min |\n| Migration run | Release engineer | 15–30 min |\n| Row-count check | Release engineer | 5 min |\n| Rollback (if needed) | On-call engineer | 10 min |\n\nSee the [full migration runbook](https://example.com/docs/migration-runbook) for environment-specific overrides.',
         reference: 'A pre-migration checklist should cover backup verification, maintenance-mode setup, the migration script run with a dry-run option, row-count verification, and a documented rollback command with on-call escalation.',
         sources: '[1] 09 DevOps/Migration Guide.md #Checklist: Backup within 24h, maintenance_mode config, stakeholder notification via #deploys with downtime window and rollback contact.\n[2] 09 DevOps/Migration Guide.md #Rollback: On verification failure, keep maintenance mode enabled, run migrate.sh --rollback, page on-call.' },
 ];
@@ -337,20 +337,17 @@ const buildScoreMetric = (def, c, ex, evalMs, judgeModel) => {
     const value = clampScore(def.base, c.q, ex.drift, noise, pen);
     const rating = ratingFor('score', value, def.better);
     const failed = failedFor(rating);
-    const meta = { kind: def.kind, group: def.group, better: def.better };
+    const meta = {};
     if (def.judge) {
         const ks = def.key.charCodeAt(0) + def.key.length;
-        meta['meta:judge'] = judgeModel;
-        meta['meta:eval'] = evalMs + 'ms';
-        meta['meta:evalIn'] = '' + (360 + (evalMs % 720) + (ks % 160));
-        meta['meta:evalOut'] = '' + (48 + (ks % 70) + (evalMs % 40));
+        meta['eval-model'] = judgeModel;
+        meta['eval-duration-ms'] = '' + evalMs;
+        meta['eval-input-tokens'] = '' + (360 + (evalMs % 720) + (ks % 160));
+        meta['eval-output-tokens'] = '' + (48 + (ks % 70) + (evalMs % 40));
     }
-    if (def.ctx === 'question' && c.question) meta['ctx:question'] = c.question;
-    else if (def.ctx === 'reference' && c.reference) meta['ctx:reference'] = c.reference;
-    else if (def.ctx === 'sources' && c.sources) meta['ctx:sources'] = c.sources;
     const diags = [];
     if (failed) diags.push({ severity: 'error', message: 'Scored below the configured failure threshold, gating this scenario.' });
-    else if (rating === 'average') diags.push({ severity: 'warning', message: def.key + ' landed in the average band (' + value + '/5) — below target, though not low enough to gate the scenario.' });
+    else if (rating === 'average') diags.push({ severity: 'warning', message: def.key + ' landed in the average band (' + value + ') — below target, though not low enough to gate the scenario.' });
     if (def.judge) diags.push({ severity: 'informational', message: 'Scored by a single ' + judgeModel + ' judge pass in ' + evalMs + 'ms; no self-consistency vote was run for this metric.' });
     return {
         $type: 'numeric', name: def.key, value,
@@ -372,11 +369,7 @@ const buildFracMetric = (def, c, ex, opts = {}) => {
         const lo = Math.max(0, value - 0.12).toFixed(3), hi = Math.min(1, value + 0.09).toFixed(3);
         reason += ` Bootstrap 95% CI: [${lo}, ${hi}].`;
     }
-    const meta = { kind: def.kind, group: def.group, better: def.better };
-    if (opts.topK !== undefined) meta['meta:topK'] = '' + opts.topK;
-    if (opts.expected !== undefined) meta['meta:expected'] = '' + opts.expected;
-    if (opts.query) meta['ctx:query'] = opts.query;
-    if (def.deterministic) { meta['meta:source'] = 'deterministic'; meta['ctx:citations'] = '[[1]], [[2]]'; }
+    const meta = {};
     const diags = [];
     if (failed) diags.push({ severity: 'error', message: def.key + ' is below the failure threshold for this case, gating this scenario.' });
     else if (rating === 'average') diags.push({ severity: 'warning', message: def.key + ' is below target for this case; worth reviewing against the rubric.' });
@@ -391,11 +384,12 @@ const buildFracMetric = (def, c, ex, opts = {}) => {
 const mkResponseMessages = (c) => {
     const msgs = [];
     const tools = c.tools || (c.tool ? [c.tool] : []);
-    for (const t of tools) {
-        msgs.push({ role: 'assistant', contents: [{ $type: 'functionCall', name: t.name, arguments: t.arguments }] });
-        msgs.push({ role: 'tool', contents: [{ $type: 'functionResult', result: t.result }] });
+    tools.forEach((t, idx) => {
+        const callId = `call-${c.id}-${idx}`;
+        msgs.push({ role: 'assistant', contents: [{ $type: 'functionCall', callId, name: t.name, arguments: t.arguments }] });
+        msgs.push({ role: 'tool', contents: [{ $type: 'functionResult', callId, result: t.result }] });
         if (t.say) msgs.push({ role: 'assistant', contents: [{ $type: 'text', text: t.say }] });
-    }
+    });
     if (c.answer) msgs.push({ role: 'assistant', contents: [{ $type: 'text', text: c.answer }] });
     return msgs;
 };
@@ -440,7 +434,7 @@ for (let e = execs.length - 1; e >= 0; e--) {
         const scenarioName = `RAG.Retrieval.${stage}`;
         const metrics = {};
         for (const def of searchMetrics) {
-            metrics[def.key] = buildFracMetric(def, rc, ex, { topK: 10, expected: rc.expected, query: rc.query, lowBiasScale: 0.25, highBiasScale: 1, driftScale: 0.9, noiseScale: 0.14 });
+            metrics[def.key] = buildFracMetric(def, rc, ex, { lowBiasScale: 0.25, highBiasScale: 1, driftScale: 0.9, noiseScale: 0.14 });
         }
         const latency = 0.08 + rng() * 0.4;
         results.push({

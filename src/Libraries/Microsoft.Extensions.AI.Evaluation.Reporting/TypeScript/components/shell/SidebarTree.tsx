@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
-import { Badge, makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/react-components';
+import { makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { ScoreNode } from '../core/Summary';
-import { useReportStyles } from '../styles/reportStyles';
+import { useReportStyles, type ReportStatus } from '../styles/reportStyles';
+import { StatusPill } from '../styles/StatusPill';
 
 const useLocalStyles = makeStyles({
     tocRow: {
@@ -98,11 +99,11 @@ const DEPTH_PAD = [
 ] as const;
 const padForDepth = (depth: number) => DEPTH_PAD[Math.min(depth, DEPTH_PAD.length - 1)];
 
-const pillProps = (passing: number, total: number) => {
+const pillProps = (passing: number, total: number): { status: ReportStatus; appearance: 'ghost' | 'tint' } => {
     if (total === 0 || passing >= total) {
-        return { appearance: 'ghost' as const, color: 'informative' as const };
+        return { status: 'neutral', appearance: 'ghost' };
     }
-    return { appearance: 'tint' as const, color: passing / total < 0.5 ? ('danger' as const) : ('warning' as const) };
+    return { appearance: 'tint', status: passing / total < 0.5 ? 'danger' : 'warning' };
 };
 
 export const SidebarTree = ({ labelledBy }: { labelledBy: string }) => {
@@ -346,9 +347,9 @@ const SidebarRow = ({
             </span>
             {total !== undefined && total > 0 && (
                 <span className={local.pillSlot}>
-                    <Badge {...pillProps(passing ?? 0, total)} shape="circular">
+                    <StatusPill {...pillProps(passing ?? 0, total)} shape="circular">
                         {`${passing ?? 0}/${total}`}
-                    </Badge>
+                    </StatusPill>
                 </span>
             )}
         </div>

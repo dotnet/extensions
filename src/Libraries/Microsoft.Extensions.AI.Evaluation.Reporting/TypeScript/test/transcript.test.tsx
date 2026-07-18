@@ -76,6 +76,24 @@ describe('TranscriptBlock — unknown $type degrades gracefully', () => {
     });
 });
 
+describe('TranscriptBlock — isToolish requires an exact known $type, not a substring match', () => {
+    it('an unmodeled $type that merely contains "call" falls back to the JSON <pre>, not a tool card', () => {
+        const fakeToolish = {
+            $type: 'somethingcall',
+            payload: { sentinel: 'NOT_A_REAL_TOOL_TYPE' },
+        } as unknown as AIContent;
+        const messages: ChatMessage[] = [
+            { role: 'user', contents: [{ $type: 'text', text: 'Trigger the fake tool type.' } as unknown as AIContent] },
+            { role: 'assistant', authorName: 'gpt-4o', contents: [fakeToolish] },
+        ];
+
+        renderTranscript(messages);
+
+        expect(screen.queryByText(/Tool call:/)).not.toBeInTheDocument();
+        expect(screen.getByText(/NOT_A_REAL_TOOL_TYPE/)).toBeInTheDocument();
+    });
+});
+
 describe('TranscriptBlock — image content renders as <img> with derived alt text', () => {
     it('renders a UriContent image (mediaType image/*) with the user-side alt text', () => {
         const uriImage = {

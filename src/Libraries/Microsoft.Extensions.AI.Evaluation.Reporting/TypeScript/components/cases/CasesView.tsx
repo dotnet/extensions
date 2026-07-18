@@ -19,7 +19,7 @@ import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { useReportStyles, statusSolidVar } from '../styles/reportStyles';
 import { useReportContext } from '../core/ReportContext';
 import { ScoreNode, getConversationDisplay } from '../core/Summary';
-import { isLeafFailed, scenariosForExecution } from '../core/viewModels';
+import { chronologicalExecutions, isLeafFailed, scenariosForExecution } from '../core/viewModels';
 import { TranscriptBlock } from './TranscriptBlock';
 import { MetricPanel } from './MetricPanel';
 
@@ -445,14 +445,7 @@ export const CasesView = () => {
     };
 
     const prevKeys = useMemo(() => {
-        const execs: string[] = [];
-        const seen = new Set<string>();
-        for (const r of dataset.scenarioRunResults ?? []) {
-            if (!seen.has(r.executionName)) {
-                seen.add(r.executionName);
-                execs.push(r.executionName);
-            }
-        }
+        const execs = chronologicalExecutions(dataset);
         const activeIdx = execs.indexOf(activeExecution);
         const prevExec = activeIdx <= 0 ? execs[1] : execs[activeIdx - 1];
         if (!prevExec) {

@@ -7,14 +7,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { createScoreSummary, ReportContextProvider, useReportContext, type ReportContextType } from '../components';
 import { OverviewView } from '../components/overview/OverviewView';
 
-const numeric = (name: string, value: number, rating: EvaluationRating, failed: boolean, better?: string): NumericMetric =>
+const numeric = (name: string, value: number, rating: EvaluationRating, failed: boolean): NumericMetric =>
     ({
         $type: 'numeric',
         name,
         value,
         reason: 'test',
         interpretation: { rating, failed },
-        metadata: better ? { better } : {},
+        metadata: {},
     }) as NumericMetric;
 
 const run = (
@@ -39,9 +39,6 @@ const T_NEW = '2026-02-01T00:00:00.000Z';
 const NEW = 'run-new';
 const OLD = 'run-old';
 
-// primaryResult / activeExecution === the FIRST-inserted execution. To exercise the
-// two-pane "biggest movers" branch, the chronologically-later run must be inserted
-// first so it becomes active AND has a predecessor (compareLabel) to diff against.
 const moversDataset: Dataset = {
     generatorVersion: '0.0.1',
     createdAt: T_NEW,
@@ -59,8 +56,6 @@ const moversDataset: Dataset = {
     ],
 };
 
-// Single execution → no predecessor → no movers → single-pane layout.
-// The lone metric is 'average' (fair) so a needs-attention row still renders.
 const noMoversDataset: Dataset = {
     generatorVersion: '0.0.1',
     createdAt: T_NEW,
@@ -103,7 +98,6 @@ describe('OverviewView — movers vs needs-attention layout switch', () => {
         expect(container.querySelector('.eval-twopane')).toBeNull();
         expect(screen.queryByText('Biggest movers')).not.toBeInTheDocument();
         expect(screen.getByText('Needs attention')).toBeInTheDocument();
-        // fair rating surfaces a needs-attention row even without a comparison run
         expect(screen.getByText('Beta.QA · clarity')).toBeInTheDocument();
     });
 });
@@ -111,7 +105,6 @@ describe('OverviewView — movers vs needs-attention layout switch', () => {
 describe('OverviewView — needs-attention row + View action', () => {
     it('lists a weak/failing metric as a needs-attention row', () => {
         renderOverview(moversDataset);
-        // The label also appears as a mover, so scope to the needs-attention row's own class.
         const attnNames = [...document.querySelectorAll('.eval-attn-name')].map((e) => e.textContent);
         expect(attnNames).toContain('Alpha.Retrieval · safety');
         expect(screen.getByRole('button', { name: 'View cases for Alpha.Retrieval · safety' })).toBeInTheDocument();
@@ -139,36 +132,68 @@ describe('OverviewView — needs-attention row + View action', () => {
 describe('OverviewView — mover delta rendering', () => {
     it('renders a zero-delta mover as a plain em dash (no ▲/▼ badge)', () => {
         renderOverview(moversDataset);
-        // coverage is identical across runs → numDeltaChip returns the informative "—".
         const coverage = screen.getByText('Alpha.Retrieval · coverage').closest('span');
         const rowRoot = coverage?.parentElement?.parentElement; // grid emits 3 sibling cells per mover
         expect(rowRoot?.textContent).toContain('—');
     });
 
-    it('colours movers by the SIGN of the delta only — it does NOT honour metadata.better', () => {
-        // OverviewView.numDeltaChip is sign-based: a decrease is always "danger", an
-        // increase always "success", regardless of a metric's better:'low'. The
-        // better:'low' / better:'none' direction inversion lives in ComparisonView /
-        // HistoryView (see views.test.tsx), not here.
+    it('judges a lower-is-better metric from the library ratings — a drop reads as improved, not backwards', () => {
         const inverted: Dataset = {
             generatorVersion: '0.0.1',
             createdAt: T_NEW,
             scenarioRunResults: [
                 run('Gamma.Toxicity', NEW, T_NEW, {
-                    toxicity: numeric('toxicity', 1, 'exceptional', false, 'low'), // big drop = genuine improvement
+                    toxicity: numeric('toxicity', 1, 'exceptional', false),
                 }),
                 run('Gamma.Toxicity', OLD, T_OLD, {
-                    toxicity: numeric('toxicity', 5, 'unacceptable', true, 'low'),
+                    toxicity: numeric('toxicity', 5, 'unacceptable', true),
                 }),
             ],
         };
         renderOverview(inverted);
-        // Scope to the toxicity mover's own delta cell (KPI chips elsewhere also use arrows).
-        // MoversCard emits 3 sibling grid cells per mover: [name, value, delta].
         const nameCell = screen.getByText('Gamma.Toxicity · toxicity').parentElement;
         const deltaCell = nameCell?.nextElementSibling?.nextElementSibling;
-        // delta = 1 - 5 = -4 → a downward ▼ badge (danger), NOT flipped to ▲/success by better:'low'.
         expect(deltaCell?.textContent).toContain('▼');
         expect(deltaCell?.textContent).not.toContain('▲');
+        expect(deltaCell?.textContent).toContain('decreased by 4, improved');
+        expect(deltaCell?.textContent).not.toContain('regressed');
+    });
+
+    it('judges by the inferred direction — a higher-is-better metric that rises reads as improved', () => {
+        const higher: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T_NEW,
+            scenarioRunResults: [
+                run('Quality.Alpha', NEW, T_NEW, { quality: numeric('quality', 5, 'exceptional', false) }),
+                run('Quality.Beta', NEW, T_NEW, { quality: numeric('quality', 3, 'average', false) }),
+                run('Quality.Gamma', NEW, T_NEW, { quality: numeric('quality', 1, 'unacceptable', true) }),
+                run('Quality.Alpha', OLD, T_OLD, { quality: numeric('quality', 4, 'good', false) }),
+                run('Quality.Beta', OLD, T_OLD, { quality: numeric('quality', 3, 'average', false) }),
+                run('Quality.Gamma', OLD, T_OLD, { quality: numeric('quality', 1, 'unacceptable', true) }),
+            ],
+        };
+        renderOverview(higher);
+        const nameCell = screen.getByText('Quality.Alpha · quality').parentElement;
+        const deltaCell = nameCell?.nextElementSibling?.nextElementSibling;
+        expect(deltaCell?.textContent).toContain('▲');
+        expect(deltaCell?.textContent).toContain('increased by 1, improved');
+        expect(deltaCell?.textContent).not.toContain('regressed');
+    });
+
+    it('leaves a metric with no rating signal unjudged (neutral, raw direction only)', () => {
+        const noInterpretation: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T_NEW,
+            scenarioRunResults: [
+                run('Delta.Unrated', NEW, T_NEW, { latency: numeric('latency', 120, 'unknown', false) }),
+                run('Delta.Unrated', OLD, T_OLD, { latency: numeric('latency', 100, 'unknown', false) }),
+            ],
+        };
+        renderOverview(noInterpretation);
+        const nameCell = screen.getByText('Delta.Unrated · latency').parentElement;
+        const deltaCell = nameCell?.nextElementSibling?.nextElementSibling;
+        expect(deltaCell?.textContent).toContain('▲');
+        expect(deltaCell?.textContent).toContain('increased by 20');
+        expect(deltaCell?.textContent).not.toMatch(/improved|regressed/i);
     });
 });

@@ -334,9 +334,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --teams-other: var(--grey-94);
   --teams-mine: #e9eefb;
 
-  --spread-tint-pos: color-mix(in srgb, var(--status-success-background-3) 32%, var(--neutral-background-1));
-  --spread-tint-neg: color-mix(in srgb, var(--status-danger-foreground-2) 30%, var(--neutral-background-1));
-  --spread-tint-flat: color-mix(in srgb, var(--neutral-foreground-4) 22%, var(--neutral-background-1));
 
   --tool-accent-text: #036e72;
 

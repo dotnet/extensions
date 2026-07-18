@@ -31,8 +31,6 @@ const ScenarioSelector = ({ scenarioName, children }: { scenarioName: string; ch
 
 describe('HistoryView — twoExecutionDataset', () => {
     it('renders one metric tab per numeric metric of the default scenario', () => {
-        // Default scenario = first leaf of the primary execution (Comparison.TextSummary),
-        // whose numeric metrics with ≥2-execution history are coherence and safety.
         renderWith(twoExecutionDataset, <HistoryView />);
         const tabs = screen.getAllByRole('tab');
         expect(tabs.map((t) => t.textContent)).toEqual(['coherence', 'safety']);
@@ -110,15 +108,15 @@ describe('ComparisonView — twoExecutionDataset', () => {
     });
 });
 
-describe('ComparisonView — better direction inversion (lower-is-better / none)', () => {
-    const inv = (name: string, value: number, better: 'high' | 'low' | 'none'): NumericMetric =>
+describe('ComparisonView — value deltas with no inferable direction stay directional and unjudged', () => {
+    const inv = (name: string, value: number): NumericMetric =>
         ({
             $type: 'numeric',
             name,
             value,
             reason: 'test',
             interpretation: { rating: 'good', failed: false },
-            metadata: { better },
+            metadata: {},
         }) as NumericMetric;
 
     const invRow = (executionName: string, creationTime: string, metrics: Record<string, NumericMetric>): ScenarioRunResult =>
@@ -133,29 +131,38 @@ describe('ComparisonView — better direction inversion (lower-is-better / none)
             formatVersion: 1 as unknown as int,
         }) as ScenarioRunResult;
 
-    // Baseline (older) → current (newer). toxicity DROPS 5→2; with better:'low' that is an
-    // improvement. flat CHANGES 3→5 but better:'none' means neither improved nor regressed.
+    // Every metric here holds a constant 'good' rating, so no better-direction can be inferred from
+    // the data. With no direction signal the deltas stay purely directional: toxicity DROPS 5→2 and
+    // flat RISES 3→5, and neither is judged "improved" nor "regressed".
     const inversionDataset: Dataset = {
         generatorVersion: '0.0.1',
         createdAt: '2026-04-01T00:00:00.000Z',
         scenarioRunResults: [
-            invRow('exec-old', '2026-03-01T00:00:00.000Z', { toxicity: inv('toxicity', 5, 'low'), flat: inv('flat', 3, 'none') }),
-            invRow('exec-new', '2026-04-01T00:00:00.000Z', { toxicity: inv('toxicity', 2, 'low'), flat: inv('flat', 5, 'none') }),
+            invRow('exec-old', '2026-03-01T00:00:00.000Z', { toxicity: inv('toxicity', 5), flat: inv('flat', 3) }),
+            invRow('exec-new', '2026-04-01T00:00:00.000Z', { toxicity: inv('toxicity', 2), flat: inv('flat', 5) }),
         ],
     };
 
-    it('counts a decrease in a lower-is-better metric as an improvement, not a regression', () => {
+    it('reports the raw direction of every value delta when no direction can be inferred', () => {
         renderWith(inversionDataset, <ComparisonView />);
-        // toxicity 5→2 (▼) is the single improvement; the better:'none' metric is not counted.
-        expect(screen.getByText('Metrics improved').nextElementSibling?.textContent).toBe('1');
-        expect(screen.getByText('Metrics regressed').nextElementSibling?.textContent).toBe('0');
+        expect(screen.queryByText('Metrics improved')).not.toBeInTheDocument();
+        expect(screen.queryByText('Metrics regressed')).not.toBeInTheDocument();
+        expect(screen.getByText('Metrics increased').nextElementSibling?.textContent).toBe('1');
+        expect(screen.getByText('Metrics decreased').nextElementSibling?.textContent).toBe('1');
     });
 
-    it('surfaces the downward toxicity delta as the biggest (improving) mover', () => {
+    it('surfaces the biggest raw delta by magnitude, not by a "better" judgment', () => {
         renderWith(inversionDataset, <ComparisonView />);
-        const biggest = screen.getByText('Biggest mover');
+        const biggest = screen.getByText('Biggest change');
         expect(biggest.nextElementSibling?.textContent).toContain('▼');
         expect(biggest.nextElementSibling?.nextElementSibling?.textContent).toBe('toxicity');
+    });
+
+    it('never announces "improved"/"regressed" in the accessible per-metric delta label', () => {
+        renderWith(inversionDataset, <ComparisonView />);
+        expect(screen.getByLabelText('decreased by 3')).toBeInTheDocument();
+        expect(screen.getByLabelText('increased by 2')).toBeInTheDocument();
+        expect(screen.queryByLabelText(/improved|regressed/i)).not.toBeInTheDocument();
     });
 });
 

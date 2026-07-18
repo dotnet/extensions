@@ -16,6 +16,7 @@ export function useAdoResize(enabled: boolean): void {
                 const height = document.documentElement.scrollHeight;
                 resize(undefined, height);
             } catch {
+                // resize is best-effort; the SDK throws when not hosted in an ADO iframe.
             }
         });
 
