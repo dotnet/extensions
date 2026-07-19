@@ -554,9 +554,6 @@ For **both** implementation paths:
   run so the outage is surfaced for investigation instead of shipping unvalidated code.
 - Ensure **sufficient test coverage** for every new attribute/metric/emission --
   augment existing tests where possible rather than adding parallel test methods.
-- Update any affected **docs** under the changed libraries (e.g. a library's own `README.md`,
-  which lives under the allowed `src/Libraries/Microsoft.Extensions.AI*` paths) so they
-  reflect the new conventions.
 - If the public API surface changed, regenerate API baselines and keep only the
   baseline updates for the libraries actually changed.
 - Review the result thoroughly against the skill's review checklist before emitting
