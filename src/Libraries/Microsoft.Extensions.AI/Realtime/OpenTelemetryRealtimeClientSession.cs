@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents a delegating realtime session that follows the OpenTelemetry Semantic Conventions for Generative AI systems where applicable.</summary>
 /// <remarks>
 /// <para>
-/// This class follows the patterns of the Semantic Conventions for Generative AI systems v1.41 where applicable, as defined at
+/// This class follows the patterns of the GenAI Semantic Conventions v1.41 where applicable, as defined at
 /// <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />, with custom extensions for realtime-specific behavior.
 /// The specification does not currently define a realtime operation; a custom operation name is used.
 /// </para>

@@ -268,6 +268,7 @@ internal static class OtelMessageSerializer
                     topLevel.Equals("image", StringComparison.OrdinalIgnoreCase) ? "image" :
                     topLevel.Equals("audio", StringComparison.OrdinalIgnoreCase) ? "audio" :
                     topLevel.Equals("video", StringComparison.OrdinalIgnoreCase) ? "video" :
+                    topLevel.Equals("application", StringComparison.OrdinalIgnoreCase) ? "document" :
                     null;
             }
         }

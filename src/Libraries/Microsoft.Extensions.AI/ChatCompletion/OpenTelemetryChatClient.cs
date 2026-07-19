@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.41, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the GenAI Semantic Conventions v1.41, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
@@ -351,6 +351,24 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     if (options.TopP is float top_p)
                     {
                         _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
+                    }
+
+                    if (options.Reasoning?.Effort is ReasoningEffort reasoningEffort)
+                    {
+                        string? reasoningLevel = reasoningEffort switch
+                        {
+                            ReasoningEffort.None => "none",
+                            ReasoningEffort.Low => "low",
+                            ReasoningEffort.Medium => "medium",
+                            ReasoningEffort.High => "high",
+                            ReasoningEffort.ExtraHigh => "extrahigh",
+                            _ => null,
+                        };
+
+                        if (reasoningLevel is not null)
+                        {
+                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.ReasoningLevel, reasoningLevel);
+                        }
                     }
 
                     if (options.ResponseFormat is not null)
