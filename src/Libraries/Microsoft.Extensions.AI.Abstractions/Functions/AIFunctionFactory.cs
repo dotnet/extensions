@@ -135,7 +135,8 @@ public static partial class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="name">
     /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
-    /// any <see cref="DisplayNameAttribute"/> on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
+    /// any <see cref="AIFunctionNameAttribute"/> on <paramref name="method"/>, then from any <see cref="DisplayNameAttribute"/>
+    /// on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
     /// </param>
     /// <param name="description">
     /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
@@ -313,7 +314,8 @@ public static partial class AIFunctionFactory
     /// </param>
     /// <param name="name">
     /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
-    /// any <see cref="DisplayNameAttribute"/> on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
+    /// any <see cref="AIFunctionNameAttribute"/> on <paramref name="method"/>, then from any <see cref="DisplayNameAttribute"/>
+    /// on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
     /// </param>
     /// <param name="description">
     /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
@@ -708,7 +710,7 @@ public static partial class AIFunctionFactory
         private static readonly object? _boxedDefaultCancellationToken = default(CancellationToken);
 
         /// <summary>
-        /// Gets or creates a descriptors using the specified method and options.
+        /// Gets or creates a descriptor using the specified method and options.
         /// </summary>
         public static ReflectionAIFunctionDescriptor GetOrCreate(MethodInfo method, AIFunctionFactoryOptions options)
         {
@@ -806,7 +808,11 @@ public static partial class AIFunctionFactory
                     pType != typeof(IServiceProvider) &&
                     !string.IsNullOrEmpty(parameters[i].Name))
                 {
-                    _ = expectedArgumentNames.Add(parameters[i].Name!);
+                    string effectiveName = AIJsonUtilities.GetParameterSchemaName(parameters[i]);
+                    if (!expectedArgumentNames.Add(effectiveName))
+                    {
+                        Throw.ArgumentException("method", $"Multiple parameters are mapped to the same name '{effectiveName}'. Ensure that any {nameof(AIParameterNameAttribute)} values do not collide with each other or with other parameter names.");
+                    }
                 }
             }
 
@@ -815,7 +821,7 @@ public static partial class AIFunctionFactory
 
             ReturnParameterMarshaller = GetReturnParameterMarshaller(key, serializerOptions, out Type? returnType);
             Method = key.Method;
-            Name = key.Name ?? key.Method.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName ?? GetFunctionName(key.Method);
+            Name = key.Name ?? key.Method.GetCustomAttribute<AIFunctionNameAttribute>(inherit: true)?.Name ?? key.Method.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName ?? GetFunctionName(key.Method);
             Description = key.Description ?? key.Method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             JsonSerializerOptions = serializerOptions;
             ReturnJsonSchema = returnType is null || key.ExcludeResultSchema ? null : AIJsonUtilities.CreateJsonSchema(
@@ -949,10 +955,11 @@ public static partial class AIFunctionFactory
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             JsonTypeInfo? typeInfo = serializerOptions.GetTypeInfo(parameterType);
             bool hasDefaultValue = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out object? effectiveDefaultValue);
+            string argumentName = AIJsonUtilities.GetParameterSchemaName(parameter);
             return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
-                if (arguments.TryGetValue(parameter.Name, out object? value))
+                if (arguments.TryGetValue(argumentName, out object? value))
                 {
                     return value switch
                     {
@@ -999,7 +1006,7 @@ public static partial class AIFunctionFactory
                 // If the parameter is required and there's no argument specified for it, throw.
                 if (!hasDefaultValue)
                 {
-                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{parameter.Name}'.");
+                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{argumentName}'.");
                 }
 
                 // Otherwise, use the optional parameter's default value.
@@ -1217,9 +1224,11 @@ public static partial class AIFunctionFactory
             {
                 return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
             }
-            catch (Exception e) when (e is ArgumentNullException or NullReferenceException)
+            catch (Exception e) when (e is ArgumentNullException or NullReferenceException or IndexOutOfRangeException)
             {
-                // DynamicMethod return parameters don't support GetCustomAttribute.
+                // DynamicMethod return parameters don't support GetCustomAttribute. Additionally, on .NET Framework,
+                // querying inherited attributes on the return parameter of an overriding method can throw
+                // IndexOutOfRangeException. In either case, treat the description as absent.
                 return null;
             }
         }

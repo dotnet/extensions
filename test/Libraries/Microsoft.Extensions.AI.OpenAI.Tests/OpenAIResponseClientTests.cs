@@ -577,6 +577,95 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task EncryptedReasoning_Streaming_RoundTripsReasoningItemId()
+    {
+        // Streamed response containing a reasoning item (text deltas + encrypted_content + id),
+        // followed by an assistant message. Mirrors a stateless (store=false) turn that included
+        // reasoning.encrypted_content.
+        const string FirstResponse = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"in_progress","model":"o4-mini-2025-04-16","output":[],"reasoning":{"effort":"medium"}}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":1,"output_index":0,"item":{"id":"rs_reasoning123","type":"reasoning","text":""}}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":2,"item_id":"rs_reasoning123","output_index":0,"delta":"First, "}
+
+            event: response.reasoning_text.delta
+            data: {"type":"response.reasoning_text.delta","sequence_number":3,"item_id":"rs_reasoning123","output_index":0,"delta":"let's analyze the problem."}
+
+            event: response.reasoning_text.done
+            data: {"type":"response.reasoning_text.done","sequence_number":4,"item_id":"rs_reasoning123","output_index":0,"text":"First, let's analyze the problem."}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":5,"output_index":0,"item":{"id":"rs_reasoning123","type":"reasoning","text":"First, let's analyze the problem.","encrypted_content":"secret-encrypted-data-abc123"}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":6,"output_index":1,"item":{"id":"msg_reasoning123","type":"message","status":"in_progress","content":[],"role":"assistant"}}
+
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","sequence_number":7,"item_id":"msg_reasoning123","output_index":1,"content_index":0,"delta":"The solution is 42."}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":8,"output_index":1,"item":{"id":"msg_reasoning123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"The solution is 42."}],"role":"assistant"}}
+
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":9,"response":{"id":"resp_reasoning123","object":"response","created_at":1756752900,"status":"completed","model":"o4-mini-2025-04-16","output":[{"id":"rs_reasoning123","type":"reasoning","text":"First, let's analyze the problem.","encrypted_content":"secret-encrypted-data-abc123"},{"id":"msg_reasoning123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"The solution is 42."}],"role":"assistant"}],"usage":{"input_tokens":10,"output_tokens":25,"total_tokens":35}}}
+
+            """;
+
+        const string SecondResponse = """
+            {"id":"resp_followup","object":"response","created_at":1756752901,"status":"completed","model":"o4-mini-2025-04-16","output":[{"id":"msg_followup","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"Confirmed."}],"role":"assistant"}],"usage":{"input_tokens":5,"output_tokens":2,"total_tokens":7}}
+            """;
+
+        using CapturingHttpHandler handler = new([FirstResponse, SecondResponse]);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "o4-mini");
+
+        // Turn 1: stream a response with encrypted reasoning and collect the history.
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("Solve this problem step by step.", new()
+        {
+            RawRepresentationFactory = _ => new CreateResponseOptions
+            {
+                StoredOutputEnabled = false,
+                ReasoningOptions = new() { ReasoningEffortLevel = ResponseReasoningEffortLevel.Medium },
+            },
+        }))
+        {
+            updates.Add(update);
+        }
+
+        List<ChatMessage> chatHistory = [];
+        chatHistory.AddMessages(updates);
+
+        // Simulate persisting and rehydrating the session between turns (as a hosted, human-in-the-loop
+        // approval flow does). This drops RawRepresentation (which is [JsonIgnore]), so the reasoning item's
+        // id must survive via a serialized field (AdditionalProperties) to roundtrip.
+        string serializedHistory = JsonSerializer.Serialize(chatHistory, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(List<ChatMessage>)));
+        chatHistory = (List<ChatMessage>)JsonSerializer.Deserialize(serializedHistory, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(List<ChatMessage>)))!;
+        chatHistory.Add(new ChatMessage(ChatRole.User, "Are you sure?"));
+
+        // Turn 2: send the history back. The reasoning item must roundtrip with its id, otherwise
+        // a stateless (store=false) service rejects the request (see dotnet/extensions issue and
+        // microsoft/agent-framework#7067).
+        await client.GetResponseAsync(chatHistory, new()
+        {
+            RawRepresentationFactory = _ => new CreateResponseOptions { StoredOutputEnabled = false },
+        });
+
+        Assert.Equal(2, handler.RequestBodies.Count);
+
+        using JsonDocument secondRequest = JsonDocument.Parse(handler.RequestBodies[1]);
+        JsonElement reasoningItem = secondRequest.RootElement.GetProperty("input").EnumerateArray()
+            .Single(item => item.TryGetProperty("type", out var t) && t.GetString() == "reasoning");
+
+        Assert.Equal("rs_reasoning123", reasoningItem.GetProperty("id").GetString());
+        Assert.Equal("secret-encrypted-data-abc123", reasoningItem.GetProperty("encrypted_content").GetString());
+    }
+
+    [Fact]
     public async Task BasicRequestResponse_Streaming()
     {
         const string Input = """
@@ -6778,6 +6867,23 @@ public class OpenAIResponseClientTests
             new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .GetResponsesClient()
         .AsIChatClient(modelId);
+
+    // Returns the supplied responses in order, one per request, capturing each request body.
+    private sealed class CapturingHttpHandler(IReadOnlyList<string> responses) : HttpMessageHandler
+    {
+        private int _index;
+
+        public List<string> RequestBodies { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        {
+#pragma warning disable CA2016 // ReadAsStringAsync(CancellationToken) is unavailable on all target frameworks
+            RequestBodies.Add(request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync().ConfigureAwait(false));
+#pragma warning restore CA2016
+            string body = responses[Math.Min(_index++, responses.Count - 1)];
+            return new HttpResponseMessage { Content = new StringContent(body) };
+        }
+    }
 
     private static string ResponseStatusToRequestValue(ResponseStatus status)
     {
