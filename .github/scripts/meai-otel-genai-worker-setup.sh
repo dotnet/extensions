@@ -78,7 +78,10 @@ resolve_sha() {
 		[ -n "$sha" ] && { printf '%s' "$sha"; return 0; }
 		[ "$attempt" -lt 3 ] && sleep 2
 	done
-	return 0
+	# All retries exhausted without resolving a SHA. Signal failure with a non-zero return;
+	# the caller runs this in a command substitution guarded with `|| true` and then hard-
+	# errors on the empty result, so `set -e` never pre-empts that explicit diagnostic.
+	return 1
 }
 
 resolve_release_commit() {
@@ -109,7 +112,7 @@ resolve_release_commit() {
 }
 
 if [ -z "$upstream_sha" ] && [ -n "${GH_TOKEN:-}" ]; then
-	upstream_sha="$(resolve_sha "$UPSTREAM_REF")"
+	upstream_sha="$(resolve_sha "$UPSTREAM_REF")" || true
 	if [ -z "$upstream_sha" ]; then
 		echo "::error::Could not resolve upstream ref '${UPSTREAM_REF:-<default branch HEAD>}' in ${UPSTREAM_REPO} to a commit SHA after retries. Refusing to continue with an unresolved scan target."
 		exit 1
@@ -432,3 +435,25 @@ step_summary "$classification" "$action" "${pr:-}" "$pr_recorded_sha" "$has_new_
 
 echo "Setup: classification=${classification} action=${action} pr=${pr:-<none>} pr_branch=${PR_BRANCH:-<none>} recorded_sha=${pr_recorded_sha:-<none>} upstream_sha=${upstream_sha:-<none>} release_ready=${release_ready} new_feedback=${has_new_feedback}"
 echo "-- target.json --"; jq '.' "$target_file"
+
+# ---- 6. Detach HEAD so a fresh-path integration commit never advances the base branch ----
+# The agent job is checked out on the base branch (main). On the fresh path the agent commits
+# the integration and then creates the PR branch ref at that commit; if HEAD were still main,
+# the commit would advance main itself and leave the new PR branch pointing at its own base,
+# so create-pull-request would emit an empty patch (and, with threat-detection enabled, the
+# run would hard-fail with no patch to screen). Detaching here -- deterministically, in this
+# host script, rather than relying on the agent to run `git checkout --detach` -- keeps the
+# base branch ref fixed at the checked-out commit. It is safe on every path: the incremental
+# and adopt paths check out the existing PR branch afterward, and no path depends on being on
+# a named branch. gh-aw's own "Checkout PR branch" step does not run for this workflow's
+# workflow_call / workflow_dispatch triggers, so nothing re-attaches HEAD before the agent.
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+	if git checkout --detach --quiet; then
+		echo "Detached HEAD at $(git rev-parse --short HEAD) so a fresh-path commit will not advance ${BASE_BRANCH}."
+	else
+		echo "::error::Failed to detach HEAD; refusing to continue because a fresh-path commit could advance ${BASE_BRANCH} and produce an empty patch."
+		exit 1
+	fi
+else
+	echo "::warning::Not inside a git work tree; skipping HEAD detach (expected only outside the workflow, e.g. in isolated script tests)."
+fi

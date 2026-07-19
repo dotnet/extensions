@@ -32,7 +32,6 @@ safe-outputs:
     allowed-files:
       - "src/Libraries/Microsoft.Extensions.AI*/**"
       - "test/Libraries/Microsoft.Extensions.AI*/**"
-      - "docs/**"
   push-to-pull-request-branch:
     target: "*"
     required-labels: [automation, area-ai]
@@ -40,7 +39,6 @@ safe-outputs:
     allowed-files:
       - "src/Libraries/Microsoft.Extensions.AI*/**"
       - "test/Libraries/Microsoft.Extensions.AI*/**"
-      - "docs/**"
   update-pull-request:
     target: "*"
     required-labels: [automation, area-ai]
@@ -454,7 +452,6 @@ enforces this as an allow-list, and the run fails if the patch touches anything
 else):
 - `src/Libraries/Microsoft.Extensions.AI*/**`
 - `test/Libraries/Microsoft.Extensions.AI*/**`
-- `docs/**`
 
 **Never** edit, stage, or commit anything outside that set. In particular do **not**
 touch: this workflow and its generated lock (`.github/**`, including
@@ -480,17 +477,16 @@ below). So:
   base branch** (`main`), so committing now would advance `main` itself and leave the PR
   branch you create pointing at the **same commit as its base** -- the generated patch is
   then **empty** (and, with threat-detection enabled, the run hard-fails because no
-  patch/bundle is produced for the detection job to screen). **First detach `HEAD` at the
-  checked-out commit** so your commit advances a detached `HEAD` and leaves `main` where it
-  is: `git checkout --detach`. Detaching at the current commit is safe -- it does not switch
-  to a different branch or commit and does not trigger the fork merge-base fallback. Do
-  **not** use `git checkout -b`/`git switch -c` (switching to a *new* branch blows up patch
-  generation), and do **not** run `git fetch`, `git reset`, `git rebase`, or `git merge`.
-  Make your edits,
+  patch/bundle is produced for the detection job to screen). The setup step has already
+  **detached `HEAD`** at the checked-out commit for you, so your commit advances a detached
+  `HEAD` and leaves `main` where it is -- you do not need to run any `git checkout` yourself.
+  Do **not** switch onto a branch with `git checkout`/`git checkout -b`/`git switch -c`
+  (switching blows up patch generation on a fork), and do **not** run `git fetch`,
+  `git reset`, `git rebase`, or `git merge`. Make your edits,
   delete any generated solution/build artifacts (`SDK.sln*`, `artifacts/`) so they
   cannot leak, then stage **only** the in-scope paths. If the scan produced code or
   documentation edits, commit them as a single commit on the current `HEAD`:
-  `git add -- src/Libraries/Microsoft.Extensions.AI* test/Libraries/Microsoft.Extensions.AI* docs && if ! git diff --cached --quiet; then git commit -m "Update open-telemetry/semantic-conventions-genai to {target}"; fi`.
+  `git add -- src/Libraries/Microsoft.Extensions.AI* test/Libraries/Microsoft.Extensions.AI* && if ! git diff --cached --quiet; then git commit -m "Update open-telemetry/semantic-conventions-genai to {target}"; fi`.
   If every tracked upstream change is deferred and there are **no** staged file changes,
   there is nothing to integrate yet: do **not** invent a placeholder file, an empty commit,
   or an empty PR, and do **not** call `create-pull-request`. An empty (patchless) PR cannot
@@ -556,8 +552,9 @@ For **both** implementation paths:
   run so the outage is surfaced for investigation instead of shipping unvalidated code.
 - Ensure **sufficient test coverage** for every new attribute/metric/emission --
   augment existing tests where possible rather than adding parallel test methods.
-- Update any affected **docs** in the repo so they reflect the new
-  conventions.
+- Update any affected **docs** under the changed libraries (e.g. a library's own `README.md`,
+  which lives under the allowed `src/Libraries/Microsoft.Extensions.AI*` paths) so they
+  reflect the new conventions.
 - If the public API surface changed, regenerate API baselines and keep only the
   baseline updates for the libraries actually changed.
 - Review the result thoroughly against the skill's review checklist before emitting
