@@ -75,6 +75,11 @@ features:
   integrity-reactions: true
 
 tools:
+  # Route Safe Outputs through the CLI proxy instead of the native HTTP MCP endpoint on the
+  # awmg-mcpg gateway, which the firewall denies (TCP_DENIED/403) before recommending the
+  # non-compilable `awmgmcpg` network.allowed entry. Workaround for github/gh-aw#45915;
+  # github.mode: gh-proxy (below) removes the native GitHub MCP endpoint for the same reason.
+  cli-proxy: true
   github:
     mode: gh-proxy
     toolsets: [default]
