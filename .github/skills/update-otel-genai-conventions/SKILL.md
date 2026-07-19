@@ -17,7 +17,7 @@ agent: 'agent'
 tools: ['github/*', 'sql']
 ---
 
-# Update OTel Gen-AI Conventions
+# Update OTel GenAI Conventions
 
 Analyze OpenTelemetry GenAI semantic-conventions changes — PRs, changelog snapshots, date ranges, or releases — primarily from [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), and produce compensating updates in `dotnet/extensions`. See the [Migration Note](#migration-note) below for context, including where these conventions were previously managed.
 
@@ -53,6 +53,12 @@ Implications for this skill:
   news fragments under `changelog.d/`, each named `<upstream-PR>.<type>.md`
   (types include `enhancement`, `bugfix`, `breaking`, `clarification`). Pin
   a snapshot via commit SHA / ref for reproducible audits.
+- **Release tagging is not proven yet.** Until the repo ships real GenAI
+  releases, treat GitHub Releases plus the release tag's dereferenced commit
+  as the workflow baseline, but actively compare it with other durable signals
+  (CHANGELOG release headers, schema URLs, and observed tag naming). Report
+  confidence in the approach used, and surface a PR-body caution if another
+  release signal becomes clearly more dependable than the workflow baseline.
 - **GenAI version is now independent** of core semconv: it tracks its own
   version line. The schema URL
   `https://opentelemetry.io/schemas/gen-ai/X.Y.Z` is intended to carry the
@@ -175,6 +181,43 @@ When PR numbers are given without a full URL, default to
 `semantic-conventions` repo only if the PR doesn't exist in
 `semantic-conventions-genai` or the user explicitly references it.
 
+## Release Tagging Signal Analysis
+
+For every audit or implementation pass that creates or refreshes an upstream-scan
+tracking PR, include a concise release-tagging analysis. The current workflow baseline
+is:
+
+1. Read GitHub's latest release for `open-telemetry/semantic-conventions-genai`.
+2. Resolve that release's `tag_name` through `refs/tags`, dereferencing annotated tags
+   to the commit they point at.
+3. Treat the release as ready for a maintained PR only when that resolved commit equals
+   the PR body's recorded `upstream-scan-ref`.
+
+Compare that baseline with all durable release signals available at the scanned ref:
+
+- GitHub Releases and the resolved release tag commit.
+- `CHANGELOG.md` release headers produced by Towncrier.
+- Published schema URLs such as `opentelemetry.io/schemas/gen-ai/X.Y.Z`, once they
+  exist.
+- Stable tag naming patterns, if the repo begins publishing tags without GitHub
+  Releases.
+
+Report confidence using these meanings:
+
+- `high`: the signal is published and tied to an exact commit or schema version that
+  matches the audited GenAI conventions.
+- `medium`: the signal identifies a version, but the exact commit relationship is not
+  proven.
+- `low`: the signal is inferred from non-release data such as fragments, core semconv
+  dependency versions, or naming guesses.
+- `none`: no published GenAI release signal exists.
+
+If a different release signal becomes clearly dependable and conflicts with the
+workflow baseline, keep the workflow behavior unchanged for that run, but add the
+PR-description `> [!CAUTION]` block described in
+[references/pr-description.md](references/pr-description.md). The block must name the
+signal found and recommend the specific skill and/or workflow change needed.
+
 ### In-scope areas
 
 The `semantic-conventions-genai` repo hosts conventions for several areas, all of which this skill
@@ -207,7 +250,7 @@ Search using the requested release version, CHANGELOG ref, date range, or upstre
 
 Do not silently ignore search failures. If GitHub search/listing is unavailable, report the problem and ask the user whether to proceed without the preflight.
 
-A standing **upstream-scan tracking PR** (one carrying the `otel-genai-tracking` state block) is the exception: it is the durable scan record, not a blocking duplicate. When the preflight surfaces it, refresh it per **Refreshing the tracking PR** in [references/pr-description.md](references/pr-description.md#refreshing-the-tracking-pr) instead of stopping.
+A standing **upstream-scan tracking PR** (one carrying the `# meai-otel-genai-worker:state:begin` block) is the exception: it is the durable scan record, not a blocking duplicate. When the preflight surfaces it, continue rather than stopping -- the maintaining workflow owns how that PR is created and incremented.
 
 ### Analyzing the Release / PRs
 
@@ -221,7 +264,7 @@ For Step 4, read the source files listed in [references/file-inventory.md](refer
 
 ### PR Title and Description Guidance
 
-When creating or updating a PR after implementing GenAI semantic-conventions changes (from either repo), follow [references/pr-description.md](references/pr-description.md) for the title format and the changes-table shape. For a recurring **upstream-scan tracking PR** (the kind carrying the `otel-genai-tracking` state block), that reference also defines the full body template -- the implemented-changes table, the merged and in-flight applicability tables, and, at the very bottom, the machine-readable tracking state block (the body ends there). The refresh procedure for that PR lives in the skill itself, not in the PR body.
+When creating or updating a PR after implementing GenAI semantic-conventions changes (from either repo), follow [references/pr-description.md](references/pr-description.md) for the title format and the changes-table shape. For a recurring **upstream-scan tracking PR** (the kind carrying the `# meai-otel-genai-worker:state:begin` block), that reference also defines the full body template -- the implemented-changes table, the merged and in-flight applicability tables, and, at the very bottom, the machine-readable tracking state block (the body ends there).
 
 ---
 
@@ -233,7 +276,8 @@ Audit the current gen-ai semantic conventions implementation against the latest 
 2. **Determine the current implemented version**: Read the version reference from `OpenTelemetryChatClient.cs` doc comment to identify which convention version the codebase claims to implement
 3. **Check for version drift**: Verify every file with a gen-ai semantic conventions version reference uses the same version. Use the search command from [references/file-inventory.md](references/file-inventory.md#version-references). If files reference different versions, flag that as a critical gap requiring investigation.
 4. **Fetch the latest convention spec**: Read the current conventions from the source of truth in [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai): `docs/gen-ai/` for human-readable docs (for example `docs/gen-ai/gen-ai-spans.md`, `docs/gen-ai/openai.md`) and `model/<area>/` for the YAML registry (`gen-ai`, `mcp`, `openai`, `aws-bedrock`). Note the published page at `https://opentelemetry.io/docs/specs/semconv/gen-ai/` is currently a "Moved" stub and no longer renders the spec. There is no `schema-snapshot/` directory, and the schema URL (`opentelemetry.io/schemas/gen-ai/X.Y.Z`) is not published yet (the repo `README.md` `## Schema URL` section is `TODO`). The repo's `versions.env` holds only the core semconv dependency (`SEMCONV_VERSION`) and the Weaver version — not a GenAI version — so do not treat `SEMCONV_VERSION` as the GenAI version. Until a GenAI release or schema URL exists, there is no published GenAI version number; identify the update by its `changelog.d/` fragment snapshot (commit SHA / ref / date). The GenAI convention version is independent of core semconv. Until releases exist in `semantic-conventions-genai`, use the latest `changelog.d/` news fragments or recently merged PRs as the "latest release notes" equivalent.
-<!-- TODO: once open-telemetry/semantic-conventions-genai publishes its schema URL (README ## Schema URL is currently TODO), switch the GenAI version source to that schema URL. -->
+   <!-- TODO: once open-telemetry/semantic-conventions-genai publishes its schema URL (README ## Schema URL is currently TODO), switch the GenAI version source to that schema URL. -->
+   Also complete the **Release Tagging Signal Analysis** above so any PR description states release-signal confidence and warns when a different dependable release signal appears.
 5. **Read all current source files** listed in [references/file-inventory.md](references/file-inventory.md) to understand what is actually implemented
 6. **Cross-reference**: For each attribute, metric, event, and operation name defined in the conventions:
    - Is the constant defined in `OpenTelemetryConsts.cs`?
@@ -353,7 +397,7 @@ Critical knowledge from past PR reviews that should inform all modes:
 - **No CHANGELOGs**: This repository no longer maintains per-library CHANGELOG.md files. Do NOT create or update any CHANGELOG files.
 - **Source-generated JSON**: Adding new OTel part types requires: (1) new inner class, (2) `[JsonSerializable]` registration on `OtelContext`, (3) switch case in `SerializeChatMessages()`.
 - **LoggerMessage text**: When using `[LoggerMessage]`, the message text should match the OTel event name for console logger readability.
-- **No orphan constants**: Never add a constant to `OpenTelemetryConsts.cs` unless the same PR also adds at least one emission site for it. If the convention defines an attribute that no current client populates, classify the change as 🟢 *Constant not yet emitted* and defer the constant — do not add it ahead of emission. Verify with `grep -rn NewConstantName src/Libraries/Microsoft.Extensions.AI/` before submitting.
+- **No orphan constants**: Never add a constant to `OpenTelemetryConsts.cs` unless the same PR also adds at least one emission site for it. If the convention defines an attribute that no current client populates, classify the change as 🟢 *Constant not yet emitted* and defer the constant — do not add it ahead of emission. Verify with `grep -rn NewConstantName src/Libraries/Microsoft.Extensions.AI/` before submitting. This defer rule applies **only** to brand-new attributes/metrics that have no emission site. A change to a convention item the code **already emits** — a type/unit change (e.g. `gen_ai.request.top_k` `double` → `int`), a requiredness/scope change, a rename, a sampling-relevance change, or a new well-known value for an already-emitted attribute — is actionable and must be applied in the same pass, not deferred. Deferral marks individual constants; it is never a reason to skip the overall update.
 - **Area-aware constants**: Pick the nested class in `OpenTelemetryConsts.cs` based on the upstream area: `GenAI.*` for `gen-ai/*`, `MCP.*` for `mcp/*`. Provider-specific attributes (`openai.*`, `anthropic.*`, `aws-bedrock.*`, `azure-ai-inference.*`) generally belong in the **provider package's** constants file, not in `Microsoft.Extensions.AI/OpenTelemetryConsts.cs`. See [references/implementation-patterns.md §Area placement guidance](references/implementation-patterns.md#area-placement-guidance).
 
 ## Validation

@@ -46,7 +46,7 @@ Keep release-specific findings in the PR description or implementation summary; 
 
 ## Upstream-scan tracking PR body template
 
-A recurring **upstream-scan tracking PR** records the state of the last upstream scan and lists every merged `Unreleased` change and every open upstream PR with its applicability to this repo. This skill is responsible for producing that PR's full title and body. Assemble the body in the order below, and **keep the machine-readable tracking state and the refresh instructions at the very bottom** so the human-facing content (what shipped, then the applicability tables) leads.
+A recurring **upstream-scan tracking PR** records the state of the last upstream scan and lists every merged `Unreleased` change and every open upstream PR with its applicability to this repo. This skill is responsible for producing that PR's full title and body. Assemble the body in the order below, and **keep the machine-readable tracking state at the very bottom** so the human-facing content (what shipped, then the applicability tables) leads.
 
 ### 1. Status note (optional)
 
@@ -58,7 +58,35 @@ While `semantic-conventions-genai` is unreleased, lead with a short blockquote n
 > Both conventions are **Development** stability and **unreleased**. Merge once they ship in a tagged release.
 ```
 
-### 2. What this PR implements
+### 2. Release tagging confidence
+
+Include a short release-signal statement near the top of every upstream-scan tracking
+PR body. Use the workflow's setup signal as the baseline: GitHub latest release
+`tag_name`, resolved through `refs/tags`, with annotated tags dereferenced to their
+commit. State the confidence from the skill's release-tagging analysis:
+
+```markdown
+Release tagging confidence: `none` -- no published GenAI release signal exists yet.
+```
+
+or:
+
+```markdown
+Release tagging confidence: `high` -- GitHub latest release `vX.Y.Z` resolves to commit `<sha>`.
+```
+
+If the analysis finds a clearly dependable release signal that differs from the
+workflow baseline, include this block before the tracking tables:
+
+```markdown
+> [!CAUTION]
+> Release tagging signal may have changed: <describe the dependable signal found>.
+> Suggested follow-up: update <the skill and/or workflow> to use <specific signal> instead of <current signal>.
+```
+
+Omit the caution block when no alternate dependable signal was found.
+
+### 3. What this PR implements
 
 A compact table of the convention changes this PR actually implements, with the upstream PR link and the compensating change, followed by a one-line **Validation** summary (build TFMs + warning count, test counts, public-API-surface impact, and the doc-comment version reference state):
 
@@ -72,7 +100,7 @@ A compact table of the convention changes this PR actually implements, with the 
 Validation: build clean (net8.0/net9.0/net10.0, 0 warnings); N tests pass. No public API surface change; doc-comment version reference left at `vX.Y`.
 ```
 
-### 3. Upstream scan tracking tables
+### 4. Upstream scan tracking tables
 
 Two tables -- merged `Unreleased` changes and in-flight open PRs -- using **one consistent column set** so they read the same way:
 
@@ -90,7 +118,7 @@ Legend: 🔴 implemented here · ✅ already aligned · 🟡 watch/deferred · �
 
 ### In-flight upstream changes (open PRs) -- applicability if merged
 
-Filter: open PRs proposing convention changes (exclude pure dependency / CI / chore PRs; list the excluded numbers).
+List **every** open PR in `open-telemetry/semantic-conventions-genai`, each assessed for applicability to this repo using the same columns and indicators as the merged table (dependency / CI / chore PRs are 🟢 *no convention impact*). If there are **no** open PRs, replace the table with the single line `No open PRs.`
 
 | Upstream PR | Area | Change | Applicability | Status |
 |---|---|---|:---:|---|
@@ -110,32 +138,22 @@ Applicability legend (symbol-only in the Applicability column):
 - 🟡 watch / deferred
 - 🟢 not applicable (no client / docs-only / other repo)
 
-### 4. Tracking state -- very bottom
+### 5. Tracking state -- very bottom
 
-Place the machine-readable scan state at the **very bottom** of the body, after the applicability tables. The body **ends with this block** -- do not append a refresh procedure or any other section after it. The state lives in an HTML-comment-delimited block so the next run can parse it:
+Place the machine-readable scan state at the **very bottom** of the body, after the applicability tables. The body **ends with this block** -- do not append a refresh procedure or any other section after it. The state lives in a fenced `yaml` block whose first and last lines are `# meai-otel-genai-worker:state:begin` / `# meai-otel-genai-worker:state:end` sentinel comments so the next run can locate and parse it. The next run matches these as **whole** comment lines (leading indent and a trailing CR are tolerated, but the `# ` prefix and the `:state:begin`/`:state:end` suffix must be exact), so keep each sentinel on its own line. Keep both sentinels inside the code fence as `yaml` comments: GitHub Actions safe-output processing preserves fenced content, so `yaml`-comment delimiters survive round-trips and stay parseable:
 
 ````markdown
 ## Tracking state
 
-<!-- otel-genai-tracking:begin -->
 ```yaml
-Upstream-Repo: open-telemetry/semantic-conventions-genai
-Upstream-Scan-Ref: <commit-sha>            # optional inline note on what changed since the prior ref
-Upstream-Scan-Date: <ISO-8601 UTC>
-Upstream-Release: none                      # Unreleased; Towncrier fragments under changelog.d/
-Core-Semconv-Dependency: vX.Y.Z             # versions.env SEMCONV_VERSION (core dep, NOT the GenAI version)
-DotnetExtensions-Implemented-Version: vX.Y  # doc-comment version reference currently in source
+# meai-otel-genai-worker:state:begin
+upstream-repo: open-telemetry/semantic-conventions-genai
+upstream-scan-ref: <commit-sha>              # optional inline note on what changed since the prior ref
+upstream-scan-date: <ISO-8601 UTC>
+upstream-release: none                       # Unreleased; Towncrier fragments under changelog.d/
+core-semconv-dependency: vX.Y.Z              # versions.env SEMCONV_VERSION (core dep, NOT the GenAI version)
+dotnet-extensions-implemented-version: vX.Y  # doc-comment version reference currently in source
+feedback-processed-through: <ISO-8601 UTC>   # watermark: run start when PR review feedback was last processed
+# meai-otel-genai-worker:state:end
 ```
-<!-- otel-genai-tracking:end -->
 ````
-
-## Refreshing the tracking PR
-
-The PR body carries only the tracking state block; the refresh logic lives in **this skill**, not in the PR body. During the skill's **Existing dotnet/extensions PR Preflight**, treat the tracking PR as the **scan record** -- not a blocking duplicate -- and refresh it as follows:
-
-1. Invoke the skill in **Mode 1: Audit** -- the skill owns this PR's title and body.
-2. Read the `otel-genai-tracking` state block; take `Upstream-Scan-Ref` as the prior scan point.
-3. Per the skill's **Input Handling**, run `git log Upstream-Scan-Ref..main` on `open-telemetry/semantic-conventions-genai` and re-list the `changelog.d/` fragments and the open PRs.
-4. Classify each new or changed item with the [change-classification](change-classification.md) framework against the current `Microsoft.Extensions.AI` instrumentation, and update both applicability tables.
-5. Advance `Upstream-Scan-Ref` / `Upstream-Scan-Date` (and `Core-Semconv-Dependency` / `DotnetExtensions-Implemented-Version` if they moved) in the state block.
-6. If the GenAI repo cut a release, follow the skill's version-reference migration (Gotchas + [file-inventory.md §Version References](file-inventory.md#version-references)) to bump and migrate the doc-comment version in lockstep.
