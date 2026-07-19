@@ -18,7 +18,6 @@ const numeric = (name: string, value: number): NumericMetric =>
         value,
         reason: 'test',
         interpretation: { rating: 'good', failed: false },
-        metadata: {},
     }) as NumericMetric;
 
 const row = (executionName: string, creationTime: string): ScenarioRunResult =>
@@ -35,7 +34,7 @@ const row = (executionName: string, creationTime: string): ScenarioRunResult =>
                 hitRateDash1: numeric('Hit Rate-1', 4),
             },
         },
-        formatVersion: 1 as unknown as int,
+        formatVersion: 1,
     }) as ScenarioRunResult;
 
 const dataset: Dataset = {

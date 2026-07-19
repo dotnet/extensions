@@ -4,7 +4,7 @@
 type Dataset = {
     scenarioRunResults: ScenarioRunResult[];
     generatorVersion?: string;
-    createdAt?: string;
+    createdAt: string;
 };
 
 type ScenarioRunResult = {
@@ -17,7 +17,7 @@ type ScenarioRunResult = {
     evaluationResult: EvaluationResult;
     chatDetails?: ChatDetails;
     tags?: string[];
-    formatVersion: int;
+    formatVersion: number;
 };
 
 type ChatResponse = {
@@ -69,6 +69,7 @@ type UriContent = AIContent & {
 type DataContent = AIContent & {
     $type: "data";
     uri: string;
+    mediaType?: string;
 };
 
 type FunctionCallContent = AIContent & {
@@ -116,8 +117,8 @@ type BaseEvaluationMetric = {
         [K: string]: EvaluationContext;
     };
     diagnostics?: EvaluationDiagnostic[];
-    metadata: { 
-        [K: string]: string 
+    metadata?: {
+        [K: string]: string
     };
 };
 

@@ -21,7 +21,7 @@ const dataset: Dataset = {
                 metrics: {
                     coherence: {
                         $type: 'numeric', name: 'coherence', value: 5,
-                        interpretation: { rating: 'good', failed: false }, metadata: {},
+                        interpretation: { rating: 'good', failed: false },
                     } as NumericMetric,
                 },
             },

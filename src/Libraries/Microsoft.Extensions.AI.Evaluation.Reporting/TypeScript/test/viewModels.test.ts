@@ -100,7 +100,7 @@ describe('isLeafFailed — empty-metrics semantics', () => {
             messages: [],
             modelResponse: { messages: [] },
             evaluationResult: { metrics: {} },
-            formatVersion: 1 as unknown as int,
+            formatVersion: 1,
         } as ScenarioRunResult;
         expect(isLeafFailed(noMetrics)).toBe(false);
     });
@@ -134,21 +134,33 @@ describe('ratingBucket + bucketMetrics', () => {
     });
 });
 
-describe('passRateByScenarioGroup — deltaRun sign across two executions', () => {
-    it('deltaRun is POSITIVE (+0.5) when the active exec outperforms its comparison', () => {
-        const rows = passRateByScenarioGroup(twoExecutionDataset); // default active = primary exec-v1
-        const comparison = rows.find(r => r.group === 'Comparison')!;
-        expect(comparison).toMatchObject({ passing: 2, total: 2 });
-        expect(comparison.passRate).toBeCloseTo(1, 10);
-        expect(comparison.deltaRun).toBeCloseTo(0.5, 10);
-    });
-
-    it('deltaRun is NEGATIVE (−0.5) when the active exec underperforms the previous', () => {
+describe('passRateByScenarioGroup — deltaRun compares against the chronologically previous run', () => {
+    it('deltaRun is NEGATIVE (−0.5) when the active exec underperforms the previous run', () => {
         const rows = passRateByScenarioGroup(twoExecutionDataset, 'exec-v2');
         const comparison = rows.find(r => r.group === 'Comparison')!;
         expect(comparison).toMatchObject({ passing: 1, total: 2 });
         expect(comparison.passRate).toBeCloseTo(0.5, 10);
         expect(comparison.deltaRun).toBeCloseTo(-0.5, 10);
+    });
+
+    it('deltaRun is POSITIVE (+0.5) when a later exec outperforms the previous run', () => {
+        // Both executions share a creationTime, so chronological order falls back to insertion
+        // order; reversing it makes exec-v1 (2/2 passing) the later run, after exec-v2 (1/2).
+        const reversed: Dataset = {
+            ...twoExecutionDataset,
+            scenarioRunResults: [...twoExecutionDataset.scenarioRunResults].reverse(),
+        };
+        const rows = passRateByScenarioGroup(reversed, 'exec-v1');
+        const comparison = rows.find(r => r.group === 'Comparison')!;
+        expect(comparison.passRate).toBeCloseTo(1, 10);
+        expect(comparison.deltaRun).toBeCloseTo(0.5, 10);
+    });
+
+    it('deltaRun is undefined for the earliest execution (no previous run to compare)', () => {
+        const rows = passRateByScenarioGroup(twoExecutionDataset); // default active = earliest exec-v1
+        const comparison = rows.find(r => r.group === 'Comparison')!;
+        expect(comparison).toMatchObject({ passing: 2, total: 2 });
+        expect(comparison.deltaRun).toBeUndefined();
     });
 
     it('deltaRun is undefined for a single-execution dataset', () => {
@@ -179,7 +191,6 @@ describe('T0.2 — out-of-order insertion: passRateByScenarioGroup baseline == m
             name: 'accuracy',
             value,
             interpretation: { rating: failed ? 'poor' : 'good', failed },
-            metadata: {},
         }) as NumericMetric;
 
     const orderingScenario = (executionName: string, creationTime: string, value: number, failed: boolean): ScenarioRunResult =>
@@ -191,7 +202,7 @@ describe('T0.2 — out-of-order insertion: passRateByScenarioGroup baseline == m
             messages: [],
             modelResponse: { messages: [] },
             evaluationResult: { metrics: { accuracy: orderingMetric(value, failed) } },
-            formatVersion: 1 as unknown as int,
+            formatVersion: 1,
         }) as ScenarioRunResult;
 
     const outOfOrderDataset: Dataset = {

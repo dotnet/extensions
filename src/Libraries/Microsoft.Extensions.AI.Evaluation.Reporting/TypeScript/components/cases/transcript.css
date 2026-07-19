@@ -32,9 +32,8 @@ The .NET Foundation licenses this file to you under the MIT license.
 .eval-md h4 { font-size: var(--font-size-200); }
 .eval-md a {
   color: var(--brand-foreground-1);
-  text-decoration: none;
+  text-decoration: underline;
 }
-.eval-md a:hover { text-decoration: underline; }
 .eval-md blockquote {
   padding: var(--spacing-xxs) var(--spacing-m);
   border-left: 3px solid var(--neutral-stroke-1);

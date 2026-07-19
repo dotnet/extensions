@@ -6,7 +6,7 @@ import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluent
 import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { useAnnounce } from '../core/Announcer';
-import { useReportStyles } from '../styles/reportStyles';
+import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
 import { formatNumber } from '../core/metricModel';
 import {
@@ -627,7 +627,7 @@ export const ComparisonView = () => {
                     </div>
 
                     <div className={mergeClasses('eval-cmp-arrowwrap', local.cmpArrowWrap)}>
-                        <span className={mergeClasses('eval-cmp-arrow', local.cmpArrowIcon)}>
+                        <span aria-hidden="true" className={mergeClasses('eval-cmp-arrow', local.cmpArrowIcon)}>
                             <ChevronRight20Regular />
                         </span>
                     </div>
@@ -776,11 +776,11 @@ export const ComparisonView = () => {
                                                     <span aria-hidden="true" style={m.dotA} />
                                                 </span>
                                                 <span
-                                                    aria-label={m.deltaAriaLabel}
                                                     className={local.cmpDeltaCell}
                                                     style={{ color: STATUS_TEXT[m.status] }}
                                                 >
                                                     <span aria-hidden="true">{m.delta}</span>
+                                                    <span style={srOnlyStyle}>{m.deltaAriaLabel}</span>
                                                 </span>
                                             </span>
                                         </div>

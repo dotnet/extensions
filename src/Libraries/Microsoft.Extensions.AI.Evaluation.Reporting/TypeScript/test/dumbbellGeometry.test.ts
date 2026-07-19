@@ -29,6 +29,18 @@ describe('axisDomain — presentation-only chart/dumbbell framing', () => {
         expect(axisDomain([])).toMatchObject({ min: 0, max: 1, ticks: 5 });
     });
 
+    it('bounds the gridline count for wide numeric ranges instead of one line per integer', () => {
+        const pct = axisDomain([0, 40, 100]);
+        expect(pct.ticks).toBeLessThanOrEqual(12);
+        expect(pct.min).toBeLessThanOrEqual(0);
+        expect(pct.max).toBeGreaterThanOrEqual(100);
+
+        const tokens = axisDomain([1200, 3000, 4800]);
+        expect(tokens.ticks).toBeLessThanOrEqual(12);
+        expect(tokens.min).toBeLessThanOrEqual(1200);
+        expect(tokens.max).toBeGreaterThanOrEqual(4800);
+    });
+
     it('routes fmt through the pinned formatNumber policy (settles tick decimals, no denominator)', () => {
         const dom = axisDomain([0.2, 0.5, 0.8]);
         expect(dom.fmt(0.2)).toBe('0.2');

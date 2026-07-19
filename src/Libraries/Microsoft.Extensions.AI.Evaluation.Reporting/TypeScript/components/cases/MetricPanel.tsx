@@ -4,7 +4,7 @@
 import { useId, useState } from 'react';
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { useReportStyles, statusSolidVar, type ReportStatus } from '../styles/reportStyles';
+import { useReportStyles, statusSolidVar, statusTextVar, type ReportStatus } from '../styles/reportStyles';
 import { formatValue } from '../core/metricModel';
 import { DiagnosticsContent } from './DiagnosticsContent';
 import { MetadataContent } from './MetadataContent';
@@ -52,12 +52,6 @@ const ratingWord = (rating: EvaluationRating | undefined): string => {
             return 'Unknown';
     }
 };
-
-const textVarOf = (sk: ReportStatus): string =>
-    sk === 'success' ? 'var(--status-success-background-3)'
-        : sk === 'warning' ? 'var(--status-warning-foreground-1)'
-            : sk === 'danger' ? 'var(--status-danger-background-3)'
-                : 'var(--neutral-foreground-3)';
 
 const metricFailed = (metric: MetricType): boolean =>
     metric.interpretation?.failed === true ||
@@ -263,7 +257,7 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
     const failed = metricFailed(metric);
     const sk: ReportStatus = failed ? 'danger' : statusKeyOf(rating);
     const solid = statusSolidVar(sk);
-    const textColor = textVarOf(sk);
+    const textColor = statusTextVar(sk);
 
     const dotStyle =
         sk === 'neutral'

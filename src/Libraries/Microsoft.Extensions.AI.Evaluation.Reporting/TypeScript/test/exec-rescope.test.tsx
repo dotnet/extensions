@@ -11,7 +11,6 @@ import {
     CasesView,
     passRateByScenarioGroup,
     kpiCountsFromNode,
-    weakestMetrics,
     bucketMetrics,
     scenariosForExecution,
 } from '../components';
@@ -42,39 +41,19 @@ describe('exec re-scope — Overview derivations follow the selected execution',
         const primaryKpi = kpiCountsFromNode(primaryNode);
         const otherKpi = kpiCountsFromNode(otherNode);
 
-        // Concrete counts (not a self-comparison): exec-v1 = 2 pass / 0 fail,
-        // exec-v2 = 1 pass / 1 fail (safety fails on Comparison.TextSummary).
         expect(primaryKpi).toEqual({ passing: 2, failing: 0, total: 2, passRate: 1 });
         expect(otherKpi).toEqual({ passing: 1, failing: 1, total: 2, passRate: 0.5 });
         expect(otherKpi.passRate).toBeLessThan(primaryKpi.passRate);
 
-        // primaryResult is the first-seen execution (exec-v1).
         expect(summary.primaryResult).toBe(primaryNode);
     });
 
-    it('bucketMetrics / weakestMetrics scope to the active execution; default == primary', () => {
+    it('bucketMetrics scopes to the active execution; default == primary', () => {
         const primaryScenarios = scenariosForExecution(twoExecutionDataset, PRIMARY);
         const otherScenarios = scenariosForExecution(twoExecutionDataset, OTHER);
         const defaultScenarios = scenariosForExecution(twoExecutionDataset);
 
         expect(bucketMetrics(primaryScenarios)).not.toEqual(bucketMetrics(otherScenarios));
-
-        // weakestMetrics is sorted worst-first by ratingRank over RATING_SEVERITY:
-        //   unacceptable < poor < average < good < exceptional < inconclusive < unknown.
-        // exec-v1 metrics (scenario/insertion order): coherence=poor, safety=exceptional,
-        //   accuracy=average, fluency=good → worst-first poor, average, good, exceptional.
-        const primaryWeak = weakestMetrics(primaryScenarios);
-        expect(primaryWeak.map(w => w.rating)).toEqual(['poor', 'average', 'good', 'exceptional']);
-        expect(primaryWeak.map(w => w.metricName)).toEqual(['coherence', 'accuracy', 'fluency', 'safety']);
-
-        // exec-v2 metrics: coherence=good, safety=poor, accuracy=exceptional, fluency=good
-        //   → worst-first poor, then the two 'good's in stable insertion order, then exceptional.
-        const otherWeak = weakestMetrics(otherScenarios);
-        expect(otherWeak.map(w => w.rating)).toEqual(['poor', 'good', 'good', 'exceptional']);
-        expect(otherWeak.map(w => w.metricName)).toEqual(['safety', 'coherence', 'fluency', 'accuracy']);
-
-        // The worst metric still differs between executions.
-        expect(primaryWeak[0].metricName).not.toBe(otherWeak[0].metricName);
 
         expect(defaultScenarios).toEqual(primaryScenarios);
     });

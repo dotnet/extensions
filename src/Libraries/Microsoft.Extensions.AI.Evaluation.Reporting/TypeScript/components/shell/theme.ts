@@ -4,9 +4,9 @@
 import { webDarkTheme, webLightTheme, type Theme } from '@fluentui/react-components';
 import './theme.css';
 
-export const DARK_ROOT_CLASS = 'fluent-dark';
+const DARK_ROOT_CLASS = 'fluent-dark';
 
-export type ResolvedTheme = {
+type ResolvedTheme = {
     fluentTheme: Theme;
     rootClass: string | undefined;
 };

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-const INT1 = 1 as unknown as int;
-
 const txt = (text: string): AIContent =>
     ({ $type: 'text', text }) as unknown as AIContent;
 
@@ -25,7 +23,6 @@ const metric = (
     reason: `Auto-generated reason for ${name}.`,
     interpretation: { rating, failed },
     diagnostics,
-    metadata: {},
 });
 
 const boolMetric = (
@@ -39,7 +36,6 @@ const boolMetric = (
     value,
     reason: `Boolean metric reason for ${name}.`,
     interpretation: { rating, failed },
-    metadata: {},
 });
 
 const noValueMetric = (name: string, rating: EvaluationRating): MetricWithNoValue => ({
@@ -48,7 +44,6 @@ const noValueMetric = (name: string, rating: EvaluationRating): MetricWithNoValu
     value: undefined,
     reason: 'Evaluation was inconclusive due to missing context.',
     interpretation: { rating, failed: false },
-    metadata: {},
 });
 
 const makeScenario = (
@@ -67,7 +62,7 @@ const makeScenario = (
     messages,
     modelResponse,
     evaluationResult: { metrics },
-    formatVersion: INT1,
+    formatVersion: 1,
     tags,
 });
 
@@ -139,7 +134,6 @@ export const multiGroupDataset: Dataset = {
                 name: 'knowledgeCheck',
                 value: undefined,
                 interpretation: { rating: 'unknown', failed: false },
-                metadata: {},
             } as NumericMetric,
         }, ['GroupC']),
     ],

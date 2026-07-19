@@ -9,7 +9,6 @@ const numericMetric = (value?: number): NumericMetric =>
         $type: 'numeric',
         name: 'm',
         value,
-        metadata: {},
     }) as NumericMetric;
 
 const booleanMetric = (value?: boolean): BooleanMetric =>
@@ -17,7 +16,6 @@ const booleanMetric = (value?: boolean): BooleanMetric =>
         $type: 'boolean',
         name: 'm',
         value,
-        metadata: {},
     }) as BooleanMetric;
 
 const stringMetric = (value?: string): StringMetric =>
@@ -25,7 +23,6 @@ const stringMetric = (value?: string): StringMetric =>
         $type: 'string',
         name: 'm',
         value,
-        metadata: {},
     }) as StringMetric;
 
 const noneMetric = (): MetricWithNoValue =>
@@ -33,7 +30,6 @@ const noneMetric = (): MetricWithNoValue =>
         $type: 'none',
         name: 'm',
         value: undefined,
-        metadata: {},
     }) as MetricWithNoValue;
 
 describe('formatNumber — pinned precision policy (round to <=3dp, strip trailing zeros)', () => {

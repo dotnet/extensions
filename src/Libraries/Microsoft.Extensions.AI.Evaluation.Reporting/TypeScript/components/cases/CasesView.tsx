@@ -340,7 +340,7 @@ const CaseRow = ({
                 ref={(el) => registerRowRef(vm.key, el)}
                 className={mergeClasses(classes.row, classes.rowInteractive)}
                 aria-expanded={open}
-                aria-controls={regionId}
+                aria-controls={open ? regionId : undefined}
                 aria-label={`${vm.label}${vm.failed ? ' (failed)' : ' (passed)'}`}
                 onClick={onToggle}
             >
@@ -447,7 +447,7 @@ export const CasesView = () => {
     const prevKeys = useMemo(() => {
         const execs = chronologicalExecutions(dataset);
         const activeIdx = execs.indexOf(activeExecution);
-        const prevExec = activeIdx <= 0 ? execs[1] : execs[activeIdx - 1];
+        const prevExec = activeIdx > 0 ? execs[activeIdx - 1] : undefined;
         if (!prevExec) {
             return undefined;
         }

@@ -13,7 +13,6 @@ const boolMetric = (name: string, value: boolean, rating: EvaluationRating, fail
     value,
     reason: `Reason for ${name}.`,
     interpretation: { rating, failed },
-    metadata: {},
 });
 
 const run = (
@@ -30,7 +29,7 @@ const run = (
         messages: [],
         modelResponse: { messages: [] },
         evaluationResult: { metrics },
-        formatVersion: 1 as unknown as int,
+        formatVersion: 1,
     }) as ScenarioRunResult;
 
 const booleanOnlyDataset: Dataset = {

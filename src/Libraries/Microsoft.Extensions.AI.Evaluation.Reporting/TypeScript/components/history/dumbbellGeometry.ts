@@ -10,7 +10,7 @@ const DUMBBELL_CONN = 1.5;
 export const posOn = (v: number, min: number, max: number): number =>
     max > min ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : 50;
 
-export type StatusKey = 'success' | 'warning' | 'danger' | 'caution' | 'neutral';
+type StatusKey = 'success' | 'warning' | 'danger' | 'caution' | 'neutral';
 
 const STATUS_SOLID: Record<StatusKey, string> = {
     success: 'var(--status-success-background-3)',
@@ -22,13 +22,13 @@ const STATUS_SOLID: Record<StatusKey, string> = {
 
 export const STATUS_TEXT: Record<StatusKey, string> = {
     success: 'var(--status-success-background-3)',
-    warning: 'var(--palette-orange-background3)',
+    warning: 'var(--status-warning-foreground-1)',
     danger: 'var(--status-danger-background-3)',
-    caution: 'var(--status-warning-background-3)',
+    caution: 'var(--status-warning-foreground-1)',
     neutral: 'var(--neutral-foreground-3)',
 };
 
-export type DumbbellStyles = {
+type DumbbellStyles = {
     sk: StatusKey;
     connector: CSSProperties;
     dotB: CSSProperties;

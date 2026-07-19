@@ -5,7 +5,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App, createScoreSummary, ReportContextProvider } from '../../components';
 
-let dataset: Dataset = { scenarioRunResults: [] };
+let dataset: Dataset = { scenarioRunResults: [], createdAt: '' };
 
 const rootElement = document.getElementById('root')!;
 

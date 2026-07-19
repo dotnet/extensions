@@ -3,7 +3,7 @@
 
 import type { ReactNode } from 'react';
 import { makeStyles, mergeClasses } from '@fluentui/react-components';
-import { statusSolidVar, type ReportStatus } from './reportStyles';
+import { statusSolidVar, statusTextVar, type ReportStatus } from './reportStyles';
 
 const usePillStyles = makeStyles({
     base: {
@@ -51,7 +51,7 @@ export const StatusPill = ({
                 className,
             )}
             style={{
-                color: base,
+                color: statusTextVar(status),
                 border: tint ? `1px solid color-mix(in srgb, ${base} 45%, transparent)` : '1px solid transparent',
                 backgroundColor: tint ? `color-mix(in srgb, ${base} 14%, transparent)` : 'transparent',
             }}

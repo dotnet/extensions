@@ -16,7 +16,6 @@ const metric = (name: string, value: number, rating: EvaluationRating): NumericM
     name,
     value,
     interpretation: { rating, failed: rating === 'poor' || rating === 'unacceptable' },
-    metadata: {},
 });
 
 const results = (name: string, samples: VR[]): ScenarioRunResult[] =>

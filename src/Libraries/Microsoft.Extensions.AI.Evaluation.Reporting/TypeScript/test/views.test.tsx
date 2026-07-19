@@ -116,7 +116,6 @@ describe('ComparisonView — value deltas with no inferable direction stay direc
             value,
             reason: 'test',
             interpretation: { rating: 'good', failed: false },
-            metadata: {},
         }) as NumericMetric;
 
     const invRow = (executionName: string, creationTime: string, metrics: Record<string, NumericMetric>): ScenarioRunResult =>
@@ -128,7 +127,7 @@ describe('ComparisonView — value deltas with no inferable direction stay direc
             messages: [],
             modelResponse: { messages: [] },
             evaluationResult: { metrics },
-            formatVersion: 1 as unknown as int,
+            formatVersion: 1,
         }) as ScenarioRunResult;
 
     // Every metric here holds a constant 'good' rating, so no better-direction can be inferred from
@@ -158,11 +157,11 @@ describe('ComparisonView — value deltas with no inferable direction stay direc
         expect(biggest.nextElementSibling?.nextElementSibling?.textContent).toBe('toxicity');
     });
 
-    it('never announces "improved"/"regressed" in the accessible per-metric delta label', () => {
+    it('never announces "improved"/"regressed" in the accessible per-metric delta text', () => {
         renderWith(inversionDataset, <ComparisonView />);
-        expect(screen.getByLabelText('decreased by 3')).toBeInTheDocument();
-        expect(screen.getByLabelText('increased by 2')).toBeInTheDocument();
-        expect(screen.queryByLabelText(/improved|regressed/i)).not.toBeInTheDocument();
+        expect(screen.getByText('decreased by 3')).toBeInTheDocument();
+        expect(screen.getByText('increased by 2')).toBeInTheDocument();
+        expect(screen.queryByText(/improved|regressed/i)).not.toBeInTheDocument();
     });
 });
 

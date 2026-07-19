@@ -14,7 +14,6 @@ const numeric = (name: string, value: number, rating: EvaluationRating, failed: 
         value,
         reason: 'test',
         interpretation: { rating, failed },
-        metadata: {},
     }) as NumericMetric;
 
 const run = (
@@ -31,7 +30,7 @@ const run = (
         messages: [],
         modelResponse: { messages: [] },
         evaluationResult: { metrics },
-        formatVersion: 1 as unknown as int,
+        formatVersion: 1,
     }) as ScenarioRunResult;
 
 const T_OLD = '2026-01-01T00:00:00.000Z';

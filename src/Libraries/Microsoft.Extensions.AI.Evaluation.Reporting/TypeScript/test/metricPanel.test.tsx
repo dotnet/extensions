@@ -35,7 +35,6 @@ const boolean = (name: string, value: boolean, rating: EvaluationRating, failed:
     value,
     reason: `Reason for ${name}.`,
     interpretation: { rating, failed },
-    metadata: {},
 });
 
 const none = (name: string, rating: EvaluationRating): MetricWithNoValue => ({
@@ -44,7 +43,6 @@ const none = (name: string, rating: EvaluationRating): MetricWithNoValue => ({
     value: undefined,
     reason: `Reason for ${name}.`,
     interpretation: { rating, failed: false },
-    metadata: {},
 });
 
 const string = (name: string, value: string, rating: EvaluationRating): StringMetric => ({
@@ -53,7 +51,6 @@ const string = (name: string, value: string, rating: EvaluationRating): StringMe
     value,
     reason: `Reason for ${name}.`,
     interpretation: { rating, failed: false },
-    metadata: {},
 });
 
 // The score/severity track renders one <span> per scale segment inside a single track span;

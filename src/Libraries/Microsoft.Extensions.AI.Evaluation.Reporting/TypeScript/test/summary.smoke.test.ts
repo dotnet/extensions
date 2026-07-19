@@ -3,6 +3,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { createScoreSummary } from '../components';
+import { singleExecutionDataset, twoExecutionDataset } from './fixtures/richDataset';
 
 const makeTextContent = (text: string): TextContent => ({ $type: 'text', text });
 
@@ -25,11 +26,10 @@ const makeScenario = (
                 name: 'coherence',
                 value: failed ? 1 : 5,
                 interpretation: { rating: failed ? 'unacceptable' : 'exceptional', failed },
-                metadata: {},
             } as NumericMetric,
         },
     },
-    formatVersion: 1 as unknown as int,
+    formatVersion: 1,
 });
 
 const dataset: Dataset = {
@@ -60,5 +60,19 @@ describe('createScoreSummary — aggregate pass/fail counts', () => {
         const summary = createScoreSummary(dataset);
         expect(summary.primaryResult).toBeDefined();
         expect(summary.executionHistory.size).toBe(1);
+    });
+});
+
+describe('createScoreSummary — report history flag', () => {
+    it('a single-execution report has one execution and no report history', () => {
+        const summary = createScoreSummary(singleExecutionDataset);
+        expect(summary.executionHistory.size).toBe(1);
+        expect(summary.includesReportHistory).toBe(false);
+    });
+
+    it('a multi-execution report exposes its execution history', () => {
+        const summary = createScoreSummary(twoExecutionDataset);
+        expect(summary.executionHistory.size).toBe(2);
+        expect(summary.includesReportHistory).toBe(true);
     });
 });

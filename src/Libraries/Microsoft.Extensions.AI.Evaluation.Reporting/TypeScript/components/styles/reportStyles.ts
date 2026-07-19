@@ -174,3 +174,9 @@ export const statusSolidVar = (status: ReportStatus): string =>
             : status === 'warning' ? 'var(--palette-orange-background3)'
                 : status === 'danger' ? 'var(--status-danger-background-3)'
                     : 'var(--neutral-foreground-4)';
+
+export const statusTextVar = (status: ReportStatus): string =>
+    status === 'warning' || status === 'caution' ? 'var(--status-warning-foreground-1)'
+        : status === 'success' ? 'var(--status-success-background-3)'
+            : status === 'danger' ? 'var(--status-danger-background-3)'
+                : 'var(--neutral-foreground-3)';

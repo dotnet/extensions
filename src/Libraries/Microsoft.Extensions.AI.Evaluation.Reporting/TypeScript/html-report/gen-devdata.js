@@ -353,7 +353,7 @@ const buildScoreMetric = (def, c, ex, evalMs, judgeModel) => {
         $type: 'numeric', name: def.key, value,
         reason: def.def,
         interpretation: { rating, failed, reason: interpFor(def.key, def.kind, value, rating, failed) },
-        diagnostics: diags, metadata: meta,
+        diagnostics: diags, ...(Object.keys(meta).length ? { metadata: meta } : {}),
     };
 };
 
@@ -377,7 +377,7 @@ const buildFracMetric = (def, c, ex, opts = {}) => {
         $type: 'numeric', name: def.key, value,
         reason,
         interpretation: { rating, failed, reason: interpFor(def.key, def.kind, value, rating, failed) },
-        diagnostics: diags, metadata: meta,
+        diagnostics: diags, ...(Object.keys(meta).length ? { metadata: meta } : {}),
     };
 };
 

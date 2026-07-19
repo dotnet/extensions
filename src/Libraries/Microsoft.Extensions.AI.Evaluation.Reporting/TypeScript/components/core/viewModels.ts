@@ -12,9 +12,9 @@ import {
 
 export { isLeafFailed };
 
-export type RatingBucket = 'good' | 'fair' | 'weak' | 'unknown';
+type RatingBucket = 'good' | 'fair' | 'weak' | 'unknown';
 
-export type BucketCounts = {
+type BucketCounts = {
     good: number;
     fair: number;
     weak: number;
@@ -105,7 +105,7 @@ export const passRateByScenarioGroup = (
     const activeExec = execName ?? primaryExec;
     const activeIdx = executions.indexOf(activeExec);
 
-    const previousExec = activeIdx <= 0 ? executions[1] : executions[activeIdx - 1];
+    const previousExec = activeIdx > 0 ? executions[activeIdx - 1] : undefined;
 
     const activeResults = results.filter((r) => r.executionName === activeExec);
     const activeTallies = groupTallies(activeResults);
@@ -151,22 +151,14 @@ export const kpiCountsFromNode = (node: ScoreNode): KpiCounts => {
     return { passing, failing, total, passRate: total > 0 ? passing / total : 0 };
 };
 
-export type MetricHistoryPoint = {
+type MetricHistoryPoint = {
     executionName: string;
     value: number;
 };
 
-export type MetricHistorySeries = {
+type MetricHistorySeries = {
     metricName: string;
     points: MetricHistoryPoint[];
-};
-
-export type WeakMetric = {
-    scenarioName: string;
-    iterationName: string;
-    metricName: string;
-    rating: EvaluationRating;
-    value?: number;
 };
 
 const isNumericMetric = (metric: BaseEvaluationMetric): metric is NumericMetric =>
@@ -274,41 +266,4 @@ export const moversBetween = (
 
     rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
     return Number.isFinite(limit) ? rows.slice(0, limit) : rows;
-};
-
-const RATING_SEVERITY: EvaluationRating[] = [
-    'unacceptable',
-    'poor',
-    'average',
-    'good',
-    'exceptional',
-    'inconclusive',
-    'unknown',
-];
-
-const ratingRank = (rating: EvaluationRating): number => {
-    const idx = RATING_SEVERITY.indexOf(rating);
-    return idx === -1 ? RATING_SEVERITY.length : idx;
-};
-
-export const weakestMetrics = (scenarios: ScenarioRunResult[], limit = 5): WeakMetric[] => {
-    const weak: WeakMetric[] = [];
-    for (const scenario of scenarios) {
-        for (const metric of Object.values(scenario.evaluationResult?.metrics ?? {})) {
-            const rating = metric?.interpretation?.rating;
-            if (rating === undefined) {
-                continue;
-            }
-            weak.push({
-                scenarioName: scenario.scenarioName,
-                iterationName: scenario.iterationName,
-                metricName: metric.name,
-                rating,
-                value: isNumericMetric(metric) ? metric.value : undefined,
-            });
-        }
-    }
-
-    weak.sort((a, b) => ratingRank(a.rating) - ratingRank(b.rating));
-    return Number.isFinite(limit) ? weak.slice(0, limit) : weak;
 };

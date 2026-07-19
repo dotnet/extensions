@@ -15,7 +15,6 @@ const passMetric: Metrics = {
         value: 5,
         reason: 'ok',
         interpretation: { rating: 'exceptional', failed: false },
-        metadata: {},
     } as NumericMetric,
 };
 
@@ -35,7 +34,7 @@ const scenario = (
         modelId: 'gpt-test',
     },
     evaluationResult: { metrics: passMetric },
-    formatVersion: 1 as unknown as int,
+    formatVersion: 1,
     tags: ['difficulty:easy'],
 });
 

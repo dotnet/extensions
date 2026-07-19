@@ -23,7 +23,6 @@ export {
     passRateByScenarioGroup,
     scenariosForExecution,
     kpiCountsFromNode,
-    weakestMetrics,
 } from './core/viewModels';
 
 export { CasesView } from './cases/CasesView';

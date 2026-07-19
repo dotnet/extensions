@@ -21,7 +21,6 @@ const numeric = (name: string, value: number): NumericMetric =>
         value,
         reason: 'test',
         interpretation: { rating: 'good', failed: false },
-        metadata: {},
     }) as NumericMetric;
 
 const row = (
@@ -37,7 +36,7 @@ const row = (
         messages: [],
         modelResponse: { messages: [] },
         evaluationResult: { metrics: { quality: numeric('quality', quality) } },
-        formatVersion: 1 as unknown as int,
+        formatVersion: 1,
     }) as ScenarioRunResult;
 
 const dataset: Dataset = {
@@ -125,7 +124,7 @@ describe('HistoryView — switching scenarios does not violate the Rules of Hook
             messages: [],
             modelResponse: { messages: [] },
             evaluationResult: { metrics: { quality: numeric('quality', quality) } },
-            formatVersion: 1 as unknown as int,
+            formatVersion: 1,
         }) as ScenarioRunResult;
 
     const soloRow: ScenarioRunResult = {
@@ -136,7 +135,7 @@ describe('HistoryView — switching scenarios does not violate the Rules of Hook
         messages: [],
         modelResponse: { messages: [] },
         evaluationResult: { metrics: { quality: numeric('quality', 3) } },
-        formatVersion: 1 as unknown as int,
+        formatVersion: 1,
     } as ScenarioRunResult;
 
     const mixedDataset: Dataset = {

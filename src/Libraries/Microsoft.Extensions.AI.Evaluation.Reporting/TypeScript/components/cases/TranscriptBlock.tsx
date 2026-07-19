@@ -592,7 +592,7 @@ export const TranscriptBlock = ({ messages, model: modelProp }: { messages: Chat
         <Card appearance="outline" className="eval-transcript">
             <div className={classes.card}>
                 <div className={classes.headerRow}>
-                    <h3 id={headingId} className={classes.eyebrow}>Transcript</h3>
+                    <h2 id={headingId} className={classes.eyebrow}>Transcript</h2>
                 </div>
                 <div className={classes.blockBody} role="log" aria-labelledby={headingId}>
                     {groups.length === 0 && <div className={classes.empty}>No transcript for this case.</div>}
