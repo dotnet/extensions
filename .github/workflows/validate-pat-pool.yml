@@ -23,12 +23,12 @@ jobs:
         else echo "status=invalid" >> "$GITHUB_OUTPUT"; fi
     steps:
       - name: Setup gh-aw scripts
-        uses: github/gh-aw-actions/setup@ba6380cc6e5be5d21677bebe04d52fb48e3abec7 # v0.81.6
+        uses: github/gh-aw-actions/setup@cec6394202d7db187b02310d928812194988eb20 # v0.82.6
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
 
       - name: Install Copilot CLI
-        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.60
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.68
 
       # -----------------------------------------------------------
       # Make a Copilot CLI request with each PAT.
