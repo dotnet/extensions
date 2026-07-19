@@ -13,16 +13,13 @@ permissions:
 
 safe-outputs:
   # Threat detection screens the untrusted upstream conventions and reviewer feedback this
-  # agent integrates. It runs in a separate gh-aw job that authenticates via the coalescing
-  # token below.
+  # agent integrates. It runs in a separate gh-aw job that selects its Copilot PAT from the
+  # pool, the same as the agent job.
   threat-detection:
     engine:
       id: copilot
       env:
-        # Workaround for github/gh-aw#43917: the detection job's `needs` omit `pat_pool`, so the
-        # main engine's case(needs.pat_pool...) token can't resolve here. Authenticate by
-        # coalescing the pool PAT secrets directly -- the first non-empty one wins.
-        COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 || secrets.COPILOT_PAT_1 || secrets.COPILOT_PAT_2 || secrets.COPILOT_PAT_3 || secrets.COPILOT_PAT_4 || secrets.COPILOT_PAT_5 || secrets.COPILOT_PAT_6 || secrets.COPILOT_PAT_7 || secrets.COPILOT_PAT_8 || secrets.COPILOT_PAT_9 || secrets.COPILOT_GITHUB_TOKEN }}
+        COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
   create-pull-request:
     draft: true
     labels: [automation, area-ai]
@@ -65,6 +62,11 @@ network:
     - "*.azureedge.net"
 
 tools:
+  # Route Safe Outputs through the CLI proxy instead of the native HTTP MCP endpoint on the
+  # awmg-mcpg gateway, which the firewall denies (TCP_DENIED/403) before recommending the
+  # non-compilable `awmgmcpg` network.allowed entry. Workaround for github/gh-aw#45915;
+  # github.mode: gh-proxy (below) removes the native GitHub MCP endpoint for the same reason.
+  cli-proxy: true
   github:
     mode: gh-proxy
     toolsets: [default]
