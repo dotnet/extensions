@@ -29,7 +29,7 @@ The Release Tracker at <https://release.dot.net/releases> is a Blazor WebAssembl
 - **.NET 8** -- the pending 8.0 release's `manifests/ReleaseManifest.json`.
 - **.NET 10** -- the pending 10.0 release's `manifests/ReleaseManifest.json`, or a pasted list of its BAR build IDs from the release page.
 
-Each build entry in a `ReleaseManifest.json` has a `repo` (like `<internal-azdo>`) and a `barBuildId`. Read the IDs you need:
+Each build entry in a `ReleaseManifest.json` has a `repo` and a `barBuildId`. Read the IDs you need:
 
 - **.NET 9 and .NET 8:** the `barBuildId` for `dotnet-runtime`, `dotnet-aspnetcore`, and `dotnet-efcore`.
 - **.NET 10:** every `barBuildId` (or the pasted list). Order does not matter.
@@ -45,7 +45,7 @@ darc update-dependencies --id <barBuildId>
 ```
 
 - `dotnet-efcore` commonly reports `warn: Found no dependencies to update` -- that is expected.
-- .NET 9 is the coherent primary update: **keep everything darc changes**, including `eng/Version.Details.xml`, the non-suffixed `...Version` entries in `eng/Versions.props`, and the new `internal package sources` feeds in `NuGet.config`.
+- .NET 9 is the coherent primary update: **keep everything darc changes**, including `eng/Version.Details.xml`, the non-suffixed `...Version` entries in `eng/Versions.props`, and the new internal package sources in `NuGet.config`.
 
 Review the changes, then stage and commit:
 
@@ -72,7 +72,7 @@ Once all three repos are applied, fix up the changes so that only the 8.0 (`...L
    git checkout eng/Version.Details.xml
    ```
 
-2. `NuGet.config` -- resolve keeping both. Keep the pre-existing `internal package sources` feeds (added by .NET 9) **and** the newly added 8.0 ones; discard the deletions and keep the additions. The result adds the new 8.0 `internal package sources` sources: three in `<packageSources>` and three in `<disabledPackageSources>`. Then:
+2. `NuGet.config` -- resolve keeping both. Keep the pre-existing internal package sources (added by .NET 9) **and** the newly added 8.0 ones; discard the deletions and keep the additions. The result adds the new 8.0 internal package sources: three in `<packageSources>` and three in `<disabledPackageSources>`. Then:
 
    ```
    git add NuGet.config
@@ -114,7 +114,7 @@ Once all IDs are applied, fix up the changes:
    git checkout eng/common
    ```
 
-3. `NuGet.config` -- resolve keeping both, exactly as in Sub-stage 2: keep the pre-existing and the newly added `internal package sources` feeds. Then `git add NuGet.config`.
+3. `NuGet.config` -- resolve keeping both, exactly as in Sub-stage 2: keep the pre-existing and the newly added internal package sources. Then `git add NuGet.config`.
 
 4. `eng/Versions.props` hand-edit:
    - **Keep** the Arcade `MicrosoftDotNetBuildTasksTemplating*Version` entry updates (both the base entry and the `...Net10Version` variant). These stay -- only the `eng/common/` tooling files and `Version.Details.xml` are reverted for Arcade.
@@ -132,4 +132,4 @@ Only `NuGet.config` and `eng/Versions.props` belong in this commit -- no `eng/co
 
 ## After the stage
 
-Do not push from within this stage. Pushing the `stage-release-<major>.<minor>` branch is a separate, user-directed step. When it happens, resolve the internal remote by its URL (`<internal-azdo>/internal/_git/dotnet-extensions`) rather than assuming a remote name, which varies between clones.
+Do not push from within this stage. Pushing the `stage-release-<major>.<minor>` branch is a separate, user-directed step. When it happens, resolve the internal remote by its URL rather than assuming a remote name, which varies between clones.

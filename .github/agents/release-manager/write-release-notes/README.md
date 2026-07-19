@@ -1,15 +1,8 @@
----
-name: write-release-notes
-description: 'Draft release notes for a dotnet/extensions release. Gathers merged PRs, assigns them to packages by file path, categorizes by area and impact, tracks experimental API changes, and produces formatted markdown suitable for a GitHub release. Handles both monthly full releases and targeted intra-month patch releases.'
-agent: 'agent'
-tools: ['github/*', 'sql', 'ask_user']
----
-
 # Release Notes
 
-Draft release notes for a `dotnet/extensions` release. This skill gathers merged PRs between two tags, maps them to affected packages by examining changed file paths, categorizes entries by area and impact, audits experimental API changes, and produces concise markdown suitable for a GitHub release.
+Draft release notes for a `dotnet/extensions` release. This playbook gathers merged PRs between two tags, maps them to affected packages by examining changed file paths, categorizes entries by area and impact, audits experimental API changes, and produces concise markdown suitable for a GitHub release.
 
-> **User confirmation required: This skill NEVER publishes a GitHub release without explicit user confirmation.** The user must review and approve the draft before any release is created.
+> **User confirmation required: This playbook NEVER publishes a GitHub release without explicit user confirmation.** The user must review and approve the draft before any release is created.
 
 ## Context
 
