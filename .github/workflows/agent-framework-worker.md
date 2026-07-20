@@ -163,15 +163,36 @@ post-steps:
       if [ -z "$idx" ]; then
         echo "::notice::No full-body PR-writing items -- nothing to validate"; exit 0
       fi
+      # Validate exactly as agent-framework-worker-setup.sh reads the block next run: the begin/end
+      # markers must be whole trimmed lines, and the recorded values are read from inside that block.
+      # A looser substring match could pass here yet leave the body unparseable next run, wedging the
+      # state machine -- so mirror that parser (whole-line markers + block extraction) and require the
+      # recorded agent-framework-version and feedback-processed-through to be present within the block.
+      marker="agent-framework-template"
+      tracking_block() {
+        awk -v b="# ${marker}:state:begin" -v e="# ${marker}:state:end" '
+          { t=$0; sub(/\r$/,"",t); gsub(/^[[:space:]]+|[[:space:]]+$/,"",t) }
+          t == b { inb=1; buf=$0 ORS; next }
+          inb    { buf=buf $0 ORS; if (t == e) { inb=0; last=buf } }
+          END    { if (inb) last=buf; printf "%s", last }'
+      }
+      tracking_value() {
+        sed -n "s/^[[:space:]]*[-*+>]*[[:space:]]*$1:[[:space:]]*//p" |
+          head -1 | tr -d '"'\''\r' | sed 's/[[:space:]]*#.*$//; s/[[:space:]]*$//'
+      }
       rc=0
       while IFS= read -r i; do
         [ -n "$i" ] || continue
         typ=$(jq -r ".items[$i].type" "$out")
         body=$(jq -r ".items[$i].body" "$out")
+        block=$(printf '%s' "$body" | tracking_block)
         miss=""
-        printf '%s' "$body" | grep -q '# agent-framework-template:state:begin' || miss="$miss begin-marker"
-        printf '%s' "$body" | grep -q '# agent-framework-template:state:end'   || miss="$miss end-marker"
-        printf '%s' "$body" | grep -Eq 'feedback-processed-through:[[:space:]]*[0-9]' || miss="$miss feedback-processed-through"
+        if [ -z "$block" ]; then
+          miss="$miss state-block(whole-line begin/end markers)"
+        else
+          [ -n "$(printf '%s' "$block" | tracking_value agent-framework-version)" ] || miss="$miss agent-framework-version"
+          [ -n "$(printf '%s' "$block" | tracking_value feedback-processed-through)" ] || miss="$miss feedback-processed-through"
+        fi
         if [ -n "$miss" ]; then
           echo "::error::$typ item #$i is missing required tracking identity:$miss"
           rc=1

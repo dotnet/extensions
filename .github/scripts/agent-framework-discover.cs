@@ -114,9 +114,15 @@ var versionsById = new Dictionary<string, IReadOnlyList<NuGetVersion>>(StringCom
 foreach (var id in family)
     versionsById[id] = await AllVersions(id);
 
+// Newest by SemVer 2.0 order, or null when the sequence is empty -- e.g. a transient feed/API
+// error left a package (or the anchor) with no versions. Explicit LastOrDefault-after-ordering so
+// the empty case is obvious and callers emit a controlled Fail()/null, rather than relying on the
+// reference-type Enumerable.Max() returning null on empty.
+static NuGetVersion? Newest(IEnumerable<NuGetVersion> vs) => vs.OrderBy(v => v).LastOrDefault();
+
 // ---- release_version = newest STABLE of the anchor ------------------------------------------
 var anchorVersions = versionsById.TryGetValue(Anchor, out var av) ? av : [];
-var release = anchorVersions.Where(v => !v.IsPrerelease).Max();
+var release = Newest(anchorVersions.Where(v => !v.IsPrerelease));
 if (release is null)
     Fail($"No stable {Anchor} version found on {Channel}; aborting rather than emitting an empty signal.");
 
@@ -134,9 +140,9 @@ var packages = new SortedDictionary<string, object?>(StringComparer.Ordinal);
 string? releaseDate = null;
 foreach (var (id, vs) in versionsById)
 {
-    var atRelease = vs.Where(AtRelease).Max();
-    var newest = vs.Count > 0 ? vs.Max() : null;
-    var newestStable = vs.Where(v => !v.IsPrerelease).Max();
+    var atRelease = Newest(vs.Where(AtRelease));
+    var newest = Newest(vs);
+    var newestStable = Newest(vs.Where(v => !v.IsPrerelease));
 
     if (releaseDate is null && atRelease is { IsPrerelease: true })
     {
