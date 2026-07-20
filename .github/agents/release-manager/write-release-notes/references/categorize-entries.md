@@ -11,7 +11,7 @@ For each candidate PR, assign one of these categories based on the primary inten
 | What's Changed | `changed` | Features, bug fixes, API improvements, performance, breaking changes |
 | Documentation Updates | `docs` | PRs whose sole purpose is documentation |
 | Test Improvements | `tests` | Adding, fixing, or improving tests |
-| Repository Infrastructure Updates | `infra` | CI/CD, dependency bumps, version bumps, build system, agents and skills |
+| Repository Infrastructure Updates | `infra` | CI/CD, dependency bumps, version bumps, build system, agents, workflows and skills |
 
 **Decision rules:**
 - If a PR modifies files under `src/Libraries/` or `src/Generators/` or `src/Analyzers/`, it is `changed` (even if it also touches docs or tests)

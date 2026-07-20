@@ -20,14 +20,17 @@
 #>
 param(
   [string]$PackageDir = '.',
-  [string]$SymbolServer = 'https://symbols.nuget.org/download/symbols/',
+  [string]$SymbolServer = 'https://msdl.microsoft.com/download/symbols/',
   [int]$Max = 0   # 0 = all packages
 )
 
 $ErrorActionPreference = 'Continue'
-$env:PATH += ';' + (Join-Path $env:USERPROFILE '.dotnet\tools')
+$dotnetTools = Join-Path $HOME '.dotnet/tools'
+if (Test-Path $dotnetTools) {
+    $env:PATH = "$env:PATH$([IO.Path]::PathSeparator)$dotnetTools"
+}
 
-$tmp = Join-Path $env:TEMP ('srclink-' + [guid]::NewGuid().ToString('N'))
+$tmp = Join-Path ([IO.Path]::GetTempPath()) ('srclink-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $tmp | Out-Null
 
 $pkgs = Get-ChildItem -Path $PackageDir -Filter '*.nupkg'

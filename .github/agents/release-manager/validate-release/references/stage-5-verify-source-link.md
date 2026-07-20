@@ -1,4 +1,4 @@
-# Stage 1 - Verify Source Link and Symbols
+# Stage 5 - Verify Source Link and Symbols
 
 The publish-release playbook published the packages to nuget.org and promoted the shipping build to the public `.NET <major>` channel. Only after that promotion do the shipped symbols publish to the Microsoft symbol server (msdl). Verify Source Link and symbol-server availability -- this is the **release sign-off gate**.
 
@@ -12,7 +12,7 @@ The publish-release playbook published the packages to nuget.org and promoted th
 Run the Source Link sweep against the folder of published packages:
 
 ```
-scripts/Test-SourceLink.ps1 -PackageDir <folder-with-published-.nupkg>
+./.github/agents/release-manager/validate-release/scripts/Test-SourceLink.ps1 -PackageDir <folder-with-published-.nupkg>
 ```
 
 For each `.nupkg` the script extracts a lib DLL, pulls the matching PDB from the Microsoft symbol server (msdl) via `dotnet-symbol`, and runs `sourcelink test`. Each package reports one of:
@@ -28,4 +28,4 @@ Indexing on msdl lags the promotion, so `symbols-not-indexed` immediately afterw
 
 ## After the stage
 
-Once every library package is `valid`, the release symbols are public. Continue with **Stage 2 - Reconcile Branches**.
+Once every library package is `valid`, the release symbols are public. Continue with **Stage 6 - Reconcile Branches**.

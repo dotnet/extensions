@@ -1,4 +1,4 @@
-# Stage 1 - Land
+# Stage 3 - Land
 
 After the prepare-release playbook is committed and reviewed (Prepare Internal Branch, then Update Dependencies), land the `stage-release-<major>.<minor>` branch on `internal/release/<major>.<minor>` -- gated on a green official build.
 
@@ -50,4 +50,4 @@ After the changes land on `internal/release/<major>.<minor>`, run the official b
 
 ## After the stage
 
-This stage produces no repository commit. Once the official build on `internal/release/<major>.<minor>` succeeds and produces the `PackageArtifacts`, continue with **Stage 2 - Publish and Promote**.
+This stage produces no repository commit. Once the official build on `internal/release/<major>.<minor>` succeeds and produces the `PackageArtifacts`, continue with **Stage 4 - Publish and Promote**.

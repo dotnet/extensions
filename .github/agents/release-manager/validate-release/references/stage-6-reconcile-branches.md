@@ -1,6 +1,6 @@
-# Stage 2 - Reconcile Branches
+# Stage 6 - Reconcile Branches
 
-After Stage 1 verifies the published symbols, reconcile the branches: merge the internal release branch back out to the public release branch, then merge the public release branch into `main`. This is the final release activity.
+After Stage 5 verifies the published symbols, reconcile the branches: merge the internal release branch back out to the public release branch, then merge the public release branch into `main`. This is the final release activity.
 
 Like the publish-release stages, this stage is operational: it stages merges and creates commits on throwaway `merge/*` branches, but it does **not** push or complete pull requests on its own. The agent stages each merge, applies the required file "doctoring", commits, and shows the diff for review; **pushing and completing the PRs (which need JIT elevation / admin settings) are user-directed**, and each merge PR must land as a merge commit (never squashed).
 
@@ -89,4 +89,4 @@ Do this only after Sub-stage 1's PR has merged into `release/<major>.<minor>`. I
 
 ## After the stage
 
-This stage produces merge commits on `merge/*` branches but does not push or complete the pull requests. Tagging and publishing the release notes are handled by the **write-release-notes** playbook. Next, confirm the support-page listing (Stage 3).
+This stage produces merge commits on `merge/*` branches but does not push or complete the pull requests. Tagging and publishing the release notes are handled by the **write-release-notes** playbook. Next, confirm the support-page listing (Stage 7).

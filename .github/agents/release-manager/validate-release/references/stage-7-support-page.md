@@ -1,4 +1,4 @@
-# Stage 3 - Confirm the Support-Page Update
+# Stage 7 - Confirm the Support-Page Update
 
 The [.NET Platform Extensions support policy page](https://dotnet.microsoft.com/en-us/platform/support/policy/extensions) lists the supported packages and their current versions. It is maintained by a **partner team**, so this stage is a **review**, not an edit: confirm their update lands and is complete.
 
@@ -17,4 +17,4 @@ The [.NET Platform Extensions support policy page](https://dotnet.microsoft.com/
 
 ## After the stage
 
-This is the final validation step. The release is complete once its symbols are public (Stage 1), the branches are reconciled (Stage 2), and the support-page listing is confirmed.
+This is the final validation step. The release is complete once its symbols are public (Stage 5), the branches are reconciled (Stage 6), and the support-page listing is confirmed.

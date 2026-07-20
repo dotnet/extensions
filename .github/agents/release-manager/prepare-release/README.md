@@ -15,7 +15,7 @@ Complete stages strictly in order. Treat each stage -- and each sub-stage of a s
 
 Every stage gets its own commit, and every sub-stage gets its own commit. Never combine multiple stages or sub-stages into a single commit. Never push until the user explicitly instructs it.
 
-Commits this playbook creates land in public dotnet/extensions history -- they flow out later through the non-squash internal-to-public merge (validate-release, Stage 2). Keep the `Co-authored-by: Copilot` trailer on those commits but omit the `Copilot-Session` trailer.
+Commits this playbook creates land in public dotnet/extensions history -- they flow out later through the non-squash internal-to-public merge (validate-release, Stage 6). Keep the `Co-authored-by: Copilot` trailer on those commits but omit the `Copilot-Session` trailer.
 
 ## Stage 1 - Prepare Internal Branch
 

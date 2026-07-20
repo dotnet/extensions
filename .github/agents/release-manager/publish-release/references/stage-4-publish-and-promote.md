@@ -1,6 +1,6 @@
-# Stage 2 - Publish and Promote
+# Stage 4 - Publish and Promote
 
-After the Land stage (publish-release Stage 1) lands the release on `internal/release/<major>.<minor>` and its official build produces the `PackageArtifacts`, publish the packages to nuget.org and promote the shipping build to the public channel so its symbols publish to the Microsoft symbol server (msdl).
+After the Land stage (publish-release Stage 3) lands the release on `internal/release/<major>.<minor>` and its official build produces the `PackageArtifacts`, publish the packages to nuget.org and promote the shipping build to the public channel so its symbols publish to the Microsoft symbol server (msdl).
 
 This stage is operational and produces no commit. Both actions are **irreversible**: publishing is human-gated (the agent prepares and reviews the package set but never runs `dotnet nuget push` itself and never handles API keys), and the channel promotion runs only after the user confirms. Verifying that the shipped symbols actually landed on msdl is the next playbook -- **validate-release**.
 
@@ -32,4 +32,4 @@ The packages you just published to nuget.org were built by the official build on
 
 ## After the stage
 
-This stage produces no repository commit. Next, run the **validate-release** playbook: verify Source Link and symbols on msdl (Stage 1), reconcile the branches (Stage 2), and confirm the support-page listing (Stage 3).
+This stage produces no repository commit. Next, run the **validate-release** playbook: verify Source Link and symbols on msdl (Stage 5), reconcile the branches (Stage 6), and confirm the support-page listing (Stage 7).

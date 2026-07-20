@@ -8,7 +8,7 @@ This stage has three sub-stages. Run them in order, and give each its own commit
 2. Update Dependencies: .NET 8
 3. Update Dependencies: .NET 10
 
-Commit each sub-stage automatically as you complete it -- do not pause for per-sub-stage review or approval. This overrides steps 2 and 3 of the Stage workflow in `SKILL.md`. Pushing remains a separate, user-directed step: do not push until the user explicitly instructs it (see "After the stage").
+Commit each sub-stage automatically as you complete it -- do not pause for per-sub-stage review or approval. This overrides steps 2 and 3 of the [Stage workflow](../README.md#stage-workflow). Pushing remains a separate, user-directed step: do not push until the user explicitly instructs it (see "After the stage").
 
 Before committing each sub-stage, review the diff yourself and revert any incidental, non-dependency changes darc introduces (for example, darc sometimes adds a trailing newline to `.config/dotnet-tools.json`). Keep only the intended dependency edits for that sub-stage.
 
