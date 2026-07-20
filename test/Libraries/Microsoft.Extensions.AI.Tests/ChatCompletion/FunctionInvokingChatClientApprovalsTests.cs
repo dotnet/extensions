@@ -1388,8 +1388,67 @@ public class FunctionInvokingChatClientApprovalsTests
         await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput);
     }
 
-    /// <summary>
-    /// FunctionCallContent updates are buffered until the end of the stream so that the client can check
+    [Fact]
+    public async Task ApprovedResponseThatRequestsTerminationStopsBeforeCallingInnerClientAsync()
+    {
+        // An approved function requests termination of the processing loop. Approval responses are handled before
+        // the main loop, so processing must stop right after the approval block - yielding the reconstructed
+        // tool-call and tool result but never calling the inner client. This covers the streaming yield break and
+        // non-streaming return that fire even though the approval block produced messages.
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() =>
+                {
+                    FunctionInvokingChatClient.CurrentContext!.Terminate = true;
+                    return "Result 1";
+                }, "Func1")),
+            ],
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", true, new FunctionCallContent("callId1", "Func1")),
+            ]),
+        ];
+
+        List<ChatMessage> expectedOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+        ];
+
+        using (var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) =>
+                throw new InvalidOperationException("The inner client must not be called after the approved function requests termination."),
+        })
+        {
+            using var service = new FunctionInvokingChatClient(innerClient);
+            var result = await service.GetResponseAsync(CloneInput(input), options);
+            AssertExtensions.EqualMessageLists(expectedOutput, result.Messages.ToList());
+        }
+
+        using (var innerClient = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) =>
+                throw new InvalidOperationException("The inner client must not be called after the approved function requests termination."),
+        })
+        {
+            using var service = new FunctionInvokingChatClient(innerClient);
+            var result = await service.GetStreamingResponseAsync(CloneInput(input), options).ToChatResponseAsync();
+            AssertExtensions.EqualMessageLists(expectedOutput, result.Messages.ToList());
+        }
+    }
+
     /// for matching FunctionResultContent from server-handled function calls and mark those FCCs as
     /// InformationalOnly. This means FCCs are not yielded immediately, even when no approval is required.
     /// </summary>
@@ -1737,10 +1796,6 @@ public class FunctionInvokingChatClientApprovalsTests
             [
                 new ToolApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ]),
-            new ChatMessage(ChatRole.User,
-            [
-                new ToolApprovalResponseContent("callId2", true, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
-            ]),
             new ChatMessage(ChatRole.Assistant,
             [
                 new FunctionCallContent("callId1", "Func")
@@ -1748,6 +1803,10 @@ public class FunctionInvokingChatClientApprovalsTests
             new ChatMessage(ChatRole.Tool,
             [
                 new FunctionResultContent("callId1", result: "Result 1")
+            ]),
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("callId2", true, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
             ]),
         ];
 
@@ -1820,10 +1879,6 @@ public class FunctionInvokingChatClientApprovalsTests
                 [
                     new ToolApprovalRequestContent("callId2", new McpServerToolCallContent("callId2", "McpCall", "myServer"))
                 ]),
-                new ChatMessage(ChatRole.User,
-                [
-                    new ToolApprovalResponseContent("callId2", approveMcpCall, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
-                ]),
                 new ChatMessage(ChatRole.Assistant,
                 [
                     new FunctionCallContent("callId1", "Func")
@@ -1833,6 +1888,10 @@ public class FunctionInvokingChatClientApprovalsTests
                     approveFuncCall ?
                         new FunctionResultContent("callId1", result: "Result 1") :
                         new FunctionResultContent("callId1", result: "Tool call invocation rejected.")
+                ]),
+                new ChatMessage(ChatRole.User,
+                [
+                    new ToolApprovalResponseContent("callId2", approveMcpCall, new McpServerToolCallContent("callId2", "McpCall", "myServer"))
                 ]),
             ];
 

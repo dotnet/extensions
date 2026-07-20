@@ -298,7 +298,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         int consecutiveErrorCount = 0;
         bool anyToolsRequireApproval = false;
 
-        if (HasAnyApprovalContent(originalMessages))
+        if (HasAnyFunctionApproval(originalMessages))
         {
             // A previous turn may have translated FunctionCallContents from the inner client into approval requests sent back to the caller,
             // for any AIFunctions that were actually ApprovalRequiredAIFunctions. If the incoming chat messages include responses to those
@@ -465,7 +465,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         // but there's no benefit to doing so.
         string toolMessageId = Guid.NewGuid().ToString("N");
 
-        if (HasAnyApprovalContent(originalMessages))
+        if (HasAnyFunctionApproval(originalMessages))
         {
             // We also need a synthetic ID for the function call content for approved function calls
             // where we don't know what the original message id of the function call was.
@@ -862,23 +862,27 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// Gets whether <paramref name="messages"/> contains any <see cref="ToolApprovalRequestContent"/> or <see cref="ToolApprovalResponseContent"/>
     /// instances with a <see cref="FunctionCallContent"/> tool call that the FICC needs to process.
     /// </summary>
-    private static bool HasAnyApprovalContent(List<ChatMessage> messages) =>
-        messages.Exists(MessageHasApprovalContent);
+    private static bool HasAnyFunctionApproval(List<ChatMessage> messages) =>
+        messages.Exists(MessageHasFunctionApproval);
 
-    private static bool MessageHasApprovalContent(ChatMessage message) =>
+    private static bool MessageHasFunctionApproval(ChatMessage message) =>
         message.Contents.Any(static c =>
             c is ToolApprovalRequestContent { ToolCall: FunctionCallContent { InformationalOnly: false } }
             or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } });
 
     /// <summary>
-    /// Determines whether <paramref name="message"/> contains any content that is neither an approval request nor an
-    /// approval response, i.e. genuine caller content (such as text) rather than approval machinery. Such content is
-    /// what causes the reconstructed tool-call/result block to be inserted before the approval message rather than
-    /// appended after it. Preserved approval content (for example MCP or informational-only approvals that survive
-    /// extraction) is intentionally not treated as this kind of content, so it stays ahead of the reconstructed block.
+    /// Determines whether every content item in <paramref name="message"/> is a function approval request or response
+    /// (a <see cref="ToolApprovalRequestContent"/> or <see cref="ToolApprovalResponseContent"/> whose tool call is a
+    /// non-informational <see cref="FunctionCallContent"/>). When this returns <see langword="false"/>, the anchor
+    /// message carries content that survives extraction - genuine caller content (such as text) or approval content
+    /// the FICC does not process itself (for example MCP or informational-only approvals). That surviving content is
+    /// what causes the reconstructed tool-call/result block to be inserted before the anchor message rather than
+    /// appended after it, keeping the reconstructed tool result adjacent to its function tool-call.
     /// </summary>
-    private static bool MessageHasNonApprovalContent(ChatMessage message) =>
-        message.Contents.Any(static c => c is not (ToolApprovalRequestContent or ToolApprovalResponseContent));
+    private static bool MessageContainsOnlyFunctionApprovals(ChatMessage message) =>
+        message.Contents.All(static c =>
+            c is ToolApprovalRequestContent { ToolCall: FunctionCallContent { InformationalOnly: false } }
+            or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } });
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
@@ -1332,27 +1336,35 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     {
         // Determine where the reconstructed tool-call/tool-result block is inserted into the outgoing list.
         //
-        // The block is anchored just before the last message that carries approval content. Everything from that
-        // message onwards - its residual content that survives extraction (if the approval response shared a message
-        // with other content), plus every message after it - ends up after the block; everything before it stays
-        // before. This keeps a reconstructed tool result adjacent to the assistant tool-call it belongs to (whether
-        // that tool-call is reconstructed by us in client-managed mode, or held by the service in service-managed
-        // mode) and ahead of any trailing or residual caller-supplied content.
+        // The block is anchored just before the last message that carries function approval content. Everything from
+        // that message onwards - its residual content that survives extraction (if the approval response shared a
+        // message with other content), plus every message after it - ends up after the block; everything before it
+        // stays before. This keeps a reconstructed tool result adjacent to the assistant tool-call it belongs to
+        // (whether that tool-call is reconstructed by us in client-managed conversation mode, or held by the service
+        // in service-managed conversation mode) and ahead of any trailing or residual caller-supplied content.
         //
         // The count is computed before extraction. Any message positioned after lastApprovalIndex carries no
-        // extracted approval content - lastApprovalIndex is the last one that does - so extraction never removes
-        // those messages. The last approval message itself survives only when it has other, non-approval, content.
-        // That makes the trailing count stable across extraction, so the resulting insert index is always in range.
+        // extracted function approval content - lastApprovalIndex is the last one that does - so extraction never
+        // removes those messages. The last approval message itself survives when it also carries other content that
+        // is not a function approval (genuine caller content, or approval content the FICC does not process itself
+        // such as MCP or informational-only approvals). That makes the trailing count stable across extraction, so
+        // the resulting insert index is always in range.
         //
         // Known limitation: content interleaved between multiple approval responses, or placed before an approval
         // response, remains before the block (only the last approval position is used as the anchor). In
-        // service-managed mode - where the service holds every prior tool-call ahead of all new messages - such
-        // interleaved/leading content can therefore break tool_calls->tool adjacency. Interleaving other content
-        // among, or before, approval responses is not a supported usage pattern.
-        int lastApprovalIndex = originalMessages.FindLastIndex(MessageHasApprovalContent);
-        int trailingMessageCount = lastApprovalIndex >= 0
-            ? (originalMessages.Count - 1 - lastApprovalIndex) + (MessageHasNonApprovalContent(originalMessages[lastApprovalIndex]) ? 1 : 0)
-            : 0;
+        // service-managed conversation mode - where the service holds every prior tool-call ahead of all new
+        // messages - such interleaved/leading content can therefore break tool_calls->tool adjacency. Interleaving
+        // other content among, or before, approval responses is not a supported usage pattern.
+        int lastApprovalIndex = originalMessages.FindLastIndex(MessageHasFunctionApproval);
+        int trailingMessageCount = 0;
+        if (lastApprovalIndex >= 0)
+        {
+            trailingMessageCount = originalMessages.Count - (lastApprovalIndex + 1);
+            if (!MessageContainsOnlyFunctionApprovals(originalMessages[lastApprovalIndex]))
+            {
+                trailingMessageCount++;
+            }
+        }
 
         // Extract any approval responses where we need to execute or reject the function calls.
         // The original messages are also modified to remove all approval requests and responses.
