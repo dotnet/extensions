@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.Latency.Test;
 
-public class HttpLatencyTelemetryExtensionsTests
+public class HttpLatencyTelemetryServiceCollectionExtensionsTests
 {
     [Fact]
     public void AddHttpLatencyTelemetry_NullArguments_Throws()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            HttpLatencyTelemetryExtensions.AddHttpLatencyTelemetry(null!));
+            HttpLatencyTelemetryServiceCollectionExtensions.AddHttpLatencyTelemetry(null!));
     }
 
     [Fact]
