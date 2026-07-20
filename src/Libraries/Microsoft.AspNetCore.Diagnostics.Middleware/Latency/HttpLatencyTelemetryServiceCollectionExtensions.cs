@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET8_0_OR_GREATER
-
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Latency;
 using Microsoft.Shared.DiagnosticIds;
@@ -14,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// Extensions for enriching incoming HTTP request logs with latency telemetry.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
-public static class HttpLatencyTelemetryExtensions
+public static class HttpLatencyTelemetryServiceCollectionExtensions
 {
     /// <summary>
     /// Adds an enricher that appends latency information from the request's latency context to incoming HTTP request logs.
@@ -34,4 +32,3 @@ public static class HttpLatencyTelemetryExtensions
         return services.AddHttpLogEnricher<HttpLatencyLogEnricher>();
     }
 }
-#endif
