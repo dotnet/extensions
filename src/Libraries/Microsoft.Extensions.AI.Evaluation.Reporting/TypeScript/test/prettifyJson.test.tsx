@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import {
@@ -66,8 +66,7 @@ describe('TranscriptBlock — JSON-in-text branch (TextNode)', () => {
 describe('TranscriptBlock — tool call/result JSON (safeJson / safeJsonMaybeString)', () => {
     const toolMessages: ChatMessage[] = [
         { role: 'assistant', authorName: 'gpt-4o', contents: [functionCall('c1', 'lookup', { q: 'x' })] },
-        // result is a JSON *string* to drive safeJsonMaybeString's parse-then-format path.
-        { role: 'tool', contents: [functionResult('c1', '{"ok":true,"n":5}')] },
+        { role: 'tool', contents: [functionResult('c1', { ok: true, n: 5 })] },
     ];
 
     it('pretty-prints call arguments and results when prettifyJson is on', () => {

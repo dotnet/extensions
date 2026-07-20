@@ -2,22 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 export { App } from './shell/App';
-export type { HeightStrategy, ThemeSource } from './shell/AppShell';
 export { detectHostDarkMode } from './shell/theme';
 
 export { ReportContextProvider, useReportContext } from './core/ReportContext';
 export type { ReportView, ReportContextType } from './core/ReportContext';
-export {
-    ScoreNode,
-    ScoreNodeType,
-    ReverseTextIndex,
-    createScoreSummary,
-    getScoreHistory,
-    getConversationDisplay,
-    isTextContent,
-    isImageContent,
-} from './core/Summary';
-export type { ScoreSummary, ConversationDisplay, ChatMessageDisplay } from './core/Summary';
+export { ScoreNode, createScoreSummary, getConversationDisplay } from './core/Summary';
+export type { ScoreSummary } from './core/Summary';
 export {
     bucketMetrics,
     passRateByScenarioGroup,

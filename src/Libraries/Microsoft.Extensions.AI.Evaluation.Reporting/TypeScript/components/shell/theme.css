@@ -516,7 +516,6 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 .eval-grprate .fui-ProgressBar__bar {
   background: var(--eval-bar, var(--compound-brand-background));
   border-radius: var(--radius-circular);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--eval-bar, var(--compound-brand-background)) 58%, var(--neutral-foreground-1));
 }
 
 .fui-searchbox { width: 100%; }

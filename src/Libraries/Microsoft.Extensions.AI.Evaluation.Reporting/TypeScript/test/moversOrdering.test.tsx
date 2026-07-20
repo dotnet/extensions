@@ -6,7 +6,6 @@ import {
     chronologicalExecutions,
     moversBetween,
 } from '../components/core/viewModels';
-import { formatNumber } from '../components/core/metricModel';
 
 const E1 = 'run-alpha';
 const E2 = 'run-bravo';
@@ -147,6 +146,28 @@ describe('moversBetween — baseline is the chronological predecessor', () => {
             meanOf('Group.ScenarioB', 'coverage', selected) - meanOf('Group.ScenarioB', 'coverage', prev),
             10,
         );
+    });
+});
+
+describe('moversBetween — ranks by scale-relative movement, not raw delta magnitude', () => {
+    const PREV = 'run-prev';
+    const CURR = 'run-curr';
+    const TP = '2026-01-01T00:00:00.000Z';
+    const TC = '2026-02-01T00:00:00.000Z';
+
+    const mixedScale: ScenarioRunResult[] = [
+        row('S.One', 'iteration1', PREV, TP, { quality: numeric('quality', 3), tokens: numeric('tokens', 900) }),
+        row('S.One', 'iteration2', PREV, TP, { quality: numeric('quality', 1), tokens: numeric('tokens', 1100) }),
+        row('S.One', 'iteration1', CURR, TC, { quality: numeric('quality', 5), tokens: numeric('tokens', 910) }),
+        row('S.One', 'iteration2', CURR, TC, { quality: numeric('quality', 3), tokens: numeric('tokens', 1110) }),
+    ];
+
+    it('a wide-range metric does not crowd out a small-scale metric that moved much further', () => {
+        const movers = moversBetween(mixedScale, CURR, PREV);
+
+        expect(movers.map((m) => m.metricName)).toEqual(['quality', 'tokens']);
+        expect(movers.find((m) => m.metricName === 'quality')!.delta).toBeCloseTo(2, 10);
+        expect(movers.find((m) => m.metricName === 'tokens')!.delta).toBeCloseTo(10, 10);
     });
 });
 

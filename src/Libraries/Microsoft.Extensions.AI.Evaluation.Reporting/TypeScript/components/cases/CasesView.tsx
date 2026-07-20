@@ -341,7 +341,7 @@ const CaseRow = ({
                 className={mergeClasses(classes.row, classes.rowInteractive)}
                 aria-expanded={open}
                 aria-controls={open ? regionId : undefined}
-                aria-label={`${vm.label}${vm.failed ? ' (failed)' : ' (passed)'}`}
+                aria-label={`${vm.label}${vm.failed ? ' (failed)' : ' (passed)'}${vm.isNew ? ', new' : ''}${showTag && vm.group ? `, ${vm.group}` : ''}`}
                 onClick={onToggle}
             >
                 <ChevronRight16Regular className={mergeClasses(classes.caret, open && classes.caretOpen)} />

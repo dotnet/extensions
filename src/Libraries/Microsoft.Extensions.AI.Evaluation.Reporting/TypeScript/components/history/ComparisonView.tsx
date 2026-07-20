@@ -6,7 +6,7 @@ import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluent
 import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { useAnnounce } from '../core/Announcer';
-import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
+import { useReportStyles, srOnlyStyle, statusTextVar } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
 import { formatNumber } from '../core/metricModel';
 import {
@@ -17,7 +17,7 @@ import {
     type BetterDirection,
     type DeltaJudgment,
 } from '../core/metricDirection';
-import { posOn, dumbbellStyles, STATUS_TEXT } from './dumbbellGeometry';
+import { posOn, dumbbellStyles } from './dumbbellGeometry';
 import { axisDomain } from './axisDomain';
 
 type MetricAgg = { sum: number; n: number; goodnessSum: number; goodnessN: number };
@@ -116,7 +116,7 @@ const buildCmpRow = (
         name: k,
         a: aStr,
         b: bStr,
-        bColor: STATUS_TEXT[status],
+        bColor: statusTextVar(status),
         delta: deltaFmt.txt,
         deltaAriaLabel,
         status,
@@ -566,7 +566,7 @@ export const ComparisonView = () => {
             ? {
                   label: 'Biggest change',
                   value: biggest.delta,
-                  valueColor: STATUS_TEXT[biggest.status],
+                  valueColor: statusTextVar(biggest.status),
                   sub: biggest.name,
                   borderRight: 'none',
               }
@@ -777,7 +777,7 @@ export const ComparisonView = () => {
                                                 </span>
                                                 <span
                                                     className={local.cmpDeltaCell}
-                                                    style={{ color: STATUS_TEXT[m.status] }}
+                                                    style={{ color: statusTextVar(m.status) }}
                                                 >
                                                     <span aria-hidden="true">{m.delta}</span>
                                                     <span style={srOnlyStyle}>{m.deltaAriaLabel}</span>

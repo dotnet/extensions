@@ -4,11 +4,11 @@
 import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Card, makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
-import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
+import { useReportStyles, srOnlyStyle, statusTextVar } from '../styles/reportStyles';
 import { metricHistoryForScenario, chronologicalExecutions } from '../core/viewModels';
 import { inferBetterDirections, judgeValueDelta, judgmentWord, ratingGoodness, type DeltaJudgment } from '../core/metricDirection';
 import { TrendChart, type BandPoint } from './TrendChart';
-import { posOn, STATUS_TEXT, dumbbellStyles } from './dumbbellGeometry';
+import { posOn, dumbbellStyles } from './dumbbellGeometry';
 import { axisDomain } from './axisDomain';
 import { formatNumber } from '../core/metricModel';
 
@@ -418,7 +418,7 @@ export const HistoryView = () => {
     const lastGoodness = validWithExec[validWithExec.length - 1]?.exec ? goodnessMean.get(validWithExec[validWithExec.length - 1].exec!) : undefined;
     const netGoodnessDelta = firstGoodness !== undefined && lastGoodness !== undefined ? lastGoodness - firstGoodness : undefined;
     const netStatus: DeltaJudgment = netFlat ? 'neutral' : judgeValueDelta(activeDirection, dMean, netGoodnessDelta);
-    const netColor = netFlat ? 'var(--neutral-foreground-4)' : STATUS_TEXT[netStatus];
+    const netColor = netFlat ? 'var(--neutral-foreground-4)' : statusTextVar(netStatus);
     const netWord = judgmentWord(netStatus);
     const netDirWord = netFlat ? undefined : dMean > 0 ? 'increased' : 'decreased';
     const netStr = netFlat ? 'stable' : (dMean > 0 ? '▲ ' : '▼ ') + formatNumber(Math.abs(dMean));
@@ -470,7 +470,7 @@ export const HistoryView = () => {
             p && spR - spL > 0.5
                 ? { position: 'absolute', top: '50%', left: `${spL}%`, width: `${spR - spL}%`, height: '3px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)', pointerEvents: 'none' }
                 : { display: 'none' };
-        return { key: `${date}-${i}`, date, scoreStr, changeStr, dirWord, numColor: STATUS_TEXT[db.sk], spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
+        return { key: `${date}-${i}`, date, scoreStr, changeStr, dirWord, numColor: statusTextVar(db.sk), spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
     });
 
     return (

@@ -47,24 +47,32 @@ export class ScoreNode {
 
     insertNode(path: string[], scenario: ScenarioRunResult) {
         if (path.length === 0) {
-            if (this.scenario) {
-                throw new Error(`Duplicate scenario: ${scenario.scenarioName}`);
-            }
-            this.scenario = scenario;
             return;
         }
 
         const [head, ...tail] = path;
+
+        if (tail.length === 0) {
+            // A dotted scenario name shares the tree with iteration names, so the same node can already
+            // hold a result. Suffix rather than overwrite so no run is lost to a collision or a duplicate.
+            let key = head;
+            for (let i = 2; this.children.get(key)?.scenario !== undefined; i++) {
+                key = `${head} (${i})`;
+            }
+            let leaf = this.children.get(key);
+            if (!leaf) {
+                leaf = new ScoreNode(key, ScoreNodeType.Iteration, `${this.nodeKey}.${key}`, this.executionName);
+                this.children.set(key, leaf);
+            }
+            leaf.scenario = scenario;
+            return;
+        }
+
         const child = this.children.get(head);
         if (child) {
             child.insertNode(tail, scenario);
         } else {
-            let nodeType: ScoreNodeType;
-            switch (path.length) {
-                case 1: nodeType = ScoreNodeType.Iteration; break;
-                case 2: nodeType = ScoreNodeType.Scenario; break;
-                default: nodeType = ScoreNodeType.Group; break;
-            }
+            const nodeType = tail.length === 1 ? ScoreNodeType.Scenario : ScoreNodeType.Group;
             const newChild = new ScoreNode(head, nodeType, `${this.nodeKey}.${head}`, this.executionName);
             newChild.insertNode(tail, scenario);
             this.children.set(head, newChild);
@@ -79,6 +87,10 @@ export class ScoreNode {
         return [...this.children.values()];
     }
 
+    get hasChildNodes() {
+        return this.children.size > 0;
+    }
+
     get flattenedNodes() {
         return [...flattener(this)];
     }
@@ -88,9 +100,8 @@ export class ScoreNode {
         this.numPassingIterations = 0;
         this.numFailingIterations = 0;
 
-        if (this.isLeafNode) {
-            const scenario = this.scenario!;
-
+        const scenario = this.scenario;
+        if (scenario) {
             this.failed = isLeafFailed(scenario);
 
             this.numPassingIterations = this.failed ? 0 : 1;
@@ -112,16 +123,16 @@ export class ScoreNode {
             }
 
             this.shortenedPrompt = shortenPrompt(history);
-        } else {
-            for (const child of this.childNodes) {
-                child.aggregate();
-                if (child.numPassingIterations + child.numFailingIterations > 0) {
-                    this.failed = this.failed || child.failed;
-                    this.numPassingIterations += child.numPassingIterations;
-                    this.numFailingIterations += child.numFailingIterations;
-                    if (this.nodeType == ScoreNodeType.Scenario) {
-                        this.shortenedPrompt = child.shortenedPrompt;
-                    }
+        }
+
+        for (const child of this.childNodes) {
+            child.aggregate();
+            if (child.numPassingIterations + child.numFailingIterations > 0) {
+                this.failed = this.failed || child.failed;
+                this.numPassingIterations += child.numPassingIterations;
+                this.numFailingIterations += child.numFailingIterations;
+                if (!scenario && this.nodeType == ScoreNodeType.Scenario) {
+                    this.shortenedPrompt = child.shortenedPrompt;
                 }
             }
         }
@@ -270,13 +281,9 @@ const shortenPrompt = (prompt: string | undefined) => {
 };
 
 const flattener = function* (node: ScoreNode): Iterable<ScoreNode> {
-    if (node.isLeafNode) {
-        yield node;
-    } else {
-        yield node;
-        for (const child of node.childNodes) {
-            yield* flattener(child);
-        }
+    yield node;
+    for (const child of node.childNodes) {
+        yield* flattener(child);
     }
 };
 

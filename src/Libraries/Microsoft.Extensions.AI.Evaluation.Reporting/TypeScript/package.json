@@ -12,7 +12,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@fluentui/react": "^8.122.14",
     "@fluentui/react-components": "^9.61.2",
     "@fluentui/react-icons": "^2.0.292",
     "@leeoniya/ufuzzy": "^1.0.18",

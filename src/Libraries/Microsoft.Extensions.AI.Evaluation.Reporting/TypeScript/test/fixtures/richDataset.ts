@@ -71,12 +71,6 @@ const simpleUserMsg = (text: string): ChatMessage => ({
     contents: [txt(text)],
 });
 
-const simpleAssistantMsg = (text: string): ChatMessage => ({
-    role: 'assistant',
-    authorName: 'gpt-4o',
-    contents: [txt(text)],
-});
-
 const simpleModelResponse = (text: string, modelId = 'gpt-4o'): ChatResponse => ({
     messages: [{ role: 'assistant', contents: [txt(text)] }],
     modelId,

@@ -660,7 +660,7 @@ export const AppShell = ({
                         {children}
                     </div>
                     <footer className={classes.footer}>
-                        Generated {dataset.createdAt} · Microsoft.Extensions.AI.Evaluation.Reporting {dataset.generatorVersion} · {resultCount} results across {executionCount} executions
+                        Generated {dataset.createdAt} · Microsoft.Extensions.AI.Evaluation.Reporting{dataset.generatorVersion ? ` ${dataset.generatorVersion}` : ''} · {resultCount} results across {executionCount} executions
                     </footer>
                 </main>
             </div>

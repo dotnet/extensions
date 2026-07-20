@@ -148,8 +148,8 @@ describe('dumbbellStyles — connector/dot geometry', () => {
     });
 
     it('honours a connEpsilon of 0 (ComparisonView passes 0): equal positions hide, any gap shows', () => {
-        expect(dumbbellStyles(50, 50, true, 0).connector).toStrictEqual({ display: 'none' });
-        const shown = dumbbellStyles(50, 51, true, 0).connector;
+        expect(dumbbellStyles(50, 50, true, 'neutral', 0).connector).toStrictEqual({ display: 'none' });
+        const shown = dumbbellStyles(50, 51, true, 'neutral', 0).connector;
         expect(shown.display).toBeUndefined();
         expect(shown.left).toBe('50%');
         expect(shown.width).toBe('1%');

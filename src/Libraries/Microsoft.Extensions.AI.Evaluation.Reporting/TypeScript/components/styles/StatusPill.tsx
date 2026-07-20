@@ -53,7 +53,7 @@ export const StatusPill = ({
             style={{
                 color: statusTextVar(status),
                 border: tint ? `1px solid color-mix(in srgb, ${base} 45%, transparent)` : '1px solid transparent',
-                backgroundColor: tint ? `color-mix(in srgb, ${base} 14%, transparent)` : 'transparent',
+                backgroundColor: tint ? `color-mix(in srgb, ${base} 8%, transparent)` : 'transparent',
             }}
         >
             {children}

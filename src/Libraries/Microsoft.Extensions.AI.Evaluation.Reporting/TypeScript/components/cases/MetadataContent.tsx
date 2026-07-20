@@ -32,7 +32,12 @@ export const MetadataContent = ({ metadata }: { metadata: { [K: string]: string 
         <div className={`${classes.tablesContainer} eval-meta-tables`}>
             {tables.map((tableData, tableIndex) => (
                 <div key={`table-${tableIndex}`} className={classes.tableWrapper}>
-                    <div className={classes.tableContainer}>
+                    <div
+                        className={classes.tableContainer}
+                        tabIndex={0}
+                        role="region"
+                        aria-label={tables.length > 1 ? `Metadata (${tableIndex + 1} of ${tables.length})` : 'Metadata'}
+                    >
                         <Table>
                             <TableHeader>
                                 <TableRow>

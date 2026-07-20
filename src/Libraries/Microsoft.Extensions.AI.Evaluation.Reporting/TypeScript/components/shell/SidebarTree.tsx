@@ -132,15 +132,15 @@ export const SidebarTree = ({ labelledBy }: { labelledBy: string }) => {
     };
 
     // "All scenarios" occupies position 1 of the top-level set; top-level branches follow it.
-    const topBranchCount = activeNode.childNodes.filter((n) => !n.isLeafNode).length;
+    const topBranchCount = activeNode.childNodes.filter((n) => n.hasChildNodes).length;
 
     const rows = useMemo<SidebarRowVM[]>(() => {
         const out: SidebarRowVM[] = [];
         const walk = (nodes: ScoreNode[], depth: number, posOffset: number, setSize: number) => {
-            const branches = nodes.filter((n) => !n.isLeafNode);
+            const branches = nodes.filter((n) => n.hasChildNodes);
             const sorted = [...branches].sort((a, b) => a.name.localeCompare(b.name));
             sorted.forEach((node, i) => {
-                const hasChildren = node.childNodes.some((c) => !c.isLeafNode);
+                const hasChildren = node.childNodes.some((c) => c.hasChildNodes);
                 const isExpanded = expanded.has(node.nodeKey);
                 out.push({
                     key: node.nodeKey,
@@ -158,7 +158,7 @@ export const SidebarTree = ({ labelledBy }: { labelledBy: string }) => {
                     onToggle: () => toggle(node.nodeKey),
                 });
                 if (hasChildren && isExpanded) {
-                    const childSetSize = node.childNodes.filter((c) => !c.isLeafNode).length;
+                    const childSetSize = node.childNodes.filter((c) => c.hasChildNodes).length;
                     walk(node.childNodes, depth + 1, 0, childSetSize);
                 }
             });

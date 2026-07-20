@@ -64,7 +64,7 @@ export const judgeValueDelta = (
     valueDelta: number,
     goodnessDelta?: number,
 ): DeltaJudgment => {
-    if (direction !== 'none') {
+    if (direction !== 'none' && Math.abs(valueDelta) > 1e-9) {
         const good = direction === 'higher' ? valueDelta > 0 : valueDelta < 0;
         return good ? 'success' : 'danger';
     }

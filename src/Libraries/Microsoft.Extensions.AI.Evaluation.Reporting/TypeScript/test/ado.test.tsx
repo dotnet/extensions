@@ -26,7 +26,7 @@ const dataset: Dataset = {
                 },
             },
             tags: ['GroupA'],
-            formatVersion: 0,
+            formatVersion: 1,
         },
     ],
 };

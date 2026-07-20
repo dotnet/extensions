@@ -170,8 +170,8 @@ export type ReportStatus = 'success' | 'caution' | 'warning' | 'danger' | 'neutr
 
 export const statusSolidVar = (status: ReportStatus): string =>
     status === 'success' ? 'var(--status-success-background-3)'
-        : status === 'caution' ? 'var(--status-warning-background-3)'
-            : status === 'warning' ? 'var(--palette-orange-background3)'
+        : status === 'caution' ? 'var(--palette-orange-background3)'
+            : status === 'warning' ? 'var(--status-warning-foreground-2)'
                 : status === 'danger' ? 'var(--status-danger-background-3)'
                     : 'var(--neutral-foreground-4)';
 

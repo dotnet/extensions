@@ -196,3 +196,46 @@ describe('OverviewView — mover delta rendering', () => {
         expect(deltaCell?.textContent).not.toMatch(/improved|regressed/i);
     });
 });
+
+describe('OverviewView — overall pass-rate delta when the suite grows between runs', () => {
+    const runIter = (
+        scenarioName: string,
+        iterationName: string,
+        executionName: string,
+        creationTime: string,
+        metrics: Record<string, NumericMetric>,
+    ): ScenarioRunResult =>
+        ({
+            scenarioName,
+            iterationName,
+            executionName,
+            creationTime,
+            messages: [],
+            modelResponse: { messages: [] },
+            evaluationResult: { metrics },
+            formatVersion: 1,
+        }) as ScenarioRunResult;
+
+    const passing = () => ({ score: numeric('score', 5, 'good', false) });
+    const failing = () => ({ score: numeric('score', 1, 'poor', true) });
+
+    const grownSuite: Dataset = {
+        generatorVersion: '0.0.1',
+        createdAt: T_NEW,
+        scenarioRunResults: [
+            runIter('Gamma.Suite', 'iteration1', NEW, T_NEW, passing()),
+            runIter('Gamma.Suite', 'iteration2', NEW, T_NEW, passing()),
+            runIter('Gamma.Suite', 'iteration3', NEW, T_NEW, passing()),
+            runIter('Gamma.Suite', 'iteration4', NEW, T_NEW, failing()),
+            runIter('Gamma.Suite', 'iteration1', OLD, T_OLD, passing()),
+            runIter('Gamma.Suite', 'iteration2', OLD, T_OLD, passing()),
+        ],
+    };
+
+    it('compares against the previous run\'s own total, not the current run\'s', () => {
+        const { container } = renderOverview(grownSuite);
+
+        expect(container.textContent).toContain('▼ −25%');
+        expect(container.textContent).not.toContain('▲ +25%');
+    });
+});

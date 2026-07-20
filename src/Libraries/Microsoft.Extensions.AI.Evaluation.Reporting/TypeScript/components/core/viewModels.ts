@@ -232,6 +232,27 @@ const meanByScenarioMetric = (results: ScenarioRunResult[]): Map<string, MoverAg
 const goodnessMean = (agg: MoverAgg): number | undefined =>
     agg.goodnessN > 0 ? agg.goodnessSum / agg.goodnessN : undefined;
 
+const metricValueSpans = (results: ScenarioRunResult[]): Map<string, number> => {
+    const lo = new Map<string, number>();
+    const hi = new Map<string, number>();
+    for (const r of results) {
+        for (const metric of Object.values(r.evaluationResult?.metrics ?? {})) {
+            if (!isNumericMetric(metric)) continue;
+            const value = metric.value!;
+            const l = lo.get(metric.name);
+            const h = hi.get(metric.name);
+            if (l === undefined || value < l) lo.set(metric.name, value);
+            if (h === undefined || value > h) hi.set(metric.name, value);
+        }
+    }
+    const spans = new Map<string, number>();
+    for (const [name, l] of lo) {
+        const span = hi.get(name)! - l;
+        spans.set(name, span > 0 ? span : 1);
+    }
+    return spans;
+};
+
 export const moversBetween = (
     results: ScenarioRunResult[],
     selectedExec: string | undefined,
@@ -241,6 +262,7 @@ export const moversBetween = (
     if (!selectedExec || !prevExec) return [];
 
     const directions = inferBetterDirections(results);
+    const spans = metricValueSpans(results);
     const selectedAgg = meanByScenarioMetric(results.filter((r) => r.executionName === selectedExec));
     const prevAgg = meanByScenarioMetric(results.filter((r) => r.executionName === prevExec));
 
@@ -264,6 +286,7 @@ export const moversBetween = (
         });
     }
 
-    rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+    const magnitude = (row: MoverRow): number => Math.abs(row.delta) / (spans.get(row.metricName) ?? 1);
+    rows.sort((a, b) => magnitude(b) - magnitude(a));
     return Number.isFinite(limit) ? rows.slice(0, limit) : rows;
 };

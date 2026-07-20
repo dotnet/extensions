@@ -402,7 +402,7 @@ const attentionKey = (scenarioName: string, metricName: string): string =>
 const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionItem[] => {
     const agg = new Map<string, { scenario: string; metric: string; danger: number; warning: number; total: number }>();
     for (const s of scenarios) {
-        for (const [metricName, metric] of Object.entries(s.evaluationResult.metrics)) {
+        for (const [metricName, metric] of Object.entries(s.evaluationResult?.metrics ?? {})) {
             const bucket = ratingBucket(metric?.interpretation?.rating);
             const id = attentionKey(s.scenarioName, metricName);
             const entry = agg.get(id) ?? { scenario: s.scenarioName, metric: metricName, danger: 0, warning: 0, total: 0 };
@@ -651,7 +651,7 @@ const GroupTable = ({
                         const gb = bucketMetrics(groupScenarios);
                         const status = rateStatus(row.passRate);
                         const ratePct = pctInt(row.passRate);
-                        const deltaBadgeChip = row.deltaRun !== undefined ? chip(Math.round(row.deltaRun * 100), { unit: '%' }) : { show: false, label: '', status: 'informative' as const };
+                        const deltaBadgeChip = row.deltaRun !== undefined ? chip(ratePct - pctInt(row.passRate - row.deltaRun), { unit: '%' }) : { show: false, label: '', status: 'informative' as const };
                         return (
                             <div key={row.group} className={mergeClasses('eval-grid6', local.groupRow)} role="row">
                                 <span role="cell" className={local.groupNameCell}>
@@ -737,17 +737,19 @@ export const OverviewView = () => {
     const totalDeltaRun = useMemo(() => {
         const rowsWithDelta = groupRows.filter((r) => r.deltaRun !== undefined);
         if (rowsWithDelta.length === 0) return undefined;
-        const totalTotal = rowsWithDelta.reduce((sum, r) => sum + r.total, 0);
-        if (totalTotal === 0) return undefined;
         const prevGroupsByName = compareLabel
             ? new Map(passRateByScenarioGroup(dataset, compareLabel).map((r) => [r.group, r]))
             : undefined;
-        const prevPassing = rowsWithDelta.reduce((sum, r) => {
+        let prevPassing = 0;
+        let prevTotal = 0;
+        for (const r of rowsWithDelta) {
             const prevGroup = prevGroupsByName?.get(r.group);
-            const prevGroupPassing = prevGroup ? prevGroup.passing : r.passing - (r.deltaRun ?? 0) * r.total;
-            return sum + prevGroupPassing;
-        }, 0);
-        return kpi.passRate - prevPassing / totalTotal;
+            if (!prevGroup) continue;
+            prevPassing += prevGroup.passing;
+            prevTotal += prevGroup.total;
+        }
+        if (prevTotal === 0) return undefined;
+        return kpi.passRate - prevPassing / prevTotal;
     }, [groupRows, kpi.passRate, dataset, compareLabel]);
 
     const movers = useMemo(() => {

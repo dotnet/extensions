@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ReportContextProvider, createScoreSummary, getConversationDisplay, TranscriptBlock } from '../components';
@@ -73,24 +72,6 @@ describe('TranscriptBlock — unknown $type degrades gracefully', () => {
     it('renders the transcript shell (header) even with only unknown content', () => {
         renderTranscript(mysteryMessages);
         expect(screen.getByText('Transcript')).toBeInTheDocument();
-    });
-});
-
-describe('TranscriptBlock — isToolish requires an exact known $type, not a substring match', () => {
-    it('an unmodeled $type that merely contains "call" falls back to the JSON <pre>, not a tool card', () => {
-        const fakeToolish = {
-            $type: 'somethingcall',
-            payload: { sentinel: 'NOT_A_REAL_TOOL_TYPE' },
-        } as unknown as AIContent;
-        const messages: ChatMessage[] = [
-            { role: 'user', contents: [{ $type: 'text', text: 'Trigger the fake tool type.' } as unknown as AIContent] },
-            { role: 'assistant', authorName: 'gpt-4o', contents: [fakeToolish] },
-        ];
-
-        renderTranscript(messages);
-
-        expect(screen.queryByText(/Tool call:/)).not.toBeInTheDocument();
-        expect(screen.getByText(/NOT_A_REAL_TOOL_TYPE/)).toBeInTheDocument();
     });
 });
 

@@ -5,7 +5,6 @@ import { describe, it, expect } from 'vitest';
 import { createScoreSummary } from '../components';
 import { singleExecutionDataset, twoExecutionDataset } from './fixtures/richDataset';
 
-const makeTextContent = (text: string): TextContent => ({ $type: 'text', text });
 
 const makeScenario = (
     scenarioName: string,

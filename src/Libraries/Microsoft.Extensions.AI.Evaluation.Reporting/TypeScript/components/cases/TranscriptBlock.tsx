@@ -29,10 +29,6 @@ const isFunctionCall = (content: AIContent): content is FunctionCallLike =>
 const isFunctionResult = (content: AIContent): content is FunctionResultLike =>
     content?.$type === 'functionResult';
 
-const KNOWN_TOOL_CONTENT_TYPES = new Set(['functionCall', 'functionResult', 'toolCall', 'toolResult']);
-
-const isToolish = (content: AIContent): boolean => KNOWN_TOOL_CONTENT_TYPES.has(content?.$type ?? '');
-
 const T_ACCENT = 'var(--tool-accent-text)';
 const T_TINT = 'color-mix(in srgb, var(--palette-teal-foreground) 7%, var(--neutral-background-1))';
 const T_HEAD = 'color-mix(in srgb, var(--palette-teal-foreground) 14%, var(--neutral-background-1))';
@@ -50,22 +46,11 @@ const safeJson = (value: unknown, pretty: boolean): string => {
     }
 };
 
-const modelFromParticipant = (participantName: string): string => {
-    const m = participantName.match(/^(.*)\s+\([^)]*\)\s*$/);
-    const name = (m ? m[1] : participantName).trim();
-    return name && name.toLowerCase() !== 'assistant' ? name : '—';
-};
-
-const chatClock = (createdAt: string | undefined): { time: string; date: string } => {
-    const s = createdAt ?? '';
-    const time = (s.match(/(\d{1,2}:\d{2})/) ?? [])[1] ?? '';
-    const dm = s.match(/(\d{4})-(\d{2})-(\d{2})/);
-    let date = 'Today';
-    if (dm) {
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        date = `${months[(+dm[2]) - 1]} ${+dm[3]}, ${dm[1]}`;
-    }
-    return { time, date };
+const reportDate = (createdAt: string | undefined): string | undefined => {
+    const dm = (createdAt ?? '').match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!dm) return undefined;
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return `${months[(+dm[2]) - 1]} ${+dm[3]}, ${dm[1]}`;
 };
 
 type ToolSectionVM = {
@@ -83,7 +68,7 @@ type BubbleVM = {
 };
 
 type GroupVM =
-    | { kind: 'group'; role: 'user' | 'assistant'; bubbles: BubbleVM[]; participantName: string }
+    | { kind: 'group'; role: 'user' | 'assistant'; bubbles: BubbleVM[] }
     | { kind: 'system'; content: AIContent; imageAlt?: string };
 
 const roleLabel = (role: string): string => {
@@ -129,7 +114,7 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
 
         if (isFunctionCall(content)) {
             if (!openAssistant) {
-                openAssistant = { kind: 'group', role: 'assistant', bubbles: [], participantName: m.participantName };
+                openAssistant = { kind: 'group', role: 'assistant', bubbles: [] };
                 groups.push(openAssistant);
             }
             pending.push({
@@ -138,20 +123,6 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
                 hasResult: false,
                 resultText: '',
                 callId: content.callId,
-            });
-            continue;
-        }
-
-        if (isToolish(content)) {
-            if (!openAssistant) {
-                openAssistant = { kind: 'group', role: 'assistant', bubbles: [], participantName: m.participantName };
-                groups.push(openAssistant);
-            }
-            pending.push({
-                name: content.$type ?? 'tool',
-                callText: safeJson(content, prettifyJson),
-                hasResult: false,
-                resultText: '',
             });
             continue;
         }
@@ -172,14 +143,14 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
             if (prev && prev.kind === 'group' && prev.role === 'user') {
                 prev.bubbles.push({ tools: [], text: content, imageAlt });
             } else {
-                groups.push({ kind: 'group', role: 'user', bubbles: [{ tools: [], text: content, imageAlt }], participantName: m.participantName });
+                groups.push({ kind: 'group', role: 'user', bubbles: [{ tools: [], text: content, imageAlt }] });
             }
             continue;
         }
 
         if (isToolSide(m.role)) {
             if (!openAssistant) {
-                openAssistant = { kind: 'group', role: 'assistant', bubbles: [], participantName: m.participantName };
+                openAssistant = { kind: 'group', role: 'assistant', bubbles: [] };
                 groups.push(openAssistant);
             }
             pending.push({ name: 'tool', callText: safeJson(content, prettifyJson), hasResult: false, resultText: '' });
@@ -187,7 +158,7 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
         }
 
         if (!openAssistant) {
-            openAssistant = { kind: 'group', role: 'assistant', bubbles: [], participantName: m.participantName };
+            openAssistant = { kind: 'group', role: 'assistant', bubbles: [] };
             groups.push(openAssistant);
         }
         openAssistant.bubbles.push({
@@ -202,20 +173,8 @@ const buildGroups = (messages: ChatMessageDisplay[], prettifyJson: boolean): Gro
     return groups;
 };
 
-const safeJsonMaybeString = (value: unknown, pretty: boolean): string => {
-    if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-            try {
-                return safeJson(JSON.parse(trimmed), pretty);
-            } catch {
-                // not valid JSON after all; fall through and render the raw string.
-            }
-        }
-        return value;
-    }
-    return safeJson(value ?? null, pretty);
-};
+const safeJsonMaybeString = (value: unknown, pretty: boolean): string =>
+    typeof value === 'string' ? value : safeJson(value ?? null, pretty);
 
 const useStyles = makeStyles({
     iconMd: { width: '18px', height: '18px' },
@@ -453,6 +412,17 @@ const MD_COMPONENTS: Components = {
     a: ({ children, href }) => (
         <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
     ),
+    // The block scrolls horizontally, so it needs to be focusable to be reachable by keyboard.
+    pre: ({ children }) => (
+        <pre tabIndex={0} role="region" aria-label="Code block">{children}</pre>
+    ),
+    // Headings in evaluation data would otherwise land in the report's own document outline.
+    h1: ({ children }) => <div className="md-h1">{children}</div>,
+    h2: ({ children }) => <div className="md-h2">{children}</div>,
+    h3: ({ children }) => <div className="md-h3">{children}</div>,
+    h4: ({ children }) => <div className="md-h4">{children}</div>,
+    h5: ({ children }) => <div className="md-h4">{children}</div>,
+    h6: ({ children }) => <div className="md-h4">{children}</div>,
 };
 
 const TextNode = ({ content, altHint }: { content: AIContent; altHint?: string }) => {
@@ -461,11 +431,13 @@ const TextNode = ({ content, altHint }: { content: AIContent; altHint?: string }
 
     if (isTextContent(content)) {
         const trimmed = content.text.trim();
-        try {
-            const parsed = JSON.parse(trimmed);
-            return <pre className={classes.codeBlock}>{JSON.stringify(parsed, null, prettifyJson ? 2 : 0)}</pre>;
-        } catch {
-            // not valid JSON after all; fall through and render as markdown/plain text.
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                return <pre className={classes.codeBlock}>{JSON.stringify(parsed, null, prettifyJson ? 2 : 0)}</pre>;
+            } catch {
+                // not valid JSON after all; fall through and render as markdown/plain text.
+            }
         }
         return renderMarkdown ? (
             <div className={mergeClasses('eval-md', classes.mdText)}>
@@ -538,11 +510,11 @@ const Bubble = ({ bubble, me, first }: { bubble: BubbleVM; me: boolean; first: b
     );
 };
 
-const MessageGroup = ({ group, model, time }: { group: Extract<GroupVM, { kind: 'group' }>; model: string; time: string }) => {
+const MessageGroup = ({ group, model }: { group: Extract<GroupVM, { kind: 'group' }>; model?: string }) => {
     const classes = useStyles();
     const me = group.role === 'user';
     const name = me ? 'You' : 'Assistant';
-    const headTime = me ? time : `${model} · ${time}`;
+    const meta = me ? undefined : model;
 
     return (
         <div className={classes.groupGrid} style={{ gridTemplateColumns: me ? '1fr 32px' : '32px 1fr' }}>
@@ -559,7 +531,7 @@ const MessageGroup = ({ group, model, time }: { group: Extract<GroupVM, { kind: 
             <div className={classes.groupCol} style={{ gridColumn: me ? 1 : 2, alignItems: me ? 'flex-end' : 'flex-start' }}>
                 <div className={classes.groupHead} style={me ? { flexDirection: 'row-reverse' } : undefined}>
                     <span className={classes.groupName}>{name}</span>
-                    <span className={classes.groupTime}>{headTime}</span>
+                    {meta && <span className={classes.groupTime}>{meta}</span>}
                 </div>
                 {group.bubbles.map((b, i) => (
                     <Bubble key={`b-${i}`} bubble={b} me={me} first={i === 0} />
@@ -583,10 +555,7 @@ export const TranscriptBlock = ({ messages, model: modelProp }: { messages: Chat
     const classes = useStyles();
     const headingId = useId();
     const groups = buildGroups(messages, prettifyJson);
-    const { time, date } = chatClock(dataset.createdAt);
-
-    const assistantGroup = groups.find((g): g is Extract<GroupVM, { kind: 'group' }> => g.kind === 'group' && g.role === 'assistant');
-    const model = modelProp || (assistantGroup ? modelFromParticipant(assistantGroup.participantName) : '—');
+    const date = reportDate(dataset.createdAt);
 
     return (
         <Card appearance="outline" className="eval-transcript">
@@ -594,9 +563,9 @@ export const TranscriptBlock = ({ messages, model: modelProp }: { messages: Chat
                 <div className={classes.headerRow}>
                     <h2 id={headingId} className={classes.eyebrow}>Transcript</h2>
                 </div>
-                <div className={classes.blockBody} role="log" aria-labelledby={headingId}>
+                <div className={classes.blockBody} role="region" aria-labelledby={headingId}>
                     {groups.length === 0 && <div className={classes.empty}>No transcript for this case.</div>}
-                    {groups.length > 0 && (
+                    {groups.length > 0 && date && (
                         <div className={classes.divider}>
                             <span className={classes.dividerLine} />
                             <span className={classes.dividerLabel}>{date}</span>
@@ -607,7 +576,7 @@ export const TranscriptBlock = ({ messages, model: modelProp }: { messages: Chat
                         group.kind === 'system' ? (
                             <SystemGroup key={`grp-${index}`} content={group.content} imageAlt={group.imageAlt} />
                         ) : (
-                            <MessageGroup key={`grp-${index}`} group={group} model={model} time={time} />
+                            <MessageGroup key={`grp-${index}`} group={group} model={modelProp} />
                         ),
                     )}
                 </div>

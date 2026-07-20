@@ -78,6 +78,16 @@ describe('judgeValueDelta — combines direction with the value delta, with a ra
         expect(judgeValueDelta('lower', 2)).toBe('danger');
     });
 
+    it('a zero value delta is never judged, even when the direction is known', () => {
+        expect(judgeValueDelta('higher', 0)).toBe('neutral');
+        expect(judgeValueDelta('lower', 0)).toBe('neutral');
+    });
+
+    it('a zero value delta still defers to the rating-goodness delta when one exists', () => {
+        expect(judgeValueDelta('higher', 0, 0.5)).toBe('success');
+        expect(judgeValueDelta('higher', 0, -0.5)).toBe('danger');
+    });
+
     it('indeterminate direction falls back to the rating-goodness delta', () => {
         expect(judgeValueDelta('none', 1, 0.5)).toBe('success');
         expect(judgeValueDelta('none', 1, -0.5)).toBe('danger');

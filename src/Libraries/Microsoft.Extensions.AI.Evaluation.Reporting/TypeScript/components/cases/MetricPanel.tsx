@@ -25,7 +25,7 @@ const statusKeyOf = (rating: EvaluationRating | undefined): ReportStatus => {
         case 'good':
             return 'success';
         case 'average':
-            return 'warning';
+            return 'caution';
         case 'poor':
         case 'unacceptable':
             return 'danger';
@@ -350,7 +350,7 @@ export const MetricPanel = ({ scenario }: { scenario: ScenarioRunResult }) => {
     return (
         <div className={s.cardNested}>
             <div className={classes.headerRow}>
-                <span className={s.eyebrow}>Metrics</span>
+                <h2 className={s.eyebrow} style={{ margin: 0 }}>Metrics</h2>
                 {metrics.length > 0 && (
                     <span className={classes.headerCount}>
                         {metrics.length} {metrics.length === 1 ? 'metric' : 'metrics'} · tap to open

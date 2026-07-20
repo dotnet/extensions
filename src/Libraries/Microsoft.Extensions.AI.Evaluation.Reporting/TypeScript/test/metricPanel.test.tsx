@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MetricPanel } from '../components/cases/MetricPanel';
@@ -18,7 +17,7 @@ const numeric = (
     rating: EvaluationRating,
     failed: boolean,
     diagnostics?: EvaluationDiagnostic[],
-    metadata: { [K: string]: string } = {},
+    metadata?: { [K: string]: string },
 ): NumericMetric => ({
     $type: 'numeric',
     name,

@@ -18,18 +18,18 @@ The .NET Foundation licenses this file to you under the MIT license.
 .eval-md li { margin: var(--spacing-xxs) 0; }
 .eval-md li > ul,
 .eval-md li > ol { margin: var(--spacing-xxs) 0; }
-.eval-md h1,
-.eval-md h2,
-.eval-md h3,
-.eval-md h4 {
+.eval-md .md-h1,
+.eval-md .md-h2,
+.eval-md .md-h3,
+.eval-md .md-h4 {
   margin: var(--spacing-s) 0 var(--spacing-xs);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-400);
 }
-.eval-md h1 { font-size: var(--font-size-500); }
-.eval-md h2 { font-size: var(--font-size-400); }
-.eval-md h3 { font-size: var(--font-size-300); }
-.eval-md h4 { font-size: var(--font-size-200); }
+.eval-md .md-h1 { font-size: var(--font-size-500); }
+.eval-md .md-h2 { font-size: var(--font-size-400); }
+.eval-md .md-h3 { font-size: var(--font-size-300); }
+.eval-md .md-h4 { font-size: var(--font-size-200); }
 .eval-md a {
   color: var(--brand-foreground-1);
   text-decoration: underline;

@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import type { CSSProperties } from 'react';
+import type { DeltaJudgment } from '../core/metricDirection';
+import { statusSolidVar } from '../styles/reportStyles';
 
 const DUMBBELL_D = 8;
 const DUMBBELL_RING = 1.5;
@@ -10,26 +12,8 @@ const DUMBBELL_CONN = 1.5;
 export const posOn = (v: number, min: number, max: number): number =>
     max > min ? Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100)) : 50;
 
-type StatusKey = 'success' | 'warning' | 'danger' | 'caution' | 'neutral';
-
-const STATUS_SOLID: Record<StatusKey, string> = {
-    success: 'var(--status-success-background-3)',
-    warning: 'var(--palette-orange-background3)',
-    danger: 'var(--status-danger-background-3)',
-    caution: 'var(--status-warning-background-3)',
-    neutral: 'var(--neutral-foreground-4)',
-};
-
-export const STATUS_TEXT: Record<StatusKey, string> = {
-    success: 'var(--status-success-background-3)',
-    warning: 'var(--status-warning-foreground-1)',
-    danger: 'var(--status-danger-background-3)',
-    caution: 'var(--status-warning-foreground-1)',
-    neutral: 'var(--neutral-foreground-3)',
-};
-
 type DumbbellStyles = {
-    sk: StatusKey;
+    sk: DeltaJudgment;
     connector: CSSProperties;
     dotB: CSSProperties;
     dotA: CSSProperties;
@@ -39,11 +23,11 @@ export const dumbbellStyles = (
     prevPos: number | null,
     currPos: number,
     hasDelta: boolean,
-    status: StatusKey = 'neutral',
+    status: DeltaJudgment = 'neutral',
     connEpsilon = 0.01,
 ): DumbbellStyles => {
-    const sk: StatusKey = status;
-    const color = STATUS_SOLID[sk];
+    const sk: DeltaJudgment = status;
+    const color = statusSolidVar(sk);
     const halo = '0 0 0 2px var(--neutral-background-1)';
     const hasPrev = prevPos !== null && prevPos !== undefined && Number.isFinite(prevPos);
     const cur = Math.max(0, Math.min(100, currPos));

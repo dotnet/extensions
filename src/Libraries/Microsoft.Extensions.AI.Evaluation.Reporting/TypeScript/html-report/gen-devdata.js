@@ -197,7 +197,7 @@ const answerCases = [
         sources: '[1] 06 Security/Audit.md #Retention: 90 days (Pro), 1 year (Enterprise). Export via API or scheduled S3 sync.' },
     { id: 'markdown-showcase-migration-checklist-121', tag: 'difficulty:medium', q: 0.4,
         tool: { name: 'search_docs', arguments: { query: 'migration checklist rollback plan', topK: 3 },
-            result: JSON.stringify({ chunks: 2, source: '09 DevOps/Migration Guide.md', matched: ['#Checklist', '#Rollback'] }) },
+            result: { chunks: 2, source: '09 DevOps/Migration Guide.md', matched: ['#Checklist', '#Rollback'] } },
         question: 'Give me a full pre-migration checklist, including rollback steps and links to the relevant docs.',
         answer: '## Pre-Migration Checklist\n\nHere is the **full** checklist compiled from the *Migration Guide*. Items marked ~~optional~~ are only needed for cross-region migrations.\n\n### Preparation\n\n- Confirm backup completed within the last 24h\n- Verify `maintenance_mode` is available in the config\n- Notify stakeholders via the `#deploys` channel\n  - Include the estimated downtime window\n  - Include the rollback contact\n\n### Execution steps\n\n1. Enable maintenance mode\n2. Run the migration script:\n   ```bash\n   ./migrate.sh --env prod --dry-run=false\n   ```\n3. Verify row counts match the pre-migration snapshot\n4. Disable maintenance mode\n\n### Rollback plan\n\n> If verification fails at step 3, do **not** disable maintenance mode — run `./migrate.sh --rollback` immediately and page the on-call engineer.\n\n### Reference table\n\n| Step | Owner | Est. time |\n|---|---|---|\n| Backup verification | DBA on-call | 10 min |\n| Migration run | Release engineer | 15–30 min |\n| Row-count check | Release engineer | 5 min |\n| Rollback (if needed) | On-call engineer | 10 min |\n\nSee the [full migration runbook](https://example.com/docs/migration-runbook) for environment-specific overrides.',
         reference: 'A pre-migration checklist should cover backup verification, maintenance-mode setup, the migration script run with a dry-run option, row-count verification, and a documented rollback command with on-call escalation.',
@@ -300,6 +300,7 @@ const chatCases = [
     { id: 'debug-null-ref-304', tag: 'difficulty:medium', q: 0.0, question: 'Why am I getting a NullReferenceException here?', answer: 'The list is never initialized before you index into it; assign it a new instance first, or guard with a null check.' },
     { id: 'brainstorm-app-names-305', tag: 'difficulty:easy', q: 0.45, question: 'Brainstorm five names for a budgeting app.', answer: 'Tally, Ledgerly, PocketPilot, SpendSense, ClearCoin.' },
     { id: 'summarize-paper-306', tag: 'difficulty:hard', q: -0.35, question: 'Summarize the key contributions of this 14-page paper.', answer: 'Covers the new architecture but omits the evaluation results and ablations, so the summary is incomplete.' },
+    { id: 'hallucinated-citation-307', tag: 'difficulty:hard', q: -2.4, question: 'What did Chen et al. (2024) conclude about retrieval-augmented generation?', answer: 'Chen et al. (2024) proved that retrieval augmentation eliminates hallucination entirely, which is why every major provider now enables it by default.' },
 ];
 
 const codegenCases = [
@@ -353,7 +354,7 @@ const buildScoreMetric = (def, c, ex, evalMs, judgeModel) => {
         $type: 'numeric', name: def.key, value,
         reason: def.def,
         interpretation: { rating, failed, reason: interpFor(def.key, def.kind, value, rating, failed) },
-        diagnostics: diags, ...(Object.keys(meta).length ? { metadata: meta } : {}),
+        ...(diags.length ? { diagnostics: diags } : {}), ...(Object.keys(meta).length ? { metadata: meta } : {}),
     };
 };
 
@@ -377,7 +378,7 @@ const buildFracMetric = (def, c, ex, opts = {}) => {
         $type: 'numeric', name: def.key, value,
         reason,
         interpretation: { rating, failed, reason: interpFor(def.key, def.kind, value, rating, failed) },
-        diagnostics: diags, ...(Object.keys(meta).length ? { metadata: meta } : {}),
+        ...(diags.length ? { diagnostics: diags } : {}), ...(Object.keys(meta).length ? { metadata: meta } : {}),
     };
 };
 

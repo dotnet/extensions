@@ -121,8 +121,6 @@ const useProvideReportContext = (
     const [exec, setExec] = useState<string | undefined>(undefined);
     const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
-    const lastNonSearchView = useRef<ReportView>('overview');
-
     const hydratedKey = useRef<string | undefined>(undefined);
     useEffect(() => {
         if (!persistKey || hydratedKey.current === persistKey) return;
@@ -138,9 +136,6 @@ const useProvideReportContext = (
         if (stored.cmpA !== undefined) setCmpA(stored.cmpA);
         if (stored.cmpB !== undefined) setCmpB(stored.cmpB);
         if (stored.exec !== undefined) setExec(stored.exec);
-        if (stored.view !== undefined && stored.view !== 'cases') {
-            lastNonSearchView.current = stored.view;
-        }
     }, [persistKey]);
 
     useEffect(() => {
@@ -167,13 +162,6 @@ const useProvideReportContext = (
         }
     };
 
-    const setViewTracked = (next: ReportView) => {
-        if (next !== 'cases') {
-            lastNonSearchView.current = next;
-        }
-        setView(next);
-    };
-
     const handleTagClick = (tag: string) => {
         setSelectedTags((prevTags) =>
           prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag]
@@ -183,7 +171,6 @@ const useProvideReportContext = (
     const clearFilters = () => {
         setSelectedTags([]);
         setSearchValueRaw("");
-        setView(lastNonSearchView.current);
     };
 
     const activeExecution = exec ?? scoreSummary.primaryResult.executionName;
@@ -244,7 +231,7 @@ const useProvideReportContext = (
         clearFilters,
         filterTree,
         view,
-        setView: setViewTracked,
+        setView,
         darkMode,
         setDarkMode,
         failedOnly,
