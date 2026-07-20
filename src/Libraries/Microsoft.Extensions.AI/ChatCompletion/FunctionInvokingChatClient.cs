@@ -298,17 +298,18 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         int consecutiveErrorCount = 0;
         bool anyToolsRequireApproval = false;
 
-        if (HasAnyApprovalContent(originalMessages))
+        if (HasAnyFunctionApproval(originalMessages))
         {
             // A previous turn may have translated FunctionCallContents from the inner client into approval requests sent back to the caller,
             // for any AIFunctions that were actually ApprovalRequiredAIFunctions. If the incoming chat messages include responses to those
             // approval requests, we need to process them now. This entails removing these manufactured approval requests from the chat message
             // list and replacing them with the appropriate FunctionCallContents and FunctionResultContents that would have been generated if
-            // the inner client had returned them directly.
-            (responseMessages, var notInvokedApprovals) = ProcessFunctionApprovalResponses(
+            // the inner client had returned them directly. The reconstructed messages are inserted at the approval anchor so they stay adjacent
+            // to the assistant tool-call and ahead of any trailing caller-supplied messages.
+            (responseMessages, var notInvokedApprovals, int approvedResultInsertIndex) = ProcessFunctionApprovalResponses(
                 originalMessages, !string.IsNullOrWhiteSpace(options?.ConversationId), toolMessageId: null, functionCallContentFallbackMessageId: null);
             (IList<ChatMessage>? invokedApprovedFunctionApprovalResponses, bool shouldTerminate, consecutiveErrorCount) =
-                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: false, cancellationToken);
+                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: false, approvedResultInsertIndex, cancellationToken);
 
             if (invokedApprovedFunctionApprovalResponses is not null)
             {
@@ -464,7 +465,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         // but there's no benefit to doing so.
         string toolMessageId = Guid.NewGuid().ToString("N");
 
-        if (HasAnyApprovalContent(originalMessages))
+        if (HasAnyFunctionApproval(originalMessages))
         {
             // We also need a synthetic ID for the function call content for approved function calls
             // where we don't know what the original message id of the function call was.
@@ -474,8 +475,9 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             // for any AIFunctions that were actually ApprovalRequiredAIFunctions. If the incoming chat messages include responses to those
             // approval requests, we need to process them now. This entails removing these manufactured approval requests from the chat message
             // list and replacing them with the appropriate FunctionCallContents and FunctionResultContents that would have been generated if
-            // the inner client had returned them directly.
-            var (preDownstreamCallHistory, notInvokedApprovals) = ProcessFunctionApprovalResponses(
+            // the inner client had returned them directly. The reconstructed messages are inserted at the approval anchor so they stay adjacent
+            // to the assistant tool-call and ahead of any trailing caller-supplied messages.
+            var (preDownstreamCallHistory, notInvokedApprovals, approvedResultInsertIndex) = ProcessFunctionApprovalResponses(
                 originalMessages, !string.IsNullOrWhiteSpace(options?.ConversationId), toolMessageId, functionCallContentFallbackMessageId);
             if (preDownstreamCallHistory is not null)
             {
@@ -491,7 +493,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
 
             // Invoke approved approval responses, which generates some additional FRC wrapped in ChatMessage.
             (IList<ChatMessage>? invokedApprovedFunctionApprovalResponses, bool shouldTerminate, consecutiveErrorCount) =
-                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: true, cancellationToken);
+                await InvokeApprovedFunctionApprovalResponsesAsync(notInvokedApprovals, originalMessages, options, consecutiveErrorCount, isStreaming: true, approvedResultInsertIndex, cancellationToken);
 
             if (invokedApprovedFunctionApprovalResponses is not null)
             {
@@ -504,11 +506,11 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                         Activity.Current = activity; // workaround for https://github.com/dotnet/runtime/issues/47802
                     }
                 }
+            }
 
-                if (shouldTerminate)
-                {
-                    yield break;
-                }
+            if (shouldTerminate)
+            {
+                yield break;
             }
         }
 
@@ -860,10 +862,27 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// Gets whether <paramref name="messages"/> contains any <see cref="ToolApprovalRequestContent"/> or <see cref="ToolApprovalResponseContent"/>
     /// instances with a <see cref="FunctionCallContent"/> tool call that the FICC needs to process.
     /// </summary>
-    private static bool HasAnyApprovalContent(List<ChatMessage> messages) =>
-        messages.Exists(static m => m.Contents.Any(static c =>
+    private static bool HasAnyFunctionApproval(List<ChatMessage> messages) =>
+        messages.Exists(MessageHasFunctionApproval);
+
+    private static bool MessageHasFunctionApproval(ChatMessage message) =>
+        message.Contents.Any(static c =>
             c is ToolApprovalRequestContent { ToolCall: FunctionCallContent { InformationalOnly: false } }
-            or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } }));
+            or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } });
+
+    /// <summary>
+    /// Determines whether every content item in <paramref name="message"/> is a function approval request or response
+    /// (a <see cref="ToolApprovalRequestContent"/> or <see cref="ToolApprovalResponseContent"/> whose tool call is a
+    /// non-informational <see cref="FunctionCallContent"/>). When this returns <see langword="false"/>, the anchor
+    /// message carries content that survives extraction - genuine caller content (such as text) or approval content
+    /// the FICC does not process itself (for example MCP or informational-only approvals). That surviving content is
+    /// what causes the reconstructed tool-call/result block to be inserted before the anchor message rather than
+    /// appended after it, keeping the reconstructed tool result adjacent to its function tool-call.
+    /// </summary>
+    private static bool MessageContainsOnlyFunctionApprovals(ChatMessage message) =>
+        message.Contents.All(static c =>
+            c is ToolApprovalRequestContent { ToolCall: FunctionCallContent { InformationalOnly: false } }
+            or ToolApprovalResponseContent { ToolCall: FunctionCallContent { InformationalOnly: false } });
 
     /// <summary>Copies any <see cref="FunctionCallContent"/> from <paramref name="messages"/> to <paramref name="functionCalls"/>.</summary>
     private static bool CopyFunctionCalls(
@@ -1135,11 +1154,15 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <param name="consecutiveErrorCount">The number of consecutive iterations, prior to this one, that were recorded as having function invocation errors.</param>
     /// <param name="isStreaming">Whether the function calls are being processed in a streaming context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <param name="insertIndex">
+    /// The index at which to insert the generated result messages into <paramref name="messages"/>. When
+    /// <see langword="null"/>, the results are appended to the end of the list.
+    /// </param>
     /// <returns>A value indicating how the caller should proceed.</returns>
     private async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
         List<ChatMessage> messages, ChatOptions? options,
         List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount,
-        bool isStreaming, CancellationToken cancellationToken)
+        bool isStreaming, CancellationToken cancellationToken, int? insertIndex = null)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
@@ -1180,7 +1203,14 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         IList<ChatMessage> addedMessages = CreateResponseMessages(results.ToArray());
         ThrowIfNoFunctionResultsAdded(addedMessages);
         UpdateConsecutiveErrorCountOrThrow(addedMessages, ref consecutiveErrorCount);
-        messages.AddRange(addedMessages);
+        if (insertIndex is int idx)
+        {
+            messages.InsertRange(idx, addedMessages);
+        }
+        else
+        {
+            messages.AddRange(addedMessages);
+        }
 
         return (shouldTerminate, consecutiveErrorCount, addedMessages);
     }
@@ -1301,12 +1331,48 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// 3. Generate failed <see cref="FunctionResultContent"/> for any rejected <see cref="ToolApprovalResponseContent"/>.
     /// 4. add all the new content items to <paramref name="originalMessages"/> and return them as the pre-invocation history.
     /// </summary>
-    private (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals) ProcessFunctionApprovalResponses(
+    private (List<ChatMessage>? preDownstreamCallHistory, List<ApprovalResultWithRequestMessage>? approvals, int approvedResultInsertIndex) ProcessFunctionApprovalResponses(
         List<ChatMessage> originalMessages, bool hasConversationId, string? toolMessageId, string? functionCallContentFallbackMessageId)
     {
+        // Determine where the reconstructed tool-call/tool-result block is inserted into the outgoing list.
+        //
+        // The block is anchored just before the last message that carries function approval content. Everything from
+        // that message onwards - its residual content that survives extraction (if the approval response shared a
+        // message with other content), plus every message after it - ends up after the block; everything before it
+        // stays before. This keeps a reconstructed tool result adjacent to the assistant tool-call it belongs to
+        // (whether that tool-call is reconstructed by us in client-managed conversation mode, or held by the service
+        // in service-managed conversation mode) and ahead of any trailing or residual caller-supplied content.
+        //
+        // The count is computed before extraction. Any message positioned after lastApprovalIndex carries no
+        // extracted function approval content - lastApprovalIndex is the last one that does - so extraction never
+        // removes those messages. The last approval message itself survives when it also carries other content that
+        // is not a function approval (genuine caller content, or approval content the FICC does not process itself
+        // such as MCP or informational-only approvals). That makes the trailing count stable across extraction, so
+        // the resulting insert index is always in range.
+        //
+        // Known limitation: content interleaved between multiple approval responses, or placed before an approval
+        // response, remains before the block (only the last approval position is used as the anchor). In
+        // service-managed conversation mode - where the service holds every prior tool-call ahead of all new
+        // messages - such interleaved/leading content can therefore break tool_calls->tool adjacency. Interleaving
+        // other content among, or before, approval responses is not a supported usage pattern.
+        int lastApprovalIndex = originalMessages.FindLastIndex(MessageHasFunctionApproval);
+        int trailingMessageCount = 0;
+        if (lastApprovalIndex >= 0)
+        {
+            trailingMessageCount = originalMessages.Count - (lastApprovalIndex + 1);
+            if (!MessageContainsOnlyFunctionApprovals(originalMessages[lastApprovalIndex]))
+            {
+                trailingMessageCount++;
+            }
+        }
+
         // Extract any approval responses where we need to execute or reject the function calls.
         // The original messages are also modified to remove all approval requests and responses.
         var notInvokedResponses = ExtractAndRemoveApprovalRequestsAndResponses(originalMessages);
+
+        // Insert just before the last approval message's surviving content (see above). When there are no trailing
+        // or residual messages this reduces to appending at the end of the list.
+        int insertIndex = originalMessages.Count - trailingMessageCount;
 
         // Wrap the function call content in message(s).
         ICollection<ChatMessage>? allPreDownstreamCallMessages = ConvertToFunctionCallContentMessages(
@@ -1320,27 +1386,31 @@ public class FunctionInvokingChatClient : DelegatingChatClient
             null;
 
         // Add all the FCC that we generated to the pre-downstream-call history so that they can be returned to the caller as part of the next response.
-        // Also, if we are not dealing with a service thread (i.e. we don't have a conversation ID), add them
-        // into the original messages list so that they are passed to the inner client and can be used to generate a result.
+        // Also, if we are not dealing with a service thread (i.e. we don't have a conversation ID), insert them
+        // into the original messages list at the anchor so that they are passed to the inner client and can be used to generate a result.
         List<ChatMessage>? preDownstreamCallHistory = null;
         if (allPreDownstreamCallMessages is not null)
         {
             preDownstreamCallHistory = [.. allPreDownstreamCallMessages];
             if (!hasConversationId)
             {
-                originalMessages.AddRange(preDownstreamCallHistory);
+                originalMessages.InsertRange(insertIndex, preDownstreamCallHistory);
+                insertIndex += preDownstreamCallHistory.Count;
             }
         }
 
         // Add all the FRC that we generated to the pre-downstream-call history so that they can be returned to the caller as part of the next response.
-        // Also, add them into the original messages list so that they are passed to the inner client and can be used to generate a result.
+        // Also, insert them into the original messages list at the anchor so that they are passed to the inner client and can be used to generate a result.
         if (rejectedPreDownstreamCallResultsMessage is not null)
         {
             (preDownstreamCallHistory ??= []).Add(rejectedPreDownstreamCallResultsMessage);
-            originalMessages.Add(rejectedPreDownstreamCallResultsMessage);
+            originalMessages.Insert(insertIndex, rejectedPreDownstreamCallResultsMessage);
+            insertIndex++;
         }
 
-        return (preDownstreamCallHistory, notInvokedResponses.approvals);
+        // insertIndex now points just after the reconstructed tool-call/rejected-result messages, which is where
+        // any approved function results should be inserted so they stay ahead of trailing caller messages.
+        return (preDownstreamCallHistory, notInvokedResponses.approvals, insertIndex);
     }
 
     /// <summary>
@@ -1743,14 +1813,18 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         ChatOptions? options,
         int consecutiveErrorCount,
         bool isStreaming,
+        int insertIndex,
         CancellationToken cancellationToken)
     {
         // Check if there are any function calls to do for any approved functions and execute them.
         if (notInvokedApprovals is { Count: > 0 })
         {
-            // The FRC that is generated here is already added to originalMessages by ProcessFunctionCallsAsync.
+            // The FRC that is generated here is inserted into originalMessages by ProcessFunctionCallsAsync at the
+            // supplied index so it stays adjacent to the reconstructed tool-call and ahead of any trailing
+            // caller-supplied messages. The trailing messages remain in the list during invocation, so the
+            // invoked function still receives the full input via FunctionInvocationContext.Messages.
             var modeAndMessages = await ProcessFunctionCallsAsync(
-                originalMessages, options, notInvokedApprovals.Select(x => x.Response.ToolCall).OfType<FunctionCallContent>().ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken);
+                originalMessages, options, notInvokedApprovals.Select(x => x.Response.ToolCall).OfType<FunctionCallContent>().ToList(), 0, consecutiveErrorCount, isStreaming, cancellationToken, insertIndex);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
 
             // Also mark the request's FCC as InformationalOnly to ensure consistency
