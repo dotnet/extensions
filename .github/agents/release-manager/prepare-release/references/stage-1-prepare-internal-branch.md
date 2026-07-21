@@ -1,5 +1,7 @@
 # Stage 1 - Prepare Internal Branch
 
+This stage is for the **monthly release**. Servicing releases should follow [servicing-release-prep.md](servicing-release-prep.md) instead.
+
 When preparing a public branch for internal release, apply the following changes:
 
 ## 1. Directory.Build.props

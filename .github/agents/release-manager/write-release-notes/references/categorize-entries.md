@@ -59,7 +59,7 @@ These categories are **not** grouped by package area. They appear as flat lists 
 
 ## Full vs. patch release considerations
 
-### Full monthly release
+### Monthly release
 - All areas with changes get their own heading
 - All four category sections appear (omit empty ones)
 - Include the "Experimental API Changes" section if any experimental changes were detected

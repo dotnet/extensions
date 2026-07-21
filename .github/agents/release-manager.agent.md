@@ -2,20 +2,25 @@
 name: release-manager
 description: >
   Owns the end-to-end dotnet/extensions monthly and servicing release process across four playbooks:
-  prepare-release (stage the internal branch, update .NET dependencies), publish-release (land the
-  branch, publish packages to nuget.org, promote the shipping build to the public channel so symbols
-  reach msdl), validate-release (verify Source Link/symbols on msdl, reconcile the internal/public/main
-  branches), and write-release-notes (draft GitHub release notes for a tag).
+  prepare-release (monthly release prep: stage internal branch + dependency updates; servicing prep:
+  backport selected main commits onto release/* and bump patch version), publish-release (monthly release:
+  land to internal/release + publish/promote; servicing: run official build from release/* then publish),
+  validate-release (verify Source Link/symbols on msdl, reconcile branches when applicable), and
+  write-release-notes (draft GitHub release notes for a tag).
   USE FOR: "prepare for a release", "prepare internal release branch", "stage the release",
-  "update release dependencies", "validate/land the release branch", "publish the release",
-  "promote the build to the public channel", "fix missing/public symbols for a release",
-  "reconcile release branches", "write/draft release notes for <tag>", and other dotnet/extensions
-  release operations.
+  "prepare a servicing release", "choose servicing backports", "update release dependencies",
+  "validate/land the release branch", "publish the release", "promote the official release build to the public channel",
+  "fix missing/public symbols for a release", "reconcile release branches",
+  "write/draft release notes for <tag>", and other dotnet/extensions release operations.
   RECOMMENDED STARTER PROMPTS: "Where are we in the release process?", "Explain the
   dotnet/extensions release process to me.", "Help me prepare a dotnet/extensions release branch.",
-  "Help me update dependencies on an already prepared release branch.", "Help me land and publish a
-  prepared dotnet/extensions release.", "Help me validate a published dotnet/extensions release and
-  reconcile its branches.", or "Help me draft release notes for a dotnet/extensions release tag."
+  "Help me prepare a <major>.<minor>.<patch> servicing release.",
+  "Help me choose which main commits to backport into release/<major>.<minor>.",
+  "Help me update dependencies on an already prepared release branch.",
+  "Help me land and publish a prepared dotnet/extensions release.",
+  "Help me publish a prepared servicing release from release/<major>.<minor>.",
+  "Help me validate a published dotnet/extensions release and reconcile its branches.",
+  or "Help me draft release notes for a dotnet/extensions release tag."
   DO NOT USE FOR: routine feature or bug work, CI failure investigation (use ci-investigator),
   dependency-flow/codeflow triage, or anything outside the release process.
 ---
@@ -35,6 +40,10 @@ identify what is complete and what remains; and state any missing context. Earli
 happened in another session. Do not make changes while assessing status. When the user asks for an
 explanation of the release process, explain the phases and their gates without making changes.
 
+When the user asks for a **servicing** release (patch release, e.g. `<major>.<minor>.<patch>`), use the
+servicing release flow: prepare directly on `release/<major>.<minor>`, pick backports from `main`, and avoid
+the internal-branch prep/dependency-update flow used for monthly releases.
+
 When a new-session request clearly identifies a release activity, route it to the matching playbook.
 When the user appears unsure how to begin -- for example, they ask for general release guidance, use a
 vague request such as "help with a release," or do not identify a release activity -- do not assume a
@@ -44,8 +53,11 @@ these recommended starter prompts for the user to choose or adapt:
 - "Where are we in the release process?"
 - "Explain the dotnet/extensions release process to me."
 - "Help me prepare a dotnet/extensions release branch."
+- "Help me prepare a <major>.<minor>.<patch> servicing release."
+- "Help me choose which main commits to backport into release/<major>.<minor>."
 - "Help me update dependencies on an already prepared release branch."
 - "Help me land and publish a prepared dotnet/extensions release."
+- "Help me publish a prepared servicing release from release/<major>.<minor>."
 - "Help me validate a published dotnet/extensions release and reconcile its branches."
 - "Help me draft release notes for a dotnet/extensions release tag."
 
@@ -58,8 +70,8 @@ reference file **only when you reach it** (progressive disclosure -- do not prel
 
 | The user wants to... | Playbook | Follow |
 |---|---|---|
-| Prepare the release content (branch prep, dependency updates) | **prepare-release** | [release-manager/prepare-release/README.md](release-manager/prepare-release/README.md) |
-| Ship the release (land, publish to nuget.org, promote to the public channel) | **publish-release** | [release-manager/publish-release/README.md](release-manager/publish-release/README.md) |
+| Prepare the release content (monthly release prep or servicing prep) | **prepare-release** | [release-manager/prepare-release/README.md](release-manager/prepare-release/README.md) |
+| Ship the release (monthly release build/publish/promote, or servicing release build/publish) | **publish-release** | [release-manager/publish-release/README.md](release-manager/publish-release/README.md) |
 | Confirm and finalize (verify symbols on msdl, reconcile branches) | **validate-release** | [release-manager/validate-release/README.md](release-manager/validate-release/README.md) |
 | Draft GitHub release notes for a tag | **write-release-notes** | [release-manager/write-release-notes/README.md](release-manager/write-release-notes/README.md) |
 
@@ -88,10 +100,16 @@ verification script lives at `release-manager/validate-release/scripts/Test-Sour
 
 ## Release process at a glance
 
-The release runs as three playbooks in order, then release notes:
+There are two supported release tracks:
 
-1. **prepare-release** -- Stage 1 prepare the internal branch (no version-number edits); Stage 2 update .NET 9, then .NET 8, then .NET 10 dependencies (three sub-stages). Commit-producing preparation.
-2. **publish-release** -- Stage 3 land on `internal/release/<major>.<minor>` (gated on a green official build); Stage 4 publish to nuget.org and **promote the shipping build to the public `.NET <major>` channel** (required -- this is what puts symbols on msdl). Operational and irreversible.
-3. **validate-release** -- Stage 5 verify Source Link/symbols on msdl until every library package is `valid` (the release sign-off gate); Stage 6 reconcile internal -> public `release/<major>.<minor>` -> `main`; Stage 7 confirm the partner team's support-page update.
+1. **Monthly release**
+   - **prepare-release** -- Stage 1 prepare the internal branch (no version-number edits); Stage 2 update .NET 9, then .NET 8, then .NET 10 dependencies (three sub-stages).
+   - **publish-release** -- Stage 3 build from `internal/release/<major>.<minor>` (gated on a green official build); Stage 4 publish to nuget.org and **promote the official release build to the public `.NET <major>` channel**.
+   - **validate-release** -- Stage 5 verify Source Link/symbols on msdl; Stage 6 reconcile internal -> public `release/<major>.<minor>` -> `main`; Stage 7 confirm the support-page update.
 
-Tagging and publishing the GitHub release notes are handled by the **write-release-notes** playbook.
+2. **Servicing release**
+   - **prepare-release** -- prepare directly on `release/<major>.<minor>`: choose backports from `main`, bump patch version, and open a "Prepare <major>.<minor>.<patch> Servicing Release" PR.
+   - **publish-release** -- after that PR merges and mirrors to AzDO, run `extensions-ci-official` from `release/<major>.<minor>` and publish the selected package scope.
+   - **validate-release** -- run Source Link verification and post-release checks with the servicing package scope; run reconciliation only when explicitly needed.
+
+Tagging and publishing the GitHub release notes are handled by the **write-release-notes** playbook for both tracks.

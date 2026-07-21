@@ -1,34 +1,120 @@
 # Stage 4 - Publish and Promote
 
-After the Land stage (publish-release Stage 3) lands the release on `internal/release/<major>.<minor>` and its official build produces the `PackageArtifacts`, publish the packages to nuget.org and promote the shipping build to the public channel so its symbols publish to the Microsoft symbol server (msdl).
+After Stage 3 produces the official release build (`PackageArtifacts`), publish the packages to nuget.org and ensure that build is assigned to the public channel so symbols publish to the Microsoft symbol server (msdl).
 
-This stage is operational and produces no commit. Both actions are **irreversible**: publishing is human-gated (the agent prepares and reviews the package set but never runs `dotnet nuget push` itself and never handles API keys), and the channel promotion runs only after the user confirms. Verifying that the shipped symbols actually landed on msdl is the next playbook -- **validate-release**.
+This stage is shared by both tracks:
+
+- **Monthly release**: Stage 3 official release build comes from `internal/release/<major>.<minor>`.
+- **Servicing release**: Stage 3 official release build comes from public `release/<major>.<minor>`.
+
+This stage is operational and produces no commit. Both actions are **irreversible**: publishing is human-gated (the agent prepares and reviews the package set but never runs `dotnet nuget push` itself and never handles API keys), and the channel promotion runs only after the user confirms. Verifying that the published symbols actually landed on msdl is the next playbook -- **validate-release**.
 
 ## Prerequisites
 
-- The Land stage is complete: the official build on `internal/release/<major>.<minor>` succeeded and produced the `PackageArtifacts`.
+- Stage 3 is complete: the official release build succeeded and produced the `PackageArtifacts`.
 - For the channel promotion: the `darc` CLI, authenticated to the Build Asset Registry (BAR).
+
+For servicing releases, also require the merged servicing-prep PR description; it is the source of truth for package scope.
 
 ## Sub-stage 1 - Prepare and publish packages
 
 Publishing is irreversible (a published version cannot be overwritten or truly deleted) and requires nuget.org API keys, so the agent only prepares the set; the user runs the push.
 
 1. Download and extract the `PackageArtifacts` from the official build.
-2. Stage the packages to publish into a clean folder, **excluding**:
-   - `Microsoft.Internal.*` (always).
-   - Any packages the user names to hold back for this release. Confirm the exact list, and flag template/tooling packages (for example `*.ProjectTemplates`) for an explicit decision.
+2. Stage the packages to publish into a clean folder:
+   - Always exclude `Microsoft.Internal.*`.
+   - For **servicing releases**, start from the package list in the merged servicing-prep PR description; treat that list as canonical unless the user explicitly changes it.
+   - For **monthly releases**, include all release packages except those the user explicitly holds back.
+   - In both tracks, flag template/tooling packages (for example `*.ProjectTemplates`) for an explicit include/exclude decision.
 3. Present the excluded and to-publish lists for the user to review.
 4. Two nuget.org accounts are involved: almost all packages publish from the **dotnetframework** account; **`Microsoft.Agents.AI.ProjectTemplates`** publishes from the **MicrosoftAgentFramework** account, so it must be pushed separately with that account's key.
 5. The **user** runs `dotnet nuget push` with the appropriate API key(s). Never run the push, and never handle the API keys.
 
-## Sub-stage 2 - Promote the shipping build to the public channel
+### Secure API key entry (user-run helper)
 
-The packages you just published to nuget.org were built by the official build on `internal/release/<major>.<minor>`. A darc **default-channel** rule auto-assigns that build to the **`.NET <major> Internal`** channel, whose symbols publish to an internal isolated feed -- **not** the public Microsoft symbol server (msdl). The public **`.NET <major>`** channel (which does publish symbols to msdl) is only auto-assigned to builds from the *public* `release/<major>.<minor>` branch, and **no subscription promotes the internal build to it**. So the shipping build's symbols reach msdl only after you **manually promote it** to the public channel. Skipping this leaves the shipped packages with no public symbols / Source Link -- the failure this sub-stage exists to prevent.
+The API key must never be pasted into the agent conversation (it would be captured in session history) and the agent must never run the push or hold the key in a process it controls. Instead, the **user** runs a self-contained helper in their own terminal that captures the key through an editor, pushes the staged packages, then shreds the key file. The key is never echoed and never leaves the user's machine.
 
-1. Identify the shipping build's **BAR id** -- the BAR build for the official `internal/release/<major>.<minor>` build whose artifacts you published. Confirm its commit matches the `repository/commit` embedded in a shipped `.nuspec`. `darc get-build --id <bar-id>` should show it on `.NET <major> Internal` and typically **not** yet on `.NET <major>`.
+The helper opens a throwaway key file in the user's editor with a **wait** flag (so the command blocks until the file is saved and closed), reads the key after close, pushes each staged package, then overwrites and deletes the key file in a `finally` block (so cleanup runs even on error or Ctrl-C). Editors are launched with the flag that blocks until the file is closed:
+
+| Editor | Invocation |
+|---|---|
+| Sublime Text | `subl --wait <file>` |
+| VS Code | `code --wait -- <file>` |
+| Notepad | `Start-Process notepad.exe -ArgumentList <file> -Wait` |
+
+```powershell
+#requires -Version 5.1
+[CmdletBinding()]
+param(
+  # Absolute paths to the staged .nupkg files to publish.
+  [Parameter(Mandatory)][string[]] $Package,
+  # Editor used to capture the key. Default is Sublime Text.
+  [ValidateSet('subl','code','notepad')][string] $Editor = 'subl',
+  [string] $Source = 'https://api.nuget.org/v3/index.json'
+)
+
+$ErrorActionPreference = 'Stop'
+$key = $null
+$keyFile = Join-Path ([System.IO.Path]::GetTempPath()) ("nugetkey_{0}.txt" -f ([guid]::NewGuid().ToString('N')))
+Set-Content -LiteralPath $keyFile -Value '' -NoNewline
+
+try {
+  Write-Host "Opening '$Editor'. Paste the nuget.org API key, save, then CLOSE the file to continue..."
+  switch ($Editor) {
+    'subl'    { & subl --wait $keyFile }
+    'code'    { & code --wait -- $keyFile }
+    'notepad' { Start-Process -FilePath notepad.exe -ArgumentList $keyFile -Wait }
+  }
+
+  $key = ([string](Get-Content -LiteralPath $keyFile -Raw)).Trim()
+  if ([string]::IsNullOrWhiteSpace($key)) { throw "No API key was entered; aborting (nothing pushed)." }
+
+  foreach ($p in $Package) {
+    if (-not (Test-Path -LiteralPath $p)) { throw "Package not found: $p" }
+    Write-Host "Pushing $([System.IO.Path]::GetFileName($p)) ..."
+    dotnet nuget push $p --source $Source --api-key $key
+    if ($LASTEXITCODE -ne 0) { throw "push failed for '$p' (exit $LASTEXITCODE)" }
+  }
+  Write-Host "All packages pushed."
+}
+finally {
+  # Overwrite the key file with random bytes, then delete it. Runs even on error/Ctrl-C.
+  if (Test-Path -LiteralPath $keyFile) {
+    try {
+      $len = [int](Get-Item -LiteralPath $keyFile).Length
+      if ($len -gt 0) {
+        $rng  = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+        $rand = New-Object byte[] $len
+        $rng.GetBytes($rand); $rng.Dispose()
+        [System.IO.File]::WriteAllBytes($keyFile, $rand)
+      }
+    } catch { }
+    Remove-Item -LiteralPath $keyFile -Force -ErrorAction SilentlyContinue
+  }
+  if ($key) { $key = $null; Remove-Variable key -ErrorAction SilentlyContinue }
+}
+```
+
+Notes:
+- Pass the staged `.nupkg` paths via `-Package`; select the editor with `-Editor subl|code|notepad` (default `subl`, matching this repository's release engineer's preference).
+- The key is passed to `dotnet nuget push` as `--api-key`, so it is briefly visible in local process listings for the duration of each push -- acceptable on the release engineer's own machine. To avoid even that exposure, upload the `.nupkg` files through the nuget.org web UI instead.
+- `Microsoft.Agents.AI.ProjectTemplates` uses the separate **MicrosoftAgentFramework** account key; when it is in scope, run the helper a second time with only that package so its key is entered separately.
+
+After a successful push, **delete or regenerate the API key on nuget.org** ([nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)) so the key used for this release is not left valid. The helper shreds the temporary key *file* locally, but only deleting/regenerating the key on nuget.org invalidates it server-side. Guide the user to do this as the final step of Sub-stage 1.
+
+## Sub-stage 2 - Ensure the official release build is on the public channel
+
+Determine whether manual promotion is required:
+
+- **Monthly release builds from `internal/release/<major>.<minor>`** are typically auto-assigned only to `.NET <major> Internal`; manual promotion to `.NET <major>` is usually required.
+- **Servicing builds from public `release/<major>.<minor>`** are typically auto-assigned to `.NET <major>` already; verify before attempting promotion.
+
+1. Identify the official release build's **BAR id** and confirm its commit matches the `repository/commit` embedded in a published `.nuspec`.
 2. Find the public channel id: `darc get-channels` -> the entry named exactly `.NET <major>` (no `Internal`/`Eng`/`Private`/`Workload` suffix).
-3. Promote the build to the public channel with `darc add-build-to-channel --id <bar-id> --channel ".NET <major>"` -- **confirm the BAR id and channel with the user before triggering**, since this publishes its symbols to msdl (`SymbolTargetType: Public`) **and** flows its packages downstream to that channel, and is **irreversible once packages flow**. A non-blocking "Build validation audit failure for production channel" warning is expected.
-4. Wait for the promotion build to complete, then confirm: `darc get-build --id <bar-id>` now lists `.NET <major>` among its channels.
+3. Check current channel assignment with `darc get-build --id <bar-id>`:
+   - If `.NET <major>` is already present, record that and skip manual promotion.
+   - If `.NET <major>` is absent, promote with `darc add-build-to-channel --id <bar-id> --channel ".NET <major>"` **only after explicit user confirmation**.
+4. If promotion was required, wait for it to complete, then confirm `.NET <major>` appears in `darc get-build --id <bar-id>`.
 
 ## After the stage
 

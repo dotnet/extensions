@@ -1,6 +1,8 @@
-# Stage 3 - Land
+# Stage 3 - Build (Monthly Release)
 
 After the prepare-release playbook is committed and reviewed (Prepare Internal Branch, then Update Dependencies), land the `stage-release-<major>.<minor>` branch on `internal/release/<major>.<minor>` -- gated on a green official build.
+
+This Stage 3 reference is for the **monthly release**. Servicing releases use [stage-3-build-servicing.md](stage-3-build-servicing.md) instead.
 
 This stage is operational, not file-editing: it pushes existing commits and queues pipelines rather than producing new commits. Because it pushes to the internal remote and can land changes irreversibly, it runs **only on explicit user instruction** and pauses for confirmation before every push, pipeline queue, and land action. It produces no commit of its own.
 

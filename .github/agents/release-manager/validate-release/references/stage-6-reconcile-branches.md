@@ -2,6 +2,8 @@
 
 After Stage 5 verifies the published symbols, reconcile the branches: merge the internal release branch back out to the public release branch, then merge the public release branch into `main`. This is the final release activity.
 
+This stage is designed for the **monthly release**. For servicing releases prepared directly on public `release/<major>.<minor>`, Stage 6 is usually skipped unless the user explicitly asks for additional branch-flow reconciliation.
+
 Like the publish-release stages, this stage is operational: it stages merges and creates commits on throwaway `merge/*` branches, but it does **not** push or complete pull requests on its own. The agent stages each merge, applies the required file "doctoring", commits, and shows the diff for review; **pushing and completing the PRs (which need JIT elevation / admin settings) are user-directed**, and each merge PR must land as a merge commit (never squashed).
 
 Run each sub-stage only when the user instructs it. Sub-stage 2 depends on Sub-stage 1's PR having already merged into the public release branch.

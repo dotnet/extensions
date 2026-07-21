@@ -1,12 +1,16 @@
 # Stage 2 - Update Dependencies
 
-Update the internal release branch's product dependencies to the pending .NET 9, .NET 8, and .NET 10 servicing releases using `darc update-dependencies` against Build Asset Registry (BAR) build IDs.
+This stage is for the **monthly release**. Servicing releases should follow [servicing-release-prep.md](servicing-release-prep.md) instead.
+
+Update the internal release branch's product dependencies to the pending .NET 9, .NET 8, and .NET 10 release updates using `darc update-dependencies` against Build Asset Registry (BAR) build IDs.
 
 This stage has three sub-stages. Run them in order, and give each its own commit:
 
 1. Update Dependencies: .NET 9
 2. Update Dependencies: .NET 8
 3. Update Dependencies: .NET 10
+
+> **Why .NET 9 is first (this is intentional, not numeric order).** .NET 9 is the *coherent primary* band. `darc update-dependencies` and `eng/Version.Details.xml` write the **canonical, non-suffixed** version properties in `eng/Versions.props` (the `...Version` entries, which currently hold `9.0.x`), and only one band can own those canonical locations. So .NET 9 is applied first, on a clean tree, and its changes are kept wholesale -- `Version.Details.xml`, the non-suffixed `...Version` entries, and the base internal `NuGet.config` sources. .NET 8 (`...LTSVersion`, `8.0.x`) and .NET 10 (`...Net10Version`, `10.0.x`) are then layered on top as overlays: their darc writes to the canonical locations are reverted and the numbers hand-copied into the suffixed entries. That ordering is exactly why Sub-stages 2 and 3 tell you to *revert the 9.0 non-suffixed lines* and to keep the `NuGet.config` sources ".NET 9 added" -- those fix-up steps only make sense if .NET 9 has already run.
 
 Commit each sub-stage automatically as you complete it -- do not pause for per-sub-stage review or approval. This overrides steps 2 and 3 of the [Stage workflow](../README.md#stage-workflow). Pushing remains a separate, user-directed step: do not push until the user explicitly instructs it (see "After the stage").
 

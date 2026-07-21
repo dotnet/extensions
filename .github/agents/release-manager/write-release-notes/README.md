@@ -13,7 +13,7 @@ The `dotnet/extensions` repository ships NuGet packages across many functional a
 
 The repository does not follow Semantic Versioning. Major versions align with annual .NET releases, minor versions increment monthly, and patch versions are for intra-month fixes.
 
-The repository makes heavy use of `[Experimental]` attributes. Experimental diagnostic IDs are documented in [`docs/list-of-diagnostics.md`](../../docs/list-of-diagnostics.md). Breaking changes to experimental APIs are expected and acceptable. Graduation of experimental APIs to stable is a noteworthy positive event.
+The repository makes heavy use of `[Experimental]` attributes. Experimental diagnostic IDs are documented in [`docs/list-of-diagnostics.md`](../../../../docs/list-of-diagnostics.md). Breaking changes to experimental APIs are expected and acceptable. Graduation of experimental APIs to stable is a noteworthy positive event.
 
 The repository uses `release/` branches (e.g. `release/10.4`) where release tags are associated with commits on those branches. When determining the commit range for a release, ensure the previous and target tags are resolved against the appropriate release branch history.
 
@@ -23,6 +23,7 @@ The repository uses `release/` branches (e.g. `release/10.4`) where release tags
 - **Do not run linters, formatters, or validators** on the output.
 - **Maximize parallel tool calls.** Fetch multiple PR and issue details in a single response.
 - **Package assignment is file-path-driven.** Determine which packages a PR affects by examining which `src/Libraries/{PackageName}/` paths it touches. See [references/package-areas.md](references/package-areas.md) for the mapping. Use `area-*` labels only as a fallback.
+- **For servicing releases, use the servicing-prep PR description as scope input.** If a merged PR titled `Prepare <major>.<minor>.<patch> Servicing Release` exists, treat its package list and commit list as the default source of truth for publish/validate/release-notes scope unless the user explicitly overrides it.
 
 ## Process
 
@@ -38,7 +39,7 @@ The user may provide:
 Once the range is established:
 
 1. Determine if this is a **full release** (minor version bump) or **patch release** (patch version bump) based on the version numbers.
-2. For patch releases, ask the user which packages are included (or infer from the PRs).
+2. For patch releases, ask the user which packages are included (or infer from the PRs). If a servicing-prep PR exists, start from its package list and confirm any overrides.
 3. Get the merge date range for PR collection.
 
 ### Step 2: Collect and Enrich PRs
@@ -77,7 +78,7 @@ Follow [references/experimental-features.md](references/experimental-features.md
 Build the package version information:
 
 1. For **full releases**: all packages ship at the same version. Note the version number but do not generate a per-package table — it would be repetitive with no value.
-2. For **patch releases**: build a table of only the affected packages and their version numbers.
+2. For **patch releases**: build a table of only the affected packages and their version numbers. If a servicing-prep PR exists, seed this table from that PR's package list before applying user overrides.
 3. Present the version information to the user for confirmation. The user may adjust which packages are included in a patch release.
 
 ### Step 6: Draft Release Notes
