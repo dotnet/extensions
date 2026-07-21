@@ -79,7 +79,7 @@ Do not cherry-pick until selection is explicit.
 
 Before committing:
 
-1. Propose the package scope derived from selected items (default to coherent related package sets).
+1. Propose the package scope derived from selected items (default to coherent related package sets). For example, when any of Microsoft.Extensions.AI, Microsoft.Extensions.AI.Abstractions, and Microsoft.Extensions.AI.OpenAI are updated, all three are released, but the Microsoft.Extensions.AI.Evaluation packages are not released unless they are also updated.
 2. Ask the user to confirm or adjust that package scope.
 3. If selected changes affect packages used by project templates, ask whether template packages should also be included in the servicing release.
 
