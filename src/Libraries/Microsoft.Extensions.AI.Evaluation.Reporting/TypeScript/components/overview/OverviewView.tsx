@@ -24,7 +24,7 @@ import {
     type ScenarioGroupPassRate,
     type KpiCounts,
 } from '../core/viewModels';
-import { formatNumber } from '../core/metricModel';
+import { formatNumber, isDisplayedZero } from '../core/metricModel';
 import { judgmentWord, type DeltaJudgment } from '../core/metricDirection';
 
 const pctInt = (r: number) => Math.round(r * 100);
@@ -337,17 +337,14 @@ const JUDGMENT_TO_CHIP: Record<DeltaJudgment, DeltaChip['status']> = {
     neutral: 'informative',
 };
 
-// Good/bad of a value delta comes from the metric's inferred direction (learned from the
-// library's own ratings); an indeterminate metric stays informational. Sub-threshold changes
-// render as a neutral dash regardless.
 const numDeltaChip = (d: number, judgment: DeltaJudgment): DeltaChip => {
-    if (Math.abs(d) < 0.05) return { show: true, label: '—', status: 'informative' };
+    if (isDisplayedZero(d)) return { show: true, label: '—', status: 'informative' };
     const { arrow, sign } = deltaArrowSign(d);
     return { show: true, label: `${arrow} ${sign}${formatNumber(Math.abs(d))}`, status: JUDGMENT_TO_CHIP[judgment] };
 };
 
 const numDeltaAriaLabel = (d: number, judgment: DeltaJudgment): string => {
-    if (Math.abs(d) < 0.05) return 'no change';
+    if (isDisplayedZero(d)) return 'no change';
     const direction = d > 0 ? `increased by ${formatNumber(Math.abs(d))}` : `decreased by ${formatNumber(Math.abs(d))}`;
     const word = judgmentWord(judgment);
     return word ? `${direction}, ${word}` : direction;
@@ -392,7 +389,7 @@ type AttentionItem = {
     scenario: string;
     status: ReportStatus;
     statStr: string;
-    failing: number;
+    weak: number;
     share: number;
 };
 
@@ -417,20 +414,17 @@ const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionIte
         .map(([key, a]) => {
             const bad = a.danger + a.warning;
             const status: ReportStatus = a.danger >= a.warning ? 'danger' : 'warning';
-            // a.danger tallies the 'weak' rating bucket, so "% weak" must be derived from it
-            // (previously derived from a.warning, the 'fair' bucket — mislabeled).
-            const weakPct = a.total > 0 ? Math.round((a.danger / a.total) * 100) : 0;
             return {
                 key,
                 label: `${a.scenario} · ${a.metric}`,
                 scenario: a.scenario,
                 status,
-                statStr: `${a.danger} failing · ${weakPct}% weak`,
-                failing: a.danger,
+                statStr: `${a.danger} weak · ${a.warning} fair`,
+                weak: a.danger,
                 share: a.total > 0 ? bad / a.total : 0,
             };
         })
-        .filter((w) => w.failing > 0 || w.share > 0)
+        .filter((w) => w.weak > 0 || w.share > 0)
         .sort((x, y) => y.share - x.share)
         .slice(0, limit);
 };

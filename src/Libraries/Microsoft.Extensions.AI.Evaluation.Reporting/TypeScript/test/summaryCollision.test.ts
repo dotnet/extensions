@@ -95,4 +95,18 @@ describe('createScoreSummary — scenario/iteration name collisions', () => {
             expect(summary.nodesByKey.get('exec1')!.get(leaf.nodeKey)).toBe(leaf);
         }
     });
+
+    it('distinguishes scenario path segments from dotted iteration names', () => {
+        const summary = createScoreSummary(asDataset([
+            makeScenario('A.B', 'C'),
+            makeScenario('A', 'B.C', true),
+        ]));
+
+        const leaves = summary.primaryResult.flattenedNodes.filter((node) => node.isLeafNode);
+        expect(leaves).toHaveLength(2);
+        expect(new Set(leaves.map((node) => node.nodeKey)).size).toBe(2);
+        for (const leaf of leaves) {
+            expect(summary.nodesByKey.get('exec1')!.get(leaf.nodeKey)).toBe(leaf);
+        }
+    });
 });

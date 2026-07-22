@@ -58,24 +58,52 @@ export type ScenarioGroupPassRate = {
 
 const groupKey = (scenario: ScenarioRunResult): string => scenario.scenarioName.split('.')[0];
 
+type CreationTime = {
+    raw: string;
+    instant?: number;
+};
+
+const creationTime = (raw: string): CreationTime => {
+    const instant = Date.parse(raw);
+    return Number.isFinite(instant) ? { raw, instant } : { raw };
+};
+
+const compareCreationTimes = (a: CreationTime, b: CreationTime): number => {
+    if (a.instant !== undefined && b.instant !== undefined) {
+        return a.instant - b.instant;
+    }
+    if (a.instant !== undefined) return -1;
+    if (b.instant !== undefined) return 1;
+    if (a.raw < b.raw) return -1;
+    if (a.raw > b.raw) return 1;
+    return 0;
+};
+
 export const chronologicalExecutions = (dataset: Dataset): string[] => {
     const results = dataset.scenarioRunResults ?? [];
-    const minTime = new Map<string, string>();
+    const minTime = new Map<string, CreationTime>();
     const insertionIndex = new Map<string, number>();
     for (const r of results) {
         if (!insertionIndex.has(r.executionName)) {
             insertionIndex.set(r.executionName, insertionIndex.size);
         }
+        const candidate = creationTime(r.creationTime);
         const existing = minTime.get(r.executionName);
-        if (existing === undefined || r.creationTime < existing) {
-            minTime.set(r.executionName, r.creationTime);
+        if (existing === undefined || compareCreationTimes(candidate, existing) < 0) {
+            minTime.set(r.executionName, candidate);
         }
     }
     return [...insertionIndex.keys()].sort((a, b) => {
-        const ta = minTime.get(a) ?? '';
-        const tb = minTime.get(b) ?? '';
-        if (ta < tb) return -1;
-        if (ta > tb) return 1;
+        const ta = minTime.get(a);
+        const tb = minTime.get(b);
+        if (ta && tb) {
+            const timeOrder = compareCreationTimes(ta, tb);
+            if (timeOrder !== 0) return timeOrder;
+        } else if (ta) {
+            return -1;
+        } else if (tb) {
+            return 1;
+        }
         return (insertionIndex.get(a) ?? 0) - (insertionIndex.get(b) ?? 0);
     });
 };

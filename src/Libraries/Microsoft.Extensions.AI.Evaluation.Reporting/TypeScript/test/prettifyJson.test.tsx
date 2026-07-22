@@ -36,7 +36,7 @@ const renderMessages = (messages: ChatMessage[], prettify: boolean) => {
 
 const text = (value: string): AIContent => ({ $type: 'text', text: value }) as unknown as AIContent;
 const functionCall = (callId: string, name: string, args: unknown): AIContent =>
-    ({ $type: 'functionCall', callId, name, arguments: args }) as unknown as AIContent;
+    ({ $type: 'functionCall', callId, name, arguments: args, informationalOnly: false }) as unknown as AIContent;
 const functionResult = (callId: string, result: unknown): AIContent =>
     ({ $type: 'functionResult', callId, result }) as unknown as AIContent;
 

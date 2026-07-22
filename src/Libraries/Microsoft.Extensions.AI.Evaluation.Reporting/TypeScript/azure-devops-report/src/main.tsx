@@ -51,6 +51,7 @@ const run = async () => {
   await ready();
 
   const config = getConfiguration();
+  const root = createRoot(document.getElementById('root')!);
   config.onBuildChanged(async (build: Build) => {
 
     try {
@@ -62,7 +63,7 @@ const run = async () => {
 
       const scoreSummary = createScoreSummary(dataset);
 
-      createRoot(document.getElementById('root')!).render(
+      root.render(
         <StrictMode>
           <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary} persistKey={String(build.id)}>
             <App heightStrategy="auto-grow" themeSource="host" />
@@ -73,7 +74,7 @@ const run = async () => {
     } catch (e) {
 
       const message = e instanceof Error ? e.message : 'An unknown error occurred while loading the report.';
-      createRoot(document.getElementById('root')!).render(
+      root.render(
         <FluentProvider theme={webLightTheme}>
           <StrictMode>
             <ErrorHtml message={message} />

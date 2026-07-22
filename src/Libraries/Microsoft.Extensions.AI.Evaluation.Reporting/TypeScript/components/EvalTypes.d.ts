@@ -17,7 +17,7 @@ type ScenarioRunResult = {
     evaluationResult: EvaluationResult;
     chatDetails?: ChatDetails;
     tags?: string[];
-    formatVersion: number;
+    formatVersion?: number;
 };
 
 type ChatResponse = {
@@ -29,7 +29,7 @@ type ChatResponse = {
 type ChatMessage = {
     authorName?: string;
     role: string;
-    contents: AIContent[];
+    contents: SerializedAIContent[];
 };
 
 type ChatDetails = {
@@ -52,7 +52,7 @@ type UsageDetails = {
 };
 
 type AIContent = {
-    $type: string;
+    $type?: string;
 };
 
 type TextContent = AIContent & {
@@ -69,7 +69,6 @@ type UriContent = AIContent & {
 type DataContent = AIContent & {
     $type: "data";
     uri: string;
-    mediaType?: string;
 };
 
 type FunctionCallContent = AIContent & {
@@ -77,6 +76,7 @@ type FunctionCallContent = AIContent & {
     callId: string;
     name: string;
     arguments?: { [K: string]: unknown };
+    informationalOnly: boolean;
 };
 
 type FunctionResultContent = AIContent & {
@@ -84,6 +84,14 @@ type FunctionResultContent = AIContent & {
     callId: string;
     result?: unknown;
 };
+
+type SerializedAIContent =
+    | AIContent
+    | TextContent
+    | UriContent
+    | DataContent
+    | FunctionCallContent
+    | FunctionResultContent;
 
 type EvaluationResult = {
     metrics: {
@@ -93,7 +101,7 @@ type EvaluationResult = {
 
 type EvaluationContext = {
     name: string;
-    contents: AIContent[];
+    contents: SerializedAIContent[];
 }
 
 type EvaluationDiagnostic = {
@@ -125,7 +133,6 @@ type BaseEvaluationMetric = {
 type MetricWithNoValue = BaseEvaluationMetric & {
     $type: "none";
     reason?: string;
-    value: undefined;
 };
 
 type NumericMetric = BaseEvaluationMetric & {

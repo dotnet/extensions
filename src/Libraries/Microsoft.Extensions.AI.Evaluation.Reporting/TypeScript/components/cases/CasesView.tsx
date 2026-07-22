@@ -136,6 +136,13 @@ const useStyles = makeStyles({
             borderRadius: 'inherit',
             outline: 'none',
         },
+        '@media (forced-colors: active)': {
+            ':focus-visible': {
+                boxShadow: 'none',
+                outline: '2px solid Highlight',
+                outlineOffset: '-2px',
+            },
+        },
     },
     caret: {
         flexShrink: 0,
@@ -166,7 +173,6 @@ const useStyles = makeStyles({
 
     detail: {
         padding: '0 var(--spacing-xxl) var(--spacing-xxl) var(--spacing-xxxl)',
-        outline: 'none',
         backgroundColor: 'transparent',
     },
     metaLine: {
@@ -320,14 +326,7 @@ const CaseRow = ({
     const classes = useStyles();
     const s = useReportStyles();
     // Deliberately NOT a Tabster Mover: this is plain content, not a composite widget.
-    const detailRef = useRef<HTMLDivElement>(null);
     const regionId = useId();
-
-    useEffect(() => {
-        if (open && detailRef.current) {
-            detailRef.current.focus();
-        }
-    }, [open]);
 
     const dotSolid = vm.failed ? statusSolidVar('danger') : statusSolidVar('success');
     const conversation = open ? getConversationDisplay(vm.scenario.messages, vm.scenario.modelResponse) : null;
@@ -359,10 +358,8 @@ const CaseRow = ({
 
             {open && conversation && (
                 <div
-                    ref={detailRef}
                     id={regionId}
                     className={classes.detail}
-                    tabIndex={-1}
                     role="region"
                     aria-label={`${vm.label} detail`}
                 >

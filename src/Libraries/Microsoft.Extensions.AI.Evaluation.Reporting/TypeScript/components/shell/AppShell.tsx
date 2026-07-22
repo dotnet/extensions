@@ -375,7 +375,12 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
     const classes = useStyles();
     const { view, setView } = useReportContext();
     // Every tab must keep tabIndex={0} for the Tabster Mover — a roving tabIndex kills arrow-nav.
-    const arrowNav = useArrowNavigationGroup({ axis: 'horizontal', circular: true });
+    const arrowNav = useArrowNavigationGroup({
+        axis: 'horizontal',
+        circular: true,
+        memorizeCurrent: false,
+        unstable_hasDefault: true,
+    });
     const barRef = useRef<HTMLDivElement | null>(null);
     const trackRef = useRef<HTMLDivElement | null>(null);
     const indRef = useRef<HTMLSpanElement | null>(null);
@@ -448,6 +453,7 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
                             aria-selected={active}
                             aria-controls="report-tabpanel"
                             tabIndex={0}
+                            data-tabster={active ? '{"focusable":{"isDefault":true}}' : undefined}
                             className={mergeClasses(classes.pivot, active && classes.pivotActive)}
                             onClick={() => setView(t.value)}
                         >

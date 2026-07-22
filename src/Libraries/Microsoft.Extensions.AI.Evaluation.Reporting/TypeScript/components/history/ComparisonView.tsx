@@ -8,7 +8,7 @@ import { useReportContext } from '../core/ReportContext';
 import { useAnnounce } from '../core/Announcer';
 import { useReportStyles, srOnlyStyle, statusTextVar } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
-import { formatNumber } from '../core/metricModel';
+import { formatNumber, isDisplayedZero } from '../core/metricModel';
 import {
     inferBetterDirections,
     judgeValueDelta,
@@ -58,8 +58,8 @@ const scenarioMetrics = (results: ScenarioRunResult[]): { byScen: Record<string,
 type CmpDelta = { txt: string; magText: string };
 
 const deltaStyle = (rawDelta: number): CmpDelta => {
-    const flat = Math.abs(rawDelta) < 0.0005;
     const magText = formatNumber(Math.abs(rawDelta));
+    const flat = isDisplayedZero(rawDelta);
     const txt = flat ? '—' : (rawDelta > 0 ? '▲ ' : '▼ ') + magText;
     return { txt, magText };
 };
@@ -75,9 +75,9 @@ type CmpRow = {
     connector: React.CSSProperties;
     dotB: React.CSSProperties;
     dotA: React.CSSProperties;
-    baselineAvg: number;
-    currentAvg: number;
-    rawDelta: number;
+    baselineAvg?: number;
+    currentAvg?: number;
+    rawDelta?: number;
     dir: number;
     mag: number;
 };
@@ -90,34 +90,45 @@ const buildCmpRow = (
 ): CmpRow => {
     const hasA = !!(baselineAgg && baselineAgg.n);
     const hasB = !!(currentAgg && currentAgg.n);
-    const baselineAvg = hasA ? baselineAgg!.sum / baselineAgg!.n : 0;
-    const currentAvg = hasB ? currentAgg!.sum / currentAgg!.n : 0;
-    const rawDelta = currentAvg - baselineAvg;
-    const deltaFmt = deltaStyle(rawDelta);
-    const domain = axisDomain(hasA ? [baselineAvg, currentAvg] : [currentAvg]);
-    const isFlat = deltaFmt.txt === '—';
-    const dir = isFlat || !hasA ? 0 : rawDelta > 0 ? 1 : -1;
+    const baselineAvg = hasA ? baselineAgg.sum / baselineAgg.n : undefined;
+    const currentAvg = hasB ? currentAgg.sum / currentAgg.n : undefined;
+    const rawDelta = baselineAvg !== undefined && currentAvg !== undefined
+        ? currentAvg - baselineAvg
+        : undefined;
+    const deltaFmt = rawDelta !== undefined ? deltaStyle(rawDelta) : undefined;
+    const domain = axisDomain([baselineAvg, currentAvg].filter((value): value is number => value !== undefined));
+    const isFlat = deltaFmt?.txt === '—';
+    const dir = rawDelta === undefined || isFlat ? 0 : rawDelta > 0 ? 1 : -1;
     const baselineGoodness = hasA && baselineAgg!.goodnessN > 0 ? baselineAgg!.goodnessSum / baselineAgg!.goodnessN : undefined;
     const currentGoodness = hasB && currentAgg!.goodnessN > 0 ? currentAgg!.goodnessSum / currentAgg!.goodnessN : undefined;
     const goodnessDelta =
         baselineGoodness !== undefined && currentGoodness !== undefined ? currentGoodness - baselineGoodness : undefined;
-    const status: DeltaJudgment = dir === 0 ? 'neutral' : judgeValueDelta(direction, rawDelta, goodnessDelta);
-    const prevPos = hasA ? posOn(baselineAvg, domain.min, domain.max) : null;
-    const curPos = posOn(currentAvg, domain.min, domain.max);
-    const dumbbell = dumbbellStyles(prevPos, curPos, !isFlat, status, 0);
-    const aStr = hasA ? formatNumber(baselineAvg) : '—';
-    const bStr = hasB ? formatNumber(currentAvg) : '—';
+    const status: DeltaJudgment = dir === 0 ? 'neutral' : judgeValueDelta(direction, rawDelta!, goodnessDelta);
+    const baselinePos = baselineAvg !== undefined ? posOn(baselineAvg, domain.min, domain.max) : null;
+    const currentPos = currentAvg !== undefined ? posOn(currentAvg, domain.min, domain.max) : null;
+    const dumbbell = currentPos !== null
+        ? dumbbellStyles(baselinePos, currentPos, rawDelta !== undefined && !isFlat, status, 0)
+        : {
+            ...dumbbellStyles(baselinePos, baselinePos ?? 50, false, status, 0),
+            dotA: { display: 'none' },
+        };
+    const aStr = baselineAvg !== undefined ? formatNumber(baselineAvg) : '—';
+    const bStr = currentAvg !== undefined ? formatNumber(currentAvg) : '—';
     const word = judgmentWord(status);
-    const deltaAriaLabel =
-        dir === 0
+    const delta = rawDelta === undefined ? (hasB ? 'Added' : 'Removed') : deltaFmt!.txt;
+    const deltaAriaLabel = rawDelta === undefined
+        ? hasB
+            ? 'added in current execution'
+            : 'not present in current execution'
+        : dir === 0
             ? 'no change'
-            : `${dir > 0 ? 'increased' : 'decreased'} by ${deltaFmt.magText}${word ? `, ${word}` : ''}`;
+            : `${dir > 0 ? 'increased' : 'decreased'} by ${deltaFmt!.magText}${word ? `, ${word}` : ''}`;
     return {
         name: k,
         a: aStr,
         b: bStr,
         bColor: statusTextVar(status),
-        delta: deltaFmt.txt,
+        delta,
         deltaAriaLabel,
         status,
         connector: dumbbell.connector,
@@ -127,7 +138,7 @@ const buildCmpRow = (
         currentAvg,
         rawDelta,
         dir,
-        mag: Math.abs(rawDelta) / (domain.max - domain.min || 1),
+        mag: rawDelta === undefined ? 0 : Math.abs(rawDelta) / (domain.max - domain.min || 1),
     };
 };
 
@@ -503,13 +514,16 @@ export const ComparisonView = () => {
 
         const sortRows = (rows: CmpRow[]): CmpRow[] => {
             const sdir = sortDir === 'asc' ? 1 : -1;
+            const compareOptionalNumbers = (a: number | undefined, b: number | undefined): number => {
+                if (a === undefined) return b === undefined ? 0 : 1;
+                if (b === undefined) return -1;
+                return (a - b) * sdir;
+            };
             return rows.slice().sort((p, q) => {
-                let r = 0;
-                if (sortKey === 'name') r = p.name.localeCompare(q.name);
-                else if (sortKey === 'a') r = p.baselineAvg - q.baselineAvg;
-                else if (sortKey === 'b') r = p.currentAvg - q.currentAvg;
-                else if (sortKey === 'change') r = p.rawDelta - q.rawDelta;
-                return r * sdir;
+                if (sortKey === 'name') return p.name.localeCompare(q.name) * sdir;
+                if (sortKey === 'a') return compareOptionalNumbers(p.baselineAvg, q.baselineAvg);
+                if (sortKey === 'b') return compareOptionalNumbers(p.currentAvg, q.currentAvg);
+                return compareOptionalNumbers(p.rawDelta, q.rawDelta);
             });
         };
 
@@ -517,11 +531,10 @@ export const ComparisonView = () => {
             .map((sn) => {
                 const scenarioBaseline = scnA.byScen[sn];
                 const scenarioCurrent = scnB.byScen[sn];
-                const order = scenarioCurrent && scenarioCurrent.metricOrder.length
-                    ? scenarioCurrent.metricOrder
-                    : scenarioBaseline
-                        ? scenarioBaseline.metricOrder
-                        : [];
+                const order = [...new Set([
+                    ...(scenarioCurrent?.metricOrder ?? []),
+                    ...(scenarioBaseline?.metricOrder ?? []),
+                ])];
                 const rows = sortRows(order.map((k) =>
                     buildCmpRow(k, scenarioBaseline?.metricAgg[k], scenarioCurrent?.metricAgg[k], directions.get(k) ?? 'none')));
                 return { scenario: sn, rows, cases: (scenarioCurrent ?? scenarioBaseline ?? { cases: 0 }).cases };
@@ -530,6 +543,7 @@ export const ComparisonView = () => {
     }, [resultsFor, effectiveA, effectiveB, hasTwoExecs, sortKey, sortDir, directions]);
 
     const allRows = useMemo(() => groups.reduce<CmpRow[]>((acc, g) => acc.concat(g.rows), []), [groups]);
+    const comparableRows = allRows.filter((r) => r.rawDelta !== undefined);
     const multiScenario = groups.length > 1;
 
     const increased = allRows.filter((r) => r.dir > 0).length;
@@ -552,14 +566,14 @@ export const ComparisonView = () => {
             label: 'Metrics increased',
             value: '' + increased,
             valueColor: 'var(--neutral-foreground-1)',
-            sub: 'of ' + allRows.length + ' metrics',
+            sub: 'of ' + comparableRows.length + ' comparable metrics',
             borderRight: DIV,
         },
         {
             label: 'Metrics decreased',
             value: '' + decreased,
             valueColor: 'var(--neutral-foreground-1)',
-            sub: 'of ' + allRows.length + ' metrics',
+            sub: 'of ' + comparableRows.length + ' comparable metrics',
             borderRight: DIV,
         },
         biggest
@@ -572,9 +586,9 @@ export const ComparisonView = () => {
               }
             : {
                   label: 'Biggest change',
-                  value: 'stable',
+                  value: comparableRows.length > 0 ? 'stable' : 'not comparable',
                   valueColor: 'var(--neutral-foreground-1)',
-                  sub: 'no significant change',
+                  sub: comparableRows.length > 0 ? 'no significant change' : 'no shared metric values',
                   borderRight: 'none',
               },
     ];

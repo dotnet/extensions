@@ -21,7 +21,7 @@ const numeric = (
 ): NumericMetric => ({
     $type: 'numeric',
     name,
-    value,
+    ...(value === undefined ? {} : { value }),
     reason: `Reason for ${name}.`,
     interpretation: { rating, failed },
     diagnostics,
@@ -39,7 +39,6 @@ const boolean = (name: string, value: boolean, rating: EvaluationRating, failed:
 const none = (name: string, rating: EvaluationRating): MetricWithNoValue => ({
     $type: 'none',
     name,
-    value: undefined,
     reason: `Reason for ${name}.`,
     interpretation: { rating, failed: false },
 });

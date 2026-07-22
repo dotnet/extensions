@@ -19,6 +19,9 @@ export type ScoreSummary = {
     reverseTextIndexByExecution: Map<string, ReverseTextIndex>
 };
 
+const appendNodeKey = (nodeKey: string, segment: string): string =>
+    `${nodeKey}.${segment.replace(/%/g, "%25").replace(/\./g, "%2E")}`;
+
 export class ScoreNode {
     constructor(name: string, nodeType: ScoreNodeType, nodeKey: string, executionName: string) {
         this.name = name;
@@ -61,7 +64,7 @@ export class ScoreNode {
             }
             let leaf = this.children.get(key);
             if (!leaf) {
-                leaf = new ScoreNode(key, ScoreNodeType.Iteration, `${this.nodeKey}.${key}`, this.executionName);
+                leaf = new ScoreNode(key, ScoreNodeType.Iteration, appendNodeKey(this.nodeKey, key), this.executionName);
                 this.children.set(key, leaf);
             }
             leaf.scenario = scenario;
@@ -73,7 +76,7 @@ export class ScoreNode {
             child.insertNode(tail, scenario);
         } else {
             const nodeType = tail.length === 1 ? ScoreNodeType.Scenario : ScoreNodeType.Group;
-            const newChild = new ScoreNode(head, nodeType, `${this.nodeKey}.${head}`, this.executionName);
+            const newChild = new ScoreNode(head, nodeType, appendNodeKey(this.nodeKey, head), this.executionName);
             newChild.insertNode(tail, scenario);
             this.children.set(head, newChild);
         }
@@ -287,23 +290,19 @@ const flattener = function* (node: ScoreNode): Iterable<ScoreNode> {
     }
 };
 
-export const isTextContent = (content: AIContent): content is TextContent => {
-    return (content as TextContent).text !== undefined;
-};
+const isContentObject = (content: AIContent): content is AIContent & Record<string, unknown> =>
+    typeof content === "object" && content !== null;
+
+export const isTextContent = (content: AIContent): content is TextContent =>
+    isContentObject(content) && typeof content.text === "string";
 
 export const isImageContent = (content: AIContent): content is UriContent | DataContent => {
-    if ((content as UriContent).uri !== undefined && (content as UriContent).mediaType) {
-        return (content as UriContent).mediaType.startsWith("image/");
-    }
-    
-    if ((content as DataContent).uri !== undefined) {
-        const dataContent = content as DataContent;
-        if (dataContent.uri.startsWith('data:image/')) {
-            return true;
-        }
+    if (!isContentObject(content) || typeof content.uri !== "string") {
+        return false;
     }
 
-    return false;
+    return (typeof content.mediaType === "string" && content.mediaType.startsWith("image/")) ||
+        content.uri.startsWith('data:image/');
 };
 
 export type ConversationDisplay = {

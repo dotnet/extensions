@@ -26,6 +26,13 @@ const useLocalStyles = makeStyles({
             borderRadius: 'inherit',
             outline: 'none',
         },
+        '@media (forced-colors: active)': {
+            ':focus-visible': {
+                boxShadow: 'none',
+                outline: '2px solid Highlight',
+                outlineOffset: '-2px',
+            },
+        },
     },
     tocRowSelected: {
         WebkitBackdropFilter: 'var(--eval-nav-bd-sel)',
@@ -108,7 +115,7 @@ const pillProps = (passing: number, total: number): { status: ReportStatus; appe
 
 export const SidebarTree = ({ labelledBy }: { labelledBy: string }) => {
     const local = useLocalStyles();
-    const treeNav = useArrowNavigationGroup({ axis: 'vertical', circular: true });
+    const treeNav = useArrowNavigationGroup({ axis: 'vertical' });
     const { activeNode, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
 
     const topGroupKeys = useMemo(

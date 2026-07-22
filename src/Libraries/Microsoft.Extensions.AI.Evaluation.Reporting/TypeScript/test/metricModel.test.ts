@@ -2,34 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { describe, it, expect } from 'vitest';
-import { formatNumber, formatValue } from '../components/core/metricModel';
+import { formatNumber, formatValue, isDisplayedZero } from '../components/core/metricModel';
 
 const numericMetric = (value?: number): NumericMetric =>
     ({
         $type: 'numeric',
         name: 'm',
-        value,
+        ...(value === undefined ? {} : { value }),
     }) as NumericMetric;
 
 const booleanMetric = (value?: boolean): BooleanMetric =>
     ({
         $type: 'boolean',
         name: 'm',
-        value,
+        ...(value === undefined ? {} : { value }),
     }) as BooleanMetric;
 
 const stringMetric = (value?: string): StringMetric =>
     ({
         $type: 'string',
         name: 'm',
-        value,
+        ...(value === undefined ? {} : { value }),
     }) as StringMetric;
 
 const noneMetric = (): MetricWithNoValue =>
     ({
         $type: 'none',
         name: 'm',
-        value: undefined,
     }) as MetricWithNoValue;
 
 describe('formatNumber — pinned precision policy (round to <=3dp, strip trailing zeros)', () => {
@@ -45,6 +44,15 @@ describe('formatNumber — pinned precision policy (round to <=3dp, strip traili
 
     it('normalizes -0 to "0"', () => {
         expect(formatNumber(-0)).toBe('0');
+    });
+});
+
+describe('isDisplayedZero — follows the pinned display precision', () => {
+    it('only treats values that render as zero as unchanged', () => {
+        expect(isDisplayedZero(0.0004)).toBe(true);
+        expect(isDisplayedZero(-0.0004)).toBe(true);
+        expect(isDisplayedZero(0.0005)).toBe(false);
+        expect(isDisplayedZero(0.004)).toBe(false);
     });
 });
 

@@ -5,6 +5,8 @@ type ScoredMetric = NumericMetric | BooleanMetric | StringMetric | MetricWithNoV
 
 export const formatNumber = (v: number): string => String(Number(v.toFixed(3)));
 
+export const isDisplayedZero = (v: number): boolean => formatNumber(Math.abs(v)) === '0';
+
 export const formatValue = (metric: ScoredMetric): string | undefined => {
     switch (metric.$type) {
         case 'numeric':

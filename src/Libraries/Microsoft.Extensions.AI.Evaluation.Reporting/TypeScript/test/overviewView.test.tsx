@@ -126,6 +126,24 @@ describe('OverviewView — needs-attention row + View action', () => {
         expect(ctx?.selectedScenarioLevel).toBeTruthy();
         expect(ctx?.selectedScenarioLevel).toContain('Alpha');
     });
+
+    it('labels weak ratings as weak instead of reporting them as case failures', () => {
+        const weakButPassing: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T_NEW,
+            scenarioRunResults: [
+                run('Ratings.Weak', NEW, T_NEW, {
+                    quality: numeric('quality', 1, 'poor', false),
+                }),
+            ],
+        };
+
+        renderOverview(weakButPassing);
+
+        expect(screen.getByText('1 weak · 0 fair')).toBeInTheDocument();
+        expect(screen.queryByText(/1 failing/i)).not.toBeInTheDocument();
+        expect(screen.getByText('Cases failing').parentElement?.textContent).toContain('0');
+    });
 });
 
 describe('OverviewView — mover delta rendering', () => {
@@ -194,6 +212,24 @@ describe('OverviewView — mover delta rendering', () => {
         expect(deltaCell?.textContent).toContain('▲');
         expect(deltaCell?.textContent).toContain('increased by 20');
         expect(deltaCell?.textContent).not.toMatch(/improved|regressed/i);
+    });
+
+    it('shows a non-zero delta when it is visible at the report precision', () => {
+        const precise: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T_NEW,
+            scenarioRunResults: [
+                run('Precision.Small', NEW, T_NEW, { quality: numeric('quality', 1.004, 'good', false) }),
+                run('Precision.Small', OLD, T_OLD, { quality: numeric('quality', 1, 'poor', false) }),
+            ],
+        };
+
+        renderOverview(precise);
+
+        const nameCell = screen.getByText('Precision.Small · quality').parentElement;
+        const deltaCell = nameCell?.nextElementSibling?.nextElementSibling;
+        expect(deltaCell?.textContent).toContain('▲');
+        expect(deltaCell?.textContent).toContain('increased by 0.004, improved');
     });
 });
 

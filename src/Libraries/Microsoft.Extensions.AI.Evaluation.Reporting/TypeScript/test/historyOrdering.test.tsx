@@ -176,3 +176,111 @@ describe('HistoryView — switching scenarios does not violate the Rules of Hook
         expect(screen.queryAllByRole('tab').length).toBe(0);
     });
 });
+
+describe('HistoryView — scenario and iteration scope', () => {
+    const iterationRow = (
+        scenarioName: string,
+        iterationName: string,
+        executionName: string,
+        creationTime: string,
+        quality: number,
+    ): ScenarioRunResult =>
+        ({
+            scenarioName,
+            iterationName,
+            executionName,
+            creationTime,
+            messages: [],
+            modelResponse: { messages: [] },
+            evaluationResult: { metrics: { quality: numeric('quality', quality) } },
+            formatVersion: 1,
+        }) as ScenarioRunResult;
+
+    it('aggregates all scenario iterations into mean, median, and min-max values per execution', () => {
+        const scopedDataset: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T2,
+            scenarioRunResults: [
+                iterationRow('Group.Multi', 'iteration1', E1, T1, 1),
+                iterationRow('Group.Multi', 'iteration2', E1, T1, 2),
+                iterationRow('Group.Multi', 'iteration3', E1, T1, 9),
+                iterationRow('Group.Multi', 'iteration1', E2, T2, 2),
+                iterationRow('Group.Multi', 'iteration2', E2, T2, 4),
+                iterationRow('Group.Multi', 'iteration3', E2, T2, 12),
+            ],
+        };
+        const scoreSummary = createScoreSummary(scopedDataset);
+        render(
+            <ReportContextProvider dataset={scopedDataset} scoreSummary={scoreSummary}>
+                <HistoryView />
+            </ReportContextProvider>,
+        );
+
+        expect(statValue('First run score')).toBe('4');
+        expect(statValue('Last run score')).toBe('6');
+        expect(statValue('Net change')).toBe('▲ 2');
+
+        const chart = screen.getByRole('img', { name: /quality trend across executions/i });
+        const medianLine = chart.querySelector('polyline[stroke-dasharray]');
+        const meanLine = [...chart.querySelectorAll('polyline')].find(
+            (line) => !line.hasAttribute('stroke-dasharray'),
+        );
+
+        expect(chart.querySelector('polygon')).not.toBeNull();
+        expect(medianLine).not.toBeNull();
+        expect(meanLine).toBeDefined();
+        expect(medianLine?.getAttribute('points')).not.toBe(meanLine?.getAttribute('points'));
+    });
+
+    it('resolves a selected scenario that exists only in older executions', () => {
+        const archivedDataset: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T3,
+            scenarioRunResults: [
+                iterationRow('Current.Only', 'iteration1', E3, T3, 5),
+                iterationRow('Archived.Scenario', 'iteration1', E2, T2, 4),
+                iterationRow('Archived.Scenario', 'iteration1', E1, T1, 2),
+            ],
+        };
+        const scoreSummary = createScoreSummary(archivedDataset);
+        const archivedKey = scoreSummary.executionHistory
+            .get(E2)!
+            .flattenedNodes.find((node) => node.scenario?.scenarioName === 'Archived.Scenario')!
+            .nodeKey;
+        const SelectArchived = () => {
+            const { selectScenarioLevel } = useReportContext();
+            return <button onClick={() => selectScenarioLevel(archivedKey)}>select-archived</button>;
+        };
+        render(
+            <ReportContextProvider dataset={archivedDataset} scoreSummary={scoreSummary}>
+                <SelectArchived />
+                <HistoryView />
+            </ReportContextProvider>,
+        );
+
+        fireEvent.click(screen.getByText('select-archived'));
+
+        expect(screen.getByRole('tab', { name: 'quality' })).toBeInTheDocument();
+        expect(statValue('First run score')).toBe('2');
+        expect(statValue('Last run score')).toBe('4');
+    });
+
+    it('shows an unavailable state instead of falling back to an unrelated scenario', () => {
+        const scoreSummary = createScoreSummary(dataset);
+        const SelectMissing = () => {
+            const { selectScenarioLevel } = useReportContext();
+            return <button onClick={() => selectScenarioLevel('root.Missing')}>select-missing</button>;
+        };
+        render(
+            <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
+                <SelectMissing />
+                <HistoryView />
+            </ReportContextProvider>,
+        );
+
+        fireEvent.click(screen.getByText('select-missing'));
+
+        expect(screen.getByText('Selected scenario unavailable')).toBeInTheDocument();
+        expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    });
+});

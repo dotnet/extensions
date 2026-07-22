@@ -101,6 +101,13 @@ const useStyles = makeStyles({
             borderRadius: 'inherit',
             outline: 'none',
         },
+        '@media (forced-colors: active)': {
+            ':focus-visible': {
+                boxShadow: 'none',
+                outline: '2px solid Highlight',
+                outlineOffset: '-2px',
+            },
+        },
     },
     caret: {
         flexShrink: 0,

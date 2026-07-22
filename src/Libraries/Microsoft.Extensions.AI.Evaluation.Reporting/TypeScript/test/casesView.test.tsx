@@ -28,9 +28,11 @@ describe('CasesView — rows + expand + focus contract', () => {
         expect(rows[0].getAttribute('aria-label')).toMatch(/\(passed\)/i);
     });
 
-    it('expands the inline detail and focuses the detail heading on open', () => {
+    it('expands the inline detail without moving focus away from the disclosure button', () => {
         renderCases(toolCallDataset);
         const row = screen.getAllByRole('button', { name: CASE_ROW })[0];
+
+        row.focus();
 
         expect(screen.queryByRole('region', { name: /detail/i })).not.toBeInTheDocument();
 
@@ -40,7 +42,8 @@ describe('CasesView — rows + expand + focus contract', () => {
         expect(detail).toBeInTheDocument();
         expect(within(detail).getByText('Transcript')).toBeInTheDocument();
         expect(within(detail).getByText('Metrics')).toBeInTheDocument();
-        expect(detail).toHaveFocus();
+        expect(row).toHaveFocus();
+        expect(detail).not.toHaveAttribute('tabindex');
     });
 
     it('does not put a Tabster Mover on the expanded detail', () => {

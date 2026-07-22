@@ -387,7 +387,7 @@ const mkResponseMessages = (c) => {
     const tools = c.tools || (c.tool ? [c.tool] : []);
     tools.forEach((t, idx) => {
         const callId = `call-${c.id}-${idx}`;
-        msgs.push({ role: 'assistant', contents: [{ $type: 'functionCall', callId, name: t.name, arguments: t.arguments }] });
+        msgs.push({ role: 'assistant', contents: [{ $type: 'functionCall', callId, name: t.name, arguments: t.arguments, informationalOnly: false }] });
         msgs.push({ role: 'tool', contents: [{ $type: 'functionResult', callId, result: t.result }] });
         if (t.say) msgs.push({ role: 'assistant', contents: [{ $type: 'text', text: t.say }] });
     });

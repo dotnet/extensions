@@ -5,7 +5,7 @@ const txt = (text: string): AIContent =>
     ({ $type: 'text', text }) as unknown as AIContent;
 
 const functionCall = (callId: string, name: string, args: Record<string, unknown>): FunctionCallContent =>
-    ({ $type: 'functionCall', callId, name, arguments: args });
+    ({ $type: 'functionCall', callId, name, arguments: args, informationalOnly: false });
 
 const functionResult = (callId: string, result: unknown): FunctionResultContent =>
     ({ $type: 'functionResult', callId, result });
@@ -41,7 +41,6 @@ const boolMetric = (
 const noValueMetric = (name: string, rating: EvaluationRating): MetricWithNoValue => ({
     $type: 'none',
     name,
-    value: undefined,
     reason: 'Evaluation was inconclusive due to missing context.',
     interpretation: { rating, failed: false },
 });
@@ -126,7 +125,6 @@ export const multiGroupDataset: Dataset = {
             knowledgeCheck: {
                 $type: 'numeric',
                 name: 'knowledgeCheck',
-                value: undefined,
                 interpretation: { rating: 'unknown', failed: false },
             } as NumericMetric,
         }, ['GroupC']),

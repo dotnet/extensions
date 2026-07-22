@@ -75,6 +75,35 @@ describe('TranscriptBlock — unknown $type degrades gracefully', () => {
     });
 });
 
+describe('TranscriptBlock — malformed content degrades gracefully', () => {
+    it.each([
+        ['null', null],
+        ['primitive', 'MALFORMED_PRIMITIVE_SENTINEL'],
+        ['non-string text', { $type: 'text', text: 42 }],
+        ['non-string data URI', { $type: 'data', uri: 42 }],
+        ['non-string media type', { $type: 'uri', uri: 'https://example.com/image.png', mediaType: 42 }],
+    ])('serializes %s content without throwing', (_name, malformedContent) => {
+        const messages: ChatMessage[] = [{
+            role: 'assistant',
+            contents: [malformedContent as unknown as AIContent],
+        }];
+
+        expect(() => renderTranscript(messages)).not.toThrow();
+    });
+
+    it('continues treating forward-compatible reasoning content as text', () => {
+        const reasoningContent = {
+            $type: 'reasoning',
+            text: 'FORWARD_REASONING_SENTINEL',
+        } as unknown as AIContent;
+        const messages: ChatMessage[] = [{ role: 'assistant', contents: [reasoningContent] }];
+
+        renderTranscript(messages);
+
+        expect(screen.getByText('FORWARD_REASONING_SENTINEL')).toBeInTheDocument();
+    });
+});
+
 describe('TranscriptBlock — image content renders as <img> with derived alt text', () => {
     it('renders a UriContent image (mediaType image/*) with the user-side alt text', () => {
         const uriImage = {

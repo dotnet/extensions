@@ -10,9 +10,7 @@ import { inferBetterDirections, judgeValueDelta, judgmentWord, ratingGoodness, t
 import { TrendChart, type BandPoint } from './TrendChart';
 import { posOn, dumbbellStyles } from './dumbbellGeometry';
 import { axisDomain } from './axisDomain';
-import { formatNumber } from '../core/metricModel';
-
-const DELTA_EPSILON = 0.0005;
+import { formatNumber, isDisplayedZero } from '../core/metricModel';
 
 const isNumeric = (m: BaseEvaluationMetric): m is NumericMetric =>
     m.$type === 'numeric' && typeof (m as NumericMetric).value === 'number';
@@ -253,11 +251,15 @@ export const HistoryView = () => {
     const metricNav = useArrowNavigationGroup({ axis: 'horizontal', circular: true });
 
     const leafScenarios = useMemo(() => {
-        const primaryRoot = [...scoreSummary.executionHistory.values()][0];
-        if (!primaryRoot) return [] as { scenario: ScenarioRunResult; nodeKey: string }[];
-        return primaryRoot.flattenedNodes
-            .filter((node) => node.isLeafNode && node.scenario != null)
-            .map((node) => ({ scenario: node.scenario!, nodeKey: node.nodeKey }));
+        const byNodeKey = new Map<string, { scenario: ScenarioRunResult; nodeKey: string }>();
+        for (const root of scoreSummary.executionHistory.values()) {
+            for (const node of root.flattenedNodes) {
+                if (node.isLeafNode && node.scenario != null && !byNodeKey.has(node.nodeKey)) {
+                    byNodeKey.set(node.nodeKey, { scenario: node.scenario, nodeKey: node.nodeKey });
+                }
+            }
+        }
+        return [...byNodeKey.values()];
     }, [scoreSummary]);
 
     const selectedScenario = useMemo(() => {
@@ -265,7 +267,7 @@ export const HistoryView = () => {
         const match = leafScenarios.find(
             (l) => l.nodeKey === selectedScenarioLevel || l.nodeKey.startsWith(`${selectedScenarioLevel}.`),
         );
-        return (match ?? leafScenarios[0])?.scenario;
+        return match?.scenario;
     }, [leafScenarios, selectedScenarioLevel]);
 
     const allSeries = useMemo(
@@ -392,6 +394,17 @@ export const HistoryView = () => {
         );
     }
 
+    if (!selectedScenario) {
+        return (
+            <div className={local.emptyState}>
+                <span className={local.emptyTitle}>Selected scenario unavailable</span>
+                <span className={local.emptySubtitle}>
+                    The selected scenario is not present in this report history.
+                </span>
+            </div>
+        );
+    }
+
     if (!hasTrend) {
         return (
             <div className={local.emptyState}>
@@ -413,7 +426,7 @@ export const HistoryView = () => {
     const last = valid[valid.length - 1];
 
     const dMean = first && last ? last.mean - first.mean : 0;
-    const netFlat = Math.abs(dMean) < DELTA_EPSILON;
+    const netFlat = isDisplayedZero(dMean);
     const firstGoodness = validWithExec[0]?.exec ? goodnessMean.get(validWithExec[0].exec!) : undefined;
     const lastGoodness = validWithExec[validWithExec.length - 1]?.exec ? goodnessMean.get(validWithExec[validWithExec.length - 1].exec!) : undefined;
     const netGoodnessDelta = firstGoodness !== undefined && lastGoodness !== undefined ? lastGoodness - firstGoodness : undefined;
@@ -452,7 +465,7 @@ export const HistoryView = () => {
         if (p && prev) {
             prevPos = posOn(prev.mean, domain.min, domain.max);
             const d = p.mean - prev.mean;
-            const flat = Math.abs(d) < DELTA_EPSILON;
+            const flat = isDisplayedZero(d);
             const magnitude = formatNumber(Math.abs(d));
             const currGoodness = exec ? goodnessMean.get(exec) : undefined;
             const prevGoodness = prevExec ? goodnessMean.get(prevExec) : undefined;
@@ -594,4 +607,3 @@ export const HistoryView = () => {
         </div>
     );
 };
-
