@@ -10,8 +10,8 @@ namespace VectorData.ConformanceTests;
 public abstract class CollectionManagementTests<TKey>(VectorStoreFixture fixture) : IAsyncLifetime
     where TKey : notnull
 {
-    public Task InitializeAsync()
-        => fixture.VectorStore.EnsureCollectionDeletedAsync(CollectionName);
+    public ValueTask InitializeAsync()
+        => new(fixture.VectorStore.EnsureCollectionDeletedAsync(CollectionName));
 
     [Fact]
     public virtual async Task Collection_Ensure_Exists_Delete()
@@ -111,5 +111,9 @@ public abstract class CollectionManagementTests<TKey>(VectorStoreFixture fixture
             ]
         };
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        return default;
+    }
 }

@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="{VERSION}" />
-    <PackageReference Include="MessagePack" Version="{VERSION}" />
   </ItemGroup>
 
   <ItemGroup>

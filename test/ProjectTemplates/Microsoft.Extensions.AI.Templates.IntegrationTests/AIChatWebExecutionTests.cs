@@ -1,12 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Shared.ProjectTemplates.Tests;
-using Microsoft.TestUtilities;
 using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.Shared.ProjectTemplates.Tests.TemplateTestUtilities;
 
 namespace Microsoft.Extensions.AI.Templates.Tests;
@@ -105,8 +103,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     /// Set the environment variable <c>AI_TEMPLATES_TEST_PROJECT_NAMES</c> to "true" or "1"
     /// to enable it.
     /// </remarks>
-    [ConditionalTheory]
-    [EnvironmentVariableCondition("AI_TEMPLATES_TEST_PROJECT_NAMES", "true", "1")]
+    [Theory]
     [InlineData("dot.name")]
     [InlineData("project.123")]
     [InlineData("space name")]
@@ -117,6 +114,11 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     [InlineData("nomatch")]
     public async Task CreateRestoreAndBuild_AspireProjectName_Variants(string projectName)
     {
+        string? envValue = System.Environment.GetEnvironmentVariable("AI_TEMPLATES_TEST_PROJECT_NAMES");
+        Assert.SkipUnless(
+            string.Equals(envValue, "true", System.StringComparison.OrdinalIgnoreCase) || envValue == "1",
+            "Set the environment variable AI_TEMPLATES_TEST_PROJECT_NAMES to 'true' or '1' to enable this test.");
+
         await CreateRestoreAndBuild(projectName, ["--aspire", "--provider", "azureopenai"]);
     }
 }

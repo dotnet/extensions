@@ -10,6 +10,7 @@ using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ using Xunit;
 #pragma warning disable IDE0004 // Remove Unnecessary Cast
 #pragma warning disable S103 // Lines should not be too long
 #pragma warning disable S107 // Methods should not have too many parameters
+#pragma warning disable S1144 // Unused private types or members should be removed (accessed via reflection)
 #pragma warning disable S2760 // Sequential tests should not check the same condition
 #pragma warning disable S3358 // Ternary operators should not be nested
 #pragma warning disable S5034 // "ValueTask" should be consumed correctly
@@ -115,6 +117,7 @@ public partial class AIFunctionFactoryTest
             AIFunctionFactory.Create((string? theParam) => theParam + " " + theParam),
             AIFunctionFactory.Create((int theParam) => theParam * 2),
             AIFunctionFactory.Create((int? theParam) => theParam * 2),
+            AIFunctionFactory.Create(([AIParameterName("theParam")] string otherName) => otherName),
         ];
 
         foreach (AIFunction f in funcs)
@@ -313,6 +316,172 @@ public partial class AIFunctionFactoryTest
         Func<string> funcWithoutDisplayName = () => "test";
         func = AIFunctionFactory.Create(funcWithoutDisplayName);
         Assert.Contains("Metadata_DisplayNameAttribute", func.Name); // Will contain the lambda method name
+    }
+
+    [Fact]
+    public void Metadata_AIFunctionNameAttribute()
+    {
+        Func<string> funcWithAttribute = [AIFunctionName("get_user")] () => "test";
+        AIFunction func = AIFunctionFactory.Create(funcWithAttribute);
+        Assert.Equal("get_user", func.Name);
+
+        Func<string> funcWithBoth = [AIFunctionName("my_function")][DisplayName("display_name")] () => "test";
+        func = AIFunctionFactory.Create(funcWithBoth);
+        Assert.Equal("my_function", func.Name);
+
+        func = AIFunctionFactory.Create(funcWithAttribute, name: "explicit_name");
+        Assert.Equal("explicit_name", func.Name);
+
+        func = AIFunctionFactory.Create(funcWithAttribute, new AIFunctionFactoryOptions { Name = "options_name" });
+        Assert.Equal("options_name", func.Name);
+    }
+
+    [Fact]
+    public void Metadata_AIFunctionAndParameterNameAttributes_PreservedByAsDeclarationOnly()
+    {
+        AIFunction func = AIFunctionFactory.Create([AIFunctionName("my_tool")] ([AIParameterName("my_param")] string myParam) => myParam);
+
+        AIFunctionDeclaration declaration = func.AsDeclarationOnly();
+
+        Assert.Equal("my_tool", declaration.Name);
+        Assert.Equal(func.JsonSchema.ToString(), declaration.JsonSchema.ToString());
+        Assert.Contains("my_param", declaration.JsonSchema.ToString());
+        Assert.IsNotAssignableFrom<AIFunction>(declaration);
+    }
+
+    [Fact]
+    public async Task Parameters_MappedByAIParameterNameAttribute_Async()
+    {
+        AIFunction func = AIFunctionFactory.Create(([AIParameterName("$select")] string select, int top) => select + top);
+
+        AssertExtensions.EqualFunctionCallResults("Name2", await func.InvokeAsync(new() { ["$select"] = "Name", ["top"] = 2 }));
+    }
+
+    [Fact]
+    public void Parameters_AIParameterNameAttribute_OverridesSchemaPropertyName()
+    {
+        AIFunction func = AIFunctionFactory.Create(
+            ([AIParameterName("my_param")] string myParam, int top) => myParam + top);
+
+        JsonElement expectedSchema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "my_param": { "type": "string" },
+                    "top": { "type": "integer" }
+                },
+                "required": ["my_param", "top"]
+            }
+            """).RootElement;
+
+        AssertExtensions.EqualJsonValues(expectedSchema, func.JsonSchema);
+    }
+
+    [Fact]
+    public async Task Parameters_AIParameterNameAttribute_StrictUnmappedMemberHandling_Async()
+    {
+        JsonSerializerOptions strictOptions = new(AIJsonUtilities.DefaultOptions)
+        {
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        };
+
+        AIFunction func = AIFunctionFactory.Create(
+            ([AIParameterName("my_param")] string myParam) => myParam,
+            new AIFunctionFactoryOptions { SerializerOptions = strictOptions });
+
+        // The overridden name is "expected", so it passes strict validation.
+        AssertExtensions.EqualFunctionCallResults("Name", await func.InvokeAsync(new() { ["my_param"] = "Name" }));
+
+        // The underlying C# name is now an unexpected argument.
+        ArgumentException ex = await Assert.ThrowsAsync<ArgumentException>("arguments", async () =>
+            await func.InvokeAsync(new() { ["myParam"] = "Name" }));
+        Assert.Contains("myParam", ex.Message);
+    }
+
+    [Fact]
+    public async Task Parameters_AIParameterNameAttribute_InheritedByOverride_Async()
+    {
+        MethodInfo overrideMethod = typeof(MyDerivedType).GetMethod(nameof(MyDerivedType.Method))!;
+        AIFunction func = AIFunctionFactory.Create(overrideMethod, new MyDerivedType());
+
+        Assert.Contains("my_param", func.JsonSchema.ToString());
+        Assert.DoesNotContain("\"myParam\"", func.JsonSchema.ToString());
+
+        AssertExtensions.EqualFunctionCallResults("param='Name'", await func.InvokeAsync(new() { ["my_param"] = "Name" }));
+    }
+
+    [Fact]
+    public void Parameters_AIParameterNameAttribute_EscapesJsonPointerRef()
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { TypeInfoResolver = new DefaultJsonTypeInfoResolver() };
+
+        AIFunction func = AIFunctionFactory.Create(
+            ([AIParameterName("a/b~c")] AIParameterNameAttributeRecursiveNode node) => node.ToString(),
+            new AIFunctionFactoryOptions { SerializerOptions = options });
+
+        string schema = func.JsonSchema.ToString();
+
+        Assert.Contains("#/properties/a~1b~0c", schema);
+        Assert.DoesNotContain("#/properties/a/b~c", schema);
+    }
+
+    [Fact]
+    public void Parameters_AIParameterNameAttribute_DuplicateNames_Throw()
+    {
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
+            ([AIParameterName("dup")] string first, [AIParameterName("dup")] string second) => first + second));
+        Assert.Contains("dup", ex.Message);
+        Assert.Equal("method", ex.ParamName);
+
+        ArgumentException ex2 = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
+            ([AIParameterName("filter")] string select, string filter) => select + filter));
+        Assert.Contains("filter", ex2.Message);
+        Assert.Equal("method", ex2.ParamName);
+    }
+
+    [Fact]
+    public void Parameters_AIParameterNameAttribute_DuplicateNames_ExcludedFromSchema()
+    {
+        // Validates that collision detection occurs in ExpectedArgumentNames collection
+        // even when one of the colliding parameters is excluded from schema generation.
+        // This addresses the concern that collisions might go undetected when
+        // ExcludeFromSchema = true for one of the parameters.
+
+        var options = new AIFunctionFactoryOptions
+        {
+            ConfigureParameterBinding = p => p.Name == "second"
+                ? new AIFunctionFactoryOptions.ParameterBindingOptions { ExcludeFromSchema = true }
+                : default
+        };
+
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(
+            ([AIParameterName("dup")] string first, [AIParameterName("dup")] string second) => first + second,
+            options));
+        Assert.Contains("dup", ex.Message);
+        Assert.Contains("AIParameterNameAttribute", ex.Message);
+        Assert.Equal("method", ex.ParamName);
+    }
+
+    [Fact]
+    public void AIFunctionFactory_InheritedDescriptionAttributes_OnOverride()
+    {
+        MethodInfo overrideMethod = typeof(DerivedDescribed).GetMethod(nameof(DerivedDescribed.Compute))!;
+        AIFunction f = AIFunctionFactory.Create(overrideMethod, new DerivedDescribed());
+
+        Assert.Equal("The compute method", f.Description);
+
+        JsonElement valueParam = f.JsonSchema.GetProperty("properties").GetProperty("value");
+        Assert.Equal("The input value", valueParam.GetProperty("description").GetString());
+
+        Assert.NotNull(f.ReturnJsonSchema);
+        Assert.Equal("integer", f.ReturnJsonSchema!.Value.GetProperty("type").GetString());
+#if NET
+        // On modern .NET the return-parameter inheritance walk is fixed, so the inherited description is read.
+        Assert.Equal("The computed result", f.ReturnJsonSchema!.Value.GetProperty("description").GetString());
+#else
+        // On .NET Framework the inherited return-parameter description cannot be read and is silently dropped.
+        Assert.False(f.ReturnJsonSchema!.Value.TryGetProperty("description", out _));
+#endif
     }
 
     [Fact]
@@ -1592,4 +1761,31 @@ public partial class AIFunctionFactoryTest
     [JsonSerializable(typeof(int?))]
     [JsonSerializable(typeof(DateTime?))]
     private partial class JsonContext : JsonSerializerContext;
+
+    private abstract class MyBaseType
+    {
+        public abstract string Method([AIParameterName("my_param")] string myParam);
+    }
+
+    private sealed class MyDerivedType : MyBaseType
+    {
+        public override string Method(string myParam) => $"param='{myParam}'";
+    }
+
+    private sealed class AIParameterNameAttributeRecursiveNode
+    {
+        public AIParameterNameAttributeRecursiveNode? Next { get; set; }
+    }
+
+    private abstract class BaseDescribed
+    {
+        [Description("The compute method")]
+        [return: Description("The computed result")]
+        public abstract int Compute([Description("The input value")] int value);
+    }
+
+    private sealed class DerivedDescribed : BaseDescribed
+    {
+        public override int Compute(int value) => value;
+    }
 }
