@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -40,4 +41,13 @@ public class OcrTableCell
 
     /// <summary>Gets the text content of the cell.</summary>
     public string Content { get; }
+
+    /// <summary>Gets or sets the nested content of the cell, in reading order, when the engine provides structured cell content.</summary>
+    /// <remarks>
+    /// When <see langword="null"/>, the cell is text-only and <see cref="Content"/> carries its text. When present,
+    /// the cell holds richer structured content (for example nested blocks or tables), and <see cref="Content"/>
+    /// remains a flat-text convenience. This mirrors the nested-content model used by engines such as Docling and
+    /// Google Document AI.
+    /// </remarks>
+    public IReadOnlyList<OcrElement>? Elements { get; set; }
 }

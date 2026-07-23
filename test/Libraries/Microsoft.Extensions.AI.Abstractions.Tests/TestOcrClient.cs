@@ -30,8 +30,8 @@ public sealed class TestOcrClient : IOcrClient
         string,
         OcrOptions?,
         CancellationToken,
-        IAsyncEnumerable<OcrResponseUpdate>>?
-        ExtractStreamingAsyncCallback
+        IAsyncEnumerable<OcrPageResult>>?
+        ExtractPagesAsyncCallback
     { get; set; }
 
     public Func<Type, object?, object?> GetServiceCallback { get; set; }
@@ -46,12 +46,12 @@ public sealed class TestOcrClient : IOcrClient
         CancellationToken cancellationToken = default)
         => ExtractAsyncCallback!.Invoke(document, mediaType, options, cancellationToken);
 
-    public IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    public IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
         CancellationToken cancellationToken = default)
-        => ExtractStreamingAsyncCallback!.Invoke(document, mediaType, options, cancellationToken);
+        => ExtractPagesAsyncCallback!.Invoke(document, mediaType, options, cancellationToken);
 
     public object? GetService(Type serviceType, object? serviceKey = null)
         => GetServiceCallback!.Invoke(serviceType, serviceKey);

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a positioned layout block, such as a paragraph, heading, or figure.</summary>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public class OcrBlock
+public class OcrBlock : OcrElement
 {
     /// <summary>Initializes a new instance of the <see cref="OcrBlock"/> class.</summary>
     /// <param name="text">The text content of the block.</param>
@@ -24,10 +24,4 @@ public class OcrBlock
 
     /// <summary>Gets or sets the kind of block, for example <see cref="OcrBlockKind.Paragraph"/>, <see cref="OcrBlockKind.Title"/>, or <see cref="OcrBlockKind.Figure"/>.</summary>
     public OcrBlockKind? Kind { get; set; }
-
-    /// <summary>Gets or sets the region of the page the block occupies, when the engine provides geometry.</summary>
-    public OcrBoundingRegion? BoundingRegion { get; set; }
-
-    /// <summary>Gets or sets the confidence for the block in the range [0, 1], when available.</summary>
-    public double? Confidence { get; set; }
 }

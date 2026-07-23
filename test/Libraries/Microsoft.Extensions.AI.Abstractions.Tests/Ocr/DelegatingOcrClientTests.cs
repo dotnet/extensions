@@ -53,14 +53,14 @@ public class DelegatingOcrClientTests
     }
 
     [Fact]
-    public async Task ExtractStreamingAsyncDefaultsToInnerClientAsync()
+    public async Task ExtractPagesAsyncDefaultsToInnerClientAsync()
     {
         // Arrange
         using var expectedDocument = new MemoryStream();
         var expectedMediaType = "application/pdf";
         var expectedOptions = new OcrOptions();
         using var cts = new CancellationTokenSource();
-        OcrResponseUpdate[] expectedUpdates =
+        OcrPageResult[] expectedUpdates =
         [
             new(new OcrPage(1, "page one")),
             new(new OcrPage(2, "page two")),
@@ -68,7 +68,7 @@ public class DelegatingOcrClientTests
 
         using var inner = new TestOcrClient
         {
-            ExtractStreamingAsyncCallback = (document, mediaType, options, cancellationToken) =>
+            ExtractPagesAsyncCallback = (document, mediaType, options, cancellationToken) =>
             {
                 Assert.Same(expectedDocument, document);
                 Assert.Same(expectedMediaType, mediaType);
@@ -81,8 +81,8 @@ public class DelegatingOcrClientTests
         using var delegating = new NoOpDelegatingOcrClient(inner);
 
         // Act
-        List<OcrResponseUpdate> received = [];
-        await foreach (var update in delegating.ExtractStreamingAsync(expectedDocument, expectedMediaType, expectedOptions, cts.Token))
+        List<OcrPageResult> received = [];
+        await foreach (var update in delegating.ExtractPagesAsync(expectedDocument, expectedMediaType, expectedOptions, cts.Token))
         {
             received.Add(update);
         }
@@ -91,7 +91,7 @@ public class DelegatingOcrClientTests
         Assert.Equal(expectedUpdates, received);
     }
 
-    private static async IAsyncEnumerable<OcrResponseUpdate> YieldAsync(IEnumerable<OcrResponseUpdate> updates)
+    private static async IAsyncEnumerable<OcrPageResult> YieldAsync(IEnumerable<OcrPageResult> updates)
     {
         foreach (var update in updates)
         {

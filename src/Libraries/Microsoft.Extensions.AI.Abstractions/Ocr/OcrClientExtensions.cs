@@ -170,7 +170,7 @@ public static class OcrClientExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The structured OCR updates representing the streamed output.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="document"/> is <see langword="null"/>.</exception>
-    public static IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    public static IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         this IOcrClient client,
         DataContent document,
         OcrOptions? options = null,
@@ -183,7 +183,7 @@ public static class OcrClientExtensions
             new MemoryStream(array.Array!, array.Offset, array.Count) :
             new MemoryStream(document.Data.ToArray());
 
-        return client.ExtractStreamingAsync(documentStream, document.MediaType, options, cancellationToken);
+        return client.ExtractPagesAsync(documentStream, document.MediaType, options, cancellationToken);
     }
 
     /// <summary>Runs streaming OCR over a single document referenced by a <see cref="UriContent"/>.</summary>
@@ -200,7 +200,7 @@ public static class OcrClientExtensions
     /// self-contained <c>data:</c> URIs and does no file or network IO. For <c>file:</c> and remote URIs it
     /// throws, for the same reasons documented on the unary overload.
     /// </remarks>
-    public static IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    public static IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         this IOcrClient client,
         UriContent document,
         OcrOptions? options = null,
@@ -213,7 +213,7 @@ public static class OcrClientExtensions
         if (uri.IsAbsoluteUri && string.Equals(uri.Scheme, "data", StringComparison.OrdinalIgnoreCase))
         {
             // Reuse DataContent's data: URI parsing, then defer to the DataContent overload.
-            return client.ExtractStreamingAsync(new DataContent(uri), options, cancellationToken);
+            return client.ExtractPagesAsync(new DataContent(uri), options, cancellationToken);
         }
 
         throw new NotSupportedException(

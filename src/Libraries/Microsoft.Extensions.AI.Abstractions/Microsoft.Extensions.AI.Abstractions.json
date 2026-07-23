@@ -1856,7 +1856,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrResponseUpdate> Microsoft.Extensions.AI.DelegatingOcrClient.ExtractStreamingAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.DelegatingOcrClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
@@ -3209,7 +3209,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrResponseUpdate> Microsoft.Extensions.AI.IOcrClient.ExtractStreamingAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.IOcrClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
@@ -3351,7 +3351,7 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.OcrBlock",
+      "Type": "class Microsoft.Extensions.AI.OcrBlock : Microsoft.Extensions.AI.OcrElement",
       "Stage": "Experimental",
       "Methods": [
         {
@@ -3360,14 +3360,6 @@
         }
       ],
       "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion? Microsoft.Extensions.AI.OcrBlock.BoundingRegion { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "double? Microsoft.Extensions.AI.OcrBlock.Confidence { get; set; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "Microsoft.Extensions.AI.OcrBlockKind? Microsoft.Extensions.AI.OcrBlock.Kind { get; set; }",
           "Stage": "Experimental"
@@ -3521,7 +3513,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.AI.OcrBoundingRegion Microsoft.Extensions.AI.OcrBoundingRegion.FromRectangle(int pageNumber, double left, double top, double right, double bottom);",
+          "Member": "static Microsoft.Extensions.AI.OcrBoundingRegion Microsoft.Extensions.AI.OcrBoundingRegion.FromRectangle(int pageNumber, float left, float top, float right, float bottom);",
           "Stage": "Experimental"
         },
         {
@@ -3557,11 +3549,11 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrResponseUpdate> Microsoft.Extensions.AI.OcrClientExtensions.ExtractStreamingAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.DataContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractPagesAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.DataContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
-          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrResponseUpdate> Microsoft.Extensions.AI.OcrClientExtensions.ExtractStreamingAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.UriContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractPagesAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.UriContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
@@ -3595,81 +3587,89 @@
       ]
     },
     {
-      "Type": "readonly struct Microsoft.Extensions.AI.OcrCoordinateUnit : System.IEquatable<Microsoft.Extensions.AI.OcrCoordinateUnit>",
+      "Type": "enum Microsoft.Extensions.AI.OcrCoordinateOrigin",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit.OcrCoordinateUnit(string value);",
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateOrigin.OcrCoordinateOrigin();",
           "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateOrigin Microsoft.Extensions.AI.OcrCoordinateOrigin.BottomLeft",
+          "Stage": "Experimental",
+          "Value": "1"
         },
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateOrigin Microsoft.Extensions.AI.OcrCoordinateOrigin.TopLeft",
+          "Stage": "Experimental",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.OcrCoordinateUnit",
+      "Stage": "Experimental",
+      "Methods": [
         {
           "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit.OcrCoordinateUnit();",
           "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Inch",
+          "Stage": "Experimental",
+          "Value": "2"
         },
         {
-          "Member": "override bool Microsoft.Extensions.AI.OcrCoordinateUnit.Equals(object? obj);",
-          "Stage": "Experimental"
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Normalized",
+          "Stage": "Experimental",
+          "Value": "3"
         },
         {
-          "Member": "bool Microsoft.Extensions.AI.OcrCoordinateUnit.Equals(Microsoft.Extensions.AI.OcrCoordinateUnit other);",
-          "Stage": "Experimental"
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Pixel",
+          "Stage": "Experimental",
+          "Value": "0"
         },
         {
-          "Member": "override int Microsoft.Extensions.AI.OcrCoordinateUnit.GetHashCode();",
-          "Stage": "Experimental"
-        },
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Point",
+          "Stage": "Experimental",
+          "Value": "1"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.OcrElement",
+      "Stage": "Experimental",
+      "Methods": [
         {
-          "Member": "static bool Microsoft.Extensions.AI.OcrCoordinateUnit.operator ==(Microsoft.Extensions.AI.OcrCoordinateUnit left, Microsoft.Extensions.AI.OcrCoordinateUnit right);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static bool Microsoft.Extensions.AI.OcrCoordinateUnit.operator !=(Microsoft.Extensions.AI.OcrCoordinateUnit left, Microsoft.Extensions.AI.OcrCoordinateUnit right);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.AI.OcrCoordinateUnit.ToString();",
+          "Member": "Microsoft.Extensions.AI.OcrElement.OcrElement();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "static Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Inch { get; }",
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrElement.AdditionalProperties { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Normalized { get; }",
+          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion? Microsoft.Extensions.AI.OcrElement.BoundingRegion { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Pixel { get; }",
+          "Member": "double? Microsoft.Extensions.AI.OcrElement.Confidence { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.OcrCoordinateUnit.Value { get; }",
+          "Member": "object? Microsoft.Extensions.AI.OcrElement.RawRepresentation { get; set; }",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.OcrCoordinateUnit.Converter",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit.Converter.Converter();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override void Microsoft.Extensions.AI.OcrCoordinateUnit.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.OcrCoordinateUnit value, System.Text.Json.JsonSerializerOptions options);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.AI.OcrImage",
+      "Type": "class Microsoft.Extensions.AI.OcrImage : Microsoft.Extensions.AI.OcrElement",
       "Stage": "Experimental",
       "Methods": [
         {
@@ -3679,15 +3679,7 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion? Microsoft.Extensions.AI.OcrImage.BoundingRegion { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "string? Microsoft.Extensions.AI.OcrImage.Caption { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "double? Microsoft.Extensions.AI.OcrImage.Confidence { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -3715,10 +3707,6 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "bool Microsoft.Extensions.AI.OcrOptions.IncludeImages { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "string? Microsoft.Extensions.AI.OcrOptions.ModelId { get; set; }",
           "Stage": "Experimental"
         }
@@ -3729,7 +3717,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.OcrPage.OcrPage(int pageNumber, string markdown);",
+          "Member": "Microsoft.Extensions.AI.OcrPage.OcrPage(int pageNumber, string text);",
           "Stage": "Experimental"
         }
       ],
@@ -3739,15 +3727,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrBlock> Microsoft.Extensions.AI.OcrPage.Blocks { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "double? Microsoft.Extensions.AI.OcrPage.Confidence { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit? Microsoft.Extensions.AI.OcrPage.CoordinateUnit { get; set; }",
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrElement> Microsoft.Extensions.AI.OcrPage.Elements { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -3755,23 +3735,73 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrImage> Microsoft.Extensions.AI.OcrPage.Images { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string Microsoft.Extensions.AI.OcrPage.Markdown { get; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "int Microsoft.Extensions.AI.OcrPage.PageNumber { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrTable> Microsoft.Extensions.AI.OcrPage.Tables { get; set; }",
+          "Member": "string Microsoft.Extensions.AI.OcrPage.Text { get; }",
           "Stage": "Experimental"
         },
         {
           "Member": "float? Microsoft.Extensions.AI.OcrPage.Width { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrPageResult",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPageResult.OcrPageResult(Microsoft.Extensions.AI.OcrPage page);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrPageResult.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateOrigin? Microsoft.Extensions.AI.OcrPageResult.CoordinateOrigin { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit? Microsoft.Extensions.AI.OcrPageResult.CoordinateUnit { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPage Microsoft.Extensions.AI.OcrPageResult.Page { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrPageResult.PagesProcessed { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.OcrPageResult.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrPageResult.TotalPages { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrUsage? Microsoft.Extensions.AI.OcrPageResult.Usage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OcrPageResultExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrResult Microsoft.Extensions.AI.OcrPageResultExtensions.ToOcrResult(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.OcrPageResult> updates);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrPageResultExtensions.ToOcrResultAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]
@@ -3829,68 +3859,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.OcrResponseUpdate",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.OcrResponseUpdate.OcrResponseUpdate();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.OcrResponseUpdate.OcrResponseUpdate(Microsoft.Extensions.AI.OcrPage? page);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrResponseUpdate.AdditionalProperties { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.OcrResponseUpdate.ModelId { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.OcrPage? Microsoft.Extensions.AI.OcrResponseUpdate.Page { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.OcrResponseUpdate.PagesProcessed { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "object? Microsoft.Extensions.AI.OcrResponseUpdate.RawRepresentation { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.AI.OcrResponseUpdate.Status { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int? Microsoft.Extensions.AI.OcrResponseUpdate.TotalPages { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.OcrUsage? Microsoft.Extensions.AI.OcrResponseUpdate.Usage { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.AI.OcrResponseUpdateExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.AI.OcrResult Microsoft.Extensions.AI.OcrResponseUpdateExtensions.ToOcrResult(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.OcrResponseUpdate> updates);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrResponseUpdateExtensions.ToOcrResultAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrResponseUpdate> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.AI.OcrResult",
       "Stage": "Experimental",
       "Methods": [
@@ -3905,11 +3873,11 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "string Microsoft.Extensions.AI.OcrResult.Markdown { get; }",
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateOrigin? Microsoft.Extensions.AI.OcrResult.CoordinateOrigin { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "string? Microsoft.Extensions.AI.OcrResult.ModelId { get; set; }",
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit? Microsoft.Extensions.AI.OcrResult.CoordinateUnit { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -3921,13 +3889,17 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "string Microsoft.Extensions.AI.OcrResult.Text { get; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "Microsoft.Extensions.AI.OcrUsage? Microsoft.Extensions.AI.OcrResult.Usage { get; set; }",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.AI.OcrTable",
+      "Type": "class Microsoft.Extensions.AI.OcrTable : Microsoft.Extensions.AI.OcrElement",
       "Stage": "Experimental",
       "Methods": [
         {
@@ -3936,10 +3908,6 @@
         }
       ],
       "Properties": [
-        {
-          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion? Microsoft.Extensions.AI.OcrTable.BoundingRegion { get; set; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrTableCell>? Microsoft.Extensions.AI.OcrTable.Cells { get; }",
           "Stage": "Experimental"
@@ -3978,6 +3946,10 @@
         },
         {
           "Member": "string Microsoft.Extensions.AI.OcrTableCell.Content { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrElement>? Microsoft.Extensions.AI.OcrTableCell.Elements { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -4041,6 +4013,14 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "static Microsoft.Extensions.AI.OcrTableCellKind Microsoft.Extensions.AI.OcrTableCellKind.RowHeader { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrTableCellKind Microsoft.Extensions.AI.OcrTableCellKind.RowSection { get; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "string Microsoft.Extensions.AI.OcrTableCellKind.Value { get; }",
           "Stage": "Experimental"
         }
@@ -4079,7 +4059,19 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "int? Microsoft.Extensions.AI.OcrUsage.InputTokenCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrUsage.OutputTokenCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "int? Microsoft.Extensions.AI.OcrUsage.PagesProcessed { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrUsage.TotalTokenCount { get; set; }",
           "Stage": "Experimental"
         }
       ]

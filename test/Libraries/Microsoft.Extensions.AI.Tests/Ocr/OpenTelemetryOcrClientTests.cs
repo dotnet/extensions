@@ -38,7 +38,6 @@ public class OpenTelemetryOcrClientTests
                 await Task.Yield();
                 return new OcrResult([new OcrPage(1, "This is the recognized text.")])
                 {
-                    ModelId = "amazingmodel",
                     Usage = new() { PagesProcessed = 3 },
                 };
             },
@@ -83,7 +82,6 @@ public class OpenTelemetryOcrClientTests
         Assert.Equal(enableSensitiveData ? "value1" : null, activity.GetTagItem("service_tier"));
         Assert.Equal(enableSensitiveData ? "value2" : null, activity.GetTagItem("SomethingElse"));
 
-        Assert.Equal("amazingmodel", activity.GetTagItem("gen_ai.response.model"));
         Assert.Equal(3, (int)activity.GetTagItem("gen_ai.usage.pages_processed")!);
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);

@@ -128,7 +128,7 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    public override async IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
@@ -140,10 +140,10 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
-        IAsyncEnumerable<OcrResponseUpdate> updates;
+        IAsyncEnumerable<OcrPageResult> updates;
         try
         {
-            updates = base.ExtractStreamingAsync(document, mediaType, options, cancellationToken);
+            updates = base.ExtractPagesAsync(document, mediaType, options, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -152,13 +152,13 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         }
 
         var responseEnumerator = updates.GetAsyncEnumerator(cancellationToken);
-        List<OcrResponseUpdate> trackedUpdates = [];
+        List<OcrPageResult> trackedUpdates = [];
         Exception? error = null;
         try
         {
             while (true)
             {
-                OcrResponseUpdate update;
+                OcrPageResult update;
                 try
                 {
                     if (!await responseEnumerator.MoveNextAsync())
@@ -244,7 +244,7 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
         {
             TagList tags = default;
 
-            AddMetricTags(ref tags, requestModelId, response);
+            AddMetricTags(ref tags, requestModelId);
             if (error is not null)
             {
                 tags.Add(OpenTelemetryConsts.Error.Type, error.GetType().FullName);
@@ -257,11 +257,6 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
 
         if (response is not null && activity is not null)
         {
-            if (response.ModelId is not null)
-            {
-                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, response.ModelId);
-            }
-
             if (response.Usage?.PagesProcessed is int pages)
             {
                 _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.PagesProcessed, pages);
@@ -278,7 +273,7 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
             }
         }
 
-        void AddMetricTags(ref TagList tags, string? requestModelId, OcrResult? response)
+        void AddMetricTags(ref TagList tags, string? requestModelId)
         {
             tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.GenerateContentName);
 
@@ -293,11 +288,6 @@ public sealed class OpenTelemetryOcrClient : DelegatingOcrClient
             {
                 tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
                 tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
-            }
-
-            if (response?.ModelId is string responseModel)
-            {
-                tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
             }
         }
     }

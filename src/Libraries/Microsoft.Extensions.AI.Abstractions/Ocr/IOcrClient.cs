@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an optical character recognition (OCR) / document-parsing client.</summary>
 /// <remarks>
 /// <para>
-/// An <see cref="IOcrClient"/> transcribes a document or image into structured output: markdown,
+/// An <see cref="IOcrClient"/> transcribes a document or image into structured output: text,
 /// per-page content, tables, layout blocks with bounding regions, and confidence. It is the
 /// capability sibling to <see cref="IChatClient"/>, <c>IEmbeddingGenerator</c>, and
 /// <c>ISpeechToTextClient</c> for the document-extraction problem.
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.AI;
 /// <para>
 /// Unless otherwise specified, all members of <see cref="IOcrClient"/> are thread-safe for concurrent
 /// use. Implementations might mutate the <see cref="OcrOptions"/> supplied to <see cref="ExtractAsync"/>
-/// and <see cref="ExtractStreamingAsync"/>; consumers should avoid sharing a single options instance across
+/// and <see cref="ExtractPagesAsync"/>; consumers should avoid sharing a single options instance across
 /// concurrent invocations when that is a concern. The document stream passed to these methods is not
 /// disposed by the implementation.
 /// </para>
@@ -59,10 +59,10 @@ public interface IOcrClient : IDisposable
     /// Engines that produce pages incrementally (for example, while polling a long-running operation such as
     /// Azure Document Intelligence) can yield each page as it completes, letting a consumer begin processing
     /// early pages before later pages finish. Synchronous engines may yield a single terminal update. Use
-    /// <see cref="OcrResponseUpdateExtensions.ToOcrResultAsync"/> to reassemble the stream into an
+    /// <see cref="OcrPageResultExtensions.ToOcrResultAsync"/> to reassemble the stream into an
     /// <see cref="OcrResult"/>.
     /// </remarks>
-    IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,

@@ -10,15 +10,15 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides extension methods for working with <see cref="OcrResponseUpdate"/> instances.</summary>
+/// <summary>Provides extension methods for working with <see cref="OcrPageResult"/> instances.</summary>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public static class OcrResponseUpdateExtensions
+public static class OcrPageResultExtensions
 {
-    /// <summary>Combines <see cref="OcrResponseUpdate"/> instances into a single <see cref="OcrResult"/>.</summary>
+    /// <summary>Combines <see cref="OcrPageResult"/> instances into a single <see cref="OcrResult"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <returns>The combined <see cref="OcrResult"/>.</returns>
     /// <exception cref="System.ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
-    public static OcrResult ToOcrResult(this IEnumerable<OcrResponseUpdate> updates)
+    public static OcrResult ToOcrResult(this IEnumerable<OcrPageResult> updates)
     {
         _ = Throw.IfNull(updates);
 
@@ -33,20 +33,20 @@ public static class OcrResponseUpdateExtensions
         return result;
     }
 
-    /// <summary>Combines <see cref="OcrResponseUpdate"/> instances into a single <see cref="OcrResult"/>.</summary>
+    /// <summary>Combines <see cref="OcrPageResult"/> instances into a single <see cref="OcrResult"/>.</summary>
     /// <param name="updates">The updates to be combined.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The combined <see cref="OcrResult"/>.</returns>
     /// <exception cref="System.ArgumentNullException"><paramref name="updates"/> is <see langword="null"/>.</exception>
     public static Task<OcrResult> ToOcrResultAsync(
-        this IAsyncEnumerable<OcrResponseUpdate> updates, CancellationToken cancellationToken = default)
+        this IAsyncEnumerable<OcrPageResult> updates, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(updates);
 
         return ToResultAsync(updates, cancellationToken);
 
         static async Task<OcrResult> ToResultAsync(
-            IAsyncEnumerable<OcrResponseUpdate> updates, CancellationToken cancellationToken)
+            IAsyncEnumerable<OcrPageResult> updates, CancellationToken cancellationToken)
         {
             List<OcrPage> pages = [];
             OcrResult result = new(pages);
@@ -60,20 +60,22 @@ public static class OcrResponseUpdateExtensions
         }
     }
 
-    /// <summary>Incorporates one <see cref="OcrResponseUpdate"/> into the assembled <see cref="OcrResult"/>.</summary>
+    /// <summary>Incorporates one <see cref="OcrPageResult"/> into the assembled <see cref="OcrResult"/>.</summary>
     /// <param name="update">The update to process.</param>
     /// <param name="pages">The accumulating list of pages backing <see cref="OcrResult.Pages"/>.</param>
     /// <param name="result">The <see cref="OcrResult"/> being assembled.</param>
-    private static void ProcessUpdate(OcrResponseUpdate update, List<OcrPage> pages, OcrResult result)
+    private static void ProcessUpdate(OcrPageResult update, List<OcrPage> pages, OcrResult result)
     {
-        if (update.Page is not null)
+        pages.Add(update.Page);
+
+        if (update.CoordinateUnit is not null)
         {
-            pages.Add(update.Page);
+            result.CoordinateUnit = update.CoordinateUnit;
         }
 
-        if (update.ModelId is not null)
+        if (update.CoordinateOrigin is not null)
         {
-            result.ModelId = update.ModelId;
+            result.CoordinateOrigin = update.CoordinateOrigin;
         }
 
         if (update.Usage is not null)

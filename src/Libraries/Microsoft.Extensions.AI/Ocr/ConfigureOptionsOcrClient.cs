@@ -47,13 +47,13 @@ public sealed class ConfigureOptionsOcrClient : DelegatingOcrClient
     }
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    public override IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return base.ExtractStreamingAsync(document, mediaType, Configure(options), cancellationToken);
+        return base.ExtractPagesAsync(document, mediaType, Configure(options), cancellationToken);
     }
 
     /// <summary>Creates and configures the <see cref="OcrOptions"/> to pass along to the inner client.</summary>

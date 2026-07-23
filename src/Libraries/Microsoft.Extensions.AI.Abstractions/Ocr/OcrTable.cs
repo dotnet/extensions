@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.AI;
 /// <see cref="ColumnCount"/> may be 0 because the structure was not enumerated.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
-public class OcrTable
+public class OcrTable : OcrElement
 {
     /// <summary>Initializes a new instance of the <see cref="OcrTable"/> class.</summary>
     /// <param name="rowCount">The number of rows in the table.</param>
@@ -47,7 +47,4 @@ public class OcrTable
 
     /// <summary>Gets the markdown or HTML table text, or <see langword="null"/> when only cells were returned.</summary>
     public string? MarkdownRepresentation { get; }
-
-    /// <summary>Gets or sets the region of the page the table occupies, when the engine provides geometry.</summary>
-    public OcrBoundingRegion? BoundingRegion { get; set; }
 }

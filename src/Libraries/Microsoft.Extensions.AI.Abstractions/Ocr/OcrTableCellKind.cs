@@ -29,6 +29,12 @@ public readonly struct OcrTableCellKind : IEquatable<OcrTableCellKind>
     /// <summary>Gets the kind representing a regular content cell.</summary>
     public static OcrTableCellKind Content { get; } = new("content");
 
+    /// <summary>Gets the kind representing a row header cell (a header that labels the row it sits in).</summary>
+    public static OcrTableCellKind RowHeader { get; } = new("rowHeader");
+
+    /// <summary>Gets the kind representing a cell that introduces a labeled section spanning subsequent rows.</summary>
+    public static OcrTableCellKind RowSection { get; } = new("rowSection");
+
     /// <summary>Gets the value associated with this <see cref="OcrTableCellKind"/>.</summary>
     public string Value { get; }
 

@@ -24,7 +24,7 @@ public class OcrDocumentReaderTests
         [
             new OcrPage(2, "Page text")
             {
-                Images =
+                Elements =
                 [
                     new OcrImage
                     {
@@ -49,7 +49,7 @@ public class OcrDocumentReaderTests
         Assert.Equal([1f, 2f, 10f, 20f], Assert.IsType<float[]>(image.Metadata["bounding_box"]));
         Assert.Equal([1f, 2f, 10f, 2f, 10f, 20f, 1f, 20f], Assert.IsType<float[]>(image.Metadata["bounding_region"]));
         Assert.Equal("application/pdf", ocrClient.MediaType);
-        Assert.True(ocrClient.Options?.IncludeImages);
+        Assert.NotNull(ocrClient.Options);
     }
 
     private sealed class TestOcrClient(OcrResult result) : IOcrClient
@@ -69,7 +69,7 @@ public class OcrDocumentReaderTests
             return Task.FromResult(result);
         }
 
-        public IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+        public IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
             Stream document,
             string mediaType,
             OcrOptions? options = null,

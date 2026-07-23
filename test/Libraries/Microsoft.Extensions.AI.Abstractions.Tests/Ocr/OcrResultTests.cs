@@ -15,15 +15,11 @@ public class OcrResultTests
     }
 
     [Fact]
-    public void Markdown_JoinsPerPageMarkdown()
+    public void Text_JoinsPerPageText()
     {
-        var result = new OcrResult([new OcrPage(1, "page one"), new OcrPage(2, "page two")])
-        {
-            ModelId = "model-1",
-        };
+        var result = new OcrResult([new OcrPage(1, "page one"), new OcrPage(2, "page two")]);
 
-        Assert.Equal("page one\n\npage two", result.Markdown);
-        Assert.Equal("model-1", result.ModelId);
+        Assert.Equal("page one\n\npage two", result.Text);
         Assert.Equal(2, result.Pages.Count);
     }
 }

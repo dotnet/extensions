@@ -50,13 +50,13 @@ public class DelegatingOcrClient : IOcrClient
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    public virtual IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return InnerClient.ExtractStreamingAsync(document, mediaType, options, cancellationToken);
+        return InnerClient.ExtractPagesAsync(document, mediaType, options, cancellationToken);
     }
 
     /// <inheritdoc />

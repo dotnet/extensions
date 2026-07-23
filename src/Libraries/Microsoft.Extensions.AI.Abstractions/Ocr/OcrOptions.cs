@@ -17,9 +17,6 @@ public class OcrOptions
     /// <summary>Gets or sets the model or deployment identifier to use for this request.</summary>
     public string? ModelId { get; set; }
 
-    /// <summary>Gets or sets a value indicating whether the engine should include rendered images inline, when supported.</summary>
-    public bool IncludeImages { get; set; }
-
     /// <summary>Gets or sets any additional provider-specific request settings.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 
@@ -29,7 +26,6 @@ public class OcrOptions
         new()
         {
             ModelId = ModelId,
-            IncludeImages = IncludeImages,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };
 }

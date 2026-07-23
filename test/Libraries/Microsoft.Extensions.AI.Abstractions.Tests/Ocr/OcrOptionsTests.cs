@@ -13,7 +13,6 @@ public class OcrOptionsTests
         var options = new OcrOptions
         {
             ModelId = "mistral-ocr-4-0",
-            IncludeImages = true,
             AdditionalProperties = new() { ["custom"] = "value" },
         };
 
@@ -21,7 +20,6 @@ public class OcrOptionsTests
 
         Assert.NotSame(options, clone);
         Assert.Equal("mistral-ocr-4-0", clone.ModelId);
-        Assert.True(clone.IncludeImages);
         Assert.NotNull(clone.AdditionalProperties);
         Assert.Equal("value", clone.AdditionalProperties!["custom"]);
     }

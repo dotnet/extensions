@@ -28,11 +28,11 @@ public sealed class OcrDocumentReader : IngestionDocumentReader
     /// Initializes a new instance of the <see cref="OcrDocumentReader"/> class.
     /// </summary>
     /// <param name="ocrClient">The OCR client to use for document extraction.</param>
-    /// <param name="options">Optional OCR options. When not provided, image extraction is requested.</param>
+    /// <param name="options">Optional OCR options.</param>
     public OcrDocumentReader(IOcrClient ocrClient, OcrOptions? options = null)
     {
         _ocrClient = Throw.IfNull(ocrClient);
-        _options = options?.Clone() ?? new OcrOptions { IncludeImages = true };
+        _options = options?.Clone() ?? new OcrOptions();
     }
 
     /// <inheritdoc/>
@@ -58,16 +58,16 @@ public sealed class OcrDocumentReader : IngestionDocumentReader
             IngestionDocumentSection section = new();
             int pageNumber = page.PageNumber;
 
-            if (!string.IsNullOrWhiteSpace(page.Markdown))
+            if (!string.IsNullOrWhiteSpace(page.Text))
             {
-                section.Elements.Add(new IngestionDocumentParagraph(page.Markdown)
+                section.Elements.Add(new IngestionDocumentParagraph(page.Text)
                 {
-                    Text = page.Markdown,
+                    Text = page.Text,
                     PageNumber = pageNumber
                 });
             }
 
-            foreach (OcrImage image in page.Images)
+            foreach (OcrImage image in page.Elements.OfType<OcrImage>())
             {
                 section.Elements.Add(MapImage(image, pageNumber));
             }

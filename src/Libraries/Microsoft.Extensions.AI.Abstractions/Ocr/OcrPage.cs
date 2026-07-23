@@ -14,53 +14,42 @@ public class OcrPage
 {
     /// <summary>Initializes a new instance of the <see cref="OcrPage"/> class.</summary>
     /// <param name="pageNumber">The one-based page number.</param>
-    /// <param name="markdown">The structured markdown for this page.</param>
-    /// <exception cref="System.ArgumentNullException"><paramref name="markdown"/> is <see langword="null"/>.</exception>
-    public OcrPage(int pageNumber, string markdown)
+    /// <param name="text">The structured text for this page.</param>
+    /// <exception cref="System.ArgumentNullException"><paramref name="text"/> is <see langword="null"/>.</exception>
+    public OcrPage(int pageNumber, string text)
     {
         PageNumber = pageNumber;
-        Markdown = Throw.IfNull(markdown);
+        Text = Throw.IfNull(text);
     }
 
     /// <summary>Gets the one-based page number.</summary>
     public int PageNumber { get; }
 
-    /// <summary>Gets the structured markdown for this page, with headings, tables, and reading order preserved.</summary>
-    public string Markdown { get; }
+    /// <summary>Gets the structured text for this page, with headings, tables, and reading order preserved.</summary>
+    public string Text { get; }
 
-    /// <summary>Gets or sets the tables extracted from this page.</summary>
-    public IReadOnlyList<OcrTable> Tables { get; set; } = [];
-
-    /// <summary>Gets or sets the layout blocks with bounding regions and confidence, when the engine provides them.</summary>
-    public IReadOnlyList<OcrBlock> Blocks { get; set; } = [];
-
-    /// <summary>Gets or sets the images or figures extracted from this page, when requested and the engine provides them.</summary>
-    public IReadOnlyList<OcrImage> Images { get; set; } = [];
-
-    /// <summary>Gets or sets the page-level confidence in the range [0, 1], when available.</summary>
-    public double? Confidence { get; set; }
-
-    /// <summary>Gets or sets the page width, expressed in <see cref="CoordinateUnit"/>, when the engine provides it.</summary>
+    /// <summary>Gets or sets the elements extracted from this page, in reading order.</summary>
     /// <remarks>
-    /// Together with <see cref="Height"/> and <see cref="CoordinateUnit"/>, this lets a consumer interpret or
-    /// normalize the geometry (<see cref="OcrBoundingBox"/> / <see cref="OcrPoint"/>) on this page with
-    /// engine-agnostic code. For example, dividing a coordinate by the corresponding page dimension yields a
-    /// page-relative [0, 1] value regardless of the native unit.
+    /// A single heterogeneous stream of blocks, tables, and images in the order a human would read them.
+    /// Project a specific kind with <see cref="System.Linq.Enumerable.OfType{TResult}(System.Collections.IEnumerable)"/>,
+    /// for example <c>Elements.OfType&lt;OcrTable&gt;()</c>. The full page text is available directly on
+    /// <see cref="Text"/>, so reading-order consumers do not need geometry math.
+    /// </remarks>
+    public IReadOnlyList<OcrElement> Elements { get; set; } = [];
+
+    /// <summary>Gets or sets the page width, expressed in the document-level <see cref="OcrResult.CoordinateUnit"/>, when the engine provides it.</summary>
+    /// <remarks>
+    /// Together with <see cref="Height"/> and the document-level <see cref="OcrResult.CoordinateUnit"/> and
+    /// <see cref="OcrResult.CoordinateOrigin"/>, this lets a consumer interpret or normalize the geometry
+    /// (<see cref="OcrBoundingBox"/> / <see cref="OcrPoint"/>) on this page with engine-agnostic code. For
+    /// example, dividing a coordinate by the corresponding page dimension yields a page-relative [0, 1] value
+    /// regardless of the native unit.
     /// </remarks>
     public float? Width { get; set; }
 
-    /// <summary>Gets or sets the page height, expressed in <see cref="CoordinateUnit"/>, when the engine provides it.</summary>
-    /// <remarks>See <see cref="Width"/> for how the page dimensions are used with <see cref="CoordinateUnit"/>.</remarks>
+    /// <summary>Gets or sets the page height, expressed in the document-level <see cref="OcrResult.CoordinateUnit"/>, when the engine provides it.</summary>
+    /// <remarks>See <see cref="Width"/> for how the page dimensions are used with the document-level coordinate unit.</remarks>
     public float? Height { get; set; }
-
-    /// <summary>Gets or sets the unit in which this page's geometry coordinates are expressed, when known.</summary>
-    /// <remarks>
-    /// OCR engines disagree on coordinate conventions (pixels, inches, or page-normalized values). When the
-    /// engine reports the unit, exposing it here alongside <see cref="Width"/> and <see cref="Height"/> makes
-    /// the region geometry interpretable without knowing which engine produced it. When <see langword="null"/>,
-    /// the geometry should be treated as an opaque, provider-specific coordinate space.
-    /// </remarks>
-    public OcrCoordinateUnit? CoordinateUnit { get; set; }
 
     /// <summary>Gets or sets any additional properties associated with the page.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }

@@ -104,7 +104,7 @@ public partial class LoggingOcrClient : DelegatingOcrClient
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<OcrResponseUpdate> ExtractStreamingAsync(
+    public override async IAsyncEnumerable<OcrPageResult> ExtractPagesAsync(
         Stream document,
         string mediaType,
         OcrOptions? options = null,
@@ -114,33 +114,33 @@ public partial class LoggingOcrClient : DelegatingOcrClient
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokedSensitive(nameof(ExtractStreamingAsync), mediaType, AsJson(options), AsJson(this.GetService<OcrClientMetadata>()));
+                LogInvokedSensitive(nameof(ExtractPagesAsync), mediaType, AsJson(options), AsJson(this.GetService<OcrClientMetadata>()));
             }
             else
             {
-                LogInvoked(nameof(ExtractStreamingAsync));
+                LogInvoked(nameof(ExtractPagesAsync));
             }
         }
 
-        IAsyncEnumerator<OcrResponseUpdate> e;
+        IAsyncEnumerator<OcrPageResult> e;
         try
         {
-            e = base.ExtractStreamingAsync(document, mediaType, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            e = base.ExtractPagesAsync(document, mediaType, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(ExtractStreamingAsync));
+            LogInvocationCanceled(nameof(ExtractPagesAsync));
             throw;
         }
         catch (Exception ex)
         {
-            LogInvocationFailed(nameof(ExtractStreamingAsync), ex);
+            LogInvocationFailed(nameof(ExtractPagesAsync), ex);
             throw;
         }
 
         try
         {
-            OcrResponseUpdate? update = null;
+            OcrPageResult? update = null;
             while (true)
             {
                 try
@@ -154,12 +154,12 @@ public partial class LoggingOcrClient : DelegatingOcrClient
                 }
                 catch (OperationCanceledException)
                 {
-                    LogInvocationCanceled(nameof(ExtractStreamingAsync));
+                    LogInvocationCanceled(nameof(ExtractPagesAsync));
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    LogInvocationFailed(nameof(ExtractStreamingAsync), ex);
+                    LogInvocationFailed(nameof(ExtractPagesAsync), ex);
                     throw;
                 }
 
@@ -178,7 +178,7 @@ public partial class LoggingOcrClient : DelegatingOcrClient
                 yield return update;
             }
 
-            LogCompleted(nameof(ExtractStreamingAsync));
+            LogCompleted(nameof(ExtractPagesAsync));
         }
         finally
         {
@@ -200,11 +200,11 @@ public partial class LoggingOcrClient : DelegatingOcrClient
     [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {OcrResult}.")]
     private partial void LogCompletedSensitive(string methodName, string ocrResult);
 
-    [LoggerMessage(LogLevel.Debug, "ExtractStreamingAsync received update.")]
+    [LoggerMessage(LogLevel.Debug, "ExtractPagesAsync received update.")]
     private partial void LogStreamingUpdate();
 
-    [LoggerMessage(LogLevel.Trace, "ExtractStreamingAsync received update: {OcrResponseUpdate}")]
-    private partial void LogStreamingUpdateSensitive(string ocrResponseUpdate);
+    [LoggerMessage(LogLevel.Trace, "ExtractPagesAsync received update: {OcrPageResult}")]
+    private partial void LogStreamingUpdateSensitive(string ocrPageResult);
 
     [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
     private partial void LogInvocationCanceled(string methodName);

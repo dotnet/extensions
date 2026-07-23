@@ -45,13 +45,13 @@ public class OcrBoundingRegion
     /// <param name="right">The right coordinate.</param>
     /// <param name="bottom">The bottom coordinate.</param>
     /// <returns>A region whose polygon is the four corners of the rectangle.</returns>
-    public static OcrBoundingRegion FromRectangle(int pageNumber, double left, double top, double right, double bottom)
+    public static OcrBoundingRegion FromRectangle(int pageNumber, float left, float top, float right, float bottom)
         => new(pageNumber,
         [
-            new OcrPoint((float)left, (float)top),
-            new OcrPoint((float)right, (float)top),
-            new OcrPoint((float)right, (float)bottom),
-            new OcrPoint((float)left, (float)bottom),
+            new OcrPoint(left, top),
+            new OcrPoint(right, top),
+            new OcrPoint(right, bottom),
+            new OcrPoint(left, bottom),
         ]);
 
     /// <summary>Computes the axis-aligned bounds of the polygon.</summary>
