@@ -20,17 +20,60 @@ Then stop for merge/approval before publish steps.
 2. Confirm the target patch version (`<major>.<minor>.<patch>`).
 3. Create a working branch from `origin/release/<major>.<minor>`.
 
-## Step 2: Build the candidate backport list from `main`
+## Step 2: Survey the release branch for existing backport activity
+
+Before building the full candidate list, check for evidence of existing backport work targeting this
+release. This step is informational -- it seeds the candidate list and reminds the user that the release-manager agent can efficiently
+cherry-pick from `main` as part of the servicing release process.
+
+### 2a) Identify backport PRs
+
+1. **Open PRs** targeting `release/<major>.<minor>`: find any with titles starting with
+   `[release/<major>.<minor>]` or bodies containing `Backport of #NNNN` / `backport of #NNNN`.
+2. **Recently merged PRs** into `release/<major>.<minor>` since the previous release tag: apply the
+   same pattern match.
+3. For each backport PR found, extract the source `main` PR number from its title or body.
+
+### 2b) Classify backport PRs by release status
+
+For each source `main` PR number identified, check whether it already shipped in a previous release:
+
+- Run `git merge-base --is-ancestor <pr-merge-commit> <previous-tag>` to check ancestry.
+- Or check whether the PR number appears in a prior release's release notes body.
+
+Classify each backport PR as either:
+
+- **Already released** -- source PR shipped in a prior release tag; carry this into Step 3d for the
+  already-released grounding table (do not present it as a selectable candidate or comment on it).
+- **Not yet released** -- source PR has not shipped; carry it into the Step 3 candidate list as a
+  pre-highlighted row.
+
+### 2c) Inform the user if open or unshipped backport PRs exist
+
+If any open or recently-merged (but not yet incorporated) backport PRs remain after filtering:
+
+> "I see backport PRs already open/merged targeting `release/<major>.<minor>`. The release manager
+> can cherry-pick those changes directly from `main` -- this is typically more efficient than
+> managing individual backport PRs. I'll include the corresponding `main` PRs as pre-highlighted
+> candidates in the selection below."
+
+Carry the source `main` PR numbers into the Step 3 candidate list as pre-highlighted rows.
+
+If no relevant backport activity is found, proceed directly to Step 3 without comment.
+
+---
+
+## Step 3: Build the candidate backport list from `main`
 
 The user needs a clear **selection list** of commits from `main` that are not yet included in `release/<major>.<minor>`.
 
 For grounding, also present a separate view of what is already merged into `release/<major>.<minor>` (whether those merges happened before or after the target patch-version bump point).
 
-### 2a) Gather candidate PRs/commits
+### 3a) Gather candidate PRs/commits
 
 Build candidates from commits in `main` that are not in `release/<major>.<minor>`, then map them to PR numbers where possible.
 
-### 2b) Build grounding for already-merged release-branch items
+### 3b) Build grounding for already-merged release-branch items
 
 Identify items that already shipped on the release branch by checking merged PRs into `release/<major>.<minor>` and harvesting referenced `#NNNN` slugs from their titles/bodies.
 
@@ -41,7 +84,7 @@ Present these as **grounding only** (not selectable candidates). If a patch-bump
 
 If no patch-bump commit exists yet on the release branch, label rows as `before planned patch bump`.
 
-### 2c) Enrich each candidate with affected libraries
+### 3c) Enrich each candidate with affected libraries
 
 For each candidate PR:
 
@@ -49,19 +92,27 @@ For each candidate PR:
 2. Derive affected libraries from touched paths (for example, `src/Libraries/<LibraryName>/...`).
 3. Keep the list unique and sorted.
 
-### 2d) Present the selection table
+### 3d) Present the selection table
 
-Show a selection table with one row per **selectable** candidate item:
+Show a selection table with one row per **selectable** candidate item. Pre-highlight any rows
+seeded from Step 2 (existing backport PRs), so the user can quickly confirm or adjust those:
 
-| SHA (short) | Title | PR | Libraries affected |
-|---|---|---|---|
-| `abc1234` | Commit/PR title | `#1234` link | `Microsoft.Extensions.AI`, ... |
+| SHA (short) | Title | PR | Libraries affected | Pre-selected? |
+|---|---|---|---|---|
+| `abc1234` | Commit/PR title | `#1234` link | `Microsoft.Extensions.AI`, ... | ✔ (backport PR open) |
 
-Then show a separate grounding table for already-merged release-branch items:
+Then show a separate grounding table for items already merged into the release branch for this
+release cycle:
 
 | Timing vs patch bump | SHA (short) | Title | PR | Libraries affected |
 |---|---|---|---|---|
 | before patch bump / after patch bump / before planned patch bump | `def5678` | Commit/PR title | `#5678` link | `Microsoft.Extensions.AI.Abstractions`, ... |
+
+Then show a third table for items identified in Step 2 as already shipped in a **prior** release:
+
+| Prior release tag | Source PR | Title | Libraries affected |
+|---|---|---|---|
+| `v10.8.1` | `#5432` link | Commit/PR title | `Microsoft.Extensions.AI`, ... |
 
 Requirements:
 
@@ -69,13 +120,13 @@ Requirements:
 - Prefer PR-number rows when available.
 - If a commit has no PR number, mark it and ask the user whether to include it explicitly.
 
-## Step 3: Ask the user to choose items (multi-select)
+## Step 4: Ask the user to choose items (multi-select)
 
 Prompt the user to select rows from the **selectable candidate table only** (for example by PR numbers or row numbers, comma-separated).
 
 Do not cherry-pick until selection is explicit.
 
-## Step 4: Confirm package scope and template inclusion
+## Step 5: Confirm package scope and template inclusion
 
 Before committing:
 
@@ -85,7 +136,7 @@ Before committing:
 
 Record this confirmed scope; it is the source of truth for publish/validate/release-notes stages.
 
-## Step 5: Apply commits in servicing order
+## Step 6: Apply commits in servicing order
 
 Apply commits in this exact order:
 
@@ -104,7 +155,7 @@ For each cherry-pick, record whether it was:
 - Commit message format: `Bump version to <major>.<minor>.<patch>`.
 - This matches recent 10.* servicing examples (`10.4.1`, `10.5.1`, `10.5.2`, `10.8.1`).
 
-## Step 6: Create the servicing-prep PR
+## Step 7: Create the servicing-prep PR
 
 Do not push or open the PR until the user explicitly says to do so.
 
@@ -139,7 +190,7 @@ Notes:
 - Keep the `DO-NOT-SQUASH` label on the PR from creation through merge.
 - For the merge method into `release/<major>.<minor>`, prefer **Rebase and merge** (never squash).
 
-## Step 7: Preserve scope for downstream stages
+## Step 8: Preserve scope for downstream stages
 
 After PR creation, treat the merged servicing-prep PR description as authoritative for:
 
