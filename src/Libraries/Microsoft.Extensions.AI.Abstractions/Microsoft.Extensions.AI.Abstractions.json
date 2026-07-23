@@ -1868,6 +1868,42 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.DelegatingOcrClient : Microsoft.Extensions.AI.IOcrClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DelegatingOcrClient.DelegatingOcrClient(Microsoft.Extensions.AI.IOcrClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DelegatingOcrClient.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.DelegatingOcrClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.DelegatingOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.DelegatingOcrClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.DelegatingOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.IOcrClient Microsoft.Extensions.AI.DelegatingOcrClient.InnerClient { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.DelegatingRealtimeClient : Microsoft.Extensions.AI.IRealtimeClient, System.IDisposable",
       "Stage": "Experimental",
       "Methods": [
@@ -3197,6 +3233,24 @@
       ]
     },
     {
+      "Type": "interface Microsoft.Extensions.AI.IOcrClient : System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.IOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.IOcrClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.IOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "interface Microsoft.Extensions.AI.IRealtimeClient : System.IDisposable",
       "Stage": "Experimental",
       "Methods": [
@@ -3325,6 +3379,732 @@
         {
           "Member": "override int Microsoft.Extensions.AI.NoneChatToolMode.GetHashCode();",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrBlock : Microsoft.Extensions.AI.OcrElement",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBlock.OcrBlock(string text);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBlockKind? Microsoft.Extensions.AI.OcrBlock.Kind { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.OcrBlock.Text { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.AI.OcrBlockKind : System.IEquatable<Microsoft.Extensions.AI.OcrBlockKind>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBlockKind.OcrBlockKind(string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBlockKind.OcrBlockKind();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.OcrBlockKind.Equals(object? obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.OcrBlockKind.Equals(Microsoft.Extensions.AI.OcrBlockKind other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.OcrBlockKind.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrBlockKind.operator ==(Microsoft.Extensions.AI.OcrBlockKind left, Microsoft.Extensions.AI.OcrBlockKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrBlockKind.operator !=(Microsoft.Extensions.AI.OcrBlockKind left, Microsoft.Extensions.AI.OcrBlockKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.OcrBlockKind.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrBlockKind Microsoft.Extensions.AI.OcrBlockKind.Figure { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrBlockKind Microsoft.Extensions.AI.OcrBlockKind.Paragraph { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrBlockKind Microsoft.Extensions.AI.OcrBlockKind.Title { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.OcrBlockKind.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OcrBlockKind.Converter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBlockKind.Converter.Converter();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override Microsoft.Extensions.AI.OcrBlockKind Microsoft.Extensions.AI.OcrBlockKind.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OcrBlockKind.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.OcrBlockKind value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly class Microsoft.Extensions.AI.OcrBoundingBox(float Left, float Top, float Right, float Bottom)",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingBox.OcrBoundingBox(float Left, float Top, float Right, float Bottom);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingBox.OcrBoundingBox();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OcrBoundingBox.Deconstruct(out float Left, out float Top, out float Right, out float Bottom);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.OcrBoundingBox.Equals(object obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.OcrBoundingBox.Equals(Microsoft.Extensions.AI.OcrBoundingBox other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.OcrBoundingBox.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrBoundingBox.operator ==(Microsoft.Extensions.AI.OcrBoundingBox left, Microsoft.Extensions.AI.OcrBoundingBox right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrBoundingBox.operator !=(Microsoft.Extensions.AI.OcrBoundingBox left, Microsoft.Extensions.AI.OcrBoundingBox right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.OcrBoundingBox.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Bottom { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Left { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Right { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrBoundingBox.Top { get; init; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrBoundingRegion",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion.OcrBoundingRegion(int pageNumber, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrPoint> polygon);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrBoundingRegion Microsoft.Extensions.AI.OcrBoundingRegion.FromRectangle(int pageNumber, float left, float top, float right, float bottom);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingBox? Microsoft.Extensions.AI.OcrBoundingRegion.GetBounds();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrBoundingRegion.PageNumber { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrPoint> Microsoft.Extensions.AI.OcrBoundingRegion.Polygon { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OcrClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.DataContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.UriContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractFromUriAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.UriContent document, System.Net.Http.HttpClient httpClient, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractPagesAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.DataContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.OcrClientExtensions.ExtractPagesAsync(this Microsoft.Extensions.AI.IOcrClient client, Microsoft.Extensions.AI.UriContent document, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static TService? Microsoft.Extensions.AI.OcrClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.IOcrClient client, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrClientMetadata",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrClientMetadata.OcrClientMetadata(string? providerName = null, System.Uri? providerUri = null, string? defaultModelId = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.OcrClientMetadata.DefaultModelId { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.OcrClientMetadata.ProviderName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Uri? Microsoft.Extensions.AI.OcrClientMetadata.ProviderUri { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.OcrCoordinateOrigin",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateOrigin.OcrCoordinateOrigin();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateOrigin Microsoft.Extensions.AI.OcrCoordinateOrigin.BottomLeft",
+          "Stage": "Experimental",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateOrigin Microsoft.Extensions.AI.OcrCoordinateOrigin.TopLeft",
+          "Stage": "Experimental",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.OcrCoordinateUnit",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit.OcrCoordinateUnit();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Inch",
+          "Stage": "Experimental",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Normalized",
+          "Stage": "Experimental",
+          "Value": "3"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Pixel",
+          "Stage": "Experimental",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.OcrCoordinateUnit Microsoft.Extensions.AI.OcrCoordinateUnit.Point",
+          "Stage": "Experimental",
+          "Value": "1"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.AI.OcrElement",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrElement.OcrElement();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrElement.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion? Microsoft.Extensions.AI.OcrElement.BoundingRegion { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.AI.OcrElement.Confidence { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.OcrElement.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrImage : Microsoft.Extensions.AI.OcrElement",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrImage.OcrImage();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.AI.OcrImage.Caption { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.DataContent? Microsoft.Extensions.AI.OcrImage.Content { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrOptions.OcrOptions();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrOptions Microsoft.Extensions.AI.OcrOptions.Clone();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrOptions.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.OcrOptions.ModelId { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrPage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPage.OcrPage(int pageNumber, string text);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrPage.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrElement> Microsoft.Extensions.AI.OcrPage.Elements { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float? Microsoft.Extensions.AI.OcrPage.Height { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrPage.PageNumber { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.OcrPage.Text { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float? Microsoft.Extensions.AI.OcrPage.Width { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrPageResult",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPageResult.OcrPageResult(Microsoft.Extensions.AI.OcrPage page);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrPageResult.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateOrigin? Microsoft.Extensions.AI.OcrPageResult.CoordinateOrigin { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit? Microsoft.Extensions.AI.OcrPageResult.CoordinateUnit { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPage Microsoft.Extensions.AI.OcrPageResult.Page { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrPageResult.PagesProcessed { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.OcrPageResult.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrPageResult.TotalPages { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrUsage? Microsoft.Extensions.AI.OcrPageResult.Usage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OcrPageResultExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrResult Microsoft.Extensions.AI.OcrPageResultExtensions.ToOcrResult(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.OcrPageResult> updates);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OcrPageResultExtensions.ToOcrResultAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> updates, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly class Microsoft.Extensions.AI.OcrPoint(float X, float Y)",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPoint.OcrPoint(float X, float Y);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrPoint.OcrPoint();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.OcrPoint.Deconstruct(out float X, out float Y);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.OcrPoint.Equals(object obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.OcrPoint.Equals(Microsoft.Extensions.AI.OcrPoint other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.OcrPoint.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrPoint.operator ==(Microsoft.Extensions.AI.OcrPoint left, Microsoft.Extensions.AI.OcrPoint right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrPoint.operator !=(Microsoft.Extensions.AI.OcrPoint left, Microsoft.Extensions.AI.OcrPoint right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.OcrPoint.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrPoint.X { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "float Microsoft.Extensions.AI.OcrPoint.Y { get; init; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrResult",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrResult.OcrResult(System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrPage> pages);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrResult.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateOrigin? Microsoft.Extensions.AI.OcrResult.CoordinateOrigin { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrCoordinateUnit? Microsoft.Extensions.AI.OcrResult.CoordinateUnit { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrPage> Microsoft.Extensions.AI.OcrResult.Pages { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.OcrResult.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.OcrResult.Text { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrUsage? Microsoft.Extensions.AI.OcrResult.Usage { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrTable : Microsoft.Extensions.AI.OcrElement",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrTable.OcrTable(int rowCount, int columnCount, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrTableCell>? cells = null, string? markdownRepresentation = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrTableCell>? Microsoft.Extensions.AI.OcrTable.Cells { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrTable.ColumnCount { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.OcrTable.MarkdownRepresentation { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrTable.RowCount { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrTableCell",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrTableCell.OcrTableCell(int rowIndex, int columnIndex, string content);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrTableCell.ColumnIndex { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrTableCell.ColumnSpan { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.OcrTableCell.Content { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.OcrElement>? Microsoft.Extensions.AI.OcrTableCell.Elements { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrTableCellKind? Microsoft.Extensions.AI.OcrTableCell.Kind { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrTableCell.RowIndex { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.AI.OcrTableCell.RowSpan { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.AI.OcrTableCellKind : System.IEquatable<Microsoft.Extensions.AI.OcrTableCellKind>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrTableCellKind.OcrTableCellKind(string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrTableCellKind.OcrTableCellKind();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AI.OcrTableCellKind.Equals(object? obj);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.OcrTableCellKind.Equals(Microsoft.Extensions.AI.OcrTableCellKind other);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AI.OcrTableCellKind.GetHashCode();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrTableCellKind.operator ==(Microsoft.Extensions.AI.OcrTableCellKind left, Microsoft.Extensions.AI.OcrTableCellKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AI.OcrTableCellKind.operator !=(Microsoft.Extensions.AI.OcrTableCellKind left, Microsoft.Extensions.AI.OcrTableCellKind right);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.AI.OcrTableCellKind.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrTableCellKind Microsoft.Extensions.AI.OcrTableCellKind.ColumnHeader { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrTableCellKind Microsoft.Extensions.AI.OcrTableCellKind.Content { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrTableCellKind Microsoft.Extensions.AI.OcrTableCellKind.RowHeader { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrTableCellKind Microsoft.Extensions.AI.OcrTableCellKind.RowSection { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.OcrTableCellKind.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OcrTableCellKind.Converter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrTableCellKind.Converter.Converter();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override Microsoft.Extensions.AI.OcrTableCellKind Microsoft.Extensions.AI.OcrTableCellKind.Converter.Read(ref System.Text.Json.Utf8JsonReader reader, System.Type typeToConvert, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OcrTableCellKind.Converter.Write(System.Text.Json.Utf8JsonWriter writer, Microsoft.Extensions.AI.OcrTableCellKind value, System.Text.Json.JsonSerializerOptions options);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.OcrUsage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrUsage.OcrUsage();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrUsage.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrUsage.InputTokenCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrUsage.OutputTokenCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrUsage.PagesProcessed { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.AI.OcrUsage.TotalTokenCount { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },

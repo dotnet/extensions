@@ -274,6 +274,34 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.ConfigureOptionsOcrClient : Microsoft.Extensions.AI.DelegatingOcrClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.ConfigureOptionsOcrClient.ConfigureOptionsOcrClient(Microsoft.Extensions.AI.IOcrClient innerClient, System.Action<Microsoft.Extensions.AI.OcrOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.ConfigureOptionsOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.ConfigureOptionsOcrClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.ConfigureOptionsOcrClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.AI.ConfigureOptionsOcrClientBuilderExtensions.ConfigureOptions(this Microsoft.Extensions.AI.OcrClientBuilder builder, System.Action<Microsoft.Extensions.AI.OcrOptions> configure);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.ConfigureOptionsSpeechToTextClient : Microsoft.Extensions.AI.DelegatingSpeechToTextClient",
       "Stage": "Experimental",
       "Methods": [
@@ -1020,6 +1048,40 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.AI.LoggingOcrClient : Microsoft.Extensions.AI.DelegatingOcrClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.LoggingOcrClient.LoggingOcrClient(Microsoft.Extensions.AI.IOcrClient innerClient, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.LoggingOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.LoggingOcrClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.LoggingOcrClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.LoggingOcrClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.AI.LoggingOcrClientBuilderExtensions.UseLogging(this Microsoft.Extensions.AI.OcrClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.AI.LoggingOcrClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.AI.LoggingRealtimeClient : Microsoft.Extensions.AI.DelegatingRealtimeClient",
       "Stage": "Experimental",
       "Methods": [
@@ -1127,6 +1189,64 @@
         },
         {
           "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage>> Microsoft.Extensions.AI.MessageCountingChatReducer.ReduceAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OcrClientBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OcrClientBuilder.OcrClientBuilder(Microsoft.Extensions.AI.IOcrClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrClientBuilder.OcrClientBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IOcrClient> innerClientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IOcrClient Microsoft.Extensions.AI.OcrClientBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.AI.OcrClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IOcrClient, Microsoft.Extensions.AI.IOcrClient> clientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.AI.OcrClientBuilder.Use(System.Func<Microsoft.Extensions.AI.IOcrClient, System.IServiceProvider, Microsoft.Extensions.AI.IOcrClient> clientFactory);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OcrClientBuilderOcrClientExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.AI.OcrClientBuilderOcrClientExtensions.AsBuilder(this Microsoft.Extensions.AI.IOcrClient innerClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.OcrClientBuilderServiceCollectionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.DependencyInjection.OcrClientBuilderServiceCollectionExtensions.AddKeyedOcrClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, Microsoft.Extensions.AI.IOcrClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.DependencyInjection.OcrClientBuilderServiceCollectionExtensions.AddKeyedOcrClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IOcrClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.DependencyInjection.OcrClientBuilderServiceCollectionExtensions.AddOcrClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, Microsoft.Extensions.AI.IOcrClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.DependencyInjection.OcrClientBuilderServiceCollectionExtensions.AddOcrClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<System.IServiceProvider, Microsoft.Extensions.AI.IOcrClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
           "Stage": "Experimental"
         }
       ]
@@ -1303,6 +1423,48 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.AI.ImageGeneratorBuilder Microsoft.Extensions.AI.OpenTelemetryImageGeneratorBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.ImageGeneratorBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryImageGenerator>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.OpenTelemetryOcrClient : Microsoft.Extensions.AI.DelegatingOcrClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryOcrClient.OpenTelemetryOcrClient(Microsoft.Extensions.AI.IOcrClient innerClient, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.AI.OpenTelemetryOcrClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.OcrResult> Microsoft.Extensions.AI.OpenTelemetryOcrClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.OcrPageResult> Microsoft.Extensions.AI.OpenTelemetryOcrClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.AI.OcrOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.AI.OpenTelemetryOcrClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.OpenTelemetryOcrClient.EnableSensitiveData { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.OpenTelemetryOcrClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.OcrClientBuilder Microsoft.Extensions.AI.OpenTelemetryOcrClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.AI.OcrClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryOcrClient>? configure = null);",
           "Stage": "Experimental"
         }
       ]
