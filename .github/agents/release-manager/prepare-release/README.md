@@ -12,7 +12,7 @@ Before making changes, determine which track applies:
 | Release type | Use this path |
 |---|---|
 | Monthly release | Stages 1-2 in this README |
-| Servicing release (`<major>.<minor>.<patch>`) | [references/servicing-release-prep.md](references/servicing-release-prep.md) |
+| Servicing release (`<major>.<minor>.<patch>`) | [references/stages-1-2-servicing-branch.md](references/stages-1-2-servicing-branch.md) |
 
 Do **not** mix tracks. Servicing releases should not run Stage 1/2 internal-branch prep unless the user explicitly asks to override the servicing workflow.
 
@@ -45,7 +45,7 @@ Read and follow [references/stage-2-update-dependencies.md](references/stage-2-u
 
 For servicing releases, do not use Stage 1/2 above. Instead, follow:
 
-- [references/servicing-release-prep.md](references/servicing-release-prep.md)
+- [references/stages-1-2-servicing-branch.md](references/stages-1-2-servicing-branch.md)
 
 That flow covers commit selection from `main`, patch-version bumping, servicing PR composition, and package-scope confirmation for later publish/validate/release-notes stages.
 

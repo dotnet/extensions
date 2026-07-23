@@ -1,6 +1,6 @@
 # Stage 2 - Update Dependencies
 
-This stage is for the **monthly release**. Servicing releases should follow [servicing-release-prep.md](servicing-release-prep.md) instead.
+This stage is for the **monthly release**. Servicing releases should follow [stages-1-2-servicing-branch.md](stages-1-2-servicing-branch.md) instead.
 
 Update the internal release branch's product dependencies to the pending .NET 9, .NET 8, and .NET 10 release updates using `darc update-dependencies` against Build Asset Registry (BAR) build IDs.
 

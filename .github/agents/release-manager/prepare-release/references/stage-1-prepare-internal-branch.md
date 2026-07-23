@@ -1,6 +1,6 @@
 # Stage 1 - Prepare Internal Branch
 
-This stage is for the **monthly release**. Servicing releases should follow [servicing-release-prep.md](servicing-release-prep.md) instead.
+This stage is for the **monthly release**. Servicing releases should follow [stages-1-2-servicing-branch.md](stages-1-2-servicing-branch.md) instead.
 
 When preparing a public branch for internal release, apply the following changes:
 
