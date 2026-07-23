@@ -37,19 +37,26 @@ public class OcrPage
     /// </remarks>
     public IReadOnlyList<OcrElement> Elements { get; set; } = [];
 
-    /// <summary>Gets or sets the page width, expressed in the document-level <see cref="OcrResult.CoordinateUnit"/>, when the engine provides it.</summary>
+    /// <summary>Gets or sets the page dimensions (width and height), expressed in <see cref="CoordinateUnit"/>, when the engine provides them.</summary>
     /// <remarks>
-    /// Together with <see cref="Height"/> and the document-level <see cref="OcrResult.CoordinateUnit"/> and
-    /// <see cref="OcrResult.CoordinateOrigin"/>, this lets a consumer interpret or normalize the geometry
-    /// (<see cref="OcrBoundingBox"/> / <see cref="OcrPoint"/>) on this page with engine-agnostic code. For
-    /// example, dividing a coordinate by the corresponding page dimension yields a page-relative [0, 1] value
-    /// regardless of the native unit.
+    /// Together with <see cref="CoordinateUnit"/> and <see cref="CoordinateOrigin"/>, the dimensions let a consumer
+    /// interpret or normalize the geometry (<see cref="OcrBoundingBox"/> / <see cref="OcrPoint"/>) on this page with
+    /// engine-agnostic code. For example, dividing a coordinate by the corresponding dimension yields a page-relative
+    /// [0, 1] value regardless of the native unit.
     /// </remarks>
-    public float? Width { get; set; }
+    public OcrPageDimensions? Dimensions { get; set; }
 
-    /// <summary>Gets or sets the page height, expressed in the document-level <see cref="OcrResult.CoordinateUnit"/>, when the engine provides it.</summary>
-    /// <remarks>See <see cref="Width"/> for how the page dimensions are used with the document-level coordinate unit.</remarks>
-    public float? Height { get; set; }
+    /// <summary>Gets or sets the unit in which this page's geometry coordinates are expressed, when known.</summary>
+    /// <remarks>
+    /// Reported per page: engines can emit different units for different pages of one document (for example, a batch
+    /// mixing image and PDF inputs). Applies to every <see cref="OcrBoundingRegion"/> on the page and to
+    /// <see cref="Dimensions"/>. When <see langword="null"/>, the geometry should be treated as an opaque,
+    /// provider-specific coordinate space.
+    /// </remarks>
+    public OcrCoordinateUnit? CoordinateUnit { get; set; }
+
+    /// <summary>Gets or sets the origin corner and axis direction of this page's geometry coordinates, when known.</summary>
+    public OcrCoordinateOrigin? CoordinateOrigin { get; set; }
 
     /// <summary>Gets or sets any additional properties associated with the page.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }

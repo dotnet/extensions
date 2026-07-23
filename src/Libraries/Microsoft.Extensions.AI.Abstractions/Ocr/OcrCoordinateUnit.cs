@@ -13,12 +13,12 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Coordinate conventions differ across OCR engines: some report pixels of the rendered page image,
 /// some report a physical unit such as points or inches, and some normalize to the page. The unit is
-/// reported once at the document level on <see cref="OcrResult"/> and <see cref="OcrPageResult"/>,
-/// paired with an <see cref="OcrCoordinateOrigin"/> and the page dimensions (<see cref="OcrPage.Width"/>
-/// and <see cref="OcrPage.Height"/>), so a consumer can interpret or normalize regions with
-/// engine-agnostic code. Unlike the taxonomy kinds (<see cref="OcrBlockKind"/>,
-/// <see cref="OcrTableCellKind"/>), the set of coordinate units is physically bounded, so it is modeled
-/// as a closed enumeration.
+/// reported per page on <see cref="OcrPage.CoordinateUnit"/>, paired with an
+/// <see cref="OcrCoordinateOrigin"/> and the page dimensions (<see cref="OcrPageDimensions"/>), so a
+/// consumer can interpret or normalize regions with engine-agnostic code. It is per page because engines
+/// can emit different units for different pages of one document (for example, a batch mixing image and
+/// PDF inputs). Unlike the taxonomy kinds (<see cref="OcrBlockKind"/>, <see cref="OcrTableCellKind"/>),
+/// the set of coordinate units is physically bounded, so it is modeled as a closed enumeration.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
 public enum OcrCoordinateUnit

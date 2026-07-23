@@ -45,16 +45,6 @@ public class OcrPageResult
     /// <summary>Gets or sets the total number of pages, when known.</summary>
     public int? TotalPages { get; set; }
 
-    /// <summary>Gets or sets the unit in which this document's geometry coordinates are expressed, when known.</summary>
-    /// <remarks>
-    /// Reported at the document level; the reducer (<see cref="OcrPageResultExtensions.ToOcrResult"/>) carries
-    /// the last non-<see langword="null"/> value onto <see cref="OcrResult.CoordinateUnit"/>.
-    /// </remarks>
-    public OcrCoordinateUnit? CoordinateUnit { get; set; }
-
-    /// <summary>Gets or sets the origin corner and axis direction of this document's geometry coordinates, when known.</summary>
-    public OcrCoordinateOrigin? CoordinateOrigin { get; set; }
-
     /// <summary>Gets or sets usage details associated with the request, when reported.</summary>
     /// <remarks>Usage is typically carried on a terminal update once the full document has been processed.</remarks>
     public OcrUsage? Usage { get; set; }

@@ -12,10 +12,9 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Engines disagree on where a page's coordinate origin sits and which way the y axis grows: rasterized
 /// page images place the origin at the top-left with y increasing downward, whereas PDF-native
-/// (point) coordinates place it at the bottom-left with y increasing upward. The origin is reported once
-/// at the document level on <see cref="OcrResult"/> and <see cref="OcrPageResult"/>, alongside
-/// <see cref="OcrCoordinateUnit"/>, so bounding regions from different engines can be compared and
-/// normalized without guessing the convention.
+/// (point) coordinates place it at the bottom-left with y increasing upward. The origin is reported per
+/// page on <see cref="OcrPage.CoordinateOrigin"/>, alongside <see cref="OcrCoordinateUnit"/>, so bounding
+/// regions from different engines can be compared and normalized without guessing the convention.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIOcr, UrlFormat = DiagnosticIds.UrlFormat)]
 public enum OcrCoordinateOrigin

@@ -33,16 +33,6 @@ public class OcrResult
     /// <summary>Gets the full-document text, formed by joining the per-page text.</summary>
     public string Text => string.Join("\n\n", Pages.Select(p => p.Text));
 
-    /// <summary>Gets or sets the unit in which this document's geometry coordinates are expressed, when known.</summary>
-    /// <remarks>
-    /// Applies to every <see cref="OcrBoundingRegion"/> in the document. When <see langword="null"/>, the
-    /// geometry should be treated as an opaque, provider-specific coordinate space.
-    /// </remarks>
-    public OcrCoordinateUnit? CoordinateUnit { get; set; }
-
-    /// <summary>Gets or sets the origin corner and axis direction of this document's geometry coordinates, when known.</summary>
-    public OcrCoordinateOrigin? CoordinateOrigin { get; set; }
-
     /// <summary>Gets or sets usage details associated with the request.</summary>
     public OcrUsage? Usage { get; set; }
 

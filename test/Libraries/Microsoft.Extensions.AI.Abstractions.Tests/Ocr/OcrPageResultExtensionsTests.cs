@@ -71,19 +71,34 @@ public class OcrPageResultExtensionsTests
     }
 
     [Fact]
-    public void ToOcrResult_PropagatesCoordinateMetadata_LastNonNullWins()
+    public void ToOcrResult_PreservesPerPageCoordinateMetadata()
     {
         OcrPageResult[] updates =
         [
-            new(new OcrPage(1, "page one")) { CoordinateUnit = OcrCoordinateUnit.Pixel, CoordinateOrigin = OcrCoordinateOrigin.TopLeft },
+            new(new OcrPage(1, "page one") { CoordinateUnit = OcrCoordinateUnit.Pixel, CoordinateOrigin = OcrCoordinateOrigin.TopLeft }),
             new(new OcrPage(2, "page two")),
-            new(new OcrPage(3, "page three")) { CoordinateUnit = OcrCoordinateUnit.Point },
+            new(new OcrPage(3, "page three") { CoordinateUnit = OcrCoordinateUnit.Point, CoordinateOrigin = OcrCoordinateOrigin.BottomLeft }),
         ];
 
         OcrResult result = updates.ToOcrResult();
 
-        Assert.Equal(OcrCoordinateUnit.Point, result.CoordinateUnit);
-        Assert.Equal(OcrCoordinateOrigin.TopLeft, result.CoordinateOrigin);
+        Assert.Collection(
+            result.Pages,
+            p =>
+            {
+                Assert.Equal(OcrCoordinateUnit.Pixel, p.CoordinateUnit);
+                Assert.Equal(OcrCoordinateOrigin.TopLeft, p.CoordinateOrigin);
+            },
+            p =>
+            {
+                Assert.Null(p.CoordinateUnit);
+                Assert.Null(p.CoordinateOrigin);
+            },
+            p =>
+            {
+                Assert.Equal(OcrCoordinateUnit.Point, p.CoordinateUnit);
+                Assert.Equal(OcrCoordinateOrigin.BottomLeft, p.CoordinateOrigin);
+            });
     }
 
     private static async IAsyncEnumerable<OcrPageResult> YieldAsync(IEnumerable<OcrPageResult> updates)

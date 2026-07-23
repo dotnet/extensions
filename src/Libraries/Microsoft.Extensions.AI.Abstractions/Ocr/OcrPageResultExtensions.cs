@@ -68,16 +68,6 @@ public static class OcrPageResultExtensions
     {
         pages.Add(update.Page);
 
-        if (update.CoordinateUnit is not null)
-        {
-            result.CoordinateUnit = update.CoordinateUnit;
-        }
-
-        if (update.CoordinateOrigin is not null)
-        {
-            result.CoordinateOrigin = update.CoordinateOrigin;
-        }
-
         if (update.Usage is not null)
         {
             result.Usage = update.Usage;

@@ -36,6 +36,8 @@ public class OcrElementTests
         [
             new OcrPage(1, "page text")
             {
+                CoordinateUnit = OcrCoordinateUnit.Point,
+                CoordinateOrigin = OcrCoordinateOrigin.BottomLeft,
                 Elements =
                 [
                     new OcrBlock("title") { Kind = OcrBlockKind.Title, Confidence = 0.9 },
@@ -43,11 +45,7 @@ public class OcrElementTests
                     new OcrImage { Caption = "figure", Confidence = 0.5 },
                 ],
             },
-        ])
-        {
-            CoordinateUnit = OcrCoordinateUnit.Point,
-            CoordinateOrigin = OcrCoordinateOrigin.BottomLeft,
-        };
+        ]);
 
         string json = JsonSerializer.Serialize(result, AIJsonUtilities.DefaultOptions);
 
@@ -60,10 +58,9 @@ public class OcrElementTests
 
         OcrResult roundTripped = JsonSerializer.Deserialize<OcrResult>(json, AIJsonUtilities.DefaultOptions)!;
 
-        Assert.Equal(OcrCoordinateUnit.Point, roundTripped.CoordinateUnit);
-        Assert.Equal(OcrCoordinateOrigin.BottomLeft, roundTripped.CoordinateOrigin);
-
         OcrPage page = Assert.Single(roundTripped.Pages);
+        Assert.Equal(OcrCoordinateUnit.Point, page.CoordinateUnit);
+        Assert.Equal(OcrCoordinateOrigin.BottomLeft, page.CoordinateOrigin);
         Assert.Collection(
             page.Elements,
             e => Assert.Equal("title", Assert.IsType<OcrBlock>(e).Text),
