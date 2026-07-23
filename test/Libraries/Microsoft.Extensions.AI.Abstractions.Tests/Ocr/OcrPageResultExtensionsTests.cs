@@ -101,6 +101,26 @@ public class OcrPageResultExtensionsTests
             });
     }
 
+    [Fact]
+    public void ToOcrResult_PreservesPerPageRawRepresentation()
+    {
+        object rawPageOne = new { page = 1 };
+        object rawPageTwo = new { page = 2 };
+
+        OcrPageResult[] updates =
+        [
+            new(new OcrPage(1, "page one") { RawRepresentation = rawPageOne }),
+            new(new OcrPage(2, "page two") { RawRepresentation = rawPageTwo }),
+        ];
+
+        OcrResult result = updates.ToOcrResult();
+
+        Assert.Collection(
+            result.Pages,
+            p => Assert.Same(rawPageOne, p.RawRepresentation),
+            p => Assert.Same(rawPageTwo, p.RawRepresentation));
+    }
+
     private static async IAsyncEnumerable<OcrPageResult> YieldAsync(IEnumerable<OcrPageResult> updates)
     {
         foreach (var update in updates)

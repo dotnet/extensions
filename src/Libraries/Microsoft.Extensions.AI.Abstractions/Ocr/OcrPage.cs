@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -57,6 +58,17 @@ public class OcrPage
 
     /// <summary>Gets or sets the origin corner and axis direction of this page's geometry coordinates, when known.</summary>
     public OcrCoordinateOrigin? CoordinateOrigin { get; set; }
+
+    /// <summary>Gets or sets the provider-native object underlying this page.</summary>
+    /// <remarks>
+    /// If an <see cref="OcrPage"/> is created to represent an underlying object from another object model, this
+    /// property can store that original object. This can be useful for debugging or for enabling a consumer to
+    /// access the underlying object model if needed. Because the page node rides through
+    /// <see cref="OcrPageResultExtensions.ToOcrResult"/> reduction, provider-native page data set here survives
+    /// into <see cref="OcrResult.Pages"/>.
+    /// </remarks>
+    [JsonIgnore]
+    public object? RawRepresentation { get; set; }
 
     /// <summary>Gets or sets any additional properties associated with the page.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }

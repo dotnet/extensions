@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -50,4 +51,27 @@ public class OcrTableCell
     /// Google Document AI.
     /// </remarks>
     public IReadOnlyList<OcrElement>? Elements { get; set; }
+
+    /// <summary>Gets or sets the region of the page the cell occupies, when the engine provides geometry.</summary>
+    /// <remarks>
+    /// A cell can carry its own rectangle even when it is empty or padded, so this is not always derivable from
+    /// the geometry of its nested <see cref="Elements"/>. These members mirror <see cref="OcrElement"/> so a cell
+    /// can be promoted to a shared positioned-node type later without a reshape.
+    /// </remarks>
+    public OcrBoundingRegion? BoundingRegion { get; set; }
+
+    /// <summary>Gets or sets the confidence for the cell in the range [0, 1], when available.</summary>
+    public double? Confidence { get; set; }
+
+    /// <summary>Gets or sets the provider-native object underlying this cell.</summary>
+    /// <remarks>
+    /// If an <see cref="OcrTableCell"/> is created to represent an underlying object from another object model,
+    /// this property can store that original object. This can be useful for debugging or for enabling a
+    /// consumer to access the underlying object model if needed.
+    /// </remarks>
+    [JsonIgnore]
+    public object? RawRepresentation { get; set; }
+
+    /// <summary>Gets or sets any additional properties associated with the cell.</summary>
+    public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 }

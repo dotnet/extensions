@@ -3747,6 +3747,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "object? Microsoft.Extensions.AI.OcrPage.RawRepresentation { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "string Microsoft.Extensions.AI.OcrPage.Text { get; }",
           "Stage": "Experimental"
         }
@@ -3977,11 +3981,23 @@
       ],
       "Properties": [
         {
+          "Member": "Microsoft.Extensions.AI.AdditionalPropertiesDictionary? Microsoft.Extensions.AI.OcrTableCell.AdditionalProperties { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OcrBoundingRegion? Microsoft.Extensions.AI.OcrTableCell.BoundingRegion { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "int Microsoft.Extensions.AI.OcrTableCell.ColumnIndex { get; }",
           "Stage": "Experimental"
         },
         {
           "Member": "int Microsoft.Extensions.AI.OcrTableCell.ColumnSpan { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.AI.OcrTableCell.Confidence { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -3994,6 +4010,10 @@
         },
         {
           "Member": "Microsoft.Extensions.AI.OcrTableCellKind? Microsoft.Extensions.AI.OcrTableCell.Kind { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.AI.OcrTableCell.RawRepresentation { get; set; }",
           "Stage": "Experimental"
         },
         {

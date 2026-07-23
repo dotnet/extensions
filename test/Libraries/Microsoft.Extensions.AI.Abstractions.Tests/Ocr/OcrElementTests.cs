@@ -84,4 +84,26 @@ public class OcrElementTests
         Assert.NotNull(roundTripped.Elements);
         Assert.Equal("nested paragraph", Assert.IsType<OcrBlock>(Assert.Single(roundTripped.Elements!)).Text);
     }
+
+    [Fact]
+    public void TableCell_GeometryConfidenceAndProperties_RoundTrip()
+    {
+        OcrTableCell cell = new(0, 0, "flat text")
+        {
+            BoundingRegion = OcrBoundingRegion.FromRectangle(1, left: 10, top: 20, right: 110, bottom: 220),
+            Confidence = 0.75,
+            RawRepresentation = new { ignored = true },
+            AdditionalProperties = new() { ["detectedLanguages"] = "en" },
+        };
+
+        string json = JsonSerializer.Serialize(cell, AIJsonUtilities.DefaultOptions);
+        OcrTableCell roundTripped = JsonSerializer.Deserialize<OcrTableCell>(json, AIJsonUtilities.DefaultOptions)!;
+
+        Assert.NotNull(roundTripped.BoundingRegion);
+        Assert.Equal(1, roundTripped.BoundingRegion!.PageNumber);
+        Assert.Equal(0.75, roundTripped.Confidence);
+        Assert.NotNull(roundTripped.AdditionalProperties);
+        Assert.True(roundTripped.AdditionalProperties!.ContainsKey("detectedLanguages"));
+        Assert.Null(roundTripped.RawRepresentation);
+    }
 }
