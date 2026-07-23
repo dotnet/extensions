@@ -1,9 +1,6 @@
----
-name: prepare-release
-description: Prepares the repository for an internal release branch. Use this when asked to "prepare for a release", "prepare internal release branch", or similar release preparation tasks.
----
+# Stage 1 - Prepare Internal Branch
 
-# Prepare Internal Release Branch
+This stage is for the **monthly release**. Servicing releases should follow [stages-1-2-servicing-branch.md](stages-1-2-servicing-branch.md) instead.
 
 When preparing a public branch for internal release, apply the following changes:
 
@@ -58,7 +55,7 @@ Change `DotNetFinalVersionKind` from empty to `release`:
 
 ### Add Private Feeds Credentials Setup
 
-After the Node.js setup task (the `NodeTool@0` task), add these two tasks to authenticate with private Azure DevOps feeds:
+After the Node.js setup task (the `NodeTool@0` task), add these two tasks to authenticate with the private package feeds:
 
 ```yaml
   - task: PowerShell@2
@@ -68,7 +65,7 @@ After the Node.js setup task (the `NodeTool@0` task), add these two tasks to aut
       filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
       arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
     env:
-      Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      Token: $(<private-feed-read-token>)
 
   - task: Bash@3
     displayName: Setup Private Feeds Credentials
@@ -77,7 +74,7 @@ After the Node.js setup task (the `NodeTool@0` task), add these two tasks to aut
       filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
       arguments: $(Build.SourcesDirectory)/NuGet.config $Token
     env:
-      Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      Token: $(<private-feed-read-token>)
 ```
 
 ### Comment Out Integration Tests
