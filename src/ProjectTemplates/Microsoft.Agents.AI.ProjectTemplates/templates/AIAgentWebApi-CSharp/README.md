@@ -4,7 +4,9 @@ This is an AI Agent Web API application created from the `aiagent-webapi` templa
 
 ## Prerequisites
 
-<!--#if (IsOpenAI) -->
+<!--#if (IsMock) -->
+- No external AI provider prerequisites
+<!--#elif (IsOpenAI) -->
 - An OpenAI API key
 <!--#elif (IsAzureOpenAI) -->
 - An Azure OpenAI service deployment
@@ -16,7 +18,20 @@ This is an AI Agent Web API application created from the `aiagent-webapi` templa
 
 ### 1. Configure Your AI Service
 
-<!--#if (IsOpenAI) -->
+<!--#if (IsMock) -->
+#### Mock Configuration
+
+This application uses a deterministic mock chat provider seeded for the writer/editor workflow.
+
+No API keys or model runtimes are required.
+
+Try prompts such as:
+
+1. `Write a short story about a student learning .NET.`
+2. `Edit this story for grammar and style.`
+3. `Format the final story for publishing.`
+
+<!--#elif (IsOpenAI) -->
 #### OpenAI Configuration
 
 This application uses the OpenAI Platform (model: gpt-4o-mini). You'll need to configure your OpenAI API key:
@@ -163,6 +178,7 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 ### Available Parameters
 
 - **`--provider`**: Choose the AI service provider
+  - `mock` - Deterministic mock provider
   - `azureopenai` - Azure OpenAI
   - `openai` - OpenAI Platform
   - `ollama` - Ollama (local development)
@@ -197,7 +213,12 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 ## Troubleshooting
 
-<!--#if (IsOpenAI) -->
+<!--#if (IsMock) -->
+**Problem**: Responses seem repetitive.
+
+**Solution**: The mock provider is intentionally deterministic. Use one of the three seeded workflow prompts listed above.
+
+<!--#elif (IsOpenAI) -->
 **Problem**: Application fails with "Missing configuration: OPENAI_KEY"
 
 **Solution**: Make sure you've configured your OpenAI API key using one of the methods described above.

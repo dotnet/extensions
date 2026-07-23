@@ -35,6 +35,7 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
 // Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();
 builder.Services.AddOpenAIConversations();
+builder.Services.AddDevUI();
 
 var app = builder.Build();
 app.UseHttpsRedirection();

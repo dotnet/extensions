@@ -18,6 +18,9 @@
 <!--#if (IsOpenAI || IsAzureOpenAI) -->
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="${PackageVersion:Microsoft.Agents.AI}" />
 <!--#endif -->
+<!--#if (IsMock) -->
+    <PackageReference Include="Microsoft.Extensions.AI.Testing" Version="${PackageVersion:Microsoft.Extensions.AI.Testing}" />
+<!--#endif -->
     <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="${PackageVersion:Microsoft.Agents.AI.Workflows}" />
     <PackageReference Include="OpenTelemetry.Api" Version="${PackageVersion:OpenTelemetry.Api}" />
 <!--#if (IsOllama) -->

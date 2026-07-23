@@ -22,6 +22,7 @@ public class AIAgentWebAPISnapshotTests : TemplateSnapshotTestBase
     }
 
     [Theory]
+    [InlineData("--provider=mock")]
     [InlineData("--provider=openai")]
     [InlineData("--provider=ollama")]
     [InlineData("--provider=azureopenai", "--managed-identity=true")]

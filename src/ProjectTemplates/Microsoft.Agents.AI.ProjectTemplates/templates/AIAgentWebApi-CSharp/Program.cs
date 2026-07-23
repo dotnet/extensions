@@ -33,6 +33,8 @@ var chatClient = new ChatClient(
         "gpt-4o-mini",
         new ApiKeyCredential(builder.Configuration["OPENAI_KEY"] ?? throw new InvalidOperationException("Missing configuration: OPENAI_KEY")))
     .AsIChatClient();
+#elif (IsMock)
+var chatClient = MockServices.CreateChatClient();
 #elif (IsAzureOpenAI)
 // You will need to set the endpoint to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
@@ -87,6 +89,7 @@ builder.AddWorkflow("publisher", (sp, key) => AgentWorkflowBuilder.BuildSequenti
 // Register services for OpenAI responses and conversations (also required for DevUI)
 builder.Services.AddOpenAIResponses();
 builder.Services.AddOpenAIConversations();
+builder.Services.AddDevUI();
 
 var app = builder.Build();
 app.UseHttpsRedirection();

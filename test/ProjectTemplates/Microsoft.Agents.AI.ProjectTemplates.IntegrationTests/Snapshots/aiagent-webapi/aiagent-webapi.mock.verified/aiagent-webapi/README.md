@@ -4,13 +4,23 @@ This is an AI Agent Web API application created from the `aiagent-webapi` templa
 
 ## Prerequisites
 
-- An Azure OpenAI service deployment
+- No external AI provider prerequisites
 
 ## Getting Started
 
 ### 1. Configure Your AI Service
 
-#### Azure OpenAI Configuration
+#### Mock Configuration
+
+This application uses a deterministic mock chat provider seeded for the writer/editor workflow.
+
+No API keys or model runtimes are required.
+
+Try prompts such as:
+
+1. `Write a short story about a student learning .NET.`
+2. `Edit this story for grammar and style.`
+3. `Format the final story for publishing.`
 
 
 ### 2. Run the Application
@@ -85,23 +95,10 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 - [AI apps for .NET developers](https://learn.microsoft.com/dotnet/ai)
 - [Microsoft Agent Framework Documentation](https://aka.ms/dotnet/agent-framework/docs)
-- [Azure OpenAI Service](https://azure.microsoft.com/products/ai-services/openai-service)
 
 ## Troubleshooting
 
-**Problem**: Application fails with "Missing configuration: AzureOpenAI:Endpoint"
+**Problem**: Responses seem repetitive.
 
-**Solution**: Make sure you've configured your Azure OpenAI endpoint using one of the methods described above.
-
-**Problem**: Managed identity authentication fails
-
-**Solution**:
-- Ensure your Azure resource has a system-assigned or user-assigned managed identity enabled
-- Verify the managed identity has been granted the "Cognitive Services OpenAI User" role on your Azure OpenAI resource
-- For local development, ensure you're signed in to Azure CLI: `az login`
-
-**Problem**: API requests fail with authentication errors
-
-**Solution**: Verify your Azure OpenAI endpoint is correct and your managed identity has the correct permissions.
-
+**Solution**: The mock provider is intentionally deterministic. Use one of the three seeded workflow prompts listed above.
 

@@ -27,7 +27,16 @@
   "sources": [
     {
       "source": "./",
-      "target": "./"
+      "target": "./",
+      "modifiers": [
+        {
+          "condition": "(!IsMock)",
+          "exclude": [
+            "MockServices.cs",
+            "MockChatClientExtensions.cs"
+          ]
+        }
+      ]
     }
   ],
   "symbols": {
@@ -61,11 +70,17 @@
       "type": "parameter",
       "displayName": "_AI service provider",
       "datatype": "choice",
+      "isRequired": true,
       "choices": [
         {
           "choice": "azureopenai",
           "displayName": "Azure OpenAI",
           "description": "Uses Azure OpenAI service"
+        },
+        {
+          "choice": "mock",
+          "displayName": "Mock (for local development and testing)",
+          "description": "Uses deterministic, pre-seeded responses"
         },
         {
           "choice": "ollama",
@@ -107,6 +122,10 @@
     "IsOllama": {
       "type": "computed",
       "value": "(AiServiceProvider == \"ollama\")"
+    },
+    "IsMock": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"mock\")"
     },
     "OpenAiChatModelDefault": {
       "type": "generated",

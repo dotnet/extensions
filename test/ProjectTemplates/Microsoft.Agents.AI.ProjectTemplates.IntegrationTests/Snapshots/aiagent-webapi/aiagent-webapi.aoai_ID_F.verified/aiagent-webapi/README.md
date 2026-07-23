@@ -88,13 +88,13 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 ### Available Parameters
 
 - **`--provider`**: Choose the AI service provider
-  - `githubmodels` (default) - GitHub Models
+  - `mock` - Deterministic mock provider
   - `azureopenai` - Azure OpenAI
   - `openai` - OpenAI Platform
   - `ollama` - Ollama (local development)
 
 - **`--chat-model`**: Specify the chat model/deployment name
-  - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
+  - Default for OpenAI/Azure OpenAI: `gpt-4o-mini`
   - Default for Ollama: `llama3.2`
 
 - **`--managed-identity`**: Use managed identity for Azure services (default: `true`)
