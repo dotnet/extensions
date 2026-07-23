@@ -34,12 +34,22 @@
 
     <Content
       Include="templates\**\*"
-      Exclude="templates\**\*.csproj-in"
+      Exclude="
+        templates\**\*.csproj-in;
+        templates\**\*.fsproj-in
+      "
       PackagePath="content" />
 
+    <!-- C# template transform -->
     <TemplateContent
       Include="templates\**\*.csproj-in"
       ChangeExtension=".csproj"
+      PackagePath="content" />
+
+    <!-- F# template transform -->
+    <TemplateContent
+      Include="templates\**\*.fsproj-in"
+      ChangeExtension=".fsproj"
       PackagePath="content" />
 
   </ItemGroup>
