@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{00000000-0000-0000-0000-000000000000}") = "aichatweb.AppHost", "aichatweb.AppHost\aichatweb.AppHost.csproj", "{00000000-0000-0000-0000-000000000000}"
+EndProject
+Project("{00000000-0000-0000-0000-000000000000}") = "aichatweb.ServiceDefaults", "aichatweb.ServiceDefaults\aichatweb.ServiceDefaults.csproj", "{00000000-0000-0000-0000-000000000000}"
+EndProject
+Project("{00000000-0000-0000-0000-000000000000}") = "aichatweb.Web", "aichatweb.Web\aichatweb.Web.csproj", "{00000000-0000-0000-0000-000000000000}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00000000-0000-0000-0000-000000000000}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using System.ComponentModel
+@using System.Xml.Linq
 @inject IChatClient ChatClient
 @inject NavigationManager Nav
 @inject SemanticSearch Search
@@ -20,7 +21,6 @@
 <div class="chat-container">
     <ChatSuggestions OnSelected="@AddUserMessageAsync" @ref="@chatSuggestions" />
     <ChatInput OnSend="@AddUserMessageAsync" @ref="@chatInput" />
-    <SurveyPrompt /> @* Remove this line to eliminate the template survey message *@
 </div>
 
 @code {
@@ -126,7 +126,10 @@
         await InvokeAsync(StateHasChanged);
         var results = await Search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
         return results.Select(result =>
-            $"<result filename=\"{result.DocumentId}\">{result.Text}</result>");
+            new XElement(
+                "result",
+                new XAttribute("filename", result.DocumentId),
+                result.Text).ToString(SaveOptions.DisableFormatting));
     }
 
     public void Dispose()

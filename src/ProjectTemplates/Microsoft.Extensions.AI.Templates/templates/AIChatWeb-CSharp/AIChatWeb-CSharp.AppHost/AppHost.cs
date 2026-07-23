@@ -7,6 +7,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 //   cd this-project-directory
 //   dotnet user-secrets set ConnectionStrings:openai "Key=YOUR-API-KEY"
 var openai = builder.AddConnectionString("openai");
+#elif (IsMock)
 #else // IsAzureOpenAI
 
 // See https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration
@@ -58,6 +59,7 @@ webApp
     .WaitFor(embeddings);
 #elif (IsOpenAI)
 webApp.WithReference(openai);
+#elif (IsMock)
 #else // IsAzureOpenAI
 webApp
     .WithReference(openai)

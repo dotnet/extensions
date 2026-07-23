@@ -29,6 +29,9 @@
 <!--#if (IsManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${PackageVersion:Azure.Identity}" />
 <!--#endif -->
+<!--#if (IsMock) -->
+    <PackageReference Include="Microsoft.Extensions.AI.Testing" Version="${PackageVersion:Microsoft.Extensions.AI.Testing}" />
+<!--#endif -->
     <PackageReference Include="Microsoft.Extensions.AI" Version="${PackageVersion:Microsoft.Extensions.AI}" />
     <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="${PackageVersion:Microsoft.Extensions.DataIngestion}" />
     <PackageReference Include="Microsoft.Extensions.DataIngestion.Markdig" Version="${PackageVersion:Microsoft.Extensions.DataIngestion.Markdig}" />

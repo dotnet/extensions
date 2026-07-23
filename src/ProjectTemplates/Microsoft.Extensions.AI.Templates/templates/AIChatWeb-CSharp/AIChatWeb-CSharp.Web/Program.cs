@@ -42,6 +42,10 @@ var chatClient = openAIClient.GetResponsesClient().AsIChatClient("gpt-4o-mini");
 var embeddingGenerator = openAIClient.GetEmbeddingClient("text-embedding-3-small").AsIEmbeddingGenerator();
 #elif (IsAzureAIFoundry)
 
+#elif (IsMock)
+var chatClient = MockServices.CreateChatClient();
+IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = MockServices.CreateEmbeddingGenerator();
+
 #elif (IsAzureOpenAI)
 // You will need to set the endpoint and key to your own values
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:

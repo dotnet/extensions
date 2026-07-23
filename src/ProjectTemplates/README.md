@@ -140,13 +140,13 @@ Finally, create a project from the template and run it:
 
 ```pwsh
     dotnet new aiagent-webapi `
-        [--provider <azureopenai | ollama | openai>] `
+        --provider <mock | azureopenai | ollama | openai> `
         [--managed-identity]
 
 # or
 
     dotnet new aichatweb `
-        [--provider <azureopenai | ollama | openai>] `
+        --provider <mock | azureopenai | ollama | openai> `
         [--vector-store <azureaisearch | local | qdrant>] `
         [--aspire] `
         [--managed-identity]

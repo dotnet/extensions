@@ -36,7 +36,7 @@ public class AIChatWebExecutionTests : TemplateExecutionTestBase<AIChatWebExecut
     public static IEnumerable<object[]> GetSupportedProjectConfigurations()
     {
         (string name, string[] values)[] allOptionValues = [
-            ("--provider",          ["azureopenai", "ollama", "openai" /*, "azureaifoundry" */]),
+            ("--provider",          ["mock", "azureopenai", "ollama", "openai" /*, "azureaifoundry" */]),
             ("--vector-store",      ["azureaisearch", "local", "qdrant"]),
             ("--aspire",            ["true", "false"]),
             ("--managed-identity",  ["true", "false"]),

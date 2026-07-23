@@ -2,8 +2,10 @@
 
 This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-templatePreview2-survey).
 
+#### ---#if (!IsMock)
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
+#### ---#endif
 
 #### ---#if (IsAzure)
 ### Prerequisites
@@ -20,6 +22,20 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 
 # Configure the AI Model Provider
 
+#### ---#if (IsMock)
+## Using Mock provider
+
+The mock provider runs fully local with deterministic canned responses, so it requires no API keys, cloud credentials, or model downloads.
+
+It is pre-seeded with roughly 20 TrailMaster GPS Watch responses (plus follow-up suggestions) that map to the sample documents under `wwwroot/Data`.
+
+Good starter prompts:
+
+- What does TrailMaster track?
+- How rugged is TrailMaster?
+- How does location sharing work?
+- Why should I buy this watch?
+#### ---#endif
 #### ---#if (IsOpenAI)
 ## Using OpenAI
 

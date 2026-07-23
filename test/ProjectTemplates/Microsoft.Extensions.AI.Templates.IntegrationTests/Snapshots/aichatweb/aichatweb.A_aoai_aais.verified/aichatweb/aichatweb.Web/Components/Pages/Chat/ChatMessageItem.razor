@@ -1,6 +1,7 @@
 @using System.Runtime.CompilerServices
 @using System.Text.RegularExpressions
-@using System.Linq
+@using System.Xml
+@using System.Xml.Linq
 
 @if (Message.Role == ChatRole.User)
 {
@@ -69,7 +70,7 @@ else if (Message.Role == ChatRole.Assistant)
 
 @code {
     private static readonly ConditionalWeakTable<ChatMessage, ChatMessageItem> SubscribersLookup = new();
-    private static readonly Regex CitationRegex = new(@"<citation filename='(?<file>[^']*)'>(?<quote>.*?)</citation>", RegexOptions.NonBacktracking);
+    private static readonly Regex CitationRegex = new(@"<citation\b[^>]*>.*?</citation>", RegexOptions.NonBacktracking | RegexOptions.Singleline);
 
     private List<(string File, string Quote)>? citations;
 
@@ -99,9 +100,24 @@ else if (Message.Role == ChatRole.Assistant)
 
     private void ParseCitations(string text)
     {
-        var matches = CitationRegex.Matches(text);
-        citations = matches.Any()
-            ? matches.Select(m => (m.Groups["file"].Value, m.Groups["quote"].Value)).ToList()
-            : null;
+        var parsedCitations = new List<(string File, string Quote)>();
+        foreach (Match match in CitationRegex.Matches(text))
+        {
+            try
+            {
+                XElement citation = XElement.Parse(match.Value);
+                if (citation.Name.LocalName == "citation" &&
+                    citation.Attribute("filename")?.Value is { Length: > 0 } file)
+                {
+                    parsedCitations.Add((file, citation.Value));
+                }
+            }
+            catch (XmlException)
+            {
+                // Ignore malformed citation markup returned by the model.
+            }
+        }
+
+        citations = parsedCitations.Count > 0 ? parsedCitations : null;
     }
 }
