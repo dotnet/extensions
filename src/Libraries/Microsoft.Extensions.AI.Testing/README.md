@@ -23,6 +23,7 @@ Or in a project file:
 
 - `MockChatClient` (`IChatClient`) for deterministic, request-aware chat responses.
 - `MockChatClientRequest` for request matching and request-history inspection.
+- `MockEmbeddingGenerator<TInput>` (`IEmbeddingGenerator<TInput, Embedding<float>>`) for configurable, deterministic embeddings.
 
 ## MockChatClient behavior
 
@@ -168,6 +169,24 @@ client.AddException(
     static request => request.LastUserText == "UNAVAILABLE",
     static () => new HttpRequestException("The provider is temporarily unavailable."));
 ```
+
+## Mock embeddings
+
+Configure `MockEmbeddingGenerator<TInput>` with the embeddings a test needs. Its callback receives the original input enumerable and cancellation token, and `CallCount` records generation requests.
+
+```csharp
+using var embeddings = new MockEmbeddingGenerator<string>
+{
+    GenerateAsyncCallback = static (_, _, _) =>
+        Task.FromResult<GeneratedEmbeddings<Embedding<float>>>(
+            [new(new float[] { 0.1f, 0.2f, 0.3f })]),
+};
+
+GeneratedEmbeddings<Embedding<float>> result = await embeddings.GenerateAsync(["trail"]);
+Console.WriteLine(embeddings.CallCount);
+```
+
+Use the input type required by the test, such as `MockEmbeddingGenerator<string>` or `MockEmbeddingGenerator<DataContent>`.
 
 ## Feedback & Contributing
 

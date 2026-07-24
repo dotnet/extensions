@@ -10,7 +10,6 @@ Packages:
 - `Microsoft.Extensions.AI`
 - `Microsoft.Extensions.AI.Abstractions`
 - `Microsoft.Extensions.AI.OpenAI`
-- `Microsoft.Extensions.AI.Testing`
 
 ### AI Evaluation
 

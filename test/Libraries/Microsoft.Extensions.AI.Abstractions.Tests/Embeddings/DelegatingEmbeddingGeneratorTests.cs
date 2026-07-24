@@ -26,7 +26,7 @@ public class DelegatingEmbeddingGeneratorTests
         var expectedCancellationToken = cts.Token;
         var expectedResult = new TaskCompletionSource<GeneratedEmbeddings<Embedding<float>>>();
         var expectedEmbedding = new GeneratedEmbeddings<Embedding<float>>([new(new float[] { 1.0f, 2.0f, 3.0f })]);
-        using var inner = new TestEmbeddingGenerator
+        using var inner = new MockEmbeddingGenerator<string>
         {
             GenerateAsyncCallback = (input, options, cancellationToken) =>
             {
@@ -51,7 +51,7 @@ public class DelegatingEmbeddingGeneratorTests
     [Fact]
     public void GetServiceThrowsForNullType()
     {
-        using var inner = new TestEmbeddingGenerator();
+        using var inner = new MockEmbeddingGenerator<string>();
         using var delegating = new NoOpDelegatingEmbeddingGenerator(inner);
         Assert.Throws<ArgumentNullException>("serviceType", () => delegating.GetService(null!));
     }
@@ -60,7 +60,7 @@ public class DelegatingEmbeddingGeneratorTests
     public void GetServiceReturnsSelfIfCompatibleWithRequestAndKeyIsNull()
     {
         // Arrange
-        using var inner = new TestEmbeddingGenerator();
+        using var inner = new MockEmbeddingGenerator<string>();
         using var delegating = new NoOpDelegatingEmbeddingGenerator(inner);
 
         // Act
@@ -76,8 +76,8 @@ public class DelegatingEmbeddingGeneratorTests
         // Arrange
         var expectedParam = new object();
         var expectedKey = new object();
-        using var expectedResult = new TestEmbeddingGenerator();
-        using var inner = new TestEmbeddingGenerator
+        using var expectedResult = new MockEmbeddingGenerator<string>();
+        using var inner = new MockEmbeddingGenerator<string>
         {
             GetServiceCallback = (_, _) => expectedResult
         };
@@ -97,7 +97,7 @@ public class DelegatingEmbeddingGeneratorTests
         var expectedParam = new object();
         var expectedResult = TimeZoneInfo.Local;
         var expectedKey = new object();
-        using var inner = new TestEmbeddingGenerator
+        using var inner = new MockEmbeddingGenerator<string>
         {
             GetServiceCallback = (type, key) => type == expectedResult.GetType() && key == expectedKey
                 ? expectedResult

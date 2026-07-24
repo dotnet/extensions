@@ -250,7 +250,7 @@ public class GeneratedEmbeddingsTests
     {
         var expectedGeneratedEmbeddings = new GeneratedEmbeddings<Embedding<float>>([new Embedding<float>(new float[] { 1, 2, 3 })]);
 
-        using IEmbeddingGenerator<object, Embedding<float>> acceptsObject = new TestEmbeddingGenerator<object, Embedding<float>>
+        using IEmbeddingGenerator<object, Embedding<float>> acceptsObject = new MockEmbeddingGenerator<object>
         {
             GenerateAsyncCallback = (values, options, cancellationToken) => Task.FromResult(expectedGeneratedEmbeddings),
         };

@@ -21,14 +21,14 @@ public class EmbeddingGeneratorExtensionsTests
     {
         Assert.Throws<ArgumentNullException>("generator", () => EmbeddingGeneratorExtensions.GetRequiredService<object>(null!));
 
-        using var generator = new TestEmbeddingGenerator();
+        using var generator = new MockEmbeddingGenerator<string>();
         Assert.Throws<ArgumentNullException>("serviceType", () => generator.GetRequiredService(null!));
     }
 
     [Fact]
     public void GetService_ValidService_Returned()
     {
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new TestEmbeddingGenerator
+        using IEmbeddingGenerator<string, Embedding<float>> generator = new MockEmbeddingGenerator<string>
         {
             GetServiceCallback = (serviceType, serviceKey) =>
             {
@@ -78,9 +78,9 @@ public class EmbeddingGeneratorExtensionsTests
     [Fact]
     public async Task GenerateAsync_InvalidArgs_ThrowsAsync()
     {
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAsync("hello"));
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateVectorAsync("hello"));
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAndZipAsync(["hello"]));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((MockEmbeddingGenerator<string>)null!).GenerateAsync("hello"));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((MockEmbeddingGenerator<string>)null!).GenerateVectorAsync("hello"));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((MockEmbeddingGenerator<string>)null!).GenerateAndZipAsync(["hello"]));
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class EmbeddingGeneratorExtensionsTests
     {
         Embedding<float> result = new(new float[] { 1f, 2f, 3f });
 
-        using TestEmbeddingGenerator service = new()
+        using MockEmbeddingGenerator<string> service = new()
         {
             GenerateAsyncCallback = (values, options, cancellationToken) =>
                 Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([result])
@@ -110,7 +110,7 @@ public class EmbeddingGeneratorExtensionsTests
             .Select(i => new Embedding<float>(Enumerable.Range(i, 4).Select(i => (float)i).ToArray()))
             .ToArray();
 
-        using TestEmbeddingGenerator service = new()
+        using MockEmbeddingGenerator<string> service = new()
         {
             GenerateAsyncCallback = (values, options, cancellationToken) =>
                 Task.FromResult<GeneratedEmbeddings<Embedding<float>>>(new(embeddings))

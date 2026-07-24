@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -357,6 +358,79 @@ public class MockChatClientTests
             client.AddStreamingResponse(null!, static (_, _) => EnumerateUpdatesAsync([])));
         Assert.Throws<ArgumentNullException>(() =>
             client.AddException(null!, static () => new InvalidOperationException()));
+    }
+
+    [Fact]
+    public async Task MockEmbeddingGenerator_InvokesConfiguredCallbackAndRecordsCall()
+    {
+        var values = new List<string> { "trail", "camp" };
+        var options = new EmbeddingGenerationOptions();
+        using var cancellationTokenSource = new CancellationTokenSource();
+        var expected = new GeneratedEmbeddings<Embedding<float>>([new(new float[] { 1, 2, 3, 4 })]);
+
+        using var generator = new MockEmbeddingGenerator<string>
+        {
+            GenerateAsyncCallback = (actualValues, actualOptions, cancellationToken) =>
+            {
+                Assert.Same(values, actualValues);
+                Assert.Same(options, actualOptions);
+                Assert.Equal(cancellationTokenSource.Token, cancellationToken);
+                return Task.FromResult(expected);
+            },
+        };
+
+        Assert.Same(expected, await generator.GenerateAsync(values, options, cancellationTokenSource.Token));
+        Assert.Equal(1, generator.CallCount);
+    }
+
+    [Fact]
+    public async Task MockEmbeddingGenerator_SupportsGenericInputs()
+    {
+        var value = new object();
+        var expected = new GeneratedEmbeddings<Embedding<float>>([new(new float[] { 1, 2, 3, 4 })]);
+        using var generator = new MockEmbeddingGenerator<object>
+        {
+            GenerateAsyncCallback = (values, _, _) =>
+            {
+                Assert.Same(value, Assert.Single(values));
+                return Task.FromResult(expected);
+            },
+        };
+
+        Assert.Same(expected, await generator.GenerateAsync([value]));
+    }
+
+    [Fact]
+    public async Task MockEmbeddingGenerator_RecordsCallsForDerivedGenerators()
+    {
+        var expected = new GeneratedEmbeddings<Embedding<float>>([new(new float[] { 1, 2, 3, 4 })]);
+        using var generator = new DerivedMockEmbeddingGenerator(expected);
+
+        Assert.Same(expected, await generator.GenerateAsync(["trail"]));
+        Assert.Equal(1, generator.CallCount);
+    }
+
+    [Fact]
+    public void MockEmbeddingGenerator_ConfiguresServiceResolution()
+    {
+        using var generator = new MockEmbeddingGenerator<string>();
+        Assert.Same(generator, generator.GetService(typeof(MockEmbeddingGenerator<string>)));
+
+        var expected = new object();
+        generator.GetServiceCallback = static (_, _) => null;
+        Assert.Null(generator.GetService(typeof(object)));
+
+        generator.GetServiceCallback = (_, _) => expected;
+        Assert.Same(expected, generator.GetService(typeof(object)));
+    }
+
+    private sealed class DerivedMockEmbeddingGenerator(GeneratedEmbeddings<Embedding<float>> expected) : MockEmbeddingGenerator<string>
+    {
+        protected override Task<GeneratedEmbeddings<Embedding<float>>> GenerateCoreAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(expected);
     }
 
     private static Task<ChatResponse> CreateResponseAsync(string text) =>
