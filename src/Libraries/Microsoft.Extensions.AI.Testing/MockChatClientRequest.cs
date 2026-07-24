@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -16,6 +18,7 @@ namespace Microsoft.Extensions.AI;
 /// <see cref="IChatClient.GetStreamingResponseAsync(IEnumerable{ChatMessage}, ChatOptions?, System.Threading.CancellationToken)"/>
 /// is called.
 /// </remarks>
+[Experimental(DiagnosticIds.Experiments.AITesting, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class MockChatClientRequest
 {
     /// <summary>Initializes a new instance of the <see cref="MockChatClientRequest"/> class.</summary>

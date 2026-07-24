@@ -10,8 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
-    <StageDevDiagnosticId>EXTEXP0019</StageDevDiagnosticId>
+    <Stage>preview</Stage>
     <Api>false</Api>
     <MinCodeCoverage>n/a</MinCodeCoverage>
     <MinMutationScore>n/a</MinMutationScore>

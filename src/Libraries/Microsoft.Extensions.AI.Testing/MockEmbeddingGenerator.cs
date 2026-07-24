@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -17,6 +19,7 @@ namespace Microsoft.Extensions.AI;
 /// Configure <see cref="GenerateAsyncCallback"/> to produce the embeddings required by a test. The callback receives
 /// the original input enumerable and cancellation token. <see cref="CallCount"/> records every generation request.
 /// </remarks>
+[Experimental(DiagnosticIds.Experiments.AITesting, UrlFormat = DiagnosticIds.UrlFormat)]
 public class MockEmbeddingGenerator<TInput> : IEmbeddingGenerator<TInput, Embedding<float>>
 {
     private int _callCount;

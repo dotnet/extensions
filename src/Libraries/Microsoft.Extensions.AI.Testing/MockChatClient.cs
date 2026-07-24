@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -29,6 +31,7 @@ namespace Microsoft.Extensions.AI;
 /// citations, reasoning, tool calls, usage, metadata, errors, and other chat-client behavior.
 /// </para>
 /// </remarks>
+[Experimental(DiagnosticIds.Experiments.AITesting, UrlFormat = DiagnosticIds.UrlFormat)]
 public class MockChatClient : IChatClient
 {
     private static ChatResponse CloneResponse(ChatResponse response)

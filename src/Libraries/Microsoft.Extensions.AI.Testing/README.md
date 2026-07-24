@@ -3,7 +3,8 @@
 Deterministic test doubles for applications built on `Microsoft.Extensions.AI`.
 
 > [!IMPORTANT]
-> This package is for **mocking and deterministic testing** of chat and embedding behavior.
+> This **preview** package is for **mocking and deterministic testing** of chat and embedding behavior. Its APIs are
+> experimental (`MEAI001`) and may change or be removed in future releases.
 
 ## Install
 

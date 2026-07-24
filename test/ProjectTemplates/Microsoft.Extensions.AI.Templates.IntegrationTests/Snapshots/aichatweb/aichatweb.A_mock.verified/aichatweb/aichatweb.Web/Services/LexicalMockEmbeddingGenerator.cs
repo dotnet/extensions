@@ -6,6 +6,8 @@ using Microsoft.Extensions.AI;
 
 namespace aichatweb.Web.Services;
 
+#pragma warning disable MEAI001 // Mock provider uses experimental testing APIs
+
 internal sealed class LexicalMockEmbeddingGenerator : MockEmbeddingGenerator<string>
 {
     private readonly int _dimensions;
@@ -102,3 +104,4 @@ internal sealed class LexicalMockEmbeddingGenerator : MockEmbeddingGenerator<str
         vector[(int)(hash % (uint)vector.Length)] += 1;
     }
 }
+#pragma warning restore MEAI001

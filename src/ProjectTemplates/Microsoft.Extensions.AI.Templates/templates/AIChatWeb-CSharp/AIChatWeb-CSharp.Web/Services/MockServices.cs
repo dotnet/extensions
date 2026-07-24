@@ -1,5 +1,8 @@
 using Microsoft.Extensions.AI;
+
 namespace AIChatWeb_CSharp.Web.Services;
+
+#pragma warning disable MEAI001 // Mock provider uses experimental testing APIs
 
 internal static class MockServices
 {
@@ -155,3 +158,4 @@ internal static class MockServices
         return null;
     }
 }
+#pragma warning restore MEAI001

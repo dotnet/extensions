@@ -9,6 +9,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Xunit;
 
+#pragma warning disable MEAI001 // Tests use experimental mock embedding APIs
+
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
 public abstract class VectorStoreWriterTests
@@ -179,3 +181,5 @@ public abstract class VectorStoreWriterTests
                 Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([new(new float[] { 0, 1, 2, 3 })]),
         };
 }
+
+#pragma warning restore MEAI001

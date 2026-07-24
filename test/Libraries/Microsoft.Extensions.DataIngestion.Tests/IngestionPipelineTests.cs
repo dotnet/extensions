@@ -16,6 +16,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Xunit;
 
+#pragma warning disable MEAI001 // Tests use experimental mock embedding APIs
+
 namespace Microsoft.Extensions.DataIngestion.Tests;
 
 #pragma warning disable S881 // Increment (++) and decrement (--) operators should not be used in a method call or mixed with other operators in an expression
@@ -276,3 +278,5 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.All(failed, a => Assert.Equal(ExpectedException.ExceptionMessage, a.StatusDescription));
     }
 }
+
+#pragma warning restore MEAI001

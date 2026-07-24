@@ -9,6 +9,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.ML.Tokenizers;
 using Xunit;
 
+#pragma warning disable MEAI001 // Tests use experimental mock embedding APIs
+
 namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 {
     public class SemanticSimilarityChunkerTests : DocumentChunkerTests
@@ -261,3 +263,5 @@ The twelve Olympian gods were the principal deities of the Greek pantheon:
         }
     }
 }
+
+#pragma warning restore MEAI001

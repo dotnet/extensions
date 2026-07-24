@@ -1,5 +1,7 @@
 using Microsoft.Extensions.AI;
 
+#pragma warning disable MEAI001 // Mock provider uses experimental testing APIs
+
 internal static class MockChatClientExtensions
 {
     /// <summary>Adds a canned response for matching requests.</summary>
@@ -67,3 +69,4 @@ internal static class MockChatClientExtensions
         }
     }
 }
+#pragma warning restore MEAI001

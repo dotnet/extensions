@@ -1,5 +1,7 @@
 using Microsoft.Extensions.AI;
 
+#pragma warning disable MEAI001 // Mock provider uses experimental testing APIs
+
 internal static class MockServices
 {
     internal static MockChatClient CreateChatClient() =>
@@ -142,3 +144,4 @@ internal static class MockServices
         return false;
     }
 }
+#pragma warning restore MEAI001

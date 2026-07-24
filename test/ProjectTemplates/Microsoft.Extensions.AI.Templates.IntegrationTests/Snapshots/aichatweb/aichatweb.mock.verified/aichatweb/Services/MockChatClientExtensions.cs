@@ -6,6 +6,8 @@ using Microsoft.Extensions.AI;
 
 namespace aichatweb.Services;
 
+#pragma warning disable MEAI001 // Mock provider uses experimental testing APIs
+
 internal static class MockChatClientExtensions
 {
     private const string LoadDocumentsCallId = "mock-load-documents";
@@ -292,3 +294,4 @@ internal static class MockChatClientExtensions
         }
     }
 }
+#pragma warning restore MEAI001
