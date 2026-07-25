@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.AI.Testing.</Description>
+    <NoWarn>$(NoWarn);MEAI001;CA1063;VSTHRD003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Testing\Microsoft.Extensions.AI.Testing.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+</Project>
