@@ -19,7 +19,7 @@ public class IngestedChunk
 
     [VectorStoreKey(StorageName = "key")]
     [JsonPropertyName("key")]
-#if (IsMock)
+#if (IsLocalVectorStore)
     public required string Key { get; set; }
 #else
     public required Guid Key { get; set; }
