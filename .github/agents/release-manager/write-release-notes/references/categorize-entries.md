@@ -11,7 +11,7 @@ For each candidate PR, assign one of these categories based on the primary inten
 | What's Changed | `changed` | Features, bug fixes, API improvements, performance, breaking changes |
 | Documentation Updates | `docs` | PRs whose sole purpose is documentation |
 | Test Improvements | `tests` | Adding, fixing, or improving tests |
-| Repository Infrastructure Updates | `infra` | CI/CD, dependency bumps, version bumps, build system, skills |
+| Repository Infrastructure Updates | `infra` | CI/CD, dependency bumps, version bumps, build system, agents, workflows and skills |
 
 **Decision rules:**
 - If a PR modifies files under `src/Libraries/` or `src/Generators/` or `src/Analyzers/`, it is `changed` (even if it also touches docs or tests)
@@ -59,7 +59,7 @@ These categories are **not** grouped by package area. They appear as flat lists 
 
 ## Full vs. patch release considerations
 
-### Full monthly release
+### Monthly release
 - All areas with changes get their own heading
 - All four category sections appear (omit empty ones)
 - Include the "Experimental API Changes" section if any experimental changes were detected

@@ -1,6 +1,6 @@
 # Release Notes Format Template
 
-## Full monthly release
+## Monthly release
 
 Use this template when all packages ship together (e.g. v10.3.0 → v10.4.0).
 

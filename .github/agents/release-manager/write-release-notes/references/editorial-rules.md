@@ -91,7 +91,7 @@ PRs that maintain the development environment:
 - CI/CD workflow changes
 - Dependency updates (Dependabot)
 - Build system changes
-- Copilot instructions and skill updates
+- Copilot instructions, agent, and skill updates
 
 PRs that touch test code should never be categorized as Infrastructure.
 

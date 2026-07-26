@@ -21,7 +21,9 @@ if (!import.meta.env.PROD) {
   if (datasetJson) {
     try {
       dataset = JSON.parse(datasetJson) as Dataset;
-    } catch { }
+    } catch {
+      // Keep the empty fallback dataset when the embedded payload is malformed.
+    }
   }
 }
 
