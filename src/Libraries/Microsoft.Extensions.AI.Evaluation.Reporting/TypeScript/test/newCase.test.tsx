@@ -73,15 +73,14 @@ const renderCasesWith = (exec?: string) => {
 };
 
 describe('CasesView — "New" badge derivation', () => {
-    it('shows >=1 New badge on the latest execution', () => {
+    it('shows exactly one New badge on the latest execution', () => {
         renderCasesWith(undefined);
-        const badges = screen.getAllByText('New', { selector: '.eval-new-badge' });
-        expect(badges.length).toBeGreaterThanOrEqual(1);
+        expect(screen.getByText('New')).toBeVisible();
     });
 
     it('shows no New badge on the earliest execution', async () => {
         renderCasesWith(EARLIEST);
         await screen.findAllByRole('button', { name: /passed|failed/i });
-        expect(screen.queryByText('New', { selector: '.eval-new-badge' })).not.toBeInTheDocument();
+        expect(screen.queryByText('New')).not.toBeInTheDocument();
     });
 });

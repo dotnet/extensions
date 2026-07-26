@@ -369,19 +369,13 @@ const auraDotStyle = (status: ReportStatus): React.CSSProperties => {
     };
 };
 
-const CHIP_STATUS_TO_REPORT_STATUS: Record<DeltaChip['status'], ReportStatus> = {
-    success: 'success',
-    danger: 'danger',
-    informative: 'neutral',
-};
-const chipToStatus = (s: DeltaChip['status']): ReportStatus => CHIP_STATUS_TO_REPORT_STATUS[s];
+const chipToStatus = (status: DeltaChip['status']): ReportStatus =>
+    status === 'informative' ? 'neutral' : status;
 
-const CHIP_STATUS_TO_TEXT_COLOR: Record<DeltaChip['status'], string> = {
-    success: 'var(--status-success-background-3)',
-    danger: 'var(--status-danger-background-3)',
-    informative: 'var(--neutral-foreground-3)',
-};
-const deltaTextColor = (status: DeltaChip['status']): string => CHIP_STATUS_TO_TEXT_COLOR[status];
+const deltaTextColor = (status: DeltaChip['status']): string =>
+    status === 'success' ? 'var(--status-success-background-3)'
+        : status === 'danger' ? 'var(--status-danger-background-3)'
+            : 'var(--neutral-foreground-3)';
 
 type AttentionItem = {
     key: string;

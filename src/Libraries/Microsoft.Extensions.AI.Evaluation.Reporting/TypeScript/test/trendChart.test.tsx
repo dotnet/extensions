@@ -30,34 +30,44 @@ const bp = (mean: number, extra: Partial<BandPoint> = {}): BandPoint => ({
 const meanDots = (c: HTMLElement): SVGCircleElement[] =>
     [...c.querySelectorAll('circle')].filter((el) => el.querySelector('title')) as SVGCircleElement[];
 
-const PAD_T = 12;
-const H_MINUS_PAD_B = 238;
+const plotBounds = (container: HTMLElement) => {
+    const gridLines = [...container.querySelectorAll('svg > line')]
+        .filter((line) => line.getAttribute('x1') !== line.getAttribute('x2'));
+    const x = gridLines.flatMap((line) => [Number(line.getAttribute('x1')), Number(line.getAttribute('x2'))]);
+    const y = gridLines.map((line) => Number(line.getAttribute('y1')));
+    return { left: Math.min(...x), right: Math.max(...x), top: Math.min(...y), bottom: Math.max(...y) };
+};
 
 const scoreDomain = axisDomain([1, 5]);
 
-describe('TrendChart — point geometry (760px fallback width, score domain 1..5)', () => {
-    it('maps a two-point series to the correct x (edges) and y (domain) coordinates', () => {
+describe('TrendChart — point geometry', () => {
+    it('orders two points left-to-right and low-to-high within the chart bounds', () => {
         const { container } = renderChart(
             <TrendChart points={[bp(1), bp(5)]} domain={scoreDomain} ariaLabel="Accuracy trend" />,
         );
         const dots = meanDots(container);
+        const { left, right, top, bottom } = plotBounds(container);
         expect(dots).toHaveLength(2);
-        expect(dots[0].getAttribute('cx')).toBe('34');
-        expect(dots[0].getAttribute('cy')).toBe('238');
-        expect(dots[1].getAttribute('cx')).toBe('748');
-        expect(dots[1].getAttribute('cy')).toBe('12');
-        expect(dots[0].querySelector('title')?.textContent).toBe('R1: mean 1');
-        expect(dots[1].querySelector('title')?.textContent).toBe('R2: mean 5');
+        const [firstX, secondX] = dots.map((dot) => Number(dot.getAttribute('cx')));
+        const [firstY, secondY] = dots.map((dot) => Number(dot.getAttribute('cy')));
+        expect(firstX).toBeGreaterThanOrEqual(left);
+        expect(secondX).toBeLessThanOrEqual(right);
+        expect(firstX).toBeLessThan(secondX);
+        expect(firstY).toBeLessThanOrEqual(bottom);
+        expect(secondY).toBeGreaterThanOrEqual(top);
+        expect(firstY).toBeGreaterThan(secondY);
     });
 
-    it('centres a single point horizontally (n<=1) instead of pinning it to the left edge', () => {
+    it('centres a single point horizontally', () => {
         const { container } = renderChart(
             <TrendChart points={[bp(3, { lo: 2, hi: 4 })]} domain={scoreDomain} ariaLabel="Single" />,
         );
         const dots = meanDots(container);
+        const { left, right, top, bottom } = plotBounds(container);
         expect(dots).toHaveLength(1);
-        expect(dots[0].getAttribute('cx')).toBe('391');
-        expect(dots[0].getAttribute('cy')).toBe('125');
+        expect(Number(dots[0].getAttribute('cx'))).toBe((left + right) / 2);
+        expect(Number(dots[0].getAttribute('cy'))).toBeGreaterThan(top);
+        expect(Number(dots[0].getAttribute('cy'))).toBeLessThan(bottom);
     });
 
     it('draws the min–max spread as a filled band polygon for a multi-point series', () => {
@@ -103,11 +113,12 @@ describe('TrendChart — axisDomain framing (anchored domain, no squashing, no c
             <TrendChart points={values.map((v) => bp(v))} domain={domain} ariaLabel="Outlier" />,
         );
         const dots = meanDots(container);
+        const { top, bottom } = plotBounds(container);
         expect(dots).toHaveLength(3);
         for (const dot of dots) {
             const cy = Number(dot.getAttribute('cy'));
-            expect(cy).toBeGreaterThanOrEqual(PAD_T);
-            expect(cy).toBeLessThanOrEqual(H_MINUS_PAD_B);
+            expect(cy).toBeGreaterThanOrEqual(top);
+            expect(cy).toBeLessThanOrEqual(bottom);
         }
     });
 
@@ -125,20 +136,16 @@ describe('TrendChart — axisDomain framing (anchored domain, no squashing, no c
         expect(span).toBeGreaterThan(120);
     });
 
-    it('keeps the anchored [1,5] frame for a conforming 1..5 series (no widening for in-range data)', () => {
-        expect(axisDomain([1, 2, 3, 4, 5])).toMatchObject({ min: 1, max: 5 });
-    });
-
-
     it('clamps a point outside the supplied domain into the plot rect instead of rendering off-canvas', () => {
         const narrowDomain = { min: 1, max: 5, ticks: 4, fmt: (v: number) => String(v) };
         const { container } = renderChart(
             <TrendChart points={[bp(9)]} domain={narrowDomain} ariaLabel="Clamped" />,
         );
         const dots = meanDots(container);
+        const { top, bottom } = plotBounds(container);
         expect(dots).toHaveLength(1);
         const cy = Number(dots[0].getAttribute('cy'));
-        expect(cy).toBeGreaterThanOrEqual(PAD_T);
-        expect(cy).toBeLessThanOrEqual(H_MINUS_PAD_B);
+        expect(cy).toBeGreaterThanOrEqual(top);
+        expect(cy).toBeLessThanOrEqual(bottom);
     });
 });

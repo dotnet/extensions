@@ -54,12 +54,6 @@ describe('createScoreSummary — aggregate pass/fail counts', () => {
         const summary = createScoreSummary(dataset);
         expect(summary.primaryResult.failed).toBe(true);
     });
-
-    it('primaryResult is defined and executionHistory has one entry', () => {
-        const summary = createScoreSummary(dataset);
-        expect(summary.primaryResult).toBeDefined();
-        expect(summary.executionHistory.size).toBe(1);
-    });
 });
 
 describe('createScoreSummary — report history flag', () => {

@@ -57,29 +57,14 @@ describe('isDisplayedZero — follows the pinned display precision', () => {
 });
 
 describe('formatValue — classification by $type', () => {
-    it('numeric: formats via formatNumber', () => {
-        expect(formatValue(numericMetric(0.87))).toBe('0.87');
-        expect(formatValue(numericMetric(842))).toBe('842');
-    });
-
-    it('numeric: absent value renders the em-dash placeholder, not a crash', () => {
-        expect(formatValue(numericMetric(undefined))).toBe('—');
-    });
-
-    it('boolean: value -> Yes/No', () => {
-        expect(formatValue(booleanMetric(true))).toBe('Yes');
-        expect(formatValue(booleanMetric(false))).toBe('No');
-    });
-
-    it('boolean: absent value -> undefined (no fabricated default)', () => {
-        expect(formatValue(booleanMetric(undefined))).toBeUndefined();
-    });
-
-    it('string: raw text passthrough', () => {
-        expect(formatValue(stringMetric('PASS'))).toBe('PASS');
-    });
-
-    it('none: undefined', () => {
-        expect(formatValue(noneMetric())).toBeUndefined();
+    it.each([
+        ['numeric values use formatNumber', [numericMetric(0.87), numericMetric(842)], ['0.87', '842']],
+        ['an absent numeric value uses the em-dash placeholder', [numericMetric()], ['—']],
+        ['boolean values render as Yes or No', [booleanMetric(true), booleanMetric(false)], ['Yes', 'No']],
+        ['an absent boolean value stays absent', [booleanMetric()], [undefined]],
+        ['string values pass through unchanged', [stringMetric('PASS')], ['PASS']],
+        ['a metric with no value stays absent', [noneMetric()], [undefined]],
+    ] as const)('%s', (_name, metrics, expected) => {
+        expect(metrics.map(formatValue)).toEqual(expected);
     });
 });

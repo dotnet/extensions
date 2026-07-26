@@ -52,33 +52,22 @@ const renderHistory = () => {
 };
 
 describe('HistoryView — metric-tab ids are index-based and unique', () => {
-    it('renders a distinct tab per numeric metric, labelled by the metric name', () => {
+    it('gives colliding metric names distinct labels and unique index-based ids', () => {
         // 'Hit Rate@1' / 'Hit Rate-1' are names that WOULD collide if ids were derived by
         // slugifying the name (both slug to "hit-rate-1"). They must still render two tabs.
-        renderHistory();
+        const { container } = renderHistory();
         const tabs = screen.getAllByRole('tab');
         expect(tabs.map((t) => t.textContent)).toEqual(
             expect.arrayContaining(['Hit Rate@1', 'Hit Rate-1']),
         );
         expect(tabs.length).toBe(2);
-    });
 
-    it('assigns index-based tab ids (…metric-tab-0, …metric-tab-1), never name-derived slugs', () => {
-        renderHistory();
-        const ids = screen.getAllByRole('tab').map((t) => t.id);
-        expect(ids).toHaveLength(2);
-        // ids are `${useId()}metric-tab-${i}` — index positional, so no slug collision is possible.
-        expect(ids[0].endsWith('metric-tab-0')).toBe(true);
-        expect(ids[1].endsWith('metric-tab-1')).toBe(true);
-        // ...and they carry no trace of the (colliding) metric names.
-        expect(ids.some((id) => /hit|rate/i.test(id))).toBe(false);
-    });
-
-    it('assigns no duplicate DOM ids anywhere in the rendered container', () => {
-        const { container } = renderHistory();
-        const ids = [...container.querySelectorAll('[id]')].map((el) => el.id);
-        expect(ids.length).toBeGreaterThan(0);
-        expect(new Set(ids).size).toBe(ids.length);
+        const tabIds = tabs.map((tab) => tab.id);
+        const allIds = [...container.querySelectorAll('[id]')].map((el) => el.id);
+        expect(new Set(allIds).size).toBe(allIds.length);
+        expect(tabIds[0].endsWith('metric-tab-0')).toBe(true);
+        expect(tabIds[1].endsWith('metric-tab-1')).toBe(true);
+        expect(tabIds.some((id) => /hit|rate/i.test(id))).toBe(false);
     });
 
     it("every [role=tab]'s aria-controls resolves to the rendered tabpanel", () => {
@@ -98,9 +87,9 @@ describe('HistoryView — metric-tab ids are index-based and unique', () => {
     it('keeps every tab at tabIndex=0 so the Fluent Mover can arrow-navigate between them', () => {
         renderHistory();
         const tabs = screen.getAllByRole('tab');
-        expect(tabs.length).toBe(2);
+        expect(tabs).toHaveLength(2);
         for (const tab of tabs) {
-            expect((tab as HTMLElement).tabIndex).toBe(0);
+            expect(tab).toHaveAttribute('tabindex', '0');
         }
     });
 });

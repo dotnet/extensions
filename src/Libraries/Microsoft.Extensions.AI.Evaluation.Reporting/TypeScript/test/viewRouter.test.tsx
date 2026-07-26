@@ -45,29 +45,17 @@ afterEach(() => {
 });
 
 describe('ViewRouter — routing per ReportView', () => {
-    it('renders OverviewView for the default (unset) view', async () => {
-        // No setter: the context default view is 'overview'.
-        renderRouter(<ViewRouter />);
-        expect(await screen.findByText(MARKER.overview)).toBeInTheDocument();
-        expect(screen.queryByText(MARKER.history)).not.toBeInTheDocument();
-    });
-
-    it('renders CasesView when view === "cases"', async () => {
-        renderRouter(<RouteAt view="cases" />);
-        expect(await screen.findByText(MARKER.cases)).toBeInTheDocument();
-        expect(screen.queryByText(MARKER.overview)).not.toBeInTheDocument();
-    });
-
-    it('renders HistoryView when view === "history"', async () => {
-        renderRouter(<RouteAt view="history" />);
-        expect(await screen.findByText(MARKER.history)).toBeInTheDocument();
-        expect(screen.queryByText(MARKER.overview)).not.toBeInTheDocument();
-    });
-
-    it('renders ComparisonView when view === "comparison"', async () => {
-        renderRouter(<RouteAt view="comparison" />);
-        expect(await screen.findByText(MARKER.comparison)).toBeInTheDocument();
-        expect(screen.queryByText(MARKER.overview)).not.toBeInTheDocument();
+    it.each([
+        ['overview', undefined],
+        ['cases', 'cases'],
+        ['history', 'history'],
+        ['comparison', 'comparison'],
+    ] satisfies [ReportView, ReportView | undefined][])('renders %s for its valid route', async (expected, view) => {
+        renderRouter(view === undefined ? <ViewRouter /> : <RouteAt view={view} />);
+        expect(await screen.findByText(MARKER[expected])).toBeInTheDocument();
+        for (const [candidate, marker] of Object.entries(MARKER)) {
+            if (candidate !== expected) expect(screen.queryByText(marker)).not.toBeInTheDocument();
+        }
     });
 
     it('renders OverviewView (default branch) for an unexpected view value', async () => {

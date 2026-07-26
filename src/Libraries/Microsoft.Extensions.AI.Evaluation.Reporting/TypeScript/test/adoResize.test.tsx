@@ -3,6 +3,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { resize } from 'azure-devops-extension-sdk';
 import { useAdoResize } from '../components/shell/useAdoResize';
 
@@ -77,16 +78,33 @@ describe('useAdoResize', () => {
 
     it('cancels the pending rAF on unmount so resize never fires', () => {
         const { unmount } = render(<Harness enabled={true} />);
-        expect(rafCallbacks.size).toBe(1);
+        unmount();
+        flushRaf();
+        expect(resizeMock).not.toHaveBeenCalled();
+    });
+
+    it('cancels the previous frame before scheduling one for a rerender', () => {
+        const { rerender } = render(<Harness enabled={true} />);
         const cancelSpy = vi.mocked(globalThis.cancelAnimationFrame);
 
-        unmount();
+        rerender(<Harness enabled={true} />);
 
-        expect(cancelSpy).toHaveBeenCalledTimes(1);
-        expect(rafCallbacks.size).toBe(0);
+        expect(cancelSpy).toHaveBeenCalledWith(1);
+        expect(rafCallbacks.size).toBe(1);
+        flushRaf();
+        expect(resizeMock).toHaveBeenCalledTimes(1);
+    });
 
-        flushRaf(); // nothing left to flush
-        expect(resizeMock).not.toHaveBeenCalled();
+    it('leaves only the current frame scheduled in StrictMode', () => {
+        render(
+            <StrictMode>
+                <Harness enabled={true} />
+            </StrictMode>,
+        );
+
+        expect(rafCallbacks.size).toBe(1);
+        flushRaf();
+        expect(resizeMock).toHaveBeenCalledTimes(1);
     });
 
     it('swallows errors thrown by resize (try/catch inside the rAF)', () => {

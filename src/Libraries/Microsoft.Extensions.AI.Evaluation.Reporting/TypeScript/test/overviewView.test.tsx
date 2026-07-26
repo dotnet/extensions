@@ -147,6 +147,11 @@ describe('OverviewView — needs-attention row + View action', () => {
 });
 
 describe('OverviewView — mover delta rendering', () => {
+    const moverDeltaCell = (label: string): Element | null | undefined => {
+        const nameCell = document.querySelector(`[title="${label}"]:not(.eval-attn-name)`)?.parentElement;
+        return nameCell?.nextElementSibling?.nextElementSibling;
+    };
+
     it('renders a zero-delta mover as a plain em dash (no ▲/▼ badge)', () => {
         renderOverview(moversDataset);
         const coverage = screen.getByText('Alpha.Retrieval · coverage').closest('span');
@@ -231,6 +236,35 @@ describe('OverviewView — mover delta rendering', () => {
         expect(deltaCell?.textContent).toContain('▲');
         expect(deltaCell?.textContent).toContain('increased by 0.004, improved');
     });
+
+    it('preserves success, danger, and unknown-rating neutral pill colors and labels', () => {
+        const { unmount } = renderOverview(moversDataset);
+
+        const successPill = moverDeltaCell('Alpha.Retrieval · accuracy')?.querySelector<HTMLElement>('span[style]');
+        const dangerPill = moverDeltaCell('Alpha.Retrieval · safety')?.querySelector<HTMLElement>('span[style]');
+        expect(successPill?.style.color).toBe('var(--status-success-background-3)');
+        expect(successPill?.style.border).toContain('var(--status-success-background-3)');
+        expect(dangerPill?.style.color).toBe('var(--status-danger-background-3)');
+        expect(dangerPill?.style.border).toContain('var(--status-danger-background-3)');
+
+        unmount();
+        const unknownRatings: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T_NEW,
+            scenarioRunResults: [
+                run('Delta.Unrated', NEW, T_NEW, { latency: numeric('latency', 120, 'unknown', false) }),
+                run('Delta.Unrated', OLD, T_OLD, { latency: numeric('latency', 100, 'unknown', false) }),
+            ],
+        };
+        renderOverview(unknownRatings);
+
+        const neutralCell = moverDeltaCell('Delta.Unrated · latency');
+        const neutralPill = neutralCell?.querySelector<HTMLElement>('span[style]');
+        expect(neutralCell?.textContent).toContain('increased by 20');
+        expect(neutralCell?.textContent).not.toMatch(/improved|regressed/i);
+        expect(neutralPill?.style.color).toBe('var(--neutral-foreground-3)');
+        expect(neutralPill?.style.border).toContain('var(--neutral-foreground-4)');
+    });
 });
 
 describe('OverviewView — overall pass-rate delta when the suite grows between runs', () => {
@@ -273,5 +307,33 @@ describe('OverviewView — overall pass-rate delta when the suite grows between 
 
         expect(container.textContent).toContain('▼ −25%');
         expect(container.textContent).not.toContain('▲ +25%');
+    });
+
+    it('preserves success, danger, and neutral group-delta text colors', () => {
+        const statusDataset: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T_NEW,
+            scenarioRunResults: [
+                run('Improved.One', NEW, T_NEW, { score: numeric('score', 5, 'exceptional', false) }),
+                run('Regressed.One', NEW, T_NEW, { score: numeric('score', 1, 'poor', true) }),
+                run('Stable.One', NEW, T_NEW, { score: numeric('score', 3, 'unknown', false) }),
+                run('Improved.One', OLD, T_OLD, { score: numeric('score', 1, 'poor', true) }),
+                run('Regressed.One', OLD, T_OLD, { score: numeric('score', 5, 'exceptional', false) }),
+                run('Stable.One', OLD, T_OLD, { score: numeric('score', 3, 'unknown', false) }),
+            ],
+        };
+        const { container } = renderOverview(statusDataset);
+        const deltaCell = (group: string): HTMLElement | undefined => {
+            const row = [...container.querySelectorAll<HTMLElement>('.eval-grid6')]
+                .find((candidate) => candidate.firstElementChild?.textContent?.trim() === group);
+            return row?.lastElementChild as HTMLElement | undefined;
+        };
+
+        expect(deltaCell('Improved')?.textContent).toBe('▲ +100%');
+        expect(deltaCell('Improved')?.style.color).toBe('var(--status-success-background-3)');
+        expect(deltaCell('Regressed')?.textContent).toBe('▼ −100%');
+        expect(deltaCell('Regressed')?.style.color).toBe('var(--status-danger-background-3)');
+        expect(deltaCell('Stable')?.textContent).toBe('—');
+        expect(deltaCell('Stable')?.style.color).toBe('var(--neutral-foreground-3)');
     });
 });

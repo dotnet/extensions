@@ -118,11 +118,9 @@ export const SidebarTree = ({ labelledBy }: { labelledBy: string }) => {
     const treeNav = useArrowNavigationGroup({ axis: 'vertical' });
     const { activeNode, selectedScenarioLevel, selectScenarioLevel } = useReportContext();
 
-    const topGroupKeys = useMemo(
-        () => activeNode.childNodes.filter((n) => n.childNodes.length > 0).map((n) => n.nodeKey),
-        [activeNode],
+    const [expanded, setExpanded] = useState<Set<string>>(
+        () => new Set(activeNode.childNodes.filter((n) => n.childNodes.length > 0).map((n) => n.nodeKey)),
     );
-    const [expanded, setExpanded] = useState<Set<string>>(() => new Set(topGroupKeys));
 
     const toggle = (key: string) =>
         setExpanded((prev) => {

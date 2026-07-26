@@ -68,47 +68,7 @@ const meanOf = (scenario: string, metricName: string, exec: string): number => {
     return vals.reduce((a, b) => a + b, 0) / vals.length;
 };
 
-describe('chronologicalExecutions — orders by min creationTime, not insertion order', () => {
-    it('sorts ascending by creationTime even when inserted newest-first', () => {
-        expect(chronologicalExecutions(dataset)).toEqual([E1, E2, E3]);
-    });
-
-    it("orders by each execution's MIN row creationTime, not its first/last row or insertion order", () => {
-        const A = 'exec-A';
-        const B = 'exec-B';
-        const t10 = '2026-01-10T00:00:00.000Z';
-        const t20 = '2026-01-20T00:00:00.000Z';
-        const t30 = '2026-01-30T00:00:00.000Z';
-        // B is inserted first; A's rows are interleaved in time — a late t30 row appears
-        // before an early t10 row. Only a per-exec MIN reduction (A.min=t10 < B.min=t20)
-        // yields [A, B]. Insertion order, first-row time, and max-row time all give [B, A],
-        // so this fixture genuinely exercises the MIN logic (the old test could not).
-        const interleaved: Dataset = {
-            generatorVersion: '0.0.1',
-            createdAt: t30,
-            scenarioRunResults: [
-                row('S.One', 'it1', B, t20, { m: numeric('m', 1) }),
-                row('S.One', 'it1', A, t30, { m: numeric('m', 2) }),
-                row('S.One', 'it2', A, t10, { m: numeric('m', 3) }),
-            ],
-        };
-        expect(chronologicalExecutions(interleaved)).toEqual([A, B]);
-    });
-});
-
 describe('moversBetween — baseline is the chronological predecessor', () => {
-    it('resolves prev = chronologically-immediate predecessor (FAILS under an insertion-index impl)', () => {
-        const chrono = chronologicalExecutions(dataset);
-        const selected = E3;
-        const prev = chrono[chrono.indexOf(selected) - 1];
-        expect(prev).toBe(E2);
-
-        const moversE2 = moversBetween(dataset.scenarioRunResults, E2, chrono[chrono.indexOf(E2) - 1]);
-        const accE2 = moversE2.find((m) => m.scenarioName === 'Group.ScenarioA' && m.metricName === 'accuracy')!;
-        expect(accE2.delta).toBeCloseTo(meanOf('Group.ScenarioA', 'accuracy', E2) - meanOf('Group.ScenarioA', 'accuracy', E1), 10);
-        expect(accE2.delta).toBeCloseTo(1, 10);
-    });
-
     it('emits exactly one row per (scenario, metric) — no per-case duplicates', () => {
         const chrono = chronologicalExecutions(dataset);
         const prev = chrono[chrono.indexOf(E3) - 1];
@@ -170,4 +130,3 @@ describe('moversBetween — ranks by scale-relative movement, not raw delta magn
         expect(movers.find((m) => m.metricName === 'tokens')!.delta).toBeCloseTo(10, 10);
     });
 });
-

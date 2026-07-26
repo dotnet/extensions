@@ -7,6 +7,8 @@ import {
     judgeValueDelta,
     judgmentWord,
     ratingGoodness,
+    type BetterDirection,
+    type DeltaJudgment,
 } from '../components/core/metricDirection';
 
 type VR = [value: number, rating: EvaluationRating];
@@ -68,39 +70,24 @@ describe('inferBetterDirections — direction learned from interpretation.rating
 });
 
 describe('judgeValueDelta — combines direction with the value delta, with a rating fallback', () => {
-    it('higher-better: up ⇒ success, down ⇒ danger', () => {
-        expect(judgeValueDelta('higher', 0.9)).toBe('success');
-        expect(judgeValueDelta('higher', -0.4)).toBe('danger');
-    });
-
-    it('lower-better: down ⇒ success, up ⇒ danger', () => {
-        expect(judgeValueDelta('lower', -0.5)).toBe('success');
-        expect(judgeValueDelta('lower', 2)).toBe('danger');
-    });
-
-    it('a zero value delta is never judged, even when the direction is known', () => {
-        expect(judgeValueDelta('higher', 0)).toBe('neutral');
-        expect(judgeValueDelta('lower', 0)).toBe('neutral');
-    });
-
-    it('a zero value delta still defers to the rating-goodness delta when one exists', () => {
-        expect(judgeValueDelta('higher', 0, 0.5)).toBe('success');
-        expect(judgeValueDelta('higher', 0, -0.5)).toBe('danger');
-    });
-
-    it('indeterminate direction falls back to the rating-goodness delta', () => {
-        expect(judgeValueDelta('none', 1, 0.5)).toBe('success');
-        expect(judgeValueDelta('none', 1, -0.5)).toBe('danger');
-    });
-
-    it('indeterminate with no/zero rating signal ⇒ neutral', () => {
-        expect(judgeValueDelta('none', 1)).toBe('neutral');
-        expect(judgeValueDelta('none', 1, 0)).toBe('neutral');
-    });
-
-    it('an inferred direction takes precedence over a supplied rating-goodness delta', () => {
-        expect(judgeValueDelta('higher', -1, 5)).toBe('danger');
-        expect(judgeValueDelta('lower', -1, -5)).toBe('success');
+    it.each<[string, Array<[BetterDirection, number, number?]>, DeltaJudgment[]]>([
+        ['higher-better judges up as success and down as danger',
+            [['higher', 0.9], ['higher', -0.4]], ['success', 'danger']],
+        ['lower-better judges down as success and up as danger',
+            [['lower', -0.5], ['lower', 2]], ['success', 'danger']],
+        ['zero deltas stay neutral when no rating signal exists',
+            [['higher', 0], ['lower', 0]], ['neutral', 'neutral']],
+        ['zero deltas defer to a rating-goodness signal',
+            [['higher', 0, 0.5], ['higher', 0, -0.5]], ['success', 'danger']],
+        ['indeterminate direction defers to a rating-goodness signal',
+            [['none', 1, 0.5], ['none', 1, -0.5]], ['success', 'danger']],
+        ['indeterminate direction stays neutral without a rating signal',
+            [['none', 1], ['none', 1, 0]], ['neutral', 'neutral']],
+        ['an inferred direction takes precedence over the rating signal',
+            [['higher', -1, 5], ['lower', -1, -5]], ['danger', 'success']],
+    ])('%s', (_name, cases, expected) => {
+        expect(cases.map(([direction, valueDelta, goodnessDelta]) =>
+            judgeValueDelta(direction, valueDelta, goodnessDelta))).toEqual(expected);
     });
 });
 

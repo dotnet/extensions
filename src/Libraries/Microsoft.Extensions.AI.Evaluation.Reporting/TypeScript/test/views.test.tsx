@@ -30,12 +30,6 @@ const ScenarioSelector = ({ scenarioName, children }: { scenarioName: string; ch
 };
 
 describe('HistoryView — twoExecutionDataset', () => {
-    it('renders one metric tab per numeric metric of the default scenario', () => {
-        renderWith(twoExecutionDataset, <HistoryView />);
-        const tabs = screen.getAllByRole('tab');
-        expect(tabs.map((t) => t.textContent)).toEqual(['coherence', 'safety']);
-    });
-
     it('renders exactly one trend chart (role=img) labelled for the active metric + scenario', () => {
         renderWith(twoExecutionDataset, <HistoryView />);
         const charts = screen.getAllByRole('img');
@@ -46,10 +40,6 @@ describe('HistoryView — twoExecutionDataset', () => {
         );
     });
 
-    it('renders the run history section', () => {
-        renderWith(twoExecutionDataset, <HistoryView />);
-        expect(screen.getByText(/run history/i)).toBeInTheDocument();
-    });
 });
 
 describe('HistoryView — singleExecutionDataset (empty state)', () => {
@@ -58,17 +48,6 @@ describe('HistoryView — singleExecutionDataset (empty state)', () => {
         expect(screen.getByText(/needs at least 2 executions/i)).toBeInTheDocument();
     });
 
-    it('does NOT render any metric tabs', () => {
-        renderWith(singleExecutionDataset, <HistoryView />);
-        const tabs = screen.queryAllByRole('tab');
-        expect(tabs.length).toBe(0);
-    });
-
-    it('does NOT render any SVG chart', () => {
-        renderWith(singleExecutionDataset, <HistoryView />);
-        const charts = screen.queryAllByRole('img');
-        expect(charts.length).toBe(0);
-    });
 });
 
 describe('ComparisonView — twoExecutionDataset', () => {
@@ -76,11 +55,6 @@ describe('ComparisonView — twoExecutionDataset', () => {
         renderWith(twoExecutionDataset, <ComparisonView />);
         expect(screen.getByLabelText(/baseline execution/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/current execution/i)).toBeInTheDocument();
-    });
-
-    it('renders the per-metric change section', () => {
-        renderWith(twoExecutionDataset, <ComparisonView />);
-        expect(screen.getByText(/per-metric change/i)).toBeInTheDocument();
     });
 
     const metricRowNames = (container: HTMLElement): string[] =>

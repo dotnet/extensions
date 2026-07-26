@@ -60,10 +60,6 @@ describe('TranscriptBlock — unknown $type degrades gracefully', () => {
         { role: 'assistant', authorName: 'gpt-4o', contents: [mysteryContent] },
     ];
 
-    it('does not throw when rendering an unknown content type', () => {
-        expect(() => renderTranscript(mysteryMessages)).not.toThrow();
-    });
-
     it('serializes the unknown content so its data is still visible', () => {
         renderTranscript(mysteryMessages);
         expect(screen.getByText(/UNKNOWN_TYPE_SENTINEL/)).toBeInTheDocument();

@@ -111,6 +111,32 @@ describe('HistoryView — chronological ordering', () => {
         const [prevPct, curPct] = lefts;
         expect(prevPct).toBeLessThan(curPct);
     });
+
+    it('keeps insertion order for equal chronology keys in both the timeline and chart', () => {
+        const tiedDataset: Dataset = {
+            generatorVersion: '0.0.1',
+            createdAt: T1,
+            scenarioRunResults: [
+                row(E2, T1, 3),
+                row(E1, T1, 2),
+                row(E3, T1, 4),
+            ],
+        };
+        const scoreSummary = createScoreSummary(tiedDataset);
+        render(
+            <ReportContextProvider dataset={tiedDataset} scoreSummary={scoreSummary}>
+                <HistoryView />
+            </ReportContextProvider>,
+        );
+
+        expect(runExecColumn()).toEqual([E2, E1, E3]);
+        const chart = screen.getByRole('img', { name: /quality trend across executions/i });
+        expect([...chart.querySelectorAll('circle title')].map((title) => title.textContent)).toEqual([
+            'R1: mean 3',
+            'R2: mean 2',
+            'R3: mean 4',
+        ]);
+    });
 });
 
 describe('HistoryView — switching scenarios does not violate the Rules of Hooks', () => {
@@ -268,8 +294,14 @@ describe('HistoryView — scenario and iteration scope', () => {
     it('shows an unavailable state instead of falling back to an unrelated scenario', () => {
         const scoreSummary = createScoreSummary(dataset);
         const SelectMissing = () => {
-            const { selectScenarioLevel } = useReportContext();
-            return <button onClick={() => selectScenarioLevel('root.Missing')}>select-missing</button>;
+            const { selectedScenarioLevel, selectScenarioLevel } = useReportContext();
+            return (
+                <>
+                    <output>{selectedScenarioLevel ?? 'none'}</output>
+                    <button onClick={() => selectScenarioLevel('root.Missing')}>select-missing</button>
+                    <button onClick={() => selectScenarioLevel('root.Other')}>select-other</button>
+                </>
+            );
         };
         render(
             <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
@@ -280,7 +312,14 @@ describe('HistoryView — scenario and iteration scope', () => {
 
         fireEvent.click(screen.getByText('select-missing'));
 
+        expect(screen.getByText('root.Missing')).toBeInTheDocument();
         expect(screen.getByText('Selected scenario unavailable')).toBeInTheDocument();
         expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('select-other'));
+        expect(screen.getByText('root.Other')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('select-other'));
+        expect(screen.getByText('none')).toBeInTheDocument();
     });
 });

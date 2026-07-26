@@ -339,14 +339,11 @@ export const HistoryView = () => {
         if (points.length === 0) return points;
         const order = chronologicalExecutions(dataset);
         const rank = new Map(order.map((name, i) => [name, i]));
-        return points
-            .map((pt, i) => ({ pt, i }))
-            .sort((a, b) => {
-                const ra = rank.get(a.pt.executionName) ?? Number.MAX_SAFE_INTEGER;
-                const rb = rank.get(b.pt.executionName) ?? Number.MAX_SAFE_INTEGER;
-                return ra !== rb ? ra - rb : a.i - b.i;
-            })
-            .map((o) => o.pt);
+        return [...points].sort(
+            (a, b) =>
+                (rank.get(a.executionName) ?? Number.MAX_SAFE_INTEGER) -
+                (rank.get(b.executionName) ?? Number.MAX_SAFE_INTEGER),
+        );
     }, [allSeries, activeMetric, dataset]);
 
     const band = useMemo(() => {

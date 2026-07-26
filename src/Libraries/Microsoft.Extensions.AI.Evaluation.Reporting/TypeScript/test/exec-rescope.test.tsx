@@ -10,7 +10,6 @@ import {
     useReportContext,
     CasesView,
     passRateByScenarioGroup,
-    kpiCountsFromNode,
     bucketMetrics,
     scenariosForExecution,
 } from '../components';
@@ -31,21 +30,6 @@ describe('exec re-scope — Overview derivations follow the selected execution',
         expect(rate(primaryRows, 'Comparison')).not.toBe(rate(otherRows, 'Comparison'));
 
         expect(defaultRows).toEqual(primaryRows);
-    });
-
-    it('kpiCountsFromNode re-scopes via activeNode and default == primary', () => {
-        const summary = createScoreSummary(twoExecutionDataset);
-        const primaryNode = summary.executionHistory.get(PRIMARY)!;
-        const otherNode = summary.executionHistory.get(OTHER)!;
-
-        const primaryKpi = kpiCountsFromNode(primaryNode);
-        const otherKpi = kpiCountsFromNode(otherNode);
-
-        expect(primaryKpi).toEqual({ passing: 2, failing: 0, total: 2, passRate: 1 });
-        expect(otherKpi).toEqual({ passing: 1, failing: 1, total: 2, passRate: 0.5 });
-        expect(otherKpi.passRate).toBeLessThan(primaryKpi.passRate);
-
-        expect(summary.primaryResult).toBe(primaryNode);
     });
 
     it('bucketMetrics scopes to the active execution; default == primary', () => {

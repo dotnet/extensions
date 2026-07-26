@@ -26,17 +26,16 @@ export const dumbbellStyles = (
     status: DeltaJudgment = 'neutral',
     connEpsilon = 0.01,
 ): DumbbellStyles => {
-    const sk: DeltaJudgment = status;
-    const color = statusSolidVar(sk);
+    const color = statusSolidVar(status);
     const halo = '0 0 0 2px var(--neutral-background-1)';
-    const hasPrev = prevPos !== null && prevPos !== undefined && Number.isFinite(prevPos);
+    const hasPrev = prevPos !== null && Number.isFinite(prevPos);
     const cur = Math.max(0, Math.min(100, currPos));
-    const prv = hasPrev ? Math.max(0, Math.min(100, prevPos!)) : cur;
+    const prv = hasPrev ? Math.max(0, Math.min(100, prevPos)) : cur;
     const lo = Math.min(prv, cur);
     const hi = Math.max(prv, cur);
     const connVisible = hasPrev && hasDelta && hi - lo > connEpsilon;
     return {
-        sk,
+        sk: status,
         connector: connVisible
             ? { position: 'absolute', top: '50%', left: `${lo}%`, width: `${hi - lo}%`, height: `${DUMBBELL_CONN}px`, transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: color }
             : { display: 'none' },

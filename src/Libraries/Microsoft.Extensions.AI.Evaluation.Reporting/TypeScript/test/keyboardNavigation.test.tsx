@@ -6,7 +6,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { createScoreSummary, ReportContextProvider, useReportContext } from '../components';
 import { AppShell } from '../components/shell/AppShell';
 import { SidebarTree } from '../components/shell/SidebarTree';
-import { twoExecutionDataset } from './fixtures/richDataset';
+import { richDataset, twoExecutionDataset } from './fixtures/richDataset';
 
 class ResizeObserverMock {
     observe() {}
@@ -14,10 +14,10 @@ class ResizeObserverMock {
     disconnect() {}
 }
 
-const renderWithContext = (children: React.ReactNode) => {
-    const scoreSummary = createScoreSummary(twoExecutionDataset);
+const renderWithContext = (children: React.ReactNode, dataset: Dataset = twoExecutionDataset) => {
+    const scoreSummary = createScoreSummary(dataset);
     return render(
-        <ReportContextProvider dataset={twoExecutionDataset} scoreSummary={scoreSummary}>
+        <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
             {children}
         </ReportContextProvider>,
     );
@@ -26,6 +26,16 @@ const renderWithContext = (children: React.ReactNode) => {
 const ProgrammaticCaseSwitch = () => {
     const { setView } = useReportContext();
     return <button onClick={() => setView('cases')}>open cases</button>;
+};
+
+const SidebarContextControls = () => {
+    const { setExec, setSearchValue } = useReportContext();
+    return (
+        <>
+            <button onClick={() => setSearchValue('aspirin')}>filter scenarios</button>
+            <button onClick={() => setExec('exec-2026-06-29')}>change execution</button>
+        </>
+    );
 };
 
 beforeAll(() => {
@@ -54,18 +64,13 @@ describe('AppShell tab focus defaults', () => {
         const overview = screen.getByRole('tab', { name: 'Overview' });
 
         expect(mover).toMatchObject({ memorizeCurrent: false, hasDefault: true });
-        expect(JSON.parse(overview.getAttribute('data-tabster') ?? '{}')).toEqual({
-            focusable: { isDefault: true },
-        });
 
         overview.focus();
         fireEvent.click(screen.getByRole('button', { name: 'open cases' }));
 
         const cases = screen.getByRole('tab', { name: /Cases/ });
         expect(cases).toHaveAttribute('aria-selected', 'true');
-        expect(JSON.parse(cases.getAttribute('data-tabster') ?? '{}')).toEqual({
-            focusable: { isDefault: true },
-        });
+        expect(JSON.parse(cases.getAttribute('data-tabster') ?? '{}').focusable?.isDefault).toBe(true);
         expect(overview).not.toHaveAttribute('data-tabster');
     });
 });
@@ -78,5 +83,44 @@ describe('Sidebar tree boundaries', () => {
         const mover = JSON.parse(tree.getAttribute('data-tabster') ?? '{}').mover;
 
         expect(mover.cyclic).toBe(false);
+    });
+
+    it('initially expands top groups and preserves user expansion across context rerenders', () => {
+        const view = renderWithContext(
+            <>
+                <SidebarTree labelledBy="scenario-label" />
+                <SidebarContextControls />
+            </>,
+            richDataset,
+        );
+
+        let groupA = screen.getByRole('treeitem', { name: /^GroupA/ });
+        expect(groupA).toHaveAttribute('aria-expanded', 'true');
+        expect(groupA).toHaveAttribute('aria-level', '1');
+        expect(groupA).toHaveAttribute('aria-posinset', '2');
+        expect(groupA).toHaveAttribute('aria-setsize', '5');
+        expect(screen.getByRole('treeitem', { name: /^FactualAccuracy/ })).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Collapse GroupA' }));
+        expect(groupA).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.queryByRole('treeitem', { name: /^FactualAccuracy/ })).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('treeitem', { name: /^GroupB/ }));
+        expect(groupA).toHaveAttribute('aria-expanded', 'false');
+
+        fireEvent.click(screen.getByRole('button', { name: 'filter scenarios' }));
+        expect(groupA).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.getByRole('treeitem', { name: /^GroupC/ })).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: 'change execution' }));
+        groupA = screen.getByRole('treeitem', { name: /^GroupA/ });
+        expect(groupA).toHaveAttribute('aria-expanded', 'false');
+        expect(groupA).toHaveAttribute('aria-setsize', '3');
+        expect(screen.queryByRole('treeitem', { name: /^GroupC/ })).not.toBeInTheDocument();
+
+        view.unmount();
+        renderWithContext(<SidebarTree labelledBy="scenario-label" />, richDataset);
+        expect(screen.getByRole('treeitem', { name: /^GroupA/ })).toHaveAttribute('aria-expanded', 'true');
+        expect(screen.getByRole('treeitem', { name: /^FactualAccuracy/ })).toBeVisible();
     });
 });

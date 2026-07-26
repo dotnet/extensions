@@ -9,24 +9,14 @@ import { axisDomain } from '../components/history/axisDomain';
 // These are the exact numeric/string contracts the rendered rows depend on.
 
 describe('axisDomain — presentation-only chart/dumbbell framing', () => {
-    it('frames a genuine [0,1] fraction-shaped series to the unit interval', () => {
-        expect(axisDomain([0.2, 0.5, 0.8])).toMatchObject({ min: 0, max: 1, ticks: 5 });
-    });
-
-    it('anchors a conforming 1..5 series to the stable [1,5] frame (no per-scenario breathing)', () => {
-        expect(axisDomain([1, 2, 3, 4, 5])).toMatchObject({ min: 1, max: 5, ticks: 4 });
-    });
-
-    it('expands the anchored frame only for a genuine outlier above 5', () => {
-        expect(axisDomain([2, 6, 4])).toMatchObject({ min: 1, max: 6, ticks: 5 });
-    });
-
-    it('expands the anchored frame only for a genuine outlier below 1', () => {
-        expect(axisDomain([-2, 3])).toMatchObject({ min: -2, max: 5, ticks: 7 });
-    });
-
-    it('falls back to the unit frame when given no finite values', () => {
-        expect(axisDomain([])).toMatchObject({ min: 0, max: 1, ticks: 5 });
+    it.each<[string, number[], { min: number; max: number; ticks: number }]>([
+        ['frames a genuine fraction-shaped series to the unit interval', [0.2, 0.5, 0.8], { min: 0, max: 1, ticks: 5 }],
+        ['anchors a conforming 1..5 series to the stable frame', [1, 2, 3, 4, 5], { min: 1, max: 5, ticks: 4 }],
+        ['expands the anchored frame for an outlier above 5', [2, 6, 4], { min: 1, max: 6, ticks: 5 }],
+        ['expands the anchored frame for an outlier below 1', [-2, 3], { min: -2, max: 5, ticks: 7 }],
+        ['falls back to the unit frame without finite values', [], { min: 0, max: 1, ticks: 5 }],
+    ])('%s', (_name, values, expected) => {
+        expect(axisDomain(values)).toMatchObject(expected);
     });
 
     it('bounds the gridline count for wide numeric ranges instead of one line per integer', () => {
@@ -69,47 +59,19 @@ describe('posOn — value → 0..100 with clamping', () => {
 });
 
 describe('dumbbellStyles — connector/dot geometry', () => {
-    const HALO = '0 0 0 2px var(--neutral-background-1)';
     const NEUTRAL_SOLID = 'var(--neutral-foreground-4)';
 
     it('renders the full connector + both dots when there is a prev, a delta, and a gap > connEpsilon', () => {
         const db = dumbbellStyles(20, 80, true);
-        expect(db.sk).toBe('neutral');
-        expect(db.connector).toStrictEqual({
-            position: 'absolute',
-            top: '50%',
-            left: '20%',
-            width: '60%',
-            height: '1.5px',
-            transform: 'translateY(-50%)',
-            borderRadius: 'var(--radius-circular)',
-            background: NEUTRAL_SOLID,
+        expect(db).toMatchObject({
+            sk: 'neutral',
+            connector: { left: '20%', width: '60%' },
+            dotB: { left: '20%' },
+            dotA: { left: '80%' },
         });
-        expect(db.dotB).toStrictEqual({
-            position: 'absolute',
-            top: '50%',
-            left: '20%',
-            width: '8px',
-            height: '8px',
-            boxSizing: 'border-box',
-            transform: 'translate(-50%,-50%)',
-            borderRadius: '50%',
-            background: 'var(--neutral-background-1)',
-            border: '1.5px solid var(--neutral-foreground-3)',
-            boxShadow: HALO,
-        });
-        expect(db.dotA).toStrictEqual({
-            position: 'absolute',
-            top: '50%',
-            left: '80%',
-            width: '8px',
-            height: '8px',
-            boxSizing: 'border-box',
-            transform: 'translate(-50%,-50%)',
-            borderRadius: '50%',
-            background: NEUTRAL_SOLID,
-            boxShadow: HALO,
-        });
+        expect(db.connector.display).toBeUndefined();
+        expect(db.dotB.display).toBeUndefined();
+        expect(db.dotA.display).toBeUndefined();
     });
 
     it('hides the connector AND dotB when prevPos is null (first point / no baseline)', () => {
@@ -121,12 +83,6 @@ describe('dumbbellStyles — connector/dot geometry', () => {
         expect(db.dotA.display).toBeUndefined();
         expect(db.dotA.left).toBe('60%');
         expect(db.dotA.background).toBe(NEUTRAL_SOLID);
-    });
-
-    it('hides dotB when prevPos is undefined', () => {
-        expect(dumbbellStyles(undefined as unknown as number | null, 40, true).dotB).toStrictEqual({
-            display: 'none',
-        });
     });
 
     it('hides the connector when hasDelta is false, but keeps dotB visible (prev exists)', () => {

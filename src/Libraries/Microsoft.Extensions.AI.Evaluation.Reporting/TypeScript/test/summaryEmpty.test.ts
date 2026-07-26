@@ -11,10 +11,6 @@ const emptyDataset: Dataset = {
 };
 
 describe('createScoreSummary — empty-dataset guard', () => {
-    it('does not throw for a dataset with an empty scenarioRunResults list', () => {
-        expect(() => createScoreSummary(emptyDataset)).not.toThrow();
-    });
-
     it('returns a well-formed empty summary (no history, zero iterations)', () => {
         const summary = createScoreSummary(emptyDataset);
 

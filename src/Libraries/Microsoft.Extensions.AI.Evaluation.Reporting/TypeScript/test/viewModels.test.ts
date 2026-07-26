@@ -10,7 +10,6 @@ import {
     ratingBucket,
     bucketMetrics,
     chronologicalExecutions,
-    moversBetween,
 } from '../components/core/viewModels';
 import {
     multiGroupDataset,
@@ -176,7 +175,7 @@ describe('passRateByScenarioGroup — deltaRun compares against the chronologica
     });
 });
 
-describe('T0.2 — out-of-order insertion: passRateByScenarioGroup baseline == movers baseline', () => {
+describe('passRateByScenarioGroup — out-of-order insertion', () => {
     const G1 = 'exec-earliest';
     const G2 = 'exec-middle';
     const G3 = 'exec-latest';
@@ -225,15 +224,5 @@ describe('T0.2 — out-of-order insertion: passRateByScenarioGroup baseline == m
         const rows = passRateByScenarioGroup(outOfOrderDataset, G3);
         const group = rows.find(r => r.group === 'Ordering')!;
         expect(group.deltaRun).toBeCloseTo(0, 10);
-    });
-
-    it('moversBetween, driven by the same chronological predecessor, agrees with the pass-rate baseline', () => {
-        const chrono = chronologicalExecutions(outOfOrderDataset);
-        const previous = chrono[chrono.indexOf(G3) - 1];
-        expect(previous).toBe(G2);
-
-        const movers = moversBetween(outOfOrderDataset.scenarioRunResults, G3, previous, Infinity);
-        const mover = movers.find(m => m.metricName === 'accuracy')!;
-        expect(mover.delta).toBeCloseTo(5 - 3, 10);
     });
 });

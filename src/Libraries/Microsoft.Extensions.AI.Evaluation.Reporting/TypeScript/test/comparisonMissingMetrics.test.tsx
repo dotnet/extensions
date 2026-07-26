@@ -57,14 +57,6 @@ const metricRow = (name: string): HTMLElement =>
     screen.getByText(name, { selector: '[role="cell"]' }).closest('[role="row"]') as HTMLElement;
 
 describe('ComparisonView missing-side metrics', () => {
-    it('renders the union of baseline and current metric names', () => {
-        renderComparison();
-
-        expect(metricRow('added')).toBeInTheDocument();
-        expect(metricRow('removed')).toBeInTheDocument();
-        expect(metricRow('shared')).toBeInTheDocument();
-    });
-
     it('labels a current-only metric as added without fabricating a delta from zero', () => {
         renderComparison();
         const row = metricRow('added');
