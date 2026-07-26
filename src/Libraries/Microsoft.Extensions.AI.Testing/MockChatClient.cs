@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AITesting, UrlFormat = DiagnosticIds.UrlFormat)]
-public class MockChatClient : IChatClient
+public partial class MockChatClient : IChatClient
 {
     private static ChatResponse CloneResponse(ChatResponse response)
     {
@@ -337,24 +337,15 @@ public class MockChatClient : IChatClient
         GC.SuppressFinalize(this);
     }
 
-    /// <summary>Releases resources used by this mock client.</summary>
-    /// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposing)
-        {
-            return;
-        }
-
-        lock (_sync)
-        {
-            _disposed = true;
-            _seededResponses.Clear();
-            _requests.Clear();
-        }
-    }
-
-    private MockChatClient AddSeed(
+    /// <summary>Adds a response seed.</summary>
+    /// <param name="requestPredicate">Predicate used to select whether this seed applies to a request.</param>
+    /// <param name="getResponse">Factory that creates a response for a matching request.</param>
+    /// <param name="getStreamingResponse">Factory that creates streaming updates for a matching request.</param>
+    /// <param name="singleUse">
+    /// <see langword="true"/> to remove this seed after its first matching request; otherwise it remains reusable.
+    /// </param>
+    /// <returns>The same <see cref="MockChatClient"/> instance for chaining.</returns>
+    protected virtual MockChatClient AddSeed(
         Func<MockChatClientRequest, bool> requestPredicate,
         Func<MockChatClientRequest, CancellationToken, Task<ChatResponse>> getResponse,
         Func<MockChatClientRequest, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> getStreamingResponse,
@@ -380,21 +371,15 @@ public class MockChatClient : IChatClient
         return this;
     }
 
-    private MockChatClientRequest RecordRequest(IEnumerable<ChatMessage> messages, ChatOptions? options, bool isStreaming)
+    /// <summary>Finds the most recently added seed that matches a request.</summary>
+    /// <param name="request">The request to match.</param>
+    /// <returns>The matching seed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">No seeded response matched the request.</exception>
+    protected virtual SeededResponse MatchSeededResponse(MockChatClientRequest request)
     {
-        ChatMessage[] messageArray = messages.Select(m => Throw.IfNull(m).Clone()).ToArray();
-        var request = new MockChatClientRequest(messageArray, options, isStreaming);
+        request = Throw.IfNull(request);
 
-        lock (_sync)
-        {
-            _requests.Add(request);
-        }
-
-        return request;
-    }
-
-    private SeededResponse MatchSeededResponse(MockChatClientRequest request)
-    {
         lock (_sync)
         {
             for (int i = _seededResponses.Count - 1; i >= 0; i--)
@@ -418,22 +403,57 @@ public class MockChatClient : IChatClient
             $"No seeded response matched. Last user text: '{request.LastUserText ?? "<none>"}'.");
     }
 
+    /// <summary>Represents a response seed.</summary>
+    protected sealed class SeededResponse
+    {
+        /// <summary>Gets the predicate used to select whether this seed applies to a request.</summary>
+        public Func<MockChatClientRequest, bool> RequestPredicate { get; init; } = default!;
+
+        /// <summary>Gets the factory that creates a response for a matching request.</summary>
+        public Func<MockChatClientRequest, CancellationToken, Task<ChatResponse>> ResponseFactory { get; init; } = default!;
+
+        /// <summary>Gets the factory that creates streaming updates for a matching request.</summary>
+        public Func<MockChatClientRequest, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> StreamingFactory { get; init; } = default!;
+
+        /// <summary>Gets a value indicating whether this seed is removed after its first matching request.</summary>
+        public bool SingleUse { get; init; }
+    }
+
+    /// <summary>Releases resources used by this mock client.</summary>
+    /// <param name="disposing"><see langword="true"/> when called from <see cref="Dispose()"/>.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposing)
+        {
+            return;
+        }
+
+        lock (_sync)
+        {
+            _disposed = true;
+            _seededResponses.Clear();
+            _requests.Clear();
+        }
+    }
+
+    private MockChatClientRequest RecordRequest(IEnumerable<ChatMessage> messages, ChatOptions? options, bool isStreaming)
+    {
+        ChatMessage[] messageArray = messages.Select(m => Throw.IfNull(m).Clone()).ToArray();
+        var request = new MockChatClientRequest(messageArray, options, isStreaming);
+
+        lock (_sync)
+        {
+            _requests.Add(request);
+        }
+
+        return request;
+    }
+
     private void ThrowIfDisposed()
     {
         if (_disposed)
         {
             throw new ObjectDisposedException(nameof(MockChatClient));
         }
-    }
-
-    private sealed class SeededResponse
-    {
-        public Func<MockChatClientRequest, bool> RequestPredicate { get; init; } = default!;
-
-        public Func<MockChatClientRequest, CancellationToken, Task<ChatResponse>> ResponseFactory { get; init; } = default!;
-
-        public Func<MockChatClientRequest, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> StreamingFactory { get; init; } = default!;
-
-        public bool SingleUse { get; init; }
     }
 }

@@ -31,7 +31,7 @@ Or in a project file:
 | Behavior | Details |
 | --- | --- |
 | Starts empty | No responses are predefined. |
-| Match order | Responses are checked in reverse insertion order; the most recently added matching response wins. |
+| Match order | Last response added wins. Add the most specific matches last. |
 | Consumption | Seeds are reusable by default. |
 | One-time seed | Set `singleUse: true` to remove a seed after its first match. |
 | Unmatched request | Throws `InvalidOperationException` with the last user message text. |
@@ -58,6 +58,124 @@ var client = new MockChatClient()
 
 ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "hello")]);
 Console.WriteLine(response.Text);
+```
+
+### Response dictionary
+
+Use `AddResponses` when a response dictionary is more convenient than individual response factories. The default
+predicate is `string.Equals(request.LastUserText, key, StringComparison.OrdinalIgnoreCase)`. Entries are seeded in
+dictionary order, so the last matching entry wins.
+
+```csharp
+var client = new MockChatClient().AddResponses(new()
+{
+    ["hello"] = "Hello from a deterministic mock.",
+    ["goodbye"] = "Goodbye from a deterministic mock.",
+});
+```
+
+A dictionary deserialized from JSON works the same way:
+
+```csharp
+using System.Text.Json;
+
+var client = new MockChatClient().AddResponses(
+    JsonSerializer.Deserialize<Dictionary<string, string>>(
+    """
+    {
+      "hello": "Hello from a deterministic mock.",
+      "goodbye": "Goodbye from a deterministic mock."
+    }
+    """)!);
+```
+
+Use an `IEnumerable<KeyValuePair<string, string>>` only when repeated keys are needed. Entries are seeded in
+enumeration order, so the last matching entry wins:
+
+```csharp
+client.AddResponses(
+    new KeyValuePair<string, string>[]
+    {
+        new("hello", "Hello again. Nice to see you."),
+        new("hello", "Hello. Nice to meet you."),
+    },
+    singleUse: true);
+```
+
+Use `AddResponse` to return fully populated `ChatResponse` instances, including non-text content such as tool calls:
+
+```csharp
+var client = new MockChatClient()
+    .AddResponse(
+        static request => request.LastUserText == "get-weather",
+        static (_, _) => Task.FromResult(
+            new ChatResponse(
+                new ChatMessage(
+                    ChatRole.Assistant,
+                    [new FunctionCallContent("weather-call", "GetWeather")]))));
+```
+
+Pass a predicate when the dictionary key needs a different matching rule:
+
+```csharp
+client.AddResponses(new()
+    {
+        ["hello"] = "Hello from a deterministic mock.",
+        ["goodbye"] = "Goodbye from a deterministic mock.",
+    },
+    static (request, key) => request.LastUserText?.StartsWith(key, StringComparison.OrdinalIgnoreCase) is true);
+```
+
+`singleUse` applies to every dictionary response. A custom predicate can map distinct dictionary keys to the same prompt:
+
+```csharp
+var client = new MockChatClient()
+    .AddResponses(
+        new()
+        {
+            ["hello:2"] = "Hello again. Nice to see you.",
+            ["hello:1"] = "Hello. Nice to meet you.",
+        },
+        static (request, key) =>
+        {
+            string promptKey = key.Split(new[] { ':' }, 2)[0];
+            return string.Equals(request.LastUserText, promptKey, StringComparison.OrdinalIgnoreCase);
+        },
+        singleUse: true);
+```
+
+Chat requests can include images as `DataContent`. A predicate can match image MIME types:
+
+```csharp
+var client = new MockChatClient()
+    .AddResponses(
+        new()
+        {
+            ["image/jpeg"] = "I see you shared a JPEG.",
+            ["image/png"] = "I see you shared a PNG.",
+        },
+        static (request, mediaType) => request.Messages
+            .SelectMany(static message => message.Contents)
+            .OfType<DataContent>()
+            .Any(content => string.Equals(content.MediaType, mediaType, StringComparison.OrdinalIgnoreCase)));
+```
+
+Pass `getResponse` to apply common asynchronous behavior to every selected response. String values are converted to
+`ChatResponse` instances before `getResponse` is invoked:
+
+```csharp
+var client = new MockChatClient()
+    .AddResponses(
+        new()
+        {
+            ["hello"] = "Hello from a deterministic mock.",
+            ["goodbye"] = "Goodbye from a deterministic mock.",
+        },
+        getResponse: async (response, cancellationToken) =>
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+            return response;
+        });
 ```
 
 ## Seeding patterns

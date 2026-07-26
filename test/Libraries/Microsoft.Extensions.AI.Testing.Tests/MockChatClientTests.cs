@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -27,6 +28,206 @@ public class MockChatClientTests
             client.GetResponseAsync([new(ChatRole.User, "third request")]));
 
         Assert.Contains("third request", ex.Message);
+    }
+
+    [Fact]
+    public async Task AddResponses_UsesOrdinalIgnoreCaseExactMatches()
+    {
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["hello"] = "Hello from a deterministic mock.",
+                ["goodbye"] = "Goodbye from a deterministic mock.",
+            });
+
+        Assert.Equal("Hello from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "HELLO")])).Text);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.GetResponseAsync([new(ChatRole.User, "hello there")]));
+    }
+
+    [Fact]
+    public async Task AddResponses_SeedsJsonDeserializedResponsesInOrder()
+    {
+        using var client = new MockChatClient();
+        client.AddResponses(
+            JsonSerializer.Deserialize<Dictionary<string, string>>(
+                """
+                {
+                  "weather": "General weather response.",
+                  "weather today": "Specific weather response."
+                }
+                """)!,
+            static (request, key) => request.LastUserText?.Contains(key, StringComparison.OrdinalIgnoreCase) is true);
+
+        Assert.Equal("Specific weather response.", (await client.GetResponseAsync([new(ChatRole.User, "weather today")])).Text);
+    }
+
+    [Fact]
+    public async Task AddResponses_AppliesSingleUseToDictionaryResponses()
+    {
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["hello:2"] = "Hello again. Nice to see you.",
+                ["hello:1"] = "Hello. Nice to meet you.",
+            },
+            static (request, key) => string.Equals(
+                request.LastUserText,
+                key.Split(new[] { ':' }, 2)[0],
+                StringComparison.OrdinalIgnoreCase),
+            singleUse: true);
+
+        Assert.Equal("Hello. Nice to meet you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+        Assert.Equal("Hello again. Nice to see you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.GetResponseAsync([new(ChatRole.User, "hello")]));
+    }
+
+    [Fact]
+    public async Task AddResponses_EnumerableResponsesSupportRepeatedKeys()
+    {
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new KeyValuePair<string, string>[]
+            {
+                new("hello", "Hello again. Nice to see you."),
+                new("hello", "Hello. Nice to meet you."),
+            },
+            singleUse: true);
+
+        Assert.Equal("Hello. Nice to meet you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+        Assert.Equal("Hello again. Nice to see you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            client.GetResponseAsync([new(ChatRole.User, "hello")]));
+    }
+
+    [Fact]
+    public async Task AddResponses_AppliesResponseWrapperToStringResponses()
+    {
+        using var cancellationTokenSource = new CancellationTokenSource();
+        CancellationToken observedToken = default;
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["hello"] = "Hello",
+                ["goodbye"] = "Goodbye",
+            },
+            getResponse: (response, cancellationToken) =>
+            {
+                observedToken = cancellationToken;
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, $"{response.Text} from wrapper")));
+            });
+
+        ChatResponse result = await client.GetResponseAsync(
+            [new(ChatRole.User, "hello")],
+            cancellationToken: cancellationTokenSource.Token);
+
+        Assert.Equal("Hello from wrapper", result.Text);
+        Assert.Equal(cancellationTokenSource.Token, observedToken);
+    }
+
+    [Fact]
+    public async Task AddResponse_ReturnsNonTextChatResponse()
+    {
+        using var client = new MockChatClient();
+        client.AddResponse(
+            static request => request.LastUserText == "get-weather",
+            static (_, _) => Task.FromResult(
+                new ChatResponse(
+                    new ChatMessage(
+                        ChatRole.Assistant,
+                        [new FunctionCallContent("weather-call", "GetWeather")]))));
+
+        ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "get-weather")]);
+
+        FunctionCallContent functionCall = Assert.IsType<FunctionCallContent>(
+            Assert.Single(Assert.Single(response.Messages).Contents));
+        Assert.Equal("weather-call", functionCall.CallId);
+        Assert.Equal("GetWeather", functionCall.Name);
+    }
+
+    [Fact]
+    public async Task AddResponses_MatchesImageRequestsByMediaType()
+    {
+        const string JpegResponse = "I see you shared a JPEG.";
+        const string PngResponse = "I see you shared a PNG.";
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["image/jpeg"] = JpegResponse,
+                ["image/png"] = PngResponse,
+            },
+            static (request, mediaType) => request.Messages
+                .SelectMany(static message => message.Contents)
+                .OfType<DataContent>()
+                .Any(content => string.Equals(content.MediaType, mediaType, StringComparison.OrdinalIgnoreCase)));
+
+        ChatResponse jpegResponse = await client.GetResponseAsync(
+            [
+                new ChatMessage(
+                    ChatRole.User,
+                    [new DataContent(new byte[] { 0xFF }, "image/jpeg")])
+            ]);
+        ChatResponse pngResponse = await client.GetResponseAsync(
+            [
+                new ChatMessage(
+                    ChatRole.User,
+                    [new DataContent(new byte[] { 0x89 }, "image/png")])
+            ]);
+
+        Assert.Equal(JpegResponse, jpegResponse.Text);
+        Assert.Equal(PngResponse, pngResponse.Text);
+    }
+
+    [Fact]
+    public async Task AddResponses_ResponseWrapperReceivesCancellationToken()
+    {
+        CancellationToken observedToken = default;
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["cancel"] = "unreachable",
+                ["other"] = "Other response",
+            },
+            getResponse: async (response, cancellationToken) =>
+            {
+                observedToken = cancellationToken;
+                await Task.Delay(Timeout.Infinite, cancellationToken);
+                return response;
+            });
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client.GetResponseAsync([new(ChatRole.User, "cancel")], cancellationToken: cancellationTokenSource.Token));
+
+        Assert.Equal(cancellationTokenSource.Token, observedToken);
+    }
+
+    [Fact]
+    public async Task ExtensibilityHooks_AreOverridable()
+    {
+        using var client = new ExtensibleMockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["hello"] = "Hello",
+                ["goodbye"] = "Goodbye",
+            });
+
+        Assert.Equal("Hello", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+        Assert.Equal(1, client.AddResponsesFromDictionaryCallCount);
+        Assert.Equal(1, client.AddResponsesFromEnumerableCallCount);
+        Assert.Equal(2, client.AddSeedCallCount);
+        Assert.Equal(1, client.MatchSeededResponseCallCount);
     }
 
     [Fact]
@@ -422,6 +623,53 @@ public class MockChatClientTests
 
         generator.GetServiceCallback = (_, _) => expected;
         Assert.Same(expected, generator.GetService(typeof(object)));
+    }
+
+    private sealed class ExtensibleMockChatClient : MockChatClient
+    {
+        public int AddSeedCallCount { get; private set; }
+
+        public int AddResponsesFromDictionaryCallCount { get; private set; }
+
+        public int AddResponsesFromEnumerableCallCount { get; private set; }
+
+        public int MatchSeededResponseCallCount { get; private set; }
+
+        protected override MockChatClient AddSeed(
+            Func<MockChatClientRequest, bool> requestPredicate,
+            Func<MockChatClientRequest, CancellationToken, Task<ChatResponse>> getResponse,
+            Func<MockChatClientRequest, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>> getStreamingResponse,
+            bool singleUse)
+        {
+            AddSeedCallCount++;
+            return base.AddSeed(requestPredicate, getResponse, getStreamingResponse, singleUse);
+        }
+
+        protected override MockChatClient AddResponsesFromDictionary(
+            Dictionary<string, string> responses,
+            Func<MockChatClientRequest, string, bool>? requestPredicate,
+            bool singleUse,
+            Func<ChatResponse, CancellationToken, Task<ChatResponse>>? getResponse)
+        {
+            AddResponsesFromDictionaryCallCount++;
+            return base.AddResponsesFromDictionary(responses, requestPredicate, singleUse, getResponse);
+        }
+
+        protected override MockChatClient AddResponsesFromEnumerable(
+            IEnumerable<KeyValuePair<string, string>> responses,
+            Func<MockChatClientRequest, string, bool>? requestPredicate,
+            bool singleUse,
+            Func<ChatResponse, CancellationToken, Task<ChatResponse>>? getResponse)
+        {
+            AddResponsesFromEnumerableCallCount++;
+            return base.AddResponsesFromEnumerable(responses, requestPredicate, singleUse, getResponse);
+        }
+
+        protected override SeededResponse MatchSeededResponse(MockChatClientRequest request)
+        {
+            MatchSeededResponseCallCount++;
+            return base.MatchSeededResponse(request);
+        }
     }
 
     private sealed class DerivedMockEmbeddingGenerator(GeneratedEmbeddings<Embedding<float>> expected) : MockEmbeddingGenerator<string>
