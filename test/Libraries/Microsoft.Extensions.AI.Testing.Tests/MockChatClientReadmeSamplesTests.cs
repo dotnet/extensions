@@ -18,7 +18,8 @@ public class MockChatClientReadmeSamplesTests
     [Fact]
     public async Task QuickStart()
     {
-        var client = new MockChatClient()
+        using var client = new MockChatClient();
+        client
             .AddResponse(
                 static _ => true,
                 static (_, _) => Task.FromResult(
@@ -29,43 +30,31 @@ public class MockChatClientReadmeSamplesTests
                 static (_, _) => Task.FromResult(
                     new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hello from a deterministic mock."))));
 
-        try
-        {
-            ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "hello")]);
-            Console.WriteLine(response.Text);
+        ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "hello")]);
+        Console.WriteLine(response.Text);
 
-            Assert.Equal("Hello from a deterministic mock.", response.Text);
-        }
-        finally
-        {
-            client.Dispose();
-        }
+        Assert.Equal("Hello from a deterministic mock.", response.Text);
     }
 
     [Fact]
     public async Task ResponseDictionary()
     {
-        var client = new MockChatClient().AddResponses(new()
+        using var client = new MockChatClient();
+        client.AddResponses(new()
         {
             ["hello"] = "Hello from a deterministic mock.",
             ["goodbye"] = "Goodbye from a deterministic mock.",
         });
 
-        try
-        {
-            Assert.Equal("Hello from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
-            Assert.Equal("Goodbye from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "goodbye")])).Text);
-        }
-        finally
-        {
-            client.Dispose();
-        }
+        Assert.Equal("Hello from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+        Assert.Equal("Goodbye from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "goodbye")])).Text);
     }
 
     [Fact]
     public async Task JsonResponseDictionary()
     {
-        var client = new MockChatClient().AddResponses(
+        using var client = new MockChatClient();
+        client.AddResponses(
             JsonSerializer.Deserialize<Dictionary<string, string>>(
             """
             {
@@ -74,15 +63,8 @@ public class MockChatClientReadmeSamplesTests
             }
             """)!);
 
-        try
-        {
-            Assert.Equal("Hello from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
-            Assert.Equal("Goodbye from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "goodbye")])).Text);
-        }
-        finally
-        {
-            client.Dispose();
-        }
+        Assert.Equal("Hello from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+        Assert.Equal("Goodbye from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "goodbye")])).Text);
     }
 
     [Fact]
@@ -105,28 +87,21 @@ public class MockChatClientReadmeSamplesTests
     [Fact]
     public async Task FunctionCallResponse()
     {
-        var client = new MockChatClient()
-            .AddResponse(
-                static request => request.LastUserText == "get-weather",
-                static (_, _) => Task.FromResult(
-                    new ChatResponse(
-                        new ChatMessage(
-                            ChatRole.Assistant,
-                            [new FunctionCallContent("weather-call", "GetWeather")]))));
+        using var client = new MockChatClient();
+        client.AddResponse(
+            static request => request.LastUserText == "get-weather",
+            static (_, _) => Task.FromResult(
+                new ChatResponse(
+                    new ChatMessage(
+                        ChatRole.Assistant,
+                        [new FunctionCallContent("weather-call", "GetWeather")]))));
 
-        try
-        {
-            ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "get-weather")]);
-            FunctionCallContent functionCall = Assert.IsType<FunctionCallContent>(
-                Assert.Single(Assert.Single(response.Messages).Contents));
+        ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "get-weather")]);
+        FunctionCallContent functionCall = Assert.IsType<FunctionCallContent>(
+            Assert.Single(Assert.Single(response.Messages).Contents));
 
-            Assert.Equal("weather-call", functionCall.CallId);
-            Assert.Equal("GetWeather", functionCall.Name);
-        }
-        finally
-        {
-            client.Dispose();
-        }
+        Assert.Equal("weather-call", functionCall.CallId);
+        Assert.Equal("GetWeather", functionCall.Name);
     }
 
     [Fact]
@@ -149,85 +124,64 @@ public class MockChatClientReadmeSamplesTests
     [Fact]
     public async Task SingleUseDictionaryResponses()
     {
-        var client = new MockChatClient()
-            .AddResponses(
-                new()
-                {
-                    ["hello:2"] = "Hello again. Nice to see you.",
-                    ["hello:1"] = "Hello. Nice to meet you.",
-                },
-                static (request, key) =>
-                {
-                    string promptKey = key.Split(new[] { ':' }, 2)[0];
-                    return string.Equals(request.LastUserText, promptKey, StringComparison.OrdinalIgnoreCase);
-                },
-                singleUse: true);
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["hello:2"] = "Hello again. Nice to see you.",
+                ["hello:1"] = "Hello. Nice to meet you.",
+            },
+            static (request, key) =>
+            {
+                string promptKey = key.Split(new[] { ':' }, 2)[0];
+                return string.Equals(request.LastUserText, promptKey, StringComparison.OrdinalIgnoreCase);
+            },
+            singleUse: true);
 
-        try
-        {
-            Assert.Equal("Hello. Nice to meet you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
-            Assert.Equal("Hello again. Nice to see you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
-        }
-        finally
-        {
-            client.Dispose();
-        }
+        Assert.Equal("Hello. Nice to meet you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
+        Assert.Equal("Hello again. Nice to see you.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
     }
 
     [Fact]
     public async Task ImageResponseDictionary()
     {
-        var client = new MockChatClient()
-            .AddResponses(
-                new()
-                {
-                    ["image/jpeg"] = "I see you shared a JPEG.",
-                    ["image/png"] = "I see you shared a PNG.",
-                },
-                static (request, mediaType) => request.Messages
-                    .SelectMany(static message => message.Contents)
-                    .OfType<DataContent>()
-                    .Any(content => string.Equals(content.MediaType, mediaType, StringComparison.OrdinalIgnoreCase)));
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["image/jpeg"] = "I see you shared a JPEG.",
+                ["image/png"] = "I see you shared a PNG.",
+            },
+            static (request, mediaType) => request.Messages
+                .SelectMany(static message => message.Contents)
+                .OfType<DataContent>()
+                .Any(content => string.Equals(content.MediaType, mediaType, StringComparison.OrdinalIgnoreCase)));
 
-        try
-        {
-            Assert.Equal(
-                "I see you shared a JPEG.",
-                (await client.GetResponseAsync([new(ChatRole.User, [new DataContent(new byte[] { 0xFF }, "image/jpeg")])])).Text);
-            Assert.Equal(
-                "I see you shared a PNG.",
-                (await client.GetResponseAsync([new(ChatRole.User, [new DataContent(new byte[] { 0x89 }, "image/png")])])).Text);
-        }
-        finally
-        {
-            client.Dispose();
-        }
+        Assert.Equal(
+            "I see you shared a JPEG.",
+            (await client.GetResponseAsync([new(ChatRole.User, [new DataContent(new byte[] { 0xFF }, "image/jpeg")])])).Text);
+        Assert.Equal(
+            "I see you shared a PNG.",
+            (await client.GetResponseAsync([new(ChatRole.User, [new DataContent(new byte[] { 0x89 }, "image/png")])])).Text);
     }
 
     [Fact]
     public async Task ResponseDictionaryWrapper()
     {
-        var client = new MockChatClient()
-            .AddResponses(
-                new()
-                {
-                    ["hello"] = "Hello from a deterministic mock.",
-                    ["goodbye"] = "Goodbye from a deterministic mock.",
-                },
-                getResponse: async (response, cancellationToken) =>
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
-                    return response;
-                });
+        using var client = new MockChatClient();
+        client.AddResponses(
+            new()
+            {
+                ["hello"] = "Hello from a deterministic mock.",
+                ["goodbye"] = "Goodbye from a deterministic mock.",
+            },
+            getResponse: async (response, cancellationToken) =>
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                return response;
+            });
 
-        try
-        {
-            Assert.Equal("Hello from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
-        }
-        finally
-        {
-            client.Dispose();
-        }
+        Assert.Equal("Hello from a deterministic mock.", (await client.GetResponseAsync([new(ChatRole.User, "hello")])).Text);
     }
 
     [Fact]
