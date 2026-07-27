@@ -3967,6 +3967,64 @@
       ]
     },
     {
+      "Type": "abstract class Microsoft.Extensions.AI.RoutingChatClient : Microsoft.Extensions.AI.IChatClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RoutingChatClient.RoutingChatClient();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.RoutingChatClient Microsoft.Extensions.AI.RoutingChatClient.Create(System.Func<Microsoft.Extensions.AI.RoutingContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.IChatClient>> clientSelector);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.RoutingChatClient.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.RoutingChatClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.RoutingChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.RoutingChatClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.RoutingChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.ValueTask<Microsoft.Extensions.AI.IChatClient> Microsoft.Extensions.AI.RoutingChatClient.SelectClientAsync(Microsoft.Extensions.AI.RoutingContext context, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.RoutingContext",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.RoutingContext.RoutingContext(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? chatOptions);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.ChatOptions? Microsoft.Extensions.AI.RoutingContext.ChatOptions { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.RoutingContext.Messages { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.SessionUpdateRealtimeClientMessage : Microsoft.Extensions.AI.RealtimeClientMessage",
       "Stage": "Experimental",
       "Methods": [
