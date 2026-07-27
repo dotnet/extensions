@@ -25,6 +25,10 @@ namespace Microsoft.Extensions.AI;
 /// The configured clients are used as stable routing identities. By default this instance owns the clients and
 /// embedding generator and disposes them when it is disposed.
 /// </para>
+/// <para>
+/// The example-utterance routing approach is inspired by
+/// <see href="https://github.com/aurelio-labs/semantic-router">Aurelio Labs' semantic-router project</see>.
+/// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class SemanticRoutingChatClient : RoutingChatClient
