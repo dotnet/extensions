@@ -4,6 +4,14 @@
 
 The .NET Extensions repository contains a suite of libraries providing facilities commonly needed when creating production-ready applications. Major areas include AI abstractions, compliance mechanisms, diagnostics, contextual options, resilience (Polly), telemetry, AspNetCore extensions, static analysis, and testing utilities.
 
+## AI-Generated Content Disclosure
+
+Before posting any content to GitHub under a user's credentials - opening PRs, creating issues, commenting on PRs or issues, posting review comments, or taking any other public-facing action - include a concise, visible note at the bottom indicating that the content was AI/Copilot-generated.
+
+Exceptions:
+- The account is a recognized bot or Copilot app account (for example, `github-actions[bot]` or `copilot`), where the AI origin is already apparent from the account identity.
+- The user explicitly asks you to omit the disclosure.
+
 ## Working Effectively
 
 ### Prerequisites and Bootstrap
