@@ -38,7 +38,7 @@ cherry-pick from `main` as part of the servicing release process.
 
 For each source `main` PR number identified, check whether it already shipped in a previous release:
 
-- Run `git merge-base --is-ancestor <pr-merge-commit> <previous-tag>` to check ancestry.
+- Because servicing releases typically cherry-pick (new SHAs), search the release-branch history at `<previous-tag>` for the PR number/backport markers (for example `git log <previous-tag> --grep "#NNNN"`).
 - Or check whether the PR number appears in a prior release's release notes body.
 
 Classify each backport PR as either:

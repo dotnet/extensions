@@ -8,7 +8,7 @@ Run this playbook after **publish-release**.
 - Stage 6 stages reconciliation merges when needed (pushing and PR completion are left to the user).
 - Stage 7 handles support-page follow-up based on release type and package novelty.
 
-For servicing releases prepared directly on public `release/<major>.<minor>`, Stage 6 is often unnecessary because commits were backported from `main` into the release branch up front. In that case, run Stage 5 and run Stage 6 only if the user explicitly asks for additional branch-flow follow-up.
+For servicing releases prepared directly on public `release/<major>.<minor>`, Stage 6 is often unnecessary because commits were backported from `main` into the release branch up front. In that case, run Stage 5, follow the Stage 7 decision gate (skip if applicable), and run Stage 6 only if the user explicitly asks for additional branch-flow follow-up.
 
 ## Stage 5 - Verify Source Link and Symbols
 
