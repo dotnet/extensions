@@ -50,7 +50,8 @@ public abstract class RoutingChatClient : IChatClient
         CancellationToken cancellationToken = default)
     {
         var context = new RoutingContext(messages, options);
-        IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false);
+        IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
+            throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
         return await client.GetResponseAsync(
             context.Messages,
             context.ChatOptions,
