@@ -90,6 +90,20 @@ public class RoutingChatClientTests
     }
 
     [Fact]
+    public async Task Create_NullSelectionThrowsForNonStreamingAndStreaming()
+    {
+        using RoutingChatClient router = RoutingChatClient.Create((_, _) => new((IChatClient)null!));
+
+        InvalidOperationException nonStreaming = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
+        InvalidOperationException streaming = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
+
+        Assert.Contains("SelectClientAsync", nonStreaming.Message, StringComparison.Ordinal);
+        Assert.Contains("SelectClientAsync", streaming.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Create_DoesNotDisposeSelectedClient()
     {
         using var selected = new CountingDisposeClient();
@@ -721,6 +735,82 @@ public class RoutingChatClientTests
     }
 
     [Fact]
+    public async Task OperationCanceledException_DoesNotTriggerFailover()
+    {
+        bool secondCalled = false;
+        using var first = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) => throw new OperationCanceledException(),
+        };
+        using var second = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) =>
+            {
+                secondCalled = true;
+                return Task.FromResult(new ChatResponse());
+            },
+        };
+        using var client = new OrderedFailoverChatClient([first, second]);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => client.GetResponseAsync([new(ChatRole.User, "hi")]));
+
+        Assert.False(secondCalled);
+    }
+
+    [Fact]
+    public async Task Streaming_OperationCanceledExceptionDoesNotTriggerFailover()
+    {
+        bool secondCalled = false;
+        using var first = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) => CanceledStream(CancellationToken.None),
+        };
+        using var second = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) =>
+            {
+                secondCalled = true;
+                return YieldUpdates("ok");
+            },
+        };
+        using var client = new OrderedFailoverChatClient([first, second]);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
+
+        Assert.False(secondCalled);
+    }
+
+    [Fact]
+    public async Task Streaming_DisposalCancellationDoesNotTriggerFailover()
+    {
+        bool secondCalled = false;
+        var canceledStream = new TrackingAsyncEnumerable(
+            [],
+            disposeException: new OperationCanceledException());
+        using var first = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) => canceledStream,
+        };
+        using var second = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) =>
+            {
+                secondCalled = true;
+                return YieldUpdates("ok");
+            },
+        };
+        using var client = new OrderedFailoverChatClient([first, second]);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
+
+        Assert.False(secondCalled);
+        Assert.Equal(1, canceledStream.DisposeCount);
+    }
+
+    [Fact]
     public async Task Streaming_MaximumAttemptsPerRequest_RethrowsLastFailure()
     {
         int calls = 0;
@@ -1070,6 +1160,46 @@ public class RoutingChatClientTests
         Assert.Same(expected, first);
         Assert.Same(expected, second);
         Assert.Equal(1, profileBatches);
+    }
+
+    [Fact]
+    public async Task SemanticRouting_MaterializesMessagesBeforeSelection()
+    {
+        var vectors = new Dictionary<string, float[]>
+        {
+            ["code profile"] = [1, 0],
+            ["debug this code"] = [1, 0],
+        };
+        using var generator = new TestEmbeddingGenerator
+        {
+            GenerateAsyncCallback = (values, _, _) =>
+                Task.FromResult(new GeneratedEmbeddings<Embedding<float>>(
+                    [.. values.Select(input => new Embedding<float>(vectors[input]))])),
+        };
+        ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "code"));
+        using var selected = new TestChatClient
+        {
+            GetResponseAsyncCallback = (messages, _, _) =>
+            {
+                Assert.Equal("debug this code", Assert.Single(messages).Text);
+                return Task.FromResult(expected);
+            },
+        };
+        var profiles = new Dictionary<IChatClient, IReadOnlyList<string>>(ChatClientReferenceComparer.Instance)
+        {
+            [selected] = ["code profile"],
+        };
+        using var router = new SemanticRoutingChatClient(
+            generator,
+            profiles,
+            defaultClient: selected,
+            leaveOpen: true);
+        var messages = new SingleUseMessageEnumerable([new(ChatRole.User, "debug this code")]);
+
+        ChatResponse response = await router.GetResponseAsync(messages);
+
+        Assert.Same(expected, response);
+        Assert.Equal(1, messages.EnumerationCount);
     }
 
     [Theory]
@@ -1568,6 +1698,23 @@ public class RoutingChatClientTests
             RoutingContext context,
             CancellationToken cancellationToken) =>
             new(_select(context));
+    }
+
+    private sealed class SingleUseMessageEnumerable(IEnumerable<ChatMessage> messages) : IEnumerable<ChatMessage>
+    {
+        public int EnumerationCount { get; private set; }
+
+        public IEnumerator<ChatMessage> GetEnumerator()
+        {
+            if (++EnumerationCount > 1)
+            {
+                throw new InvalidOperationException("The messages can only be enumerated once.");
+            }
+
+            return messages.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     private sealed class DelegatingFailoverTestRouter : FailoverChatClient

@@ -144,7 +144,7 @@ public abstract class FailoverChatClient : RoutingChatClient
                 outputCommitted: false);
             bool isTerminal =
                 exception is null ||
-                cancellationToken.IsCancellationRequested ||
+                IsCancellation(exception, cancellationToken) ||
                 (maximumAttempts is int limit && attemptCount >= limit);
 
             await OnRoutingUpdateAsync(context, attempt, isTerminal, cancellationToken);
@@ -215,7 +215,7 @@ public abstract class FailoverChatClient : RoutingChatClient
                     timeToFirstUpdate: null,
                     responseCompleted: false,
                     outputCommitted: false);
-                bool isTerminal = cancellationToken.IsCancellationRequested || reachedAttemptLimit;
+                bool isTerminal = IsCancellation(exception, cancellationToken) || reachedAttemptLimit;
 
                 await OnRoutingUpdateAsync(context, attempt, isTerminal, cancellationToken);
 
@@ -277,7 +277,7 @@ public abstract class FailoverChatClient : RoutingChatClient
                 isTerminalAttempt =
                     attempt.ResponseCompleted ||
                     outputCommitted ||
-                    cancellationToken.IsCancellationRequested ||
+                    IsCancellation(terminalException, cancellationToken) ||
                     reachedAttemptLimit;
 
                 await OnRoutingUpdateAsync(context, attempt, isTerminalAttempt, cancellationToken);
@@ -326,6 +326,9 @@ public abstract class FailoverChatClient : RoutingChatClient
         new((long)((Stopwatch.GetTimestamp() - startingTimestamp) *
             ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
 #endif
+
+    private static bool IsCancellation(Exception? exception, CancellationToken cancellationToken) =>
+        exception is OperationCanceledException || cancellationToken.IsCancellationRequested;
 
     [DoesNotReturn]
     private static void Rethrow(Exception exception)

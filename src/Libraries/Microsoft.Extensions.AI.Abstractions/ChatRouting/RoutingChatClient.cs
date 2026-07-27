@@ -65,7 +65,8 @@ public abstract class RoutingChatClient : IChatClient
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var context = new RoutingContext(messages, options);
-        IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false);
+        IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
+            throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
         await foreach (ChatResponseUpdate update in
             client.GetStreamingResponseAsync(context.Messages, context.ChatOptions, cancellationToken)
                 .WithCancellation(cancellationToken)

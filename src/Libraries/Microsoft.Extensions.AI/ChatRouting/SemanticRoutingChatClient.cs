@@ -165,7 +165,13 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
         CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
-        string? query = LastUserText(context.Messages);
+        IEnumerable<ChatMessage> messages = context.Messages;
+        if (messages is not IReadOnlyList<ChatMessage>)
+        {
+            context.Messages = messages = messages.ToArray();
+        }
+
+        string? query = LastUserText(messages);
         if (string.IsNullOrWhiteSpace(query))
         {
             return _clients[0];
