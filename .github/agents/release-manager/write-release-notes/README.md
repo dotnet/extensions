@@ -24,6 +24,7 @@ The repository uses `release/` branches (e.g. `release/10.4`) where release tags
 - **Maximize parallel tool calls.** Fetch multiple PR and issue details in a single response.
 - **Package assignment is file-path-driven.** Determine which packages a PR affects by examining which `src/Libraries/{PackageName}/` paths it touches. See [references/package-areas.md](references/package-areas.md) for the mapping. Use `area-*` labels only as a fallback.
 - **For servicing releases, use the servicing-prep PR description as scope input.** If a merged PR titled `Prepare <major>.<minor>.<patch> Servicing Release` exists, treat its package list and commit list as the default source of truth for publish/validate/release-notes scope unless the user explicitly overrides it.
+- **For servicing backports, prefer source PR entries.** When a servicing `release/*` PR backports a `main` PR, use the source `main` PR as the release-notes entry and attribution source unless the backport PR adds distinct release-only user-facing changes.
 
 ## Process
 
@@ -111,10 +112,17 @@ After the user has reviewed and approved the draft, present the finalization opt
 - **Save to private gist** — save the draft notes to a private GitHub gist for later use
 - **Cancel** — discard the draft without creating anything
 
+Before creating a draft release, run a required tag preflight:
+
+1. Check whether the expected `v<version>` tag already exists.
+2. If missing, ask for explicit confirmation to create the tag at the selected release commit.
+3. Only then create the draft release.
+
 ## Edge Cases
 
 - **PR spans categories**: Categorize by primary intent; read the title and description.
 - **PR spans multiple areas**: Place under the most central area; mention cross-cutting nature in the description.
+- **Servicing backport pair appears in range**: keep the source `main` PR and exclude the `release/*` wrapper PR unless the wrapper carries distinct release-only user-facing changes.
 - **Copilot-authored PRs**: If the PR author is Copilot or a bot, check the `copilot_work_started` timeline event for the triggering user, then assignees, then the merger. See [references/editorial-rules.md](references/editorial-rules.md) for the full fallback chain. Never fabricate an attribution — always derive it from the PR data.
 - **No breaking changes**: Omit the Breaking Changes section entirely.
 - **No experimental changes**: Omit the Experimental API Changes section entirely.

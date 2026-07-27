@@ -8,6 +8,18 @@ Gather all merged PRs between the previous release tag and the target for this r
 2. **Target**: The user provides a target (commit SHA, branch, or tag). If none is specified, use the `HEAD` of the default branch (`main`).
 3. Verify both refs exist: `git rev-parse <previous-tag>` and `git rev-parse <target>`.
 
+## Servicing override for backports
+
+For servicing releases, treat the merged servicing-prep PR as canonical scope input.
+
+1. Collect the `release/*` PRs listed or implied by that servicing-prep scope.
+2. For each `release/*` backport PR, resolve its source `main` PR from title/body references
+   (for example `Backport of #NNNN` or trailing `(#NNNN)`).
+3. Use the source `main` PR as the release-notes entry and attribution source, even when the source
+   PR merge date falls outside the tag-to-tag range.
+4. Keep the `release/*` wrapper PR excluded unless it introduces distinct release-only user-facing
+   behavior not present in the source PR.
+
 ## Search for merged PRs
 
 ### Primary — GitHub MCP server

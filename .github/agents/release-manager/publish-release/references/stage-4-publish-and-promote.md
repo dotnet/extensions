@@ -16,11 +16,19 @@ This stage is operational and produces no commit. Both actions are **irreversibl
 
 For servicing releases, also require the merged servicing-prep PR description; it is the source of truth for package scope.
 
+## Execution context check
+
+Before running artifact/publish operations, confirm whether this session can access AzDO/BAR with the
+required auth context. If access is limited in-session, switch to a terminal handoff flow: provide
+exact commands for the user to run outside the session, then continue based on their output.
+
 ## Sub-stage 1 - Prepare and publish packages
 
 Publishing is irreversible (a published version cannot be overwritten or truly deleted) and requires nuget.org API keys, so the agent only prepares the set; the user runs the push.
 
 1. Download and extract the `PackageArtifacts` from the official build.
+   - If in-session artifact download/auth fails, hand off this step to the user's terminal and ask
+     them to return the local extracted package folder path.
 2. Stage the packages to publish into a clean folder:
    - Always exclude `Microsoft.Internal.*`.
    - For **servicing releases**, start from the package list in the merged servicing-prep PR description; treat that list as canonical unless the user explicitly changes it.
@@ -28,7 +36,8 @@ Publishing is irreversible (a published version cannot be overwritten or truly d
    - In both tracks, flag template/tooling packages (for example `*.ProjectTemplates`) for an explicit include/exclude decision.
 3. Present the excluded and to-publish lists for the user to review.
 4. Two nuget.org accounts are involved: almost all packages publish from the **dotnetframework** account; **`Microsoft.Agents.AI.ProjectTemplates`** publishes from the **MicrosoftAgentFramework** account, so it must be pushed separately with that account's key.
-5. The **user** runs `dotnet nuget push` with the appropriate API key(s). Never run the push, and never handle the API keys.
+5. The **user** runs `dotnet nuget push` with the appropriate API key(s) in their terminal (outside
+   the agent session). Never run the push, and never handle the API keys.
 
 ### Secure API key entry (user-run helper)
 
@@ -101,6 +110,15 @@ Notes:
 - `Microsoft.Agents.AI.ProjectTemplates` uses the separate **MicrosoftAgentFramework** account key; when it is in scope, run the helper a second time with only that package so its key is entered separately.
 
 After a successful push, **delete or regenerate the API key on nuget.org** ([nuget.org/account/apikeys](https://www.nuget.org/account/apikeys)) so the key used for this release is not left valid. The helper shreds the temporary key *file* locally, but only deleting/regenerating the key on nuget.org invalidates it server-side. Guide the user to do this as the final step of Sub-stage 1.
+
+### Terminal handoff expectation
+
+When handing off Sub-stage 1 commands, provide a copy/paste-ready command block and ask the user to
+run it in terminal, then report:
+
+- staged package path(s),
+- push output summary,
+- confirmation that the nuget.org API key was deleted/regenerated.
 
 ## Sub-stage 2 - Ensure the official release build is on the public channel
 

@@ -34,6 +34,10 @@ every gate.
 
 ## Starting a session
 
+When a new release-manager session begins and a release activity is in scope, first present a compact
+process overview as a tree that shows the active track and all stages/sub-stages (monthly vs
+servicing), then state which stage is current.
+
 When the user asks where the release process stands, assess the current release state without relying
 on this session's history: inspect the available branch, commit, pull-request, and build information;
 identify what is complete and what remains; and state any missing context. Earlier stages may have
@@ -84,10 +88,20 @@ verification script lives at `release-manager/validate-release/scripts/Test-Sour
   into sub-stages); complete them strictly in order. Pause for the user to review and approve before
   each commit, and before every push, pipeline queue, publish, channel promotion, or merge-commit
   completion. **Never push until the user explicitly instructs it.**
+- **Progress visibility.** At each gating prompt, include a concise progress rail that shows completed
+  stages, the current stage/sub-step, and remaining stages. Keep it compact and update it every time
+  stage state changes.
+- **Concrete next-step guidance.** After completing each stage/sub-stage, tell the user the exact next
+  action to advance (for example, a specific approval cue or command handoff) so they do not need to
+  guess or repeatedly send generic "proceed" prompts.
 - **Irreversibility.** Publishing to nuget.org, promoting a build to a public channel (its symbols
   and packages flow to msdl and downstream consumers), and pushing tags cannot be cleanly undone.
   Prepare and review first, then act only on explicit user confirmation. Never run `dotnet nuget
   push` yourself and never handle nuget.org API keys.
+- **Run-location discipline.** Orchestrate in-session, but for privileged/auth-sensitive operational
+  commands (for example AzDO artifact access, `dotnet nuget push`, and BAR promotion checks), prefer
+  explicit terminal handoff blocks for the user to run outside the session, then continue based on
+  their reported output.
 - **Commit hygiene.** Every stage and every sub-stage is its own commit -- never combine them.
   Commits that land in public `dotnet/extensions` history keep the `Co-authored-by: Copilot`
   trailer but **omit** the `Copilot-Session` trailer. Write commit subjects that describe what
@@ -97,6 +111,13 @@ verification script lives at `release-manager/validate-release/scripts/Test-Sour
   branches. Resolve each by its **URL**, not by remote name -- names vary by machine. Do not rely on
   absolute on-disk clone paths.
 - **Release notes** are never published to a GitHub release without explicit user confirmation.
+- **Release wrap-up.** When the full release process is complete (GitHub release published, any
+  required branch reconciliation done), present a short celebratory closing message that:
+  - Confirms the release version and packages shipped.
+  - Includes a timing summary: wall-clock elapsed time for each stage completed this session, total
+    elapsed time for the session, and an estimate of active user-interaction time (time the user
+    spent responding to prompts, as distinct from wait time while the agent or CI worked).
+  - Track stage start/end times throughout the session so this summary is accurate.
 
 ## Release process at a glance
 
