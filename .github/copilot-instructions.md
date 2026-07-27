@@ -4,6 +4,11 @@
 
 The .NET Extensions repository contains a suite of libraries providing facilities commonly needed when creating production-ready applications. Major areas include AI abstractions, compliance mechanisms, diagnostics, contextual options, resilience (Polly), telemetry, AspNetCore extensions, static analysis, and testing utilities.
 
+## Committing and Pushing Changes
+
+- Never push to an active pull request unless the user explicitly asks you to.
+- Never chain committing and pushing in the same command. Commit first, report what was committed, and then wait for explicit instructions to push.
+
 ## AI-Generated Content Disclosure
 
 Before posting any content to GitHub under a user's credentials - opening PRs, creating issues, commenting on PRs or issues, posting review comments, or taking any other public-facing action - include a concise, visible note at the bottom indicating that the content was AI/Copilot-generated.
