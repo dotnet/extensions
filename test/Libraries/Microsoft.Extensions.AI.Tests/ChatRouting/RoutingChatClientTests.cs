@@ -884,6 +884,41 @@ public class RoutingChatClientTests
     }
 
     [Fact]
+    public async Task Streaming_CurrentFailureFallsBackBeforeOutput()
+    {
+        var currentException = new InvalidOperationException("current failed");
+        var failedStream = new ThrowingCurrentAsyncEnumerable(currentException);
+        using var failing = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) => failedStream,
+        };
+        using var working = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) => YieldUpdates("ok"),
+        };
+        FailoverChatClientAttempt? failedAttempt = null;
+        using var router = new DelegatingFailoverTestRouter(
+            _ => failedAttempt is null ? failing : working,
+            (_, attempt, isTerminal) =>
+            {
+                if (!isTerminal)
+                {
+                    failedAttempt = attempt;
+                }
+            });
+
+        List<ChatResponseUpdate> updates =
+            await CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+
+        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Same(currentException, failedAttempt!.Exception);
+        Assert.False(failedAttempt.OutputCommitted);
+        Assert.False(failedAttempt.ResponseCompleted);
+        Assert.Null(failedAttempt.TimeToFirstUpdate);
+        Assert.Equal(1, failedStream.DisposeCount);
+    }
+
+    [Fact]
     public async Task Streaming_EmptyStreamDisposalFailureFallsBack()
     {
         var disposalException = new InvalidOperationException("dispose failed");
@@ -1758,6 +1793,30 @@ public class RoutingChatClientTests
         public IAsyncEnumerator<ChatResponseUpdate> GetAsyncEnumerator(
             CancellationToken cancellationToken = default) =>
             throw _exception;
+    }
+
+    private sealed class ThrowingCurrentAsyncEnumerable(Exception exception) : IAsyncEnumerable<ChatResponseUpdate>
+    {
+        public int DisposeCount { get; private set; }
+
+        public IAsyncEnumerator<ChatResponseUpdate> GetAsyncEnumerator(
+            CancellationToken cancellationToken = default) =>
+            new Enumerator(this, exception);
+
+        private sealed class Enumerator(
+            ThrowingCurrentAsyncEnumerable owner,
+            Exception exception) : IAsyncEnumerator<ChatResponseUpdate>
+        {
+            public ChatResponseUpdate Current => throw exception;
+
+            public ValueTask DisposeAsync()
+            {
+                owner.DisposeCount++;
+                return default;
+            }
+
+            public ValueTask<bool> MoveNextAsync() => new(true);
+        }
     }
 
     private sealed class TrackingAsyncEnumerable : IAsyncEnumerable<ChatResponseUpdate>

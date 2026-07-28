@@ -228,11 +228,6 @@ public abstract class FailoverChatClient : RoutingChatClient
             }
 
             activeDuration += GetElapsedTime(operationStart);
-            if (hasCurrent)
-            {
-                timeToFirstUpdate = activeDuration;
-            }
-
             bool responseCompleted = false;
             bool outputCommitted = false;
             bool isTerminalAttempt = false;
@@ -242,8 +237,20 @@ public abstract class FailoverChatClient : RoutingChatClient
             {
                 while (hasCurrent)
                 {
+                    operationStart = Stopwatch.GetTimestamp();
+                    bool hasCurrentValue = TryGetCurrent(
+                        enumerator,
+                        out ChatResponseUpdate current,
+                        out terminalException);
+                    activeDuration += GetElapsedTime(operationStart);
+                    if (!hasCurrentValue)
+                    {
+                        break;
+                    }
+
+                    timeToFirstUpdate ??= activeDuration;
                     outputCommitted = true;
-                    yield return enumerator.Current;
+                    yield return current;
 
                     operationStart = Stopwatch.GetTimestamp();
                     try
@@ -329,6 +336,25 @@ public abstract class FailoverChatClient : RoutingChatClient
 
     private static bool IsCancellation(Exception? exception, CancellationToken cancellationToken) =>
         exception is OperationCanceledException || cancellationToken.IsCancellationRequested;
+
+    private static bool TryGetCurrent(
+        IAsyncEnumerator<ChatResponseUpdate> enumerator,
+        out ChatResponseUpdate current,
+        out Exception? exception)
+    {
+        try
+        {
+            current = enumerator.Current;
+            exception = null;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            current = null!;
+            exception = ex;
+            return false;
+        }
+    }
 
     [DoesNotReturn]
     private static void Rethrow(Exception exception)
