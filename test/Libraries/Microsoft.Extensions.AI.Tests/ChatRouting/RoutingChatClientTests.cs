@@ -14,20 +14,32 @@ namespace Microsoft.Extensions.AI;
 public class RoutingChatClientTests
 {
     [Fact]
-    public void RoutingContext_CarriesMutableRequestInputs()
+    public void RoutingContext_CarriesRequestInputs()
     {
         var messages = new List<ChatMessage> { new(ChatRole.User, "initial") };
         var options = new ChatOptions { ModelId = "initial" };
         var context = new RoutingContext(messages, options);
-        var replacementMessages = new List<ChatMessage> { new(ChatRole.User, "replacement") };
-        var replacementOptions = new ChatOptions { ModelId = "replacement" };
-        context.Messages = replacementMessages;
-        context.ChatOptions = replacementOptions;
 
-        Assert.Same(replacementMessages, context.Messages);
-        Assert.Same(replacementOptions, context.ChatOptions);
+        Assert.Same(messages, context.Messages);
+        Assert.Same(messages, context.BufferMessages());
+        Assert.Same(options, context.ChatOptions);
         Assert.Throws<ArgumentNullException>(() => new RoutingContext(null!, options));
-        Assert.Throws<ArgumentNullException>(() => context.Messages = null!);
+    }
+
+    [Fact]
+    public void RoutingContext_BufferMessagesEnumeratesOnceAndCaches()
+    {
+        var messages = new SingleUseMessageEnumerable(
+            [new ChatMessage(ChatRole.User, "one"), new ChatMessage(ChatRole.Assistant, "two")]);
+        var context = new RoutingContext(messages, chatOptions: null);
+
+        IReadOnlyList<ChatMessage> first = context.BufferMessages();
+        IReadOnlyList<ChatMessage> second = context.BufferMessages();
+
+        Assert.Same(first, second);
+        Assert.Same(first, context.Messages);
+        Assert.Equal(2, first.Count);
+        Assert.Equal(1, messages.EnumerationCount);
     }
 
     [Fact]
@@ -104,6 +116,17 @@ public class RoutingChatClientTests
     }
 
     [Fact]
+    public async Task Create_RejectsNullMessagesForNonStreamingAndStreaming()
+    {
+        using var selected = new TestChatClient();
+        using RoutingChatClient router = RoutingChatClient.Create((_, _) => new(selected));
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => router.GetResponseAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            () => CollectAsync(router.GetStreamingResponseAsync(null!)));
+    }
+
+    [Fact]
     public async Task Create_DoesNotDisposeSelectedClient()
     {
         using var selected = new CountingDisposeClient();
@@ -143,6 +166,17 @@ public class RoutingChatClientTests
     }
 
     [Fact]
+    public async Task Failover_RejectsNullMessagesForNonStreamingAndStreaming()
+    {
+        using var selected = new TestChatClient();
+        using var router = new DelegatingFailoverTestRouter(_ => selected);
+
+        await Assert.ThrowsAsync<ArgumentNullException>(() => router.GetResponseAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            () => CollectAsync(router.GetStreamingResponseAsync(null!)));
+    }
+
+    [Fact]
     public async Task InitialSelectionFailureReportsTerminalUpdateWithoutAttempt()
     {
         var expected = new InvalidOperationException("selection failed");
@@ -169,6 +203,30 @@ public class RoutingChatClientTests
         Assert.Same(expected, actual);
         Assert.Same(selectedContext, completedContext);
         Assert.Equal(1, completionCount);
+    }
+
+    [Fact]
+    public async Task InitialSelectionFailureWithCallerCancellationThrowsCancellation()
+    {
+        using var cancellationSource = new CancellationTokenSource();
+        cancellationSource.Cancel();
+        var selectionException = new InvalidOperationException("selection failed");
+        int updateCount = 0;
+        using var router = new DelegatingFailoverTestRouter(
+            _ => throw selectionException,
+            (_, attempt, isTerminal) =>
+            {
+                updateCount++;
+                Assert.Null(attempt);
+                Assert.True(isTerminal);
+            });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => router.GetResponseAsync(
+                [new(ChatRole.User, "hi")],
+                cancellationToken: cancellationSource.Token));
+
+        Assert.Equal(1, updateCount);
     }
 
     [Fact]
@@ -388,32 +446,29 @@ public class RoutingChatClientTests
     }
 
     [Fact]
-    public async Task Policy_CanMutateContextBeforeDispatch()
+    public async Task Policy_CanBufferMessagesBeforeDispatch()
     {
         IEnumerable<ChatMessage>? forwardedMessages = null;
-        ChatOptions? forwardedOptions = null;
+        IReadOnlyList<ChatMessage>? bufferedMessages = null;
         using var inner = new TestChatClient
         {
-            GetResponseAsyncCallback = (messages, options, _) =>
+            GetResponseAsyncCallback = (messages, _, _) =>
             {
                 forwardedMessages = messages;
-                forwardedOptions = options;
                 return Task.FromResult(new ChatResponse());
             },
         };
-        var replacementMessages = new List<ChatMessage> { new(ChatRole.User, "replacement") };
-        var replacementOptions = new ChatOptions { ModelId = "replacement" };
+        var messages = new SingleUseMessageEnumerable([new(ChatRole.User, "original")]);
         using var router = new DelegatingTestRouter(context =>
         {
-            context.Messages = replacementMessages;
-            context.ChatOptions = replacementOptions;
+            bufferedMessages = context.BufferMessages();
             return inner;
         });
 
-        _ = await router.GetResponseAsync([new(ChatRole.User, "original")], new ChatOptions());
+        _ = await router.GetResponseAsync(messages);
 
-        Assert.Same(replacementMessages, forwardedMessages);
-        Assert.Same(replacementOptions, forwardedOptions);
+        Assert.Same(bufferedMessages, forwardedMessages);
+        Assert.Equal(1, messages.EnumerationCount);
     }
 
     [Fact]
@@ -625,10 +680,10 @@ public class RoutingChatClientTests
     {
         using var cancellationSource = new CancellationTokenSource();
         cancellationSource.Cancel();
+        var failure = new InvalidOperationException("failed");
         using var inner = new TestChatClient
         {
-            GetResponseAsyncCallback = (_, _, cancellationToken) =>
-                throw new OperationCanceledException(cancellationToken),
+            GetResponseAsyncCallback = (_, _, _) => throw failure,
         };
         int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
@@ -636,7 +691,7 @@ public class RoutingChatClientTests
             (_, attempt, isTerminal) =>
             {
                 updateCount++;
-                Assert.IsAssignableFrom<OperationCanceledException>(attempt!.Exception);
+                Assert.Same(failure, attempt!.Exception);
                 Assert.True(isTerminal);
             });
 
@@ -646,6 +701,51 @@ public class RoutingChatClientTests
                 cancellationToken: cancellationSource.Token));
 
         Assert.Equal(1, updateCount);
+    }
+
+    [Fact]
+    public async Task Failover_CancellationDuringUpdateIsObservedByNextAttempt()
+    {
+        using var cancellationSource = new CancellationTokenSource();
+        using var inner = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) => throw new InvalidOperationException("failed"),
+        };
+        int selections = 0;
+        var updates = new List<(FailoverChatClientAttempt? attempt, bool isTerminal)>();
+        using var router = new DelegatingFailoverTestRouter(
+            _ =>
+            {
+                selections++;
+                return inner;
+            },
+            (_, attempt, isTerminal) =>
+            {
+                updates.Add((attempt, isTerminal));
+                if (!isTerminal)
+                {
+                    cancellationSource.Cancel();
+                }
+            });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => router.GetResponseAsync(
+                [new(ChatRole.User, "hi")],
+                cancellationToken: cancellationSource.Token));
+
+        Assert.Equal(2, selections);
+        Assert.Collection(
+            updates,
+            update =>
+            {
+                Assert.NotNull(update.attempt);
+                Assert.False(update.isTerminal);
+            },
+            update =>
+            {
+                Assert.NotNull(update.attempt);
+                Assert.True(update.isTerminal);
+            });
     }
 
     [Fact]
@@ -699,14 +799,59 @@ public class RoutingChatClientTests
     }
 
     [Fact]
+    public async Task Streaming_CancellationDuringUpdateIsObservedByNextAttempt()
+    {
+        using var cancellationSource = new CancellationTokenSource();
+        using var inner = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) => ThrowingStream("failed"),
+        };
+        int selections = 0;
+        var updates = new List<(FailoverChatClientAttempt? attempt, bool isTerminal)>();
+        using var router = new DelegatingFailoverTestRouter(
+            _ =>
+            {
+                selections++;
+                return inner;
+            },
+            (_, attempt, isTerminal) =>
+            {
+                updates.Add((attempt, isTerminal));
+                if (!isTerminal)
+                {
+                    cancellationSource.Cancel();
+                }
+            });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => CollectAsync(
+                router.GetStreamingResponseAsync(
+                    [new(ChatRole.User, "hi")],
+                    cancellationToken: cancellationSource.Token)));
+
+        Assert.Equal(2, selections);
+        Assert.Collection(
+            updates,
+            update =>
+            {
+                Assert.NotNull(update.attempt);
+                Assert.False(update.isTerminal);
+            },
+            update =>
+            {
+                Assert.NotNull(update.attempt);
+                Assert.True(update.isTerminal);
+            });
+    }
+
+    [Fact]
     public async Task Streaming_CancellationDoesNotSelectNext()
     {
         using var cancellationSource = new CancellationTokenSource();
         cancellationSource.Cancel();
         using var inner = new TestChatClient
         {
-            GetStreamingResponseAsyncCallback = (_, _, cancellationToken) =>
-                CanceledStream(cancellationToken),
+            GetStreamingResponseAsyncCallback = (_, _, _) => ThrowingStream("failed"),
         };
         int selections = 0;
         FailoverChatClientAttempt? observed = null;
@@ -729,15 +874,16 @@ public class RoutingChatClientTests
                     cancellationToken: cancellationSource.Token)));
 
         Assert.Equal(1, selections);
-        Assert.IsAssignableFrom<OperationCanceledException>(observed!.Exception);
+        Assert.IsType<InvalidOperationException>(observed!.Exception);
         Assert.False(observed.OutputCommitted);
         Assert.False(observed.ResponseCompleted);
     }
 
     [Fact]
-    public async Task OperationCanceledException_DoesNotTriggerFailover()
+    public async Task OperationCanceledException_CanTriggerFailover()
     {
         bool secondCalled = false;
+        ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "ok"));
         using var first = new TestChatClient
         {
             GetResponseAsyncCallback = (_, _, _) => throw new OperationCanceledException(),
@@ -747,19 +893,19 @@ public class RoutingChatClientTests
             GetResponseAsyncCallback = (_, _, _) =>
             {
                 secondCalled = true;
-                return Task.FromResult(new ChatResponse());
+                return Task.FromResult(expected);
             },
         };
         using var client = new OrderedFailoverChatClient([first, second]);
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => client.GetResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "hi")]);
 
-        Assert.False(secondCalled);
+        Assert.Same(expected, response);
+        Assert.True(secondCalled);
     }
 
     [Fact]
-    public async Task Streaming_OperationCanceledExceptionDoesNotTriggerFailover()
+    public async Task Streaming_OperationCanceledExceptionCanTriggerFailover()
     {
         bool secondCalled = false;
         using var first = new TestChatClient
@@ -776,14 +922,15 @@ public class RoutingChatClientTests
         };
         using var client = new OrderedFailoverChatClient([first, second]);
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
+        List<ChatResponseUpdate> updates =
+            await CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
 
-        Assert.False(secondCalled);
+        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.True(secondCalled);
     }
 
     [Fact]
-    public async Task Streaming_DisposalCancellationDoesNotTriggerFailover()
+    public async Task Streaming_DisposalCancellationCanTriggerFailover()
     {
         bool secondCalled = false;
         var canceledStream = new TrackingAsyncEnumerable(
@@ -803,10 +950,11 @@ public class RoutingChatClientTests
         };
         using var client = new OrderedFailoverChatClient([first, second]);
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
+        List<ChatResponseUpdate> updates =
+            await CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
 
-        Assert.False(secondCalled);
+        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.True(secondCalled);
         Assert.Equal(1, canceledStream.DisposeCount);
     }
 
@@ -916,6 +1064,54 @@ public class RoutingChatClientTests
         Assert.False(failedAttempt.ResponseCompleted);
         Assert.Null(failedAttempt.TimeToFirstUpdate);
         Assert.Equal(1, failedStream.DisposeCount);
+    }
+
+    [Fact]
+    public async Task Streaming_CurrentFailureCancellationIsObservedByNextAttempt()
+    {
+        using var cancellationSource = new CancellationTokenSource();
+        var failedStream = new ThrowingCurrentAsyncEnumerable(new InvalidOperationException("current failed"));
+        using var inner = new TestChatClient
+        {
+            GetStreamingResponseAsyncCallback = (_, _, _) => failedStream,
+        };
+        int selections = 0;
+        var updates = new List<(FailoverChatClientAttempt? attempt, bool isTerminal)>();
+        using var router = new DelegatingFailoverTestRouter(
+            _ =>
+            {
+                selections++;
+                return inner;
+            },
+            (_, attempt, isTerminal) =>
+            {
+                updates.Add((attempt, isTerminal));
+                if (!isTerminal)
+                {
+                    cancellationSource.Cancel();
+                }
+            });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => CollectAsync(
+                router.GetStreamingResponseAsync(
+                    [new(ChatRole.User, "hi")],
+                    cancellationToken: cancellationSource.Token)));
+
+        Assert.Equal(2, selections);
+        Assert.Collection(
+            updates,
+            update =>
+            {
+                Assert.NotNull(update.attempt);
+                Assert.False(update.isTerminal);
+            },
+            update =>
+            {
+                Assert.NotNull(update.attempt);
+                Assert.True(update.isTerminal);
+            });
+        Assert.Equal(2, failedStream.DisposeCount);
     }
 
     [Fact]
@@ -1448,6 +1644,35 @@ public class RoutingChatClientTests
     }
 
     [Fact]
+    public async Task OrderedFailover_BuffersMessagesAcrossAttempts()
+    {
+        var messages = new SingleUseMessageEnumerable([new(ChatRole.User, "hi")]);
+        using var first = new TestChatClient
+        {
+            GetResponseAsyncCallback = (forwarded, _, _) =>
+            {
+                Assert.Equal("hi", Assert.Single(forwarded).Text);
+                throw new InvalidOperationException("failed");
+            },
+        };
+        ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "ok"));
+        using var second = new TestChatClient
+        {
+            GetResponseAsyncCallback = (forwarded, _, _) =>
+            {
+                Assert.Equal("hi", Assert.Single(forwarded).Text);
+                return Task.FromResult(expected);
+            },
+        };
+        using var client = new OrderedFailoverChatClient([first, second]);
+
+        ChatResponse response = await client.GetResponseAsync(messages);
+
+        Assert.Same(expected, response);
+        Assert.Equal(1, messages.EnumerationCount);
+    }
+
+    [Fact]
     public async Task OrderedFailover_ConcurrentRequestsHaveIndependentState()
     {
         const int RequestCount = 10;
@@ -1595,8 +1820,7 @@ public class RoutingChatClientTests
         bool secondCalled = false;
         using var first = new TestChatClient
         {
-            GetResponseAsyncCallback = (_, _, cancellationToken) =>
-                throw new OperationCanceledException(cancellationToken),
+            GetResponseAsyncCallback = (_, _, _) => throw new InvalidOperationException("failed"),
         };
         using var second = new TestChatClient
         {

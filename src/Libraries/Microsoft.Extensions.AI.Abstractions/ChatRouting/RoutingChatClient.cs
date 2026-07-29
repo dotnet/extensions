@@ -38,7 +38,10 @@ public abstract class RoutingChatClient : IChatClient
     /// <param name="context">The request-specific inputs.</param>
     /// <param name="cancellationToken">The cancellation token supplied for the request.</param>
     /// <returns>The client to invoke.</returns>
-    /// <remarks>Exceptions from this method propagate to the caller.</remarks>
+    /// <remarks>
+    /// Implementations should generally inspect the request inputs and return a client already configured for
+    /// route-specific invocation behavior. Exceptions from this method propagate to the caller.
+    /// </remarks>
     protected abstract ValueTask<IChatClient> SelectClientAsync(
         RoutingContext context,
         CancellationToken cancellationToken);
@@ -49,6 +52,7 @@ public abstract class RoutingChatClient : IChatClient
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(messages);
         var context = new RoutingContext(messages, options);
         IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
@@ -64,6 +68,7 @@ public abstract class RoutingChatClient : IChatClient
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(messages);
         var context = new RoutingContext(messages, options);
         IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");

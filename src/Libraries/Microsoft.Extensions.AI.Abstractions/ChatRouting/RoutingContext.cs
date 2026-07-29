@@ -15,8 +15,9 @@ namespace Microsoft.Extensions.AI;
 /// started from the sequence returned by <see cref="IChatClient.GetStreamingResponseAsync"/>.
 /// </para>
 /// <para>
-/// A derived client may replace <see cref="Messages"/> or <see cref="ChatOptions"/> during selection. The selected
-/// client receives the updated values.
+/// Selectors should generally treat the request inputs as read-only and return a client already configured for
+/// route-specific behavior. <see cref="BufferMessages"/> provides explicit request-local buffering when repeatable
+/// message enumeration is required.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -33,17 +34,35 @@ public class RoutingContext
         ChatOptions = chatOptions;
     }
 
-    /// <summary>Gets or sets the messages supplied to client selection and the selected client.</summary>
+    /// <summary>Gets the messages supplied to client selection and the selected client.</summary>
     /// <remarks>
-    /// The sequence may be enumerated during selection and again by one or more selected clients. Callers should
-    /// supply a repeatable sequence, or a selector may replace it with a materialized sequence when required.
+    /// Selectors should generally treat this sequence as input. A selector that must enumerate the sequence should use
+    /// <see cref="BufferMessages"/> when repeatable enumeration is required.
     /// </remarks>
-    public IEnumerable<ChatMessage> Messages
-    {
-        get;
-        set => field = Throw.IfNull(value);
-    }
+    public IEnumerable<ChatMessage> Messages { get; private set; }
 
-    /// <summary>Gets or sets the options supplied to client selection and the selected client.</summary>
-    public ChatOptions? ChatOptions { get; set; }
+    /// <summary>Gets the options supplied to client selection and the selected client.</summary>
+    /// <remarks>
+    /// Selectors should generally treat this instance as input and return a client already configured for
+    /// route-specific behavior. Because <see cref="ChatOptions"/> is mutable, changes to the instance are observed by
+    /// the selected client and subsequent failover attempts.
+    /// </remarks>
+    public ChatOptions? ChatOptions { get; }
+
+    /// <summary>Returns the messages as a repeatable list, buffering the sequence when necessary.</summary>
+    /// <returns>The existing message list, or a list created and cached by enumerating <see cref="Messages"/> once.</returns>
+    /// <remarks>
+    /// The cached list is used by subsequent selectors and selected clients for this request. Existing
+    /// <see cref="IReadOnlyList{T}"/> instances and individual messages are not cloned.
+    /// </remarks>
+    public IReadOnlyList<ChatMessage> BufferMessages()
+    {
+        if (Messages is not IReadOnlyList<ChatMessage> buffered)
+        {
+            buffered = [.. Messages];
+            Messages = buffered;
+        }
+
+        return buffered;
+    }
 }

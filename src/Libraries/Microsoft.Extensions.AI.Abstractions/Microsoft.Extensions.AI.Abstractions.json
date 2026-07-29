@@ -4011,15 +4011,19 @@
         {
           "Member": "Microsoft.Extensions.AI.RoutingContext.RoutingContext(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? chatOptions);",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.RoutingContext.BufferMessages();",
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.AI.ChatOptions? Microsoft.Extensions.AI.RoutingContext.ChatOptions { get; set; }",
+          "Member": "Microsoft.Extensions.AI.ChatOptions? Microsoft.Extensions.AI.RoutingContext.ChatOptions { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.RoutingContext.Messages { get; set; }",
+          "Member": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.RoutingContext.Messages { get; private set; }",
           "Stage": "Experimental"
         }
       ]
