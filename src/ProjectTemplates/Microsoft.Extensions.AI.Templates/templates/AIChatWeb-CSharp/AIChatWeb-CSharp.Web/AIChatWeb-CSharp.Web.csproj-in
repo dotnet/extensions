@@ -13,13 +13,13 @@
 #endif -->
 <!--#if (IsOllama)
     <PackageReference Include="OllamaSharp" Version="${PackageVersion:OllamaSharp}" />
-#elif ((IsGHModels || IsOpenAI) && !IsAspire)
+#elif (IsOpenAI && !IsAspire)
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 #elif (IsAzureAIFoundry)
     <PackageReference Include="Azure.AI.Projects" Version="${PackageVersion:Azure.AI.Projects}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 #endif -->
-<!--#if ((IsAzureOpenAI || IsOpenAI || IsGHModels) && IsAspire) -->
+<!--#if ((IsAzureOpenAI || IsOpenAI) && IsAspire) -->
     <PackageReference Include="Aspire.Azure.AI.OpenAI" Version="${PackageVersion:Aspire.Azure.AI.OpenAI}" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="${PackageVersion:Microsoft.Extensions.AI.OpenAI}" />
 <!--#endif -->
@@ -28,6 +28,9 @@
 <!--#endif -->
 <!--#if (IsManagedIdentity) -->
     <PackageReference Include="Azure.Identity" Version="${PackageVersion:Azure.Identity}" />
+<!--#endif -->
+<!--#if (IsMock) -->
+    <PackageReference Include="Microsoft.Extensions.AI.Testing" Version="${PackageVersion:Microsoft.Extensions.AI.Testing}" />
 <!--#endif -->
     <PackageReference Include="Microsoft.Extensions.AI" Version="${PackageVersion:Microsoft.Extensions.AI}" />
     <PackageReference Include="Microsoft.Extensions.DataIngestion" Version="${PackageVersion:Microsoft.Extensions.DataIngestion}" />

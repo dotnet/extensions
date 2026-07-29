@@ -1,18 +1,13 @@
 var builder = DistributedApplication.CreateBuilder(args);
 #if (IsOllama) // ASPIRE PARAMETERS
-#elif (IsOpenAI || IsGHModels)
+#elif (IsOpenAI)
 
 // You will need to set the connection string to your own value
 // You can do this using Visual Studio's "Manage User Secrets" UI, or on the command line:
 //   cd this-project-directory
-#if (IsOpenAI)
 //   dotnet user-secrets set ConnectionStrings:openai "Key=YOUR-API-KEY"
-#elif (IsGHModels)
-//   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://models.inference.ai.azure.com;Key=YOUR-API-KEY"
-#else // IsAzureOpenAI
-//   dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://YOUR-DEPLOYMENT-NAME.openai.azure.com;Key=YOUR-API-KEY"
-#endif
 var openai = builder.AddConnectionString("openai");
+#elif (IsMock)
 #else // IsAzureOpenAI
 
 // See https://learn.microsoft.com/dotnet/aspire/azure/local-provisioning#configuration
@@ -62,8 +57,9 @@ webApp
     .WithReference(embeddings)
     .WaitFor(chat)
     .WaitFor(embeddings);
-#elif (IsOpenAI || IsGHModels)
+#elif (IsOpenAI)
 webApp.WithReference(openai);
+#elif (IsMock)
 #else // IsAzureOpenAI
 webApp
     .WithReference(openai)

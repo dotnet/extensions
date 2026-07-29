@@ -30,6 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI.Testing\Microsoft.Extensions.AI.Testing.csproj" />
     <Compile Remove="**\*" />
 
     <Content

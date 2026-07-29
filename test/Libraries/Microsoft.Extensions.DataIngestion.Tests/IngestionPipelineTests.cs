@@ -16,12 +16,16 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Xunit;
 
+#pragma warning disable MEAI001 // Tests use experimental mock embedding APIs
+
 namespace Microsoft.Extensions.DataIngestion.Tests;
 
 #pragma warning disable S881 // Increment (++) and decrement (--) operators should not be used in a method call or mixed with other operators in an expression
 
 public sealed class IngestionPipelineTests : IDisposable
 {
+    private const int EmbeddingDimensionCount = 4;
+
     private readonly FileInfo _withTable;
     private readonly FileInfo _withImage;
     private readonly IReadOnlyList<FileInfo> _sampleFiles;
@@ -82,9 +86,9 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        MockEmbeddingGenerator<string> embeddingGenerator = CreateMockEmbeddingGenerator();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
-        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: EmbeddingDimensionCount);
 
         using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
         List<IngestionResult> ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
@@ -92,7 +96,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.Equal(_sampleFiles.Count, ingestionResults.Count);
         AssertAllIngestionsSucceeded(ingestionResults);
 
-        Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
+        Assert.True(embeddingGenerator.CallCount > 0, "Embedding generator should have been called.");
 
         var retrieved = await vectorStoreWriter.VectorStoreCollection
             .GetAsync(record => _sampleFiles.Any(info => info.FullName == (string)record["documentid"]!), top: 1000)
@@ -115,9 +119,9 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        MockEmbeddingGenerator<string> embeddingGenerator = CreateMockEmbeddingGenerator();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
-        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: EmbeddingDimensionCount);
 
         using IngestionPipeline<string> pipeline = new(CreateReader(), CreateChunker(), vectorStoreWriter);
 
@@ -126,7 +130,7 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.Equal(directory.EnumerateFiles("*.md").Count(), ingestionResults.Count);
         AssertAllIngestionsSucceeded(ingestionResults);
 
-        Assert.True(embeddingGenerator.WasCalled, "Embedding generator should have been called.");
+        Assert.True(embeddingGenerator.CallCount > 0, "Embedding generator should have been called.");
 
         var retrieved = await vectorStoreWriter.VectorStoreCollection
             .GetAsync(record => ((string)record["documentid"]!).StartsWith(directory.FullName), top: 1000)
@@ -149,12 +153,12 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<DataContent> embeddingGenerator = new();
+        MockEmbeddingGenerator<DataContent> embeddingGenerator = CreateMockEmbeddingGenerator<DataContent>();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
-        using VectorStoreWriter<DataContent> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<DataContent>.DimensionCount);
+        using VectorStoreWriter<DataContent> vectorStoreWriter = new(testVectorStore, dimensionCount: EmbeddingDimensionCount);
         using IngestionPipeline<DataContent> pipeline = new(CreateReader(), new ImageChunker(), vectorStoreWriter);
 
-        Assert.False(embeddingGenerator.WasCalled);
+        Assert.Equal(0, embeddingGenerator.CallCount);
         var ingestionResults = await pipeline.ProcessAsync(_sampleFiles).ToListAsync();
         AssertAllIngestionsSucceeded(ingestionResults);
 
@@ -162,7 +166,7 @@ public sealed class IngestionPipelineTests : IDisposable
             .GetAsync(record => ((string)record["documentid"]!).EndsWith(_withImage.Name), top: 100)
             .ToListAsync();
 
-        Assert.True(embeddingGenerator.WasCalled);
+        Assert.True(embeddingGenerator.CallCount > 0);
         Assert.NotEmpty(retrieved);
         for (int i = 0; i < retrieved.Count; i++)
         {
@@ -197,9 +201,9 @@ public sealed class IngestionPipelineTests : IDisposable
         List<Activity> activities = [];
         using TracerProvider tracerProvider = CreateTraceProvider(activities);
 
-        TestEmbeddingGenerator<string> embeddingGenerator = new();
+        MockEmbeddingGenerator<string> embeddingGenerator = CreateMockEmbeddingGenerator();
         using InMemoryVectorStore testVectorStore = new(new() { EmbeddingGenerator = embeddingGenerator });
-        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+        using VectorStoreWriter<string> vectorStoreWriter = new(testVectorStore, dimensionCount: EmbeddingDimensionCount);
 
         using IngestionPipeline<string> pipeline = new(failingForFirstReader, CreateChunker(), vectorStoreWriter);
 
@@ -224,6 +228,21 @@ public sealed class IngestionPipelineTests : IDisposable
     private static IngestionDocumentReader CreateReader() => new MarkdownReader();
 
     private static IngestionChunker<string> CreateChunker() => new HeaderChunker(new(TiktokenTokenizer.CreateForModel("gpt-4")));
+
+    private static MockEmbeddingGenerator<string> CreateMockEmbeddingGenerator() =>
+        new()
+        {
+            GenerateAsyncCallback = static (_, _, _) => CreateFixedEmbeddings(),
+        };
+
+    private static MockEmbeddingGenerator<TInput> CreateMockEmbeddingGenerator<TInput>() =>
+        new()
+        {
+            GenerateAsyncCallback = static (_, _, _) => CreateFixedEmbeddings(),
+        };
+
+    private static Task<GeneratedEmbeddings<Embedding<float>>> CreateFixedEmbeddings() =>
+        Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([new(new float[] { 0, 1, 2, 3 })]);
 
     private static TracerProvider CreateTraceProvider(List<Activity> activities)
         => Sdk.CreateTracerProviderBuilder()
@@ -259,3 +278,5 @@ public sealed class IngestionPipelineTests : IDisposable
         Assert.All(failed, a => Assert.Equal(ExpectedException.ExceptionMessage, a.StatusDescription));
     }
 }
+
+#pragma warning restore MEAI001

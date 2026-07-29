@@ -1,5 +1,5 @@
 using Microsoft.Extensions.AI;
-#if (IsOpenAI || IsGHModels)
+#if (IsOpenAI)
 using OpenAI;
 #endif
 using AIChatWeb_CSharp.Web.Components;
@@ -19,7 +19,13 @@ builder.AddOllamaApiClient("chat")
 builder.AddOllamaApiClient("embeddings")
     .AddEmbeddingGenerator();
 #elif (IsAzureAIFoundry)
-#else // (IsOpenAI || IsAzureOpenAI || IsGHModels)
+#elif (IsMock)
+builder.Services.AddChatClient(MockServices.CreateChatClient())
+    .UseFunctionInvocation()
+    .UseOpenTelemetry(configure: c =>
+        c.EnableSensitiveData = builder.Environment.IsDevelopment());
+builder.Services.AddEmbeddingGenerator(MockServices.CreateEmbeddingGenerator());
+#else // (IsOpenAI || IsAzureOpenAI)
 #if (IsOpenAI)
 var openai = builder.AddOpenAIClient("openai");
 #else

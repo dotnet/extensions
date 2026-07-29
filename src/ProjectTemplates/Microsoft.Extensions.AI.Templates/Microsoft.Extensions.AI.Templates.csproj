@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
     <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
+    <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.AI.Testing\Microsoft.Extensions.AI.Testing.csproj" />
     <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.Http.Diagnostics\Microsoft.Extensions.Http.Diagnostics.csproj" />
     <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.Http.Resilience\Microsoft.Extensions.Http.Resilience.csproj" />
     <ProjectReference Include="$(SrcLibrariesDir)\Microsoft.Extensions.ServiceDiscovery\Microsoft.Extensions.ServiceDiscovery.csproj" />

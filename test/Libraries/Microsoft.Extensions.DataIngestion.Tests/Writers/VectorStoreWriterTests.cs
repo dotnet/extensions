@@ -5,23 +5,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Xunit;
+
+#pragma warning disable MEAI001 // Tests use experimental mock embedding APIs
 
 namespace Microsoft.Extensions.DataIngestion.Writers.Tests;
 
 public abstract class VectorStoreWriterTests
 {
+    private const int EmbeddingDimensionCount = 4;
+
     [Fact]
     public async Task CanGenerateDynamicSchema()
     {
         string documentId = Guid.NewGuid().ToString();
 
-        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using MockEmbeddingGenerator<string> testEmbeddingGenerator = CreateMockEmbeddingGenerator();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
         using VectorStoreWriter<string> writer = new(
             vectorStore,
-            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount);
+            dimensionCount: EmbeddingDimensionCount);
 
         IngestionDocument document = new(documentId);
         List<IngestionChunk<string>> chunks =
@@ -38,7 +43,7 @@ public abstract class VectorStoreWriterTests
             }
         ];
 
-        Assert.False(testEmbeddingGenerator.WasCalled);
+        Assert.Equal(0, testEmbeddingGenerator.CallCount);
         await writer.WriteAsync(chunks.ToAsyncEnumerable());
 
         Dictionary<string, object?> record = await writer.VectorStoreCollection
@@ -49,7 +54,7 @@ public abstract class VectorStoreWriterTests
         Assert.NotNull(record["key"]);
         Assert.Equal(documentId, record["documentid"]);
         Assert.Equal(chunks[0].Content, record["content"]);
-        Assert.True(testEmbeddingGenerator.WasCalled);
+        Assert.True(testEmbeddingGenerator.CallCount > 0);
         foreach (var kvp in chunks[0].Metadata)
         {
             Assert.True(record.ContainsKey(kvp.Key), $"Record does not contain key '{kvp.Key}'");
@@ -62,11 +67,11 @@ public abstract class VectorStoreWriterTests
     {
         string documentId = Guid.NewGuid().ToString();
 
-        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using MockEmbeddingGenerator<string> testEmbeddingGenerator = CreateMockEmbeddingGenerator();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
         using VectorStoreWriter<string> writer = new(
             vectorStore,
-            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+            dimensionCount: EmbeddingDimensionCount,
             options: new()
             {
                 IncrementalIngestion = true,
@@ -122,11 +127,11 @@ public abstract class VectorStoreWriterTests
     {
         string documentId = Guid.NewGuid().ToString();
 
-        using TestEmbeddingGenerator<string> testEmbeddingGenerator = new();
+        using MockEmbeddingGenerator<string> testEmbeddingGenerator = CreateMockEmbeddingGenerator();
         using VectorStore vectorStore = CreateVectorStore(testEmbeddingGenerator);
         using VectorStoreWriter<string> writer = new(
             vectorStore,
-            dimensionCount: TestEmbeddingGenerator<string>.DimensionCount,
+            dimensionCount: EmbeddingDimensionCount,
             options: new()
             {
                 IncrementalIngestion = true,
@@ -167,5 +172,14 @@ public abstract class VectorStoreWriterTests
         Assert.Contains(records, r => (string)r["content"]! == "updated chunk 2");
     }
 
-    protected abstract VectorStore CreateVectorStore(TestEmbeddingGenerator<string> testEmbeddingGenerator);
+    protected abstract VectorStore CreateVectorStore(MockEmbeddingGenerator<string> testEmbeddingGenerator);
+
+    private static MockEmbeddingGenerator<string> CreateMockEmbeddingGenerator() =>
+        new()
+        {
+            GenerateAsyncCallback = static (_, _, _) =>
+                Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([new(new float[] { 0, 1, 2, 3 })]),
+        };
 }
+
+#pragma warning restore MEAI001

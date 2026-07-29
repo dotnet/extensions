@@ -98,6 +98,14 @@
         "exclude": [
           "AIChatWeb-CSharp.Web/Services/JsonVectorStore.cs"
         ]
+      },
+      {
+        "condition": "(!IsMock)",
+        "exclude": [
+          "AIChatWeb-CSharp.Web/Services/MockServices.cs",
+          "AIChatWeb-CSharp.Web/Services/MockChatClientExtensions.cs",
+          "AIChatWeb-CSharp.Web/Services/LexicalMockEmbeddingGenerator.cs"
+        ]
       }
     ]
   }],
@@ -128,7 +136,7 @@
       "type": "parameter",
       "displayName": "_AI service provider",
       "datatype": "choice",
-      "defaultValue": "githubmodels",
+      "isRequired": true,
       "choices": [
         {
           "choice": "azureopenai",
@@ -136,9 +144,9 @@
           "description": "Uses Azure OpenAI service"
         },
         {
-          "choice": "githubmodels",
-          "displayName": "GitHub Models",
-          "description": "Uses GitHub Models"
+          "choice": "mock",
+          "displayName": "Mock (for local development and testing)",
+          "description": "Uses deterministic, pre-seeded responses"
         },
         {
           "choice": "ollama",
@@ -215,13 +223,13 @@
       "type": "computed",
       "value": "(AiServiceProvider == \"openai\")"
     },
-    "IsGHModels": {
-      "type": "computed",
-      "value": "(AiServiceProvider == \"githubmodels\")"
-    },
     "IsOllama": {
       "type": "computed",
       "value": "(AiServiceProvider == \"ollama\")"
+    },
+    "IsMock": {
+      "type": "computed",
+      "value": "(AiServiceProvider == \"mock\")"
     },
     "IsAzureAIFoundry": {
       "type": "computed",

@@ -2,8 +2,10 @@
 
 This project is an AI chat application that demonstrates how to chat with custom data using an AI language model. Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](https://aka.ms/dotnet-chat-templatePreview2-survey).
 
+#### ---#if (!IsMock)
 >[!NOTE]
 > Before running this project you need to configure the API keys or endpoints for the providers you have chosen. See below for details specific to your choices.
+#### ---#endif
 
 #### ---#if (IsAzure)
 ### Prerequisites
@@ -20,31 +22,19 @@ This incompatibility can be addressed by upgrading to Docker Desktop 4.41.1. See
 
 # Configure the AI Model Provider
 
-#### ---#if (IsGHModels)
-## Using GitHub Models
-To use models hosted by GitHub Models, you will need to create a GitHub personal access token. The token should not have any scopes or permissions. See [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).
+#### ---#if (IsMock)
+## Using Mock provider
 
-#### ---#if (hostIdentifier == "vs")
-Configure your token for this project using .NET User Secrets:
+The mock provider runs fully local with deterministic canned responses, so it requires no API keys, cloud credentials, or model downloads.
 
-1. In Visual Studio, right-click on the AIChatWeb-CSharp.AppHost project in the Solution Explorer and select "Manage User Secrets".
-2. This opens a `secrets.json` file where you can store your API keys without them being tracked in source control. Add the following key and value:
+It is pre-seeded with roughly 20 TrailMaster GPS Watch responses (plus follow-up suggestions) that map to the sample documents under `wwwroot/Data`.
 
-   ```json
-   {
-     "ConnectionStrings:openai": "Endpoint=https://models.inference.ai.azure.com;Key=YOUR-API-KEY"
-   }
-   ```
-#### ---#else
-From the command line, configure your token for this project using .NET User Secrets by running the following commands:
+Good starter prompts:
 
-```sh
-cd AIChatWeb-CSharp.AppHost
-dotnet user-secrets set ConnectionStrings:openai "Endpoint=https://models.inference.ai.azure.com;Key=YOUR-API-KEY"
-```
-#### ---#endif
-
-Learn more about [prototyping with AI models using GitHub Models](https://docs.github.com/github-models/prototyping-with-ai-models).
+- What does TrailMaster track?
+- How rugged is TrailMaster?
+- How does location sharing work?
+- Why should I buy this watch?
 #### ---#endif
 #### ---#if (IsOpenAI)
 ## Using OpenAI

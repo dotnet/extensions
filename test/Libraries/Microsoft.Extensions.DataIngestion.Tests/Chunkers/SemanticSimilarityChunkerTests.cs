@@ -9,6 +9,8 @@ using Microsoft.Extensions.AI;
 using Microsoft.ML.Tokenizers;
 using Xunit;
 
+#pragma warning disable MEAI001 // Tests use experimental mock embedding APIs
+
 namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
 {
     public class SemanticSimilarityChunkerTests : DocumentChunkerTests
@@ -16,12 +18,12 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
         protected override IngestionChunker<string> CreateDocumentChunker(int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            TestEmbeddingGenerator embeddingClient = new();
+            MockEmbeddingGenerator<string> embeddingClient = CreateMockEmbeddingGenerator();
 #pragma warning restore CA2000 // Dispose objects before losing scope
             return CreateSemanticSimilarityChunker(embeddingClient, maxTokensPerChunk, overlapTokens);
         }
 
-        private static IngestionChunker<string> CreateSemanticSimilarityChunker(TestEmbeddingGenerator embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
+        private static IngestionChunker<string> CreateSemanticSimilarityChunker(IEmbeddingGenerator<string, Embedding<float>> embeddingClient, int maxTokensPerChunk = 2_000, int overlapTokens = 500)
         {
             Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
             return new SemanticSimilarityChunker(embeddingClient,
@@ -42,7 +44,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            using TestEmbeddingGenerator customGenerator = new()
+            using MockEmbeddingGenerator<string> customGenerator = new()
             {
                 GenerateAsyncCallback = static async (values, options, ct) =>
                 {
@@ -77,7 +79,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using var customGenerator = new TestEmbeddingGenerator
+            using var customGenerator = new MockEmbeddingGenerator<string>
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -154,7 +156,7 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                 }
             });
 
-            using var customGenerator = new TestEmbeddingGenerator
+            using var customGenerator = new MockEmbeddingGenerator<string>
             {
                 GenerateAsyncCallback = async (values, options, ct) =>
                 {
@@ -236,6 +238,14 @@ The twelve Olympian gods were the principal deities of the Greek pantheon:
                 };
         }
 
+        private static MockEmbeddingGenerator<string> CreateMockEmbeddingGenerator() =>
+            new()
+            {
+                GenerateAsyncCallback = static (values, _, _) =>
+                    Task.FromResult<GeneratedEmbeddings<Embedding<float>>>(
+                        new(values.Select(_ => new Embedding<float>(new float[] { 1, 2, 3, 4 })))),
+            };
+
         private static IngestionDocumentParagraph?[,] ToParagraphCells(string[,] cells)
         {
             int rows = cells.GetLength(0);
@@ -253,3 +263,5 @@ The twelve Olympian gods were the principal deities of the Greek pantheon:
         }
     }
 }
+
+#pragma warning restore MEAI001

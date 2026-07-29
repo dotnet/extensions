@@ -22,9 +22,9 @@ public class AIAgentWebAPISnapshotTests : TemplateSnapshotTestBase
     }
 
     [Theory]
-    [InlineData /* Defaults: --provider=githubmodels */]
-    [InlineData("--provider=ollama")]
+    [InlineData("--provider=mock")]
     [InlineData("--provider=openai")]
+    [InlineData("--provider=ollama")]
     [InlineData("--provider=azureopenai", "--managed-identity=true")]
     [InlineData("--provider=azureopenai", "--managed-identity=false")]
     public async Task RunSnapshotTests(params string[] templateArgs)

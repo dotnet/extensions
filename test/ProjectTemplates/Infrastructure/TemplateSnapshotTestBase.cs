@@ -31,8 +31,8 @@ public abstract class TemplateSnapshotTestBase
             Directory.Delete(workingDir, recursive: true);
         }
 
-        // Get the template location from the template package. Use a wildcard for the version number in the file name.
-        string templateLocation = Path.Combine(WellKnownPaths.LocalShippingPackagesPath, $"{templatePackageName}.*.nupkg");
+        // Resolve a concrete template package path so dotnet new install works cross-platform.
+        string templateLocation = ResolveTemplatePackagePath(templatePackageName);
 
         string[]? excludePatterns = Path.DirectorySeparatorChar is '/'
             ? verificationExcludePatterns
@@ -49,5 +49,25 @@ public abstract class TemplateSnapshotTestBase
             ScenarioName = scenarioName,
             VerificationExcludePatterns = excludePatterns
         };
+    }
+
+    private static string ResolveTemplatePackagePath(string templatePackageName)
+    {
+        string packageSearchPattern = $"{templatePackageName}.*.nupkg";
+
+        FileInfo? latestPackage = new DirectoryInfo(WellKnownPaths.LocalShippingPackagesPath)
+            .EnumerateFiles(packageSearchPattern, SearchOption.TopDirectoryOnly)
+            .Where(file => !file.Name.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .ThenByDescending(file => file.Name, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+        if (latestPackage is null)
+        {
+            throw new FileNotFoundException(
+                $"Unable to find template package '{packageSearchPattern}' under '{WellKnownPaths.LocalShippingPackagesPath}'.");
+        }
+
+        return latestPackage.FullName;
     }
 }

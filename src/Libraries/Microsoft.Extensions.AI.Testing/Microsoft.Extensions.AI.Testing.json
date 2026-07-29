@@ -1,0 +1,189 @@
+{
+  "Name": "Microsoft.Extensions.AI.Testing, Version=10.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.AI.MockChatClient : Microsoft.Extensions.AI.IChatClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.MockChatClient.MockChatClient();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddException(System.Func<Microsoft.Extensions.AI.MockChatClientRequest, bool> requestPredicate, System.Func<System.Exception> exceptionFactory, bool singleUse = false);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddResponse(System.Func<Microsoft.Extensions.AI.MockChatClientRequest, bool> requestPredicate, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>> getResponse, bool singleUse = false);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddResponse(System.Func<Microsoft.Extensions.AI.MockChatClientRequest, bool> requestPredicate, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>> getResponse, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate>> getStreamingResponse, bool singleUse = false);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddResponses(System.Collections.Generic.Dictionary<string, string> responses, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, string, bool>? requestPredicate = null, bool singleUse = false, System.Func<Microsoft.Extensions.AI.ChatResponse, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>>? getResponse = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddResponses(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> responses, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, string, bool>? requestPredicate = null, bool singleUse = false, System.Func<Microsoft.Extensions.AI.ChatResponse, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>>? getResponse = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddResponsesFromDictionary(System.Collections.Generic.Dictionary<string, string> responses, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, string, bool>? requestPredicate, bool singleUse, System.Func<Microsoft.Extensions.AI.ChatResponse, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>>? getResponse);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddResponsesFromEnumerable(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>> responses, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, string, bool>? requestPredicate, bool singleUse, System.Func<Microsoft.Extensions.AI.ChatResponse, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>>? getResponse);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddSeed(System.Func<Microsoft.Extensions.AI.MockChatClientRequest, bool> requestPredicate, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>> getResponse, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate>> getStreamingResponse, bool singleUse);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.AddStreamingResponse(System.Func<Microsoft.Extensions.AI.MockChatClientRequest, bool> requestPredicate, System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate>> getResponse, bool singleUse = false);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient Microsoft.Extensions.AI.MockChatClient.ClearResponses();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.MockChatClient.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.MockChatClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse> Microsoft.Extensions.AI.MockChatClient.GetResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.MockChatClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> Microsoft.Extensions.AI.MockChatClient.GetStreamingResponseAsync(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.AI.MockChatClient.SeededResponse Microsoft.Extensions.AI.MockChatClient.MatchSeededResponse(Microsoft.Extensions.AI.MockChatClientRequest request);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.MockChatClientRequest> Microsoft.Extensions.AI.MockChatClient.Requests { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.IServiceProvider? Microsoft.Extensions.AI.MockChatClient.Services { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.MockChatClient.SeededResponse",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.MockChatClient.SeededResponse.SeededResponse();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.MockChatClientRequest, bool> Microsoft.Extensions.AI.MockChatClient.SeededResponse.RequestPredicate { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.ChatResponse>> Microsoft.Extensions.AI.MockChatClient.SeededResponse.ResponseFactory { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AI.MockChatClient.SeededResponse.SingleUse { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.AI.MockChatClientRequest, System.Threading.CancellationToken, System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate>> Microsoft.Extensions.AI.MockChatClient.SeededResponse.StreamingFactory { get; init; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.MockChatClientRequest",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.MockChatClientRequest.MockChatClientRequest(System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options, bool isStreaming);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.AI.MockChatClientRequest.IsStreaming { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.AI.MockChatClientRequest.LastUserText { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.ChatMessage> Microsoft.Extensions.AI.MockChatClientRequest.Messages { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChatOptions? Microsoft.Extensions.AI.MockChatClientRequest.Options { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput> : Microsoft.Extensions.AI.IEmbeddingGenerator<TInput, Microsoft.Extensions.AI.Embedding<float>>, Microsoft.Extensions.AI.IEmbeddingGenerator, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.MockEmbeddingGenerator();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>>> Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.GenerateAsync(System.Collections.Generic.IEnumerable<TInput> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>>> Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.GenerateCoreAsync(System.Collections.Generic.IEnumerable<TInput> values, Microsoft.Extensions.AI.EmbeddingGenerationOptions? options, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.CallCount { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<System.Collections.Generic.IEnumerable<TInput>, Microsoft.Extensions.AI.EmbeddingGenerationOptions?, System.Threading.CancellationToken, System.Threading.Tasks.Task<Microsoft.Extensions.AI.GeneratedEmbeddings<Microsoft.Extensions.AI.Embedding<float>>>>? Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.GenerateAsyncCallback { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Func<System.Type, object?, object?> Microsoft.Extensions.AI.MockEmbeddingGenerator<TInput>.GetServiceCallback { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

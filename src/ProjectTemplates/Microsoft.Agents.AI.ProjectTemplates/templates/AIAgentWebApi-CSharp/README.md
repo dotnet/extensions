@@ -4,8 +4,8 @@ This is an AI Agent Web API application created from the `aiagent-webapi` templa
 
 ## Prerequisites
 
-<!--#if (IsGHModels) -->
-- A GitHub Models API token (free to get started)
+<!--#if (IsMock) -->
+- No external AI provider prerequisites
 <!--#elif (IsOpenAI) -->
 - An OpenAI API key
 <!--#elif (IsAzureOpenAI) -->
@@ -18,38 +18,18 @@ This is an AI Agent Web API application created from the `aiagent-webapi` templa
 
 ### 1. Configure Your AI Service
 
-<!--#if (IsGHModels) -->
-#### GitHub Models Configuration
+<!--#if (IsMock) -->
+#### Mock Configuration
 
-This application uses GitHub Models (model: gpt-4o-mini) for AI functionality. You'll need to configure your GitHub Models API token:
+This application uses a deterministic mock chat provider seeded for the writer/editor workflow.
 
-**Option A: Using User Secrets (Recommended for Development)**
+No API keys or model runtimes are required.
 
-```bash
-dotnet user-secrets set "GITHUB_TOKEN" "your-github-models-token-here"
-```
+Try prompts such as:
 
-**Option B: Using Environment Variables**
-
-Set the `GITHUB_TOKEN` environment variable:
-
-- **Windows (PowerShell)**:
-  ```powershell
-  $env:GITHUB_TOKEN = "your-github-models-token-here"
-  ```
-
-- **Linux/macOS**:
-  ```bash
-  export GITHUB_TOKEN="your-github-models-token-here"
-  ```
-
-#### Get a GitHub Models Token
-
-1. Visit [GitHub Models](https://github.com/marketplace/models)
-2. Sign in with your GitHub account
-3. Select a model (e.g., gpt-4o-mini)
-4. Click "Get API Key" or follow the authentication instructions
-5. Copy your personal access token
+1. `Write a short story about a student learning .NET.`
+2. `Edit this story for grammar and style.`
+3. `Format the final story for publishing.`
 
 <!--#elif (IsOpenAI) -->
 #### OpenAI Configuration
@@ -198,13 +178,13 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 ### Available Parameters
 
 - **`--provider`**: Choose the AI service provider
-  - `githubmodels` (default) - GitHub Models
+  - `mock` - Deterministic mock provider
   - `azureopenai` - Azure OpenAI
   - `openai` - OpenAI Platform
   - `ollama` - Ollama (local development)
 
 - **`--chat-model`**: Specify the chat model/deployment name
-  - Default for OpenAI/Azure OpenAI/GitHub Models: `gpt-4o-mini`
+  - Default for OpenAI/Azure OpenAI: `gpt-4o-mini`
   - Default for Ollama: `llama3.2`
 
 - **`--managed-identity`**: Use managed identity for Azure services (default: `true`)
@@ -223,9 +203,7 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 - [AI apps for .NET developers](https://learn.microsoft.com/dotnet/ai)
 - [Microsoft Agent Framework Documentation](https://aka.ms/dotnet/agent-framework/docs)
-<!--#if (IsGHModels) -->
-- [GitHub Models](https://github.com/marketplace/models)
-<!--#elif (IsOpenAI) -->
+<!--#if (IsOpenAI) -->
 - [OpenAI Platform](https://platform.openai.com)
 <!--#elif (IsAzureOpenAI) -->
 - [Azure OpenAI Service](https://azure.microsoft.com/products/ai-services/openai-service)
@@ -235,14 +213,10 @@ dotnet new aiagent-webapi --provider ollama --chat-model llama3.1
 
 ## Troubleshooting
 
-<!--#if (IsGHModels) -->
-**Problem**: Application fails with "Missing configuration: GITHUB_TOKEN"
+<!--#if (IsMock) -->
+**Problem**: Responses seem repetitive.
 
-**Solution**: Make sure you've configured your GitHub Models API token using one of the methods described above.
-
-**Problem**: API requests fail with authentication errors
-
-**Solution**: Verify your GitHub Models token is valid and hasn't expired. You may need to regenerate it from the GitHub Models website.
+**Solution**: The mock provider is intentionally deterministic. Use one of the three seeded workflow prompts listed above.
 
 <!--#elif (IsOpenAI) -->
 **Problem**: Application fails with "Missing configuration: OPENAI_KEY"
