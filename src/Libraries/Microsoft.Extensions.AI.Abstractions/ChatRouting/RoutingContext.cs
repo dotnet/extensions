@@ -16,8 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// <see cref="ChatOptions"/> is cloned when the context is created, so request-specific changes do not mutate the
-/// caller's instance. <see cref="BufferMessages"/> provides explicit request-local buffering when repeatable message
-/// enumeration is required.
+/// caller's instance.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -36,10 +35,9 @@ public class RoutingContext
 
     /// <summary>Gets the messages supplied to client selection and the selected client.</summary>
     /// <remarks>
-    /// Selectors should generally treat this sequence as input. A selector that must enumerate the sequence should use
-    /// <see cref="BufferMessages"/> when repeatable enumeration is required.
+    /// Selection and failover may enumerate this sequence multiple times. Callers should supply a repeatable sequence.
     /// </remarks>
-    public IEnumerable<ChatMessage> Messages { get; private set; }
+    public IEnumerable<ChatMessage> Messages { get; }
 
     /// <summary>Gets the request-local options supplied to client selection and the selected client.</summary>
     /// <remarks>
@@ -49,20 +47,4 @@ public class RoutingContext
     /// </remarks>
     public ChatOptions? ChatOptions { get; }
 
-    /// <summary>Returns the messages as a repeatable list, buffering the sequence when necessary.</summary>
-    /// <returns>The existing message list, or a list created and cached by enumerating <see cref="Messages"/> once.</returns>
-    /// <remarks>
-    /// The cached list is used by subsequent selectors and selected clients for this request. Existing
-    /// <see cref="IReadOnlyList{T}"/> instances and individual messages are not cloned.
-    /// </remarks>
-    public IReadOnlyList<ChatMessage> BufferMessages()
-    {
-        if (Messages is not IReadOnlyList<ChatMessage> buffered)
-        {
-            buffered = [.. Messages];
-            Messages = buffered;
-        }
-
-        return buffered;
-    }
 }

@@ -169,8 +169,8 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
         CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
-        IReadOnlyList<ChatMessage> messages = context.BufferMessages();
-        string? query = LastUserText(messages);
+        string? query = context.Messages.LastOrDefault(
+            static message => message.Role == ChatRole.User)?.Text;
         if (string.IsNullOrWhiteSpace(query))
         {
             return _clients[0];
@@ -301,20 +301,6 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
         {
             base.Dispose(disposing);
         }
-    }
-
-    private static string? LastUserText(IEnumerable<ChatMessage> messages)
-    {
-        string? last = null;
-        foreach (ChatMessage message in messages)
-        {
-            if (message.Role == ChatRole.User)
-            {
-                last = message.Text;
-            }
-        }
-
-        return last;
     }
 
     private async Task<EmbeddedProfile[]> EnsureIndexAsync(CancellationToken cancellationToken)

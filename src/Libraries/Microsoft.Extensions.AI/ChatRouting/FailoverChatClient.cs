@@ -101,28 +101,14 @@ public abstract class FailoverChatClient : RoutingChatClient
     {
         _ = Throw.IfNull(messages);
         var context = new RoutingContext(messages, options);
-        _ = context.BufferMessages();
         int? maximumAttempts = MaximumAttemptsPerRequest;
         int attemptCount = 0;
 
         while (true)
         {
-            IChatClient selectedClient;
-            try
-            {
-                selectedClient = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
-                    throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
-            }
-            catch (Exception)
-            {
-                bool selectionCancellationRequested = cancellationToken.IsCancellationRequested;
-                if (selectionCancellationRequested)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-
-                throw;
-            }
+            IChatClient selectedClient =
+                await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
+                throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
 
             attemptCount++;
             ChatResponse? response = null;
@@ -184,28 +170,14 @@ public abstract class FailoverChatClient : RoutingChatClient
     {
         _ = Throw.IfNull(messages);
         var context = new RoutingContext(messages, options);
-        _ = context.BufferMessages();
         int? maximumAttempts = MaximumAttemptsPerRequest;
         int attemptCount = 0;
 
         while (true)
         {
-            IChatClient selectedClient;
-            try
-            {
-                selectedClient = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
-                    throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
-            }
-            catch (Exception)
-            {
-                bool selectionCancellationRequested = cancellationToken.IsCancellationRequested;
-                if (selectionCancellationRequested)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-
-                throw;
-            }
+            IChatClient selectedClient =
+                await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
+                throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
 
             attemptCount++;
             bool reachedAttemptLimit = maximumAttempts is int limit && attemptCount >= limit;
