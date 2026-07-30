@@ -39,8 +39,9 @@ public abstract class RoutingChatClient : IChatClient
     /// <param name="cancellationToken">The cancellation token supplied for the request.</param>
     /// <returns>The client to invoke.</returns>
     /// <remarks>
-    /// Implementations should generally inspect the request inputs and return a client already configured for
-    /// route-specific invocation behavior. Exceptions from this method propagate to the caller.
+    /// Implementations may adjust the request-local <see cref="RoutingContext.ChatOptions"/> for dynamic request
+    /// shaping. Stable route-specific behavior should generally be attached to the returned client. Exceptions from
+    /// this method propagate to the caller.
     /// </remarks>
     protected abstract ValueTask<IChatClient> SelectClientAsync(
         RoutingContext context,

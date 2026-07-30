@@ -99,7 +99,7 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
     /// <inheritdoc/>
     protected override ValueTask OnRoutingUpdateAsync(
         RoutingContext context,
-        FailoverChatClientAttempt? attempt,
+        FailoverChatClientAttempt attempt,
         bool isTerminal,
         CancellationToken cancellationToken)
     {
@@ -113,7 +113,7 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
                 return default;
             }
 
-            if (attempt?.Exception is null)
+            if (attempt.Exception is null)
             {
                 _ = _requestStates.Remove(context);
                 throw new InvalidOperationException("A nonterminal routing update requires a failed client invocation.");

@@ -506,7 +506,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "virtual System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.FailoverChatClient.OnRoutingUpdateAsync(Microsoft.Extensions.AI.RoutingContext context, Microsoft.Extensions.AI.FailoverChatClientAttempt? attempt, bool isTerminal, System.Threading.CancellationToken cancellationToken);",
+          "Member": "virtual System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.FailoverChatClient.OnRoutingUpdateAsync(Microsoft.Extensions.AI.RoutingContext context, Microsoft.Extensions.AI.FailoverChatClientAttempt attempt, bool isTerminal, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Experimental"
         }
       ],
@@ -1496,7 +1496,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.OrderedFailoverChatClient.OnRoutingUpdateAsync(Microsoft.Extensions.AI.RoutingContext context, Microsoft.Extensions.AI.FailoverChatClientAttempt? attempt, bool isTerminal, System.Threading.CancellationToken cancellationToken);",
+          "Member": "override System.Threading.Tasks.ValueTask Microsoft.Extensions.AI.OrderedFailoverChatClient.OnRoutingUpdateAsync(Microsoft.Extensions.AI.RoutingContext context, Microsoft.Extensions.AI.FailoverChatClientAttempt attempt, bool isTerminal, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Experimental"
         },
         {

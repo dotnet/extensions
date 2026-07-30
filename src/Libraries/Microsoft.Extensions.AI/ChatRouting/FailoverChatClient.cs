@@ -20,12 +20,13 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// <para>
 /// The client for each attempt is supplied by <see cref="RoutingChatClient.SelectClientAsync"/>. After an invocation,
-/// <see cref="OnRoutingUpdateAsync"/> reports its outcome and whether routing is terminal. An uncanceled failure causes
-/// another selection only when it happened before any streaming output was exposed and the attempt limit permits it.
+/// <see cref="OnRoutingUpdateAsync"/> reports the concrete attempt and whether another selection will follow. An
+/// uncanceled failure causes another selection only when it happened before any streaming output was exposed and the
+/// attempt limit permits it.
 /// </para>
 /// <para>
-/// The base class owns invocation, streaming commitment, attempt limits, and terminal reporting. Derived classes own
-/// client selection, policy state, and the lifetime of clients they retain.
+/// The base class owns invocation, streaming commitment, attempt limits, and attempt reporting. Derived classes own
+/// client selection, policy state, selection-failure cleanup, and the lifetime of clients they retain.
 /// </para>
 /// <para>
 /// Once streaming enumeration begins, callers must dispose the enumerator. Abandoning an active enumerator without
@@ -59,12 +60,9 @@ public abstract class FailoverChatClient : RoutingChatClient
         }
     }
 
-    /// <summary>Invoked after a client invocation or when client selection terminates routing.</summary>
+    /// <summary>Invoked after a client invocation completes, fails, or is abandoned.</summary>
     /// <param name="context">The request-specific inputs.</param>
-    /// <param name="attempt">
-    /// The completed client invocation, or <see langword="null"/> when <see cref="RoutingChatClient.SelectClientAsync"/>
-    /// terminated routing before invoking a client.
-    /// </param>
+    /// <param name="attempt">The completed client invocation.</param>
     /// <param name="isTerminal">
     /// <see langword="true"/> if the base will not select another client after this callback completes successfully;
     /// otherwise, <see langword="false"/>.
@@ -78,9 +76,9 @@ public abstract class FailoverChatClient : RoutingChatClient
     /// <see cref="RoutingChatClient.SelectClientAsync"/>.
     /// </para>
     /// <para>
-    /// A <see langword="null"/> attempt is always terminal and indicates that client selection terminated routing
-    /// before invoking a client. If every callback completes successfully, every client invocation produces one update
-    /// and exactly one update per request is terminal.
+    /// Every client invocation produces one update if the callback completes successfully. Selection failures are not
+    /// reported. A selector that retains request-scoped state must release it before throwing; a request may therefore
+    /// end without a terminal update when selection fails.
     /// </para>
     /// <para>
     /// Exceptions from this method propagate to the caller. A terminal update exception replaces the response or
@@ -91,7 +89,7 @@ public abstract class FailoverChatClient : RoutingChatClient
     /// </remarks>
     protected virtual ValueTask OnRoutingUpdateAsync(
         RoutingContext context,
-        FailoverChatClientAttempt? attempt,
+        FailoverChatClientAttempt attempt,
         bool isTerminal,
         CancellationToken cancellationToken) => default;
 
@@ -118,11 +116,6 @@ public abstract class FailoverChatClient : RoutingChatClient
             catch (Exception)
             {
                 bool selectionCancellationRequested = cancellationToken.IsCancellationRequested;
-                await OnRoutingUpdateAsync(
-                    context,
-                    attempt: null,
-                    isTerminal: true,
-                    cancellationToken).ConfigureAwait(false);
                 if (selectionCancellationRequested)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -206,11 +199,6 @@ public abstract class FailoverChatClient : RoutingChatClient
             catch (Exception)
             {
                 bool selectionCancellationRequested = cancellationToken.IsCancellationRequested;
-                await OnRoutingUpdateAsync(
-                    context,
-                    attempt: null,
-                    isTerminal: true,
-                    cancellationToken).ConfigureAwait(false);
                 if (selectionCancellationRequested)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

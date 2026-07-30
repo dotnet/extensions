@@ -22,7 +22,10 @@ public class RoutingChatClientTests
 
         Assert.Same(messages, context.Messages);
         Assert.Same(messages, context.BufferMessages());
-        Assert.Same(options, context.ChatOptions);
+        Assert.NotSame(options, context.ChatOptions);
+        Assert.Equal("initial", context.ChatOptions!.ModelId);
+        context.ChatOptions.ModelId = "changed";
+        Assert.Equal("initial", options.ModelId);
         Assert.Throws<ArgumentNullException>(() => new RoutingContext(null!, options));
     }
 
@@ -52,12 +55,17 @@ public class RoutingChatClientTests
     public async Task Create_SelectsClientForRequest()
     {
         var messages = new ChatMessage[] { new(ChatRole.User, "hi") };
-        var options = new ChatOptions();
+        var options = new ChatOptions { ModelId = "request" };
         using var cancellationSource = new CancellationTokenSource();
         ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "ok"));
+        ChatOptions? forwardedOptions = null;
         using var selected = new TestChatClient
         {
-            GetResponseAsyncCallback = (_, _, _) => Task.FromResult(expected),
+            GetResponseAsyncCallback = (_, selectedOptions, _) =>
+            {
+                forwardedOptions = selectedOptions;
+                return Task.FromResult(expected);
+            },
         };
         RoutingContext? observedContext = null;
         CancellationToken observedToken = default;
@@ -67,6 +75,7 @@ public class RoutingChatClientTests
             observedContext = context;
             observedToken = cancellationToken;
             selectionCount++;
+            context.ChatOptions!.ModelId = "selected";
             return new(selected);
         });
 
@@ -74,7 +83,10 @@ public class RoutingChatClientTests
 
         Assert.Same(expected, response);
         Assert.Same(messages, observedContext!.Messages);
-        Assert.Same(options, observedContext.ChatOptions);
+        Assert.NotSame(options, observedContext.ChatOptions);
+        Assert.Same(observedContext.ChatOptions, forwardedOptions);
+        Assert.Equal("selected", forwardedOptions!.ModelId);
+        Assert.Equal("request", options.ModelId);
         Assert.Equal(cancellationSource.Token, observedToken);
         Assert.Equal(1, selectionCount);
     }
@@ -177,32 +189,25 @@ public class RoutingChatClientTests
     }
 
     [Fact]
-    public async Task InitialSelectionFailureReportsTerminalUpdateWithoutAttempt()
+    public async Task InitialSelectionFailureDoesNotReportAttempt()
     {
         var expected = new InvalidOperationException("selection failed");
         RoutingContext? selectedContext = null;
-        RoutingContext? completedContext = null;
-        int completionCount = 0;
+        int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
             context =>
             {
                 selectedContext = context;
                 throw expected;
             },
-            (context, attempt, isTerminal) =>
-            {
-                completionCount++;
-                completedContext = context;
-                Assert.Null(attempt);
-                Assert.True(isTerminal);
-            });
+            (_, _, _) => updateCount++);
 
         InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
             () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
 
         Assert.Same(expected, actual);
-        Assert.Same(selectedContext, completedContext);
-        Assert.Equal(1, completionCount);
+        Assert.NotNull(selectedContext);
+        Assert.Equal(0, updateCount);
     }
 
     [Fact]
@@ -214,92 +219,70 @@ public class RoutingChatClientTests
         int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
             _ => throw selectionException,
-            (_, attempt, isTerminal) =>
-            {
-                updateCount++;
-                Assert.Null(attempt);
-                Assert.True(isTerminal);
-            });
+            (_, _, _) => updateCount++);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => router.GetResponseAsync(
                 [new(ChatRole.User, "hi")],
                 cancellationToken: cancellationSource.Token));
 
-        Assert.Equal(1, updateCount);
+        Assert.Equal(0, updateCount);
     }
 
     [Fact]
-    public async Task StreamingInitialSelectionFailureReportsTerminalUpdateWithoutAttempt()
+    public async Task StreamingInitialSelectionFailureDoesNotReportAttempt()
     {
         var expected = new InvalidOperationException("selection failed");
         RoutingContext? selectedContext = null;
-        RoutingContext? completedContext = null;
-        int completionCount = 0;
+        int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
             context =>
             {
                 selectedContext = context;
                 throw expected;
             },
-            (context, attempt, isTerminal) =>
-            {
-                completionCount++;
-                completedContext = context;
-                Assert.Null(attempt);
-                Assert.True(isTerminal);
-            });
+            (_, _, _) => updateCount++);
 
         InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
             () => CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
 
         Assert.Same(expected, actual);
-        Assert.Same(selectedContext, completedContext);
-        Assert.Equal(1, completionCount);
+        Assert.NotNull(selectedContext);
+        Assert.Equal(0, updateCount);
     }
 
     [Fact]
-    public async Task NullSelectionReportsTerminalUpdateWithoutAttempt()
+    public async Task NullSelectionDoesNotReportAttempt()
     {
         int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
             _ => null!,
-            (_, attempt, isTerminal) =>
-            {
-                updateCount++;
-                Assert.Null(attempt);
-                Assert.True(isTerminal);
-            });
+            (_, _, _) => updateCount++);
 
         InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
 
         Assert.Contains("SelectClientAsync", exception.Message, StringComparison.Ordinal);
-        Assert.Equal(1, updateCount);
+        Assert.Equal(0, updateCount);
     }
 
     [Fact]
-    public async Task StreamingNullSelectionReportsTerminalUpdateWithoutAttempt()
+    public async Task StreamingNullSelectionDoesNotReportAttempt()
     {
         int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
             _ => null!,
-            (_, attempt, isTerminal) =>
-            {
-                updateCount++;
-                Assert.Null(attempt);
-                Assert.True(isTerminal);
-            });
+            (_, _, _) => updateCount++);
 
         InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
 
         Assert.Contains("SelectClientAsync", exception.Message, StringComparison.Ordinal);
-        Assert.Equal(1, updateCount);
+        Assert.Equal(0, updateCount);
     }
 
     [Fact]
-    public async Task Failover_RetrySelectionFailureReportsTerminalUpdateWithoutAttempt()
+    public async Task Failover_RetrySelectionFailureReportsOnlyCompletedAttempt()
     {
         var invocationException = new InvalidOperationException("invocation failed");
         var selectionException = new InvalidOperationException("selection failed");
@@ -308,7 +291,7 @@ public class RoutingChatClientTests
             GetResponseAsyncCallback = (_, _, _) => throw invocationException,
         };
         int selections = 0;
-        var updates = new List<(FailoverChatClientAttempt? attempt, bool isTerminal)>();
+        var updates = new List<(FailoverChatClientAttempt attempt, bool isTerminal)>();
         using var router = new DelegatingFailoverTestRouter(
             _ => ++selections == 1 ? failing : throw selectionException,
             (_, attempt, isTerminal) =>
@@ -321,19 +304,10 @@ public class RoutingChatClientTests
 
         Assert.Same(selectionException, actual);
         Assert.Equal(2, selections);
-        Assert.Collection(
-            updates,
-            update =>
-            {
-                Assert.Same(failing, update.attempt!.Client);
-                Assert.Same(invocationException, update.attempt.Exception);
-                Assert.False(update.isTerminal);
-            },
-            update =>
-            {
-                Assert.Null(update.attempt);
-                Assert.True(update.isTerminal);
-            });
+        (FailoverChatClientAttempt attempt, bool isTerminal) update = Assert.Single(updates);
+        Assert.Same(failing, update.attempt.Client);
+        Assert.Same(invocationException, update.attempt.Exception);
+        Assert.False(update.isTerminal);
     }
 
     [Fact]
@@ -396,23 +370,19 @@ public class RoutingChatClientTests
     }
 
     [Fact]
-    public async Task TerminalSelectionUpdateFailureReplacesSelectionFailure()
+    public async Task SelectionFailureDoesNotInvokeRoutingUpdate()
     {
         var selectionException = new InvalidOperationException("selection failed");
-        var updateException = new InvalidOperationException("update failed");
+        int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
             _ => throw selectionException,
-            (_, attempt, isTerminal) =>
-            {
-                Assert.Null(attempt);
-                Assert.True(isTerminal);
-                throw updateException;
-            });
+            (_, _, _) => updateCount++);
 
         InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
             () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
 
-        Assert.Same(updateException, actual);
+        Assert.Same(selectionException, actual);
+        Assert.Equal(0, updateCount);
     }
 
     [Fact]
@@ -712,7 +682,7 @@ public class RoutingChatClientTests
             GetResponseAsyncCallback = (_, _, _) => throw new InvalidOperationException("failed"),
         };
         int selections = 0;
-        var updates = new List<(FailoverChatClientAttempt? attempt, bool isTerminal)>();
+        var updates = new List<(FailoverChatClientAttempt attempt, bool isTerminal)>();
         using var router = new DelegatingFailoverTestRouter(
             _ =>
             {
@@ -807,7 +777,7 @@ public class RoutingChatClientTests
             GetStreamingResponseAsyncCallback = (_, _, _) => ThrowingStream("failed"),
         };
         int selections = 0;
-        var updates = new List<(FailoverChatClientAttempt? attempt, bool isTerminal)>();
+        var updates = new List<(FailoverChatClientAttempt attempt, bool isTerminal)>();
         using var router = new DelegatingFailoverTestRouter(
             _ =>
             {
@@ -1076,7 +1046,7 @@ public class RoutingChatClientTests
             GetStreamingResponseAsyncCallback = (_, _, _) => failedStream,
         };
         int selections = 0;
-        var updates = new List<(FailoverChatClientAttempt? attempt, bool isTerminal)>();
+        var updates = new List<(FailoverChatClientAttempt attempt, bool isTerminal)>();
         using var router = new DelegatingFailoverTestRouter(
             _ =>
             {
@@ -1979,11 +1949,11 @@ public class RoutingChatClientTests
     private sealed class DelegatingFailoverTestRouter : FailoverChatClient
     {
         private readonly Func<RoutingContext, IChatClient> _select;
-        private readonly Action<RoutingContext, FailoverChatClientAttempt?, bool>? _onRoutingUpdate;
+        private readonly Action<RoutingContext, FailoverChatClientAttempt, bool>? _onRoutingUpdate;
 
         public DelegatingFailoverTestRouter(
             Func<RoutingContext, IChatClient> select,
-            Action<RoutingContext, FailoverChatClientAttempt?, bool>? onRoutingUpdate = null)
+            Action<RoutingContext, FailoverChatClientAttempt, bool>? onRoutingUpdate = null)
         {
             _select = select;
             _onRoutingUpdate = onRoutingUpdate;
@@ -1996,7 +1966,7 @@ public class RoutingChatClientTests
 
         protected override ValueTask OnRoutingUpdateAsync(
             RoutingContext context,
-            FailoverChatClientAttempt? attempt,
+            FailoverChatClientAttempt attempt,
             bool isTerminal,
             CancellationToken cancellationToken)
         {
