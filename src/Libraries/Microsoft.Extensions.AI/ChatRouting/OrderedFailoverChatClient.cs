@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
@@ -28,8 +29,7 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
 {
     private readonly bool _leaveOpen;
     private readonly IChatClient[] _clients;
-    private readonly Dictionary<RoutingContext, RequestState> _requestStates = [];
-    private readonly object _sync = new();
+    private readonly ConcurrentDictionary<RoutingContext, RequestState> _requestStates = new();
     private bool _disposed;
 
     /// <summary>Initializes a new instance of the <see cref="OrderedFailoverChatClient"/> class.</summary>
@@ -75,16 +75,9 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         CancellationToken cancellationToken)
     {
         _ = cancellationToken;
-        RequestState? state;
-
-        lock (_sync)
+        if (!_requestStates.TryRemove(context, out RequestState? state))
         {
-            if (!_requestStates.TryGetValue(context, out state))
-            {
-                return new(_clients[0]);
-            }
-
-            _ = _requestStates.Remove(context);
+            return new(_clients[0]);
         }
 
         if (state.ClientIndex < _clients.Length)
@@ -105,29 +98,27 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
     {
         _ = cancellationToken;
 
-        lock (_sync)
+        if (isTerminal)
         {
-            if (isTerminal)
-            {
-                _ = _requestStates.Remove(context);
-                return default;
-            }
-
-            if (attempt.Exception is null)
-            {
-                _ = _requestStates.Remove(context);
-                throw new InvalidOperationException("A nonterminal routing update requires a failed client invocation.");
-            }
-
-            int clientIndex = IndexOfClient(attempt.Client);
-            if (clientIndex < 0)
-            {
-                _ = _requestStates.Remove(context);
-                throw new InvalidOperationException("The invocation did not use a configured ordered failover client.");
-            }
-
-            _requestStates[context] = new(clientIndex + 1, attempt.Exception);
+            _ = _requestStates.TryRemove(context, out _);
+            return default;
         }
+
+        if (attempt.Exception is null)
+        {
+            _ = _requestStates.TryRemove(context, out _);
+            throw new InvalidOperationException("A nonterminal routing update requires a failed client invocation.");
+        }
+
+        int clientIndex = IndexOfClient(attempt.Client);
+        if (clientIndex < 0)
+        {
+            _ = _requestStates.TryRemove(context, out _);
+            throw new InvalidOperationException("The invocation did not use a configured ordered failover client.");
+        }
+
+        // Selection immediately removes this state before invoking the next client.
+        _requestStates[context] = new(clientIndex + 1, attempt.Exception);
 
         return default;
     }
@@ -143,10 +134,7 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         _disposed = true;
         try
         {
-            lock (_sync)
-            {
-                _requestStates.Clear();
-            }
+            _requestStates.Clear();
 
             if (disposing && !_leaveOpen)
             {

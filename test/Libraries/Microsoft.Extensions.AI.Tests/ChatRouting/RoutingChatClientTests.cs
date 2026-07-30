@@ -1789,7 +1789,7 @@ public class RoutingChatClientTests
         object requestStates = typeof(OrderedFailoverChatClient)
             .GetField("_requestStates", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .GetValue(client)!;
-        return ((System.Collections.IDictionary)requestStates).Count;
+        return (int)requestStates.GetType().GetProperty("Count")!.GetValue(requestStates)!;
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(params string[] texts)
