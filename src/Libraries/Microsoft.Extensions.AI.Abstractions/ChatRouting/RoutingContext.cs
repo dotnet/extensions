@@ -15,8 +15,8 @@ namespace Microsoft.Extensions.AI;
 /// started from the sequence returned by <see cref="IChatClient.GetStreamingResponseAsync"/>.
 /// </para>
 /// <para>
-/// <see cref="ChatOptions"/> is cloned when the context is created, so request-specific changes do not mutate the
-/// caller's instance.
+/// <see cref="ChatOptions"/> is cloned when the context is created. It is provided for client selection and is
+/// independent of both the caller's instance and the options passed to the selected client.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -39,11 +39,10 @@ public class RoutingContext
     /// </remarks>
     public IEnumerable<ChatMessage> Messages { get; }
 
-    /// <summary>Gets the request-local options supplied to client selection and the selected client.</summary>
+    /// <summary>Gets a snapshot of the request options supplied to client selection.</summary>
     /// <remarks>
-    /// When the caller supplies options, this is a clone that selectors may adjust without mutating the caller's
-    /// instance. Changes are observed by the selected client and subsequent failover attempts. Stable route-specific
-    /// defaults should generally be attached to the returned client rather than reapplied during selection.
+    /// Changes do not affect the caller's instance or the options passed to the selected client. Client-specific
+    /// behavior should generally be attached to the returned client.
     /// </remarks>
     public ChatOptions? ChatOptions { get; }
 

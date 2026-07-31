@@ -39,9 +39,9 @@ public abstract class RoutingChatClient : IChatClient
     /// <param name="cancellationToken">The cancellation token supplied for the request.</param>
     /// <returns>The client to invoke.</returns>
     /// <remarks>
-    /// Implementations may adjust the request-local <see cref="RoutingContext.ChatOptions"/> for dynamic request
-    /// shaping. Stable route-specific behavior should generally be attached to the returned client. Exceptions from
-    /// this method propagate to the caller.
+    /// The context contains a snapshot of the caller's options for use during selection. Changes to that snapshot do
+    /// not affect the options passed to the selected client. Client-specific behavior should generally be attached to
+    /// the returned client. Exceptions from this method propagate to the caller.
     /// </remarks>
     protected abstract ValueTask<IChatClient> SelectClientAsync(
         RoutingContext context,
@@ -59,7 +59,7 @@ public abstract class RoutingChatClient : IChatClient
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
         return await client.GetResponseAsync(
             context.Messages,
-            context.ChatOptions,
+            options?.Clone(),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -74,7 +74,7 @@ public abstract class RoutingChatClient : IChatClient
         IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
         await foreach (ChatResponseUpdate update in
-            client.GetStreamingResponseAsync(context.Messages, context.ChatOptions, cancellationToken)
+            client.GetStreamingResponseAsync(context.Messages, options?.Clone(), cancellationToken)
                 .WithCancellation(cancellationToken)
                 .ConfigureAwait(false))
         {
