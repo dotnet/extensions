@@ -1610,7 +1610,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.SemanticRoutingChatClient.SemanticRoutingChatClient(Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> embeddingGenerator, System.Collections.Generic.IReadOnlyDictionary<Microsoft.Extensions.AI.IChatClient, System.Collections.Generic.IReadOnlyList<string>> clientProfiles, Microsoft.Extensions.AI.IChatClient defaultClient, float scoreThreshold = 0.3f, bool leaveOpen = false, int topK = 1, Microsoft.Extensions.AI.SemanticRoutingChatClient.ScoreAggregation scoreAggregation = Microsoft.Extensions.AI.SemanticRoutingChatClient.ScoreAggregation.Mean);",
+          "Member": "Microsoft.Extensions.AI.SemanticRoutingChatClient.SemanticRoutingChatClient(Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> embeddingGenerator, System.Collections.Generic.IReadOnlyDictionary<Microsoft.Extensions.AI.IChatClient, System.Collections.Generic.IReadOnlyList<string>> clientProfiles, Microsoft.Extensions.AI.IChatClient defaultClient, float scoreThreshold = 0.3f, int topK = 1, Microsoft.Extensions.AI.SemanticRoutingChatClient.ScoreAggregation scoreAggregation = Microsoft.Extensions.AI.SemanticRoutingChatClient.ScoreAggregation.Mean, bool leaveOpen = false);",
           "Stage": "Experimental"
         },
         {

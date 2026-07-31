@@ -18,6 +18,10 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// Derived classes implement <see cref="SelectClientAsync"/> to supply one client for each request. The selected
 /// client is invoked once, and its response or failure is propagated to the caller.
+/// The exact client instance represents the selected routing identity. Caller-supplied options may vary per
+/// invocation, but they are ephemeral and do not participate in that identity. Applications can use distinct
+/// configured client wrappers when configurations require distinct routing identities, while custom policies may
+/// maintain separate application-specific grouping keys.
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class RoutingChatClient : IChatClient

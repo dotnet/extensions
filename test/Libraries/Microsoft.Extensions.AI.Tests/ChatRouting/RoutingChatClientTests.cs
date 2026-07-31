@@ -1472,9 +1472,9 @@ public class RoutingChatClientTests
             profiles,
             defaultClient: code,
             scoreThreshold: scoreAggregation == SemanticRoutingChatClient.ScoreAggregation.Sum ? 1.5f : 0.3f,
-            leaveOpen: true,
             topK: 3,
-            scoreAggregation: scoreAggregation);
+            scoreAggregation: scoreAggregation,
+            leaveOpen: true);
 
         ChatResponse response = await router.GetResponseAsync([new(ChatRole.User, "query")]);
 

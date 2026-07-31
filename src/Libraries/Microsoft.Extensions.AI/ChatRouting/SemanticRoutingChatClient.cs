@@ -22,8 +22,9 @@ namespace Microsoft.Extensions.AI;
 /// configured threshold.
 /// </para>
 /// <para>
-/// The configured clients are used as stable routing identities. By default this instance owns the clients and
-/// embedding generator and disposes them when it is disposed.
+/// The configured client instances are used as stable routing identities and are distinguished by reference.
+/// Per-call options do not participate in that identity. By default this instance owns the clients and embedding
+/// generator and disposes them when it is disposed.
 /// </para>
 /// <para>
 /// The example-utterance routing approach is inspired by
@@ -60,15 +61,15 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
     /// <param name="clientProfiles">The example utterances associated with each client.</param>
     /// <param name="defaultClient">The client selected when no profile satisfies <paramref name="scoreThreshold"/>.</param>
     /// <param name="scoreThreshold">The minimum aggregated score required to select a profiled client.</param>
-    /// <param name="leaveOpen">
-    /// <see langword="true"/> to leave the configured clients and embedding generator open when this instance is
-    /// disposed; otherwise, <see langword="false"/>. The default is <see langword="false"/>.
-    /// </param>
     /// <param name="topK">
     /// The number of highest-scoring profile utterances, across all clients, whose scores are aggregated.
     /// The default is <c>1</c>.
     /// </param>
     /// <param name="scoreAggregation">The method used to aggregate matching profile scores for each client.</param>
+    /// <param name="leaveOpen">
+    /// <see langword="true"/> to leave the configured clients and embedding generator open when this instance is
+    /// disposed; otherwise, <see langword="false"/>. The default is <see langword="false"/>.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="embeddingGenerator"/>, <paramref name="clientProfiles"/>, or
     /// <paramref name="defaultClient"/> is <see langword="null"/>.
@@ -86,9 +87,9 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
         IReadOnlyDictionary<IChatClient, IReadOnlyList<string>> clientProfiles,
         IChatClient defaultClient,
         float scoreThreshold = 0.3f,
-        bool leaveOpen = false,
         int topK = 1,
-        ScoreAggregation scoreAggregation = ScoreAggregation.Mean)
+        ScoreAggregation scoreAggregation = ScoreAggregation.Mean,
+        bool leaveOpen = false)
     {
         _embeddingGenerator = Throw.IfNull(embeddingGenerator);
         _ = Throw.IfNull(clientProfiles);
