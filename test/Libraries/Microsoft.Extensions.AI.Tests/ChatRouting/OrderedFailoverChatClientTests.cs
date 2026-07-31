@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using static Microsoft.Extensions.AI.FailoverChatClientTests;
 
 namespace Microsoft.Extensions.AI;
 
@@ -244,10 +245,10 @@ public class OrderedFailoverChatClientTests
         };
         using var client = new OrderedFailoverChatClient([first, second]);
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
     }
 
     [Fact]
@@ -324,18 +325,6 @@ public class OrderedFailoverChatClientTests
         Assert.Same(expected, response);
     }
 
-    private static async Task<List<ChatResponseUpdate>> CollectAsync(
-        IAsyncEnumerable<ChatResponseUpdate> updates)
-    {
-        var result = new List<ChatResponseUpdate>();
-        await foreach (ChatResponseUpdate update in updates)
-        {
-            result.Add(update);
-        }
-
-        return result;
-    }
-
     private static int GetOrderedFailoverRequestStateCount(OrderedFailoverChatClient client)
     {
         object requestStates = typeof(OrderedFailoverChatClient)
@@ -344,26 +333,6 @@ public class OrderedFailoverChatClientTests
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
             .GetValue(client)!;
         return (int)requestStates.GetType().GetProperty("Count")!.GetValue(requestStates)!;
-    }
-
-    private static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(params string[] texts)
-    {
-        foreach (string text in texts)
-        {
-            await Task.Yield();
-            yield return new ChatResponseUpdate(ChatRole.Assistant, text);
-        }
-    }
-
-    private static async IAsyncEnumerable<ChatResponseUpdate> ThrowingStream(string message)
-    {
-        await Task.Yield();
-        foreach (int _ in Array.Empty<int>())
-        {
-            yield return new ChatResponseUpdate(ChatRole.Assistant, "never");
-        }
-
-        throw new InvalidOperationException(message);
     }
 
     private sealed class CountingDisposeClient : IChatClient

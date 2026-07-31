@@ -291,12 +291,7 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
                     client.Dispose();
                 }
 
-                if (!Array.Exists(
-                    _clients,
-                    client => ReferenceEquals(client, _embeddingGenerator)))
-                {
-                    _embeddingGenerator.Dispose();
-                }
+                _embeddingGenerator.Dispose();
             }
         }
 

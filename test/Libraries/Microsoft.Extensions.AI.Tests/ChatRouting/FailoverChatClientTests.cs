@@ -38,8 +38,10 @@ public class FailoverChatClientTests
             () => CollectAsync(router.GetStreamingResponseAsync(null!)));
     }
 
-    [Fact]
-    public async Task InitialSelectionFailureDoesNotReportAttempt()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InitialSelectionFailureDoesNotReportAttempt(bool streaming)
     {
         var expected = new InvalidOperationException("selection failed");
         RoutingContext? selectedContext = null;
@@ -52,16 +54,21 @@ public class FailoverChatClientTests
             },
             (_, _, _) => updateCount++);
 
-        InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
+        Task<ChatResponse> operation = streaming
+            ? router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync()
+            : router.GetResponseAsync([new(ChatRole.User, "hi")]);
+        InvalidOperationException actual =
+            await Assert.ThrowsAsync<InvalidOperationException>(() => operation);
 
         Assert.Same(expected, actual);
         Assert.NotNull(selectedContext);
         Assert.Equal(0, updateCount);
     }
 
-    [Fact]
-    public async Task InitialSelectionFailureWithCallerCancellationPropagatesSelectionFailure()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InitialSelectionFailureWithCallerCancellationPropagatesSelectionFailure(bool streaming)
     {
         using var cancellationSource = new CancellationTokenSource();
         cancellationSource.Cancel();
@@ -71,83 +78,35 @@ public class FailoverChatClientTests
             _ => throw selectionException,
             (_, _, _) => updateCount++);
 
-        InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => router.GetResponseAsync(
+        Task<ChatResponse> operation = streaming
+            ? router.GetStreamingResponseAsync(
                 [new(ChatRole.User, "hi")],
-                cancellationToken: cancellationSource.Token));
+                cancellationToken: cancellationSource.Token).ToChatResponseAsync()
+            : router.GetResponseAsync(
+                [new(ChatRole.User, "hi")],
+                cancellationToken: cancellationSource.Token);
+        InvalidOperationException actual =
+            await Assert.ThrowsAsync<InvalidOperationException>(() => operation);
 
         Assert.Same(selectionException, actual);
         Assert.Equal(0, updateCount);
     }
 
-    [Fact]
-    public async Task StreamingInitialSelectionFailureDoesNotReportAttempt()
-    {
-        var expected = new InvalidOperationException("selection failed");
-        RoutingContext? selectedContext = null;
-        int updateCount = 0;
-        using var router = new DelegatingFailoverTestRouter(
-            context =>
-            {
-                selectedContext = context;
-                throw expected;
-            },
-            (_, _, _) => updateCount++);
-
-        InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
-
-        Assert.Same(expected, actual);
-        Assert.NotNull(selectedContext);
-        Assert.Equal(0, updateCount);
-    }
-
-    [Fact]
-    public async Task StreamingInitialSelectionFailureWithCallerCancellationPropagatesSelectionFailure()
-    {
-        using var cancellationSource = new CancellationTokenSource();
-        cancellationSource.Cancel();
-        var selectionException = new InvalidOperationException("selection failed");
-        int updateCount = 0;
-        using var router = new DelegatingFailoverTestRouter(
-            _ => throw selectionException,
-            (_, _, _) => updateCount++);
-
-        InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CollectAsync(
-                router.GetStreamingResponseAsync(
-                    [new(ChatRole.User, "hi")],
-                    cancellationToken: cancellationSource.Token)));
-
-        Assert.Same(selectionException, actual);
-        Assert.Equal(0, updateCount);
-    }
-
-    [Fact]
-    public async Task NullSelectionDoesNotReportAttempt()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NullSelectionDoesNotReportAttempt(bool streaming)
     {
         int updateCount = 0;
         using var router = new DelegatingFailoverTestRouter(
             _ => null!,
             (_, _, _) => updateCount++);
 
-        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
-
-        Assert.Contains("SelectClientAsync", exception.Message, StringComparison.Ordinal);
-        Assert.Equal(0, updateCount);
-    }
-
-    [Fact]
-    public async Task StreamingNullSelectionDoesNotReportAttempt()
-    {
-        int updateCount = 0;
-        using var router = new DelegatingFailoverTestRouter(
-            _ => null!,
-            (_, _, _) => updateCount++);
-
-        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")])));
+        Task<ChatResponse> operation = streaming
+            ? router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync()
+            : router.GetResponseAsync([new(ChatRole.User, "hi")]);
+        InvalidOperationException exception =
+            await Assert.ThrowsAsync<InvalidOperationException>(() => operation);
 
         Assert.Contains("SelectClientAsync", exception.Message, StringComparison.Ordinal);
         Assert.Equal(0, updateCount);
@@ -239,22 +198,6 @@ public class FailoverChatClientTests
         Assert.Same(updateException, actual);
         Assert.Equal(1, selections);
         Assert.Equal(1, updates);
-    }
-
-    [Fact]
-    public async Task SelectionFailureDoesNotInvokeRoutingUpdate()
-    {
-        var selectionException = new InvalidOperationException("selection failed");
-        int updateCount = 0;
-        using var router = new DelegatingFailoverTestRouter(
-            _ => throw selectionException,
-            (_, _, _) => updateCount++);
-
-        InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
-
-        Assert.Same(selectionException, actual);
-        Assert.Equal(0, updateCount);
     }
 
     [Fact]
@@ -652,10 +595,10 @@ public class FailoverChatClientTests
         using var router = new DelegatingFailoverTestRouter(
             _ => ++selections == 1 ? failing : working);
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.Equal(2, selections);
     }
 
@@ -689,12 +632,11 @@ public class FailoverChatClientTests
         using var router = new DelegatingFailoverTestRouter(
             _ => ++selections == 1 ? first : second);
 
-        List<ChatResponseUpdate> updates = await CollectAsync(
-            router.GetStreamingResponseAsync(
-                [new(ChatRole.User, "hi")],
-                requestOptions));
+        ChatResponse response = await router.GetStreamingResponseAsync(
+            [new(ChatRole.User, "hi")],
+            requestOptions).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.Equal(2, selections);
         Assert.NotSame(invokedOptions[0], invokedOptions[1]);
         Assert.Equal("changed by first client", invokedOptions[0].ModelId);
@@ -827,10 +769,10 @@ public class FailoverChatClientTests
         };
         using var client = new OrderedFailoverChatClient([first, second]);
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.True(secondCalled);
     }
 
@@ -855,10 +797,10 @@ public class FailoverChatClientTests
         };
         using var client = new OrderedFailoverChatClient([first, second]);
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.True(secondCalled);
         Assert.Equal(1, canceledStream.DisposeCount);
     }
@@ -906,10 +848,10 @@ public class FailoverChatClientTests
         using var router = new DelegatingFailoverTestRouter(
             _ => ++selections == 1 ? failing : working);
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.Equal(2, selections);
     }
 
@@ -929,10 +871,10 @@ public class FailoverChatClientTests
         using var router = new DelegatingFailoverTestRouter(
             _ => ++selections == 1 ? failing : working);
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.Equal(2, selections);
     }
 
@@ -960,10 +902,10 @@ public class FailoverChatClientTests
                 }
             });
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.Same(currentException, failedAttempt!.Exception);
         Assert.False(failedAttempt.OutputCommitted);
         Assert.False(failedAttempt.ResponseCompleted);
@@ -1048,10 +990,10 @@ public class FailoverChatClientTests
                 }
             });
 
-        List<ChatResponseUpdate> updates =
-            await CollectAsync(router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]));
+        ChatResponse response =
+            await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync();
 
-        Assert.Equal("ok", Assert.Single(updates).Text);
+        Assert.Equal("ok", response.Text);
         Assert.Same(disposalException, failedAttempt!.Exception);
         Assert.False(failedAttempt.OutputCommitted);
         Assert.False(failedAttempt.ResponseCompleted);
@@ -1206,7 +1148,7 @@ public class FailoverChatClientTests
         Assert.True(await enumerator.MoveNextAsync());
     }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(params string[] texts)
+    internal static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(params string[] texts)
     {
         foreach (string text in texts)
         {
@@ -1215,7 +1157,7 @@ public class FailoverChatClientTests
         }
     }
 
-    private static async IAsyncEnumerable<ChatResponseUpdate> ThrowingStream(string message)
+    internal static async IAsyncEnumerable<ChatResponseUpdate> ThrowingStream(string message)
     {
         await Task.Yield();
         foreach (int _ in Array.Empty<int>())
