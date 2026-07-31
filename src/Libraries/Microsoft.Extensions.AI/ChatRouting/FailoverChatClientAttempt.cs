@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents one client invocation performed by a <see cref="FailoverChatClient"/>.</summary>
+/// <summary>Represents one client invocation attempt performed by a <see cref="FailoverChatClient"/>.</summary>
 /// <remarks>
 /// <para>
 /// A completed response has <see cref="ResponseCompleted"/> set to <see langword="true"/> and
@@ -37,7 +37,6 @@ public sealed class FailoverChatClientAttempt
         bool responseCompleted,
         bool outputCommitted)
     {
-        Debug.Assert(client is not null, "Expected a non-null invoked client.");
         Debug.Assert(duration >= TimeSpan.Zero, "Expected a non-negative duration.");
         Debug.Assert(
             timeToFirstUpdate is not { } ttfu || (ttfu >= TimeSpan.Zero && ttfu <= duration),

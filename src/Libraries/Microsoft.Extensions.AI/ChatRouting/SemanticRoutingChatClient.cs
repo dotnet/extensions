@@ -59,7 +59,9 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
     /// <summary>Initializes a new instance of the <see cref="SemanticRoutingChatClient"/> class.</summary>
     /// <param name="embeddingGenerator">The generator used to embed profile utterances and request text.</param>
     /// <param name="clientProfiles">The example utterances associated with each client.</param>
-    /// <param name="defaultClient">The client selected when no profile satisfies <paramref name="scoreThreshold"/>.</param>
+    /// <param name="defaultClient">
+    /// The client selected when no profile satisfies <paramref name="scoreThreshold"/>.
+    /// </param>
     /// <param name="scoreThreshold">The minimum aggregated score required to select a profiled client.</param>
     /// <param name="topK">
     /// The number of highest-scoring profile utterances, across all clients, whose scores are aggregated.
@@ -91,10 +93,9 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
         ScoreAggregation scoreAggregation = ScoreAggregation.Mean,
         bool leaveOpen = false)
     {
-        _embeddingGenerator = Throw.IfNull(embeddingGenerator);
+        _ = Throw.IfNull(embeddingGenerator);
         _ = Throw.IfNull(clientProfiles);
         _ = Throw.IfNull(defaultClient);
-        _leaveOpen = leaveOpen;
 
         if (clientProfiles.Count == 0)
         {
@@ -120,6 +121,8 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
             Throw.ArgumentOutOfRangeException(nameof(scoreThreshold));
         }
 
+        _embeddingGenerator = embeddingGenerator;
+        _leaveOpen = leaveOpen;
         _topK = topK;
         _scoreAggregation = scoreAggregation;
         _scoreThreshold = scoreThreshold;
@@ -170,6 +173,7 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
         CancellationToken cancellationToken)
     {
         _ = Throw.IfNull(context);
+
         string? query = context.Messages.LastOrDefault(
             static message => message.Role == ChatRole.User)?.Text;
         if (string.IsNullOrWhiteSpace(query))
@@ -277,31 +281,26 @@ public sealed class SemanticRoutingChatClient : RoutingChatClient
         }
 
         _disposed = true;
-        try
+        if (disposing)
         {
-            if (disposing)
+            _indexGate.Dispose();
+            if (!_leaveOpen)
             {
-                _indexGate.Dispose();
-                if (!_leaveOpen)
+                foreach (IChatClient client in _clients)
                 {
-                    foreach (IChatClient client in _clients)
-                    {
-                        client.Dispose();
-                    }
+                    client.Dispose();
+                }
 
-                    if (!Array.Exists(
-                        _clients,
-                        client => ReferenceEquals(client, _embeddingGenerator)))
-                    {
-                        _embeddingGenerator.Dispose();
-                    }
+                if (!Array.Exists(
+                    _clients,
+                    client => ReferenceEquals(client, _embeddingGenerator)))
+                {
+                    _embeddingGenerator.Dispose();
                 }
             }
         }
-        finally
-        {
-            base.Dispose(disposing);
-        }
+
+        base.Dispose(disposing);
     }
 
     private async Task<EmbeddedProfile[]> EnsureIndexAsync(CancellationToken cancellationToken)

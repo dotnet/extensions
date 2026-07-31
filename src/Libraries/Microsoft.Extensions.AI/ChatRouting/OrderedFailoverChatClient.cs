@@ -40,33 +40,37 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
     /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="clients"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">
-    /// <paramref name="clients"/> is empty, contains <see langword="null"/>, or contains the same client instance more than once.
+    /// <paramref name="clients"/> is empty, contains <see langword="null"/>, or contains the same client instance more
+    /// than once.
     /// </exception>
     public OrderedFailoverChatClient(IReadOnlyList<IChatClient> clients, bool leaveOpen = false)
     {
         _ = Throw.IfNull(clients);
-        _leaveOpen = leaveOpen;
-        if (clients.Count == 0)
+
+        IChatClient[] clientsSnapshot = [.. clients];
+        if (clientsSnapshot.Length == 0)
         {
             Throw.ArgumentException(nameof(clients), "At least one client must be provided.");
         }
 
-        _clients = [.. clients];
-        for (int i = 0; i < _clients.Length; i++)
+        for (int i = 0; i < clientsSnapshot.Length; i++)
         {
-            if (_clients[i] is null)
+            if (clientsSnapshot[i] is null)
             {
                 Throw.ArgumentException(nameof(clients), "Clients must not contain null.");
             }
 
             for (int j = 0; j < i; j++)
             {
-                if (ReferenceEquals(_clients[j], _clients[i]))
+                if (ReferenceEquals(clientsSnapshot[j], clientsSnapshot[i]))
                 {
                     Throw.ArgumentException(nameof(clients), "Each client instance must be unique.");
                 }
             }
         }
+
+        _leaveOpen = leaveOpen;
+        _clients = clientsSnapshot;
     }
 
     /// <inheritdoc/>
@@ -75,6 +79,7 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         CancellationToken cancellationToken)
     {
         _ = cancellationToken;
+
         if (!_requestStates.TryRemove(context, out RequestState? state))
         {
             return new(_clients[0]);
@@ -132,22 +137,17 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         }
 
         _disposed = true;
-        try
-        {
-            _requestStates.Clear();
+        _requestStates.Clear();
 
-            if (disposing && !_leaveOpen)
+        if (disposing && !_leaveOpen)
+        {
+            foreach (IChatClient client in _clients)
             {
-                foreach (IChatClient client in _clients)
-                {
-                    client.Dispose();
-                }
+                client.Dispose();
             }
         }
-        finally
-        {
-            base.Dispose(disposing);
-        }
+
+        base.Dispose(disposing);
     }
 
     private int IndexOfClient(IChatClient client)

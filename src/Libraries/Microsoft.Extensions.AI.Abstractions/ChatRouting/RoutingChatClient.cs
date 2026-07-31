@@ -35,6 +35,7 @@ public abstract class RoutingChatClient : IChatClient
         Func<RoutingContext, CancellationToken, ValueTask<IChatClient>> clientSelector)
     {
         _ = Throw.IfNull(clientSelector);
+
         return new CallbackRoutingChatClient(clientSelector);
     }
 
@@ -43,9 +44,8 @@ public abstract class RoutingChatClient : IChatClient
     /// <param name="cancellationToken">The cancellation token supplied for the request.</param>
     /// <returns>The client to invoke.</returns>
     /// <remarks>
-    /// The context contains a snapshot of the caller's options for use during selection. Changes to that snapshot do
-    /// not affect the options passed to the selected client. Client-specific behavior should generally be attached to
-    /// the returned client. Exceptions from this method propagate to the caller.
+    /// Client-specific behavior should generally be attached to the returned client. Exceptions from this method
+    /// propagate to the caller.
     /// </remarks>
     protected abstract ValueTask<IChatClient> SelectClientAsync(
         RoutingContext context,
@@ -53,14 +53,14 @@ public abstract class RoutingChatClient : IChatClient
 
     /// <inheritdoc/>
     public virtual async Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
         var context = new RoutingContext(messages, options);
         IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
+
         return await client.GetResponseAsync(
             context.Messages,
             options?.Clone(),
@@ -69,14 +69,15 @@ public abstract class RoutingChatClient : IChatClient
 
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
         var context = new RoutingContext(messages, options);
         IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
+
         await foreach (ChatResponseUpdate update in
             client.GetStreamingResponseAsync(context.Messages, options?.Clone(), cancellationToken)
                 .WithCancellation(cancellationToken)
@@ -90,6 +91,7 @@ public abstract class RoutingChatClient : IChatClient
     public virtual object? GetService(Type serviceType, object? serviceKey = null)
     {
         _ = Throw.IfNull(serviceType);
+
         return serviceKey is null && serviceType.IsInstanceOfType(this) ? this : null;
     }
 

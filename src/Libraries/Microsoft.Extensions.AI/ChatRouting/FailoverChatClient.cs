@@ -62,9 +62,9 @@ public abstract class FailoverChatClient : RoutingChatClient
 
     /// <summary>Invoked after a client invocation completes, fails, or is abandoned.</summary>
     /// <param name="context">The request-specific inputs.</param>
-    /// <param name="attempt">The completed client invocation.</param>
+    /// <param name="attempt">The attempted client invocation.</param>
     /// <param name="isTerminal">
-    /// <see langword="true"/> if the base will not select another client after this callback completes successfully;
+    /// <see langword="true"/> if the base will not select another client after this method returns successfully;
     /// otherwise, <see langword="false"/>.
     /// </param>
     /// <param name="cancellationToken">The cancellation token supplied for the request.</param>
@@ -76,9 +76,9 @@ public abstract class FailoverChatClient : RoutingChatClient
     /// <see cref="RoutingChatClient.SelectClientAsync"/>.
     /// </para>
     /// <para>
-    /// Every client invocation produces one update if the callback completes successfully. Selection failures are not
-    /// reported. A selector that retains request-scoped state must release it before throwing; a request may therefore
-    /// end without a terminal update when selection fails.
+    /// This method is invoked once after each selected-client invocation, whether it completes, fails, or is abandoned.
+    /// Selection failures are not reported. A selector that retains request-scoped state must release it before
+    /// throwing; a request may therefore end without a terminal update when selection fails.
     /// </para>
     /// <para>
     /// Exceptions from this method propagate to the caller. A terminal update exception replaces the response or
@@ -95,11 +95,10 @@ public abstract class FailoverChatClient : RoutingChatClient
 
     /// <inheritdoc/>
     public sealed override async Task<ChatResponse> GetResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
         var context = new RoutingContext(messages, options);
         int? maximumAttempts = MaximumAttemptsPerRequest;
         int attemptCount = 0;
@@ -165,11 +164,11 @@ public abstract class FailoverChatClient : RoutingChatClient
 
     /// <inheritdoc/>
     public sealed override async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-        IEnumerable<ChatMessage> messages,
-        ChatOptions? options = null,
+        IEnumerable<ChatMessage> messages, ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(messages);
+
         var context = new RoutingContext(messages, options);
         int? maximumAttempts = MaximumAttemptsPerRequest;
         int attemptCount = 0;
@@ -202,7 +201,7 @@ public abstract class FailoverChatClient : RoutingChatClient
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                Exception exception = (await DisposeAsync(enumerator, ex).ConfigureAwait(false))!;
+                Exception exception = (await DisposeEnumeratorAsync(enumerator, ex).ConfigureAwait(false))!;
                 var attempt = new FailoverChatClientAttempt(
                     selectedClient,
                     exception,
@@ -273,7 +272,8 @@ public abstract class FailoverChatClient : RoutingChatClient
             }
             finally
             {
-                terminalException = await DisposeAsync(enumerator, terminalException).ConfigureAwait(false);
+                terminalException =
+                    await DisposeEnumeratorAsync(enumerator, terminalException).ConfigureAwait(false);
 
                 var attempt = new FailoverChatClientAttempt(
                     selectedClient,
@@ -320,13 +320,10 @@ public abstract class FailoverChatClient : RoutingChatClient
         }
     }
 
-    [SuppressMessage(
-        "Resilience",
-        "EA0014:The async method doesn't support cancellation",
-        Justification = "IAsyncDisposable.DisposeAsync does not support cancellation.")]
-    private static async ValueTask<Exception?> DisposeAsync(
-        IAsyncDisposable? disposable,
-        Exception? exception)
+#pragma warning disable EA0014 // IAsyncDisposable.DisposeAsync doesn't support cancellation.
+    private static async ValueTask<Exception?> DisposeEnumeratorAsync(
+        IAsyncDisposable? disposable, Exception? exception)
+#pragma warning restore EA0014
     {
         if (disposable is not null)
         {
@@ -369,5 +366,4 @@ public abstract class FailoverChatClient : RoutingChatClient
     {
         ExceptionDispatchInfo.Capture(exception).Throw();
     }
-
 }

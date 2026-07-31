@@ -24,12 +24,14 @@ public class RoutingContext
 {
     /// <summary>Initializes a new instance of the <see cref="RoutingContext"/> class.</summary>
     /// <param name="messages">The messages to route.</param>
-    /// <param name="chatOptions">The options to clone for this request, or <see langword="null"/>.</param>
+    /// <param name="chatOptions">The options associated with this context.</param>
     public RoutingContext(
         IEnumerable<ChatMessage> messages,
         ChatOptions? chatOptions)
     {
-        Messages = Throw.IfNull(messages);
+        _ = Throw.IfNull(messages);
+
+        Messages = messages;
         ChatOptions = chatOptions?.Clone();
     }
 
@@ -45,5 +47,4 @@ public class RoutingContext
     /// behavior should generally be attached to the returned client.
     /// </remarks>
     public ChatOptions? ChatOptions { get; }
-
 }
