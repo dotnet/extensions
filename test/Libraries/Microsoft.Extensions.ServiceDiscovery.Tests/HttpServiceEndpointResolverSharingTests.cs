@@ -36,7 +36,7 @@ public class HttpServiceEndpointResolverSharingTests
         services.AddHttpClient("test").AddServiceDiscovery();
         await using var provider = services.BuildServiceProvider();
 
-        var handler = provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler("test");
+        using var handler = provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler("test");
         var resolvingHandler = FindHandler<ResolvingHttpDelegatingHandler>(handler);
         Assert.NotNull(resolvingHandler);
 
