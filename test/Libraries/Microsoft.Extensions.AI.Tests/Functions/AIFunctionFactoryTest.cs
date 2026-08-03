@@ -559,56 +559,33 @@ public partial class AIFunctionFactoryTest
         IExcludedService service = new ExcludedService();
         int leaks = 0;
 
-        // Use explicit threads (not Parallel.For) with a Barrier so that every worker begins each
-        // method's creation at the same time, maximizing the cold-start MethodInfo.GetParameters()
-        // window the fix addresses. A Barrier sized to the worker count would deadlock with Parallel.For,
-        // which does not guarantee that many iterations run concurrently.
-        const int Concurrency = 64;
-        using Barrier barrier = new(Concurrency);
-        Thread[] threads = new Thread[Concurrency];
-        for (int t = 0; t < Concurrency; t++)
+        Parallel.For(0, 64, _ =>
         {
-            threads[t] = new Thread(() =>
+            foreach (MethodInfo method in methods)
             {
-                foreach (MethodInfo method in methods)
+                AIFunctionFactoryOptions options = new()
                 {
-                    AIFunctionFactoryOptions options = new()
-                    {
-                        ConfigureParameterBinding = p => p.ParameterType == typeof(IExcludedService)
-                            ? new AIFunctionFactoryOptions.ParameterBindingOptions
-                            {
-                                ExcludeFromSchema = true,
-                                BindParameter = (_, _) => service,
-                            }
-                            : default,
-                    };
+                    ConfigureParameterBinding = p => p.ParameterType == typeof(IExcludedService)
+                        ? new AIFunctionFactoryOptions.ParameterBindingOptions
+                        {
+                            ExcludeFromSchema = true,
+                            BindParameter = (_, _) => service,
+                        }
+                        : default,
+                };
 
-                    // Rendezvous so all workers race the first GetParameters() call on this method together.
-                    barrier.SignalAndWait();
+                JsonElement schema = AIFunctionFactory.Create(method, target: null, options).JsonSchema;
 
-                    JsonElement schema = AIFunctionFactory.Create(method, target: null, options).JsonSchema;
-
-                    bool inRequired = schema.TryGetProperty("required", out JsonElement required) &&
-                        required.EnumerateArray().Any(e => e.GetString() == "service");
-                    bool inProperties = schema.TryGetProperty("properties", out JsonElement properties) &&
-                        properties.TryGetProperty("service", out _);
-                    if (inRequired || inProperties)
-                    {
-                        Interlocked.Increment(ref leaks);
-                    }
+                bool inRequired = schema.TryGetProperty("required", out JsonElement required) &&
+                    required.EnumerateArray().Any(e => e.GetString() == "service");
+                bool inProperties = schema.TryGetProperty("properties", out JsonElement properties) &&
+                    properties.TryGetProperty("service", out JsonElement _);
+                if (inRequired || inProperties)
+                {
+                    Interlocked.Increment(ref leaks);
                 }
-            });
-        }
-
-        foreach (Thread thread in threads)
-        {
-            thread.Start();
-        }
-
-        foreach (Thread thread in threads)
-        {
-            thread.Join();
-        }
+            }
+        });
 
         Assert.Equal(0, leaks);
     }
