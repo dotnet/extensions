@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.DocumentExtraction</RootNamespace>
+    <Description>Abstractions representing document extraction components (OCR, layout, tables, and figures).</Description>
+    <Workstream>AI</Workstream>
+    <PackageTags>document;extraction;ocr;layout;ai</PackageTags>
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);MEAI001;MEDE0001</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DisableMinimumSupportedTfmCompatErrors>true</DisableMinimumSupportedTfmCompatErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectFilePolyfillsOnLegacy>true</InjectFilePolyfillsOnLegacy>
+    <InjectMediaTypeMapOnLegacy>true</InjectMediaTypeMapOnLegacy>
+    <InjectNullabilityInfoContextOnLegacy>true</InjectNullabilityInfoContextOnLegacy>
+    <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
+    <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
+    <InjectSystemIndexOnLegacy>true</InjectSystemIndexOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+
+</Project>
