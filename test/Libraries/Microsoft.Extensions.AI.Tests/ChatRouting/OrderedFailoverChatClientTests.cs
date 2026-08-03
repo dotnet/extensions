@@ -21,7 +21,6 @@ public class OrderedFailoverChatClientTests
         Assert.Throws<ArgumentNullException>(() => new OrderedFailoverChatClient(null!));
         Assert.Throws<ArgumentException>(() => new OrderedFailoverChatClient([]));
         Assert.Throws<ArgumentException>(() => new OrderedFailoverChatClient([inner, null!]));
-        Assert.Throws<ArgumentException>(() => new OrderedFailoverChatClient([inner, inner]));
     }
 
     [Fact]
@@ -54,18 +53,55 @@ public class OrderedFailoverChatClientTests
     }
 
     [Fact]
-    public async Task OrderedFailover_DistinguishesValueEqualClients()
+    public async Task OrderedFailover_InvokesRepeatedClientOncePerPosition()
     {
+        var calls = new List<string>();
         ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "ok"));
-        using var first = new ValueEqualChatClient(
-            () => throw new InvalidOperationException("failed"));
-        using var second = new ValueEqualChatClient(
-            () => Task.FromResult(expected));
-        using var client = new OrderedFailoverChatClient([first, second]);
+        using var first = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) =>
+            {
+                calls.Add("first");
+                return calls.Count < 3
+                    ? throw new InvalidOperationException("first failed")
+                    : Task.FromResult(expected);
+            },
+        };
+        using var second = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) =>
+            {
+                calls.Add("second");
+                throw new InvalidOperationException("second failed");
+            },
+        };
+        using var client = new OrderedFailoverChatClient([first, second, first]);
 
         ChatResponse response = await client.GetResponseAsync([new(ChatRole.User, "hi")]);
 
         Assert.Same(expected, response);
+        Assert.Equal(["first", "second", "first"], calls);
+    }
+
+    [Fact]
+    public async Task OrderedFailover_RepeatedClientExhaustionRethrowsLastFailure()
+    {
+        int calls = 0;
+        using var inner = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) =>
+            {
+                calls++;
+                throw new InvalidOperationException($"failure {calls}");
+            },
+        };
+        using var client = new OrderedFailoverChatClient([inner, inner]);
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => client.GetResponseAsync([new(ChatRole.User, "hi")]));
+
+        Assert.Equal(2, calls);
+        Assert.Equal("failure 2", exception.Message);
     }
 
     [Fact]
@@ -153,7 +189,7 @@ public class OrderedFailoverChatClientTests
     }
 
     [Fact]
-    public async Task OrderedFailover_DoesNotRetainStateWhileStreaming()
+    public async Task OrderedFailover_ReleasesStateWhenStreamingEnds()
     {
         using var first = new TestChatClient
         {
@@ -164,11 +200,14 @@ public class OrderedFailoverChatClientTests
             GetStreamingResponseAsyncCallback = (_, _, _) => YieldUpdates("first", "second"),
         };
         using var client = new OrderedFailoverChatClient([first, second]);
-        await using IAsyncEnumerator<ChatResponseUpdate> enumerator =
-            client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).GetAsyncEnumerator();
 
-        Assert.True(await enumerator.MoveNextAsync());
-        Assert.Equal("first", enumerator.Current.Text);
+        await using (IAsyncEnumerator<ChatResponseUpdate> enumerator =
+            client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).GetAsyncEnumerator())
+        {
+            Assert.True(await enumerator.MoveNextAsync());
+            Assert.Equal("first", enumerator.Current.Text);
+        }
+
         Assert.Equal(0, GetOrderedFailoverRequestStateCount(client));
     }
 
@@ -354,29 +393,6 @@ public class OrderedFailoverChatClientTests
         public void Dispose() => DisposeCount++;
 
         public override bool Equals(object? obj) => obj is CountingDisposeClient;
-
-        public override int GetHashCode() => 0;
-    }
-
-    private sealed class ValueEqualChatClient(Func<Task<ChatResponse>> getResponse) : IChatClient
-    {
-        public Task<ChatResponse> GetResponseAsync(
-            IEnumerable<ChatMessage> messages, ChatOptions? options = null,
-            CancellationToken cancellationToken = default) =>
-            getResponse();
-
-        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
-            IEnumerable<ChatMessage> messages, ChatOptions? options = null,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
-
-        public object? GetService(Type serviceType, object? serviceKey = null) => null;
-
-        public void Dispose()
-        {
-        }
-
-        public override bool Equals(object? obj) => obj is ValueEqualChatClient;
 
         public override int GetHashCode() => 0;
     }

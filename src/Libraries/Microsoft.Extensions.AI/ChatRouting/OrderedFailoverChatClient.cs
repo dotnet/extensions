@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -20,8 +21,8 @@ namespace Microsoft.Extensions.AI;
 /// client. Cancellation and failures after streaming output is exposed are propagated without failover.
 /// </para>
 /// <para>
-/// The configured clients are snapshotted by the constructor and must contain unique object references. When every
-/// client has failed, the final failure is rethrown.
+/// The configured clients are snapshotted by the constructor. The same client may appear more than once, in which
+/// case it is invoked once per position. When every client has failed, the final failure is rethrown.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
@@ -29,7 +30,10 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
 {
     private readonly bool _leaveOpen;
     private readonly IChatClient[] _clients;
-    private readonly ConcurrentDictionary<RoutingContext, RequestState> _requestStates = new();
+
+    // Holds the next client index for a request that has a failed attempt. A nonterminal update is always followed
+    // by another selection, so a stored index is always in range.
+    private readonly ConcurrentDictionary<RoutingContext, int> _requestStates = new();
     private bool _disposed;
 
     /// <summary>Initializes a new instance of the <see cref="OrderedFailoverChatClient"/> class.</summary>
@@ -39,10 +43,7 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
     /// otherwise, <see langword="false"/>.
     /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="clients"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">
-    /// <paramref name="clients"/> is empty, contains <see langword="null"/>, or contains the same client instance more
-    /// than once.
-    /// </exception>
+    /// <exception cref="ArgumentException"><paramref name="clients"/> is empty or contains <see langword="null"/>.</exception>
     public OrderedFailoverChatClient(IReadOnlyList<IChatClient> clients, bool leaveOpen = false)
     {
         _ = Throw.IfNull(clients);
@@ -53,19 +54,11 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
             Throw.ArgumentException(nameof(clients), "At least one client must be provided.");
         }
 
-        for (int i = 0; i < clientsSnapshot.Length; i++)
+        foreach (IChatClient client in clientsSnapshot)
         {
-            if (clientsSnapshot[i] is null)
+            if (client is null)
             {
                 Throw.ArgumentException(nameof(clients), "Clients must not contain null.");
-            }
-
-            for (int j = 0; j < i; j++)
-            {
-                if (ReferenceEquals(clientsSnapshot[j], clientsSnapshot[i]))
-                {
-                    Throw.ArgumentException(nameof(clients), "Each client instance must be unique.");
-                }
             }
         }
 
@@ -78,20 +71,12 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         RoutingContext context,
         CancellationToken cancellationToken)
     {
+        _ = Throw.IfNull(context);
         _ = cancellationToken;
 
-        if (!_requestStates.TryRemove(context, out RequestState? state))
-        {
-            return new(_clients[0]);
-        }
+        int clientIndex = _requestStates.TryGetValue(context, out int nextClientIndex) ? nextClientIndex : 0;
 
-        if (state.ClientIndex < _clients.Length)
-        {
-            return new(_clients[state.ClientIndex]);
-        }
-
-        ExceptionDispatchInfo.Capture(state.LastException).Throw();
-        throw state.LastException;
+        return new(_clients[clientIndex]);
     }
 
     /// <inheritdoc/>
@@ -109,23 +94,20 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
             return default;
         }
 
-        if (attempt.Exception is null)
+        Exception? exception = attempt.Exception;
+        Debug.Assert(exception is not null, "A nonterminal update always reports a failed invocation.");
+
+        int nextClientIndex = (_requestStates.TryGetValue(context, out int attemptedIndex) ? attemptedIndex : 0) + 1;
+        if (nextClientIndex < _clients.Length)
         {
-            _ = _requestStates.TryRemove(context, out _);
-            throw new InvalidOperationException("A nonterminal routing update requires a failed client invocation.");
+            _requestStates[context] = nextClientIndex;
+            return default;
         }
 
-        int clientIndex = IndexOfClient(attempt.Client);
-        if (clientIndex < 0)
-        {
-            _ = _requestStates.TryRemove(context, out _);
-            throw new InvalidOperationException("The invocation did not use a configured ordered failover client.");
-        }
-
-        // Selection immediately removes this state before invoking the next client.
-        _requestStates[context] = new(clientIndex + 1, attempt.Exception);
-
-        return default;
+        // Every client has failed. Release the state before the final failure ends routing.
+        _ = _requestStates.TryRemove(context, out _);
+        ExceptionDispatchInfo.Capture(exception!).Throw();
+        throw exception!;
     }
 
     /// <inheritdoc/>
@@ -148,25 +130,5 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         }
 
         base.Dispose(disposing);
-    }
-
-    private int IndexOfClient(IChatClient client)
-    {
-        for (int i = 0; i < _clients.Length; i++)
-        {
-            if (ReferenceEquals(_clients[i], client))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private sealed class RequestState(int clientIndex, Exception lastException)
-    {
-        public int ClientIndex { get; } = clientIndex;
-
-        public Exception LastException { get; } = lastException;
     }
 }
