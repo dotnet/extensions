@@ -154,10 +154,6 @@ Finally, create a project from the template and run it:
     # If using `--aspire`, cd into the *AppHost directory
     # Follow the instructions in the generated README for setting the necessary user-secrets
 
-# or
-
-    dotnet new mcpserver [--aot] [--self-contained]
-
 dotnet run
 ```
 

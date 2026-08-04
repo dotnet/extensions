@@ -552,6 +552,67 @@ public partial class AIFunctionFactoryTest
     }
 
     [Fact]
+    public void AIFunctionFactoryOptions_ExcludeFromSchema_HonoredUnderConcurrentCreation()
+    {
+        MethodInfo[] methods = typeof(ExcludeFromSchemaConcurrencyTools)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static);
+        IExcludedService service = new ExcludedService();
+        int leaks = 0;
+
+        Parallel.For(0, 64, _ =>
+        {
+            foreach (MethodInfo method in methods)
+            {
+                AIFunctionFactoryOptions options = new()
+                {
+                    ConfigureParameterBinding = p => p.ParameterType == typeof(IExcludedService)
+                        ? new AIFunctionFactoryOptions.ParameterBindingOptions
+                        {
+                            ExcludeFromSchema = true,
+                            BindParameter = (_, _) => service,
+                        }
+                        : default,
+                };
+
+                JsonElement schema = AIFunctionFactory.Create(method, target: null, options).JsonSchema;
+
+                bool inRequired = schema.TryGetProperty("required", out JsonElement required) &&
+                    required.EnumerateArray().Any(e => e.GetString() == "service");
+                bool inProperties = schema.TryGetProperty("properties", out JsonElement properties) &&
+                    properties.TryGetProperty("service", out JsonElement _);
+                if (inRequired || inProperties)
+                {
+                    Interlocked.Increment(ref leaks);
+                }
+            }
+        });
+
+        Assert.Equal(0, leaks);
+    }
+
+    private interface IExcludedService
+    {
+        string Value { get; }
+    }
+
+    private static class ExcludeFromSchemaConcurrencyTools
+    {
+        public static string One(IExcludedService service, [Description("q")] string query, [Description("o")] string? optional = null) => $"{service.Value}{query}{optional}";
+        public static string Two(IExcludedService service, [Description("o")] string? optional = null) => $"{service.Value}{optional}";
+        public static string Three(IExcludedService service, [Description("n")] string name) => $"{service.Value}{name}";
+        public static string Four(IExcludedService service, [Description("n")] string name, [Description("a")] string? aspect = null) => $"{service.Value}{name}{aspect}";
+        public static string Five(IExcludedService service, [Description("q")] string query, [Description("f")] string framework) => $"{service.Value}{query}{framework}";
+        public static string Six(IExcludedService service, [Description("c")] string? category = null) => $"{service.Value}{category}";
+        public static string Seven(IExcludedService service, [Description("t")] string? topic = null) => $"{service.Value}{topic}";
+        public static string Eight(IExcludedService service) => service.Value;
+    }
+
+    private sealed class ExcludedService : IExcludedService
+    {
+        public string Value => "service";
+    }
+
+    [Fact]
     public void AIFunctionFactoryOptions_SupportsSkippingReturnSchema()
     {
         AIFunction func = AIFunctionFactory.Create(
