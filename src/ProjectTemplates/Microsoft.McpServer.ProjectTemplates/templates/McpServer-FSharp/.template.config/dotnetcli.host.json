@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "Transport": {
+      "longName": "transport",
+      "shortName": "t"
+    },
+    "SelfContained": {
+      "longName": "self-contained",
+      "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
+    },
+    "httpPort": {
+      "isHidden": true
+    },
+    "httpsPort": {
+      "isHidden": true
+    }
+  },
+  "usageExamples": [
+    ""
+  ]
+}

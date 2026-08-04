@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <!--#if (SelfContained)-->
+    <RuntimeIdentifiers>win-x64;win-arm64;osx-arm64;linux-x64;linux-arm64;linux-musl-x64</RuntimeIdentifiers>
+    <!--#else-->
+    <RollForward>Major</RollForward>
+    <!--#endif -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aaaaaaaa-bbbb-cccc-dddd-eeeeeeffffff</UserSecretsId>
+
+    <!--#if (SelfContained)-->
+
+    <!-- Set up the MCP server to be a self-contained application that does not rely on a shared framework -->
+    <SelfContained>true</SelfContained>
+    <PublishSelfContained>true</PublishSelfContained>
+
+    <!-- Set up the MCP server to be a single file executable -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <!--#endif -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Tools\RandomNumberTools.fs" />
+    <None Include="McpServer-FSharp.http" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="${PackageVersion:ModelContextProtocol.AspNetCore}" />
+  </ItemGroup>
+
+</Project>

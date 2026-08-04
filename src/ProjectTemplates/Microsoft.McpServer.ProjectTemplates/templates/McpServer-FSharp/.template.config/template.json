@@ -6,16 +6,16 @@
     "AI",
     "MCP"
   ],
-  "identity": "Microsoft.McpServer.ProjectTemplates.McpServer.CSharp",
+  "identity": "Microsoft.McpServer.ProjectTemplates.McpServer.FSharp",
   "name": "MCP Server App",
-  "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
-  "shortName": "mcpserver",
+  "description": "A project template for creating a Model Context Protocol (MCP) server using F# and the ModelContextProtocol package.",
+  "shortName": "mcpserver-fsharp",
   "defaultName": "McpServer",
   "groupIdentity": "McpServer",
-  "sourceName": "McpServer-CSharp",
+  "sourceName": "McpServer-FSharp",
   "preferNameDirectory": true,
   "tags": {
-    "language": "C#",
+    "language": "F#",
     "type": "project"
   },
   "guids": [
@@ -42,13 +42,6 @@
         }
       ],
       "defaultValue": "local"
-    },
-    "NativeAot": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "displayName": "Enable _native AOT publish",
-      "description": "Whether to enable the MCP server for publishing as a native AOT application."
     },
     "SelfContained": {
       "type": "parameter",
@@ -143,7 +136,7 @@
       "path": "./README.md"
     },
     {
-      "path": "./McpServer-CSharp.csproj"
+      "path": "./McpServer-FSharp.fsproj"
     }
   ],
   "sources": [
