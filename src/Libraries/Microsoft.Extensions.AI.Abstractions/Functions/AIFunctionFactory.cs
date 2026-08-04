@@ -735,14 +735,18 @@ public static partial class AIFunctionFactory
         {
             ParameterInfo[] parameters = key.Method.GetParameters();
 
-            // Determine how each parameter should be bound.
-            Dictionary<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? boundParameters = null;
+            // Determine how each parameter should be bound. This is keyed on the parameter's position
+            // rather than the ParameterInfo instance: MethodInfo.GetParameters() does not guarantee the
+            // same ParameterInfo instances across concurrent first calls on a cold MethodInfo, and the
+            // schema generator invokes IncludeParameter with ParameterInfo instances from its own
+            // GetParameters() call. Keying on identity would race and silently drop ExcludeFromSchema.
+            AIFunctionFactoryOptions.ParameterBindingOptions[]? boundParameters = null;
             if (parameters.Length != 0 && key.GetBindParameterOptions is not null)
             {
-                boundParameters = new(parameters.Length);
+                boundParameters = new AIFunctionFactoryOptions.ParameterBindingOptions[parameters.Length];
                 for (int i = 0; i < parameters.Length; i++)
                 {
-                    boundParameters[parameters[i]] = key.GetBindParameterOptions(parameters[i]);
+                    boundParameters[i] = key.GetBindParameterOptions(parameters[i]);
                 }
             }
 
@@ -759,8 +763,11 @@ public static partial class AIFunctionFactory
                     }
 
                     // If the parameter is marked as excluded by GetBindParameterOptions, exclude it.
-                    if (boundParameters?.TryGetValue(parameterInfo, out var options) is true &&
-                        options.ExcludeFromSchema)
+                    // Look up by position because the ParameterInfo passed here may be a different
+                    // instance than the one boundParameters was built from (see comment above).
+                    if (boundParameters is not null &&
+                        (uint)parameterInfo.Position < (uint)boundParameters.Length &&
+                        boundParameters[parameterInfo.Position].ExcludeFromSchema)
                     {
                         return false;
                     }
@@ -783,10 +790,8 @@ public static partial class AIFunctionFactory
             bool hasCustomParameterBinding = false;
             for (int i = 0; i < parameters.Length; i++)
             {
-                if (boundParameters?.TryGetValue(parameters[i], out AIFunctionFactoryOptions.ParameterBindingOptions options) is not true)
-                {
-                    options = default;
-                }
+                AIFunctionFactoryOptions.ParameterBindingOptions options =
+                    boundParameters is not null ? boundParameters[i] : default;
 
                 ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
 
