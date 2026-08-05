@@ -1,6 +1,22 @@
-# Stage 7 - Confirm the Support-Page Update
+# Stage 7 - Support-Page Follow-up
 
-The [.NET Platform Extensions support policy page](https://dotnet.microsoft.com/en-us/platform/support/policy/extensions) lists the supported packages and their current versions. It is maintained by a **partner team**, so this stage is a **review**, not an edit: confirm their update lands and is complete.
+The [.NET Platform Extensions support policy page](https://dotnet.microsoft.com/en-us/platform/support/policy/extensions)
+lists supported packages and current versions. This stage differs by release type and package novelty.
+
+## Decision gate
+
+1. Determine whether the release is **monthly** or **servicing**.
+2. Determine whether the shipped scope includes any **newly published packages**.
+
+Then follow one path:
+
+- **Monthly release** -> review partner-team PR (Path A).
+- **Servicing release, existing packages only** -> skip Stage 7 (Path B).
+- **Servicing release with new package(s)** -> release manager authors `dotnet/website` PR (Path C).
+
+## Path A - Monthly release (review partner-team PR)
+
+The support page is maintained by a partner team in the monthly flow; this path is a review.
 
 ## Steps
 
@@ -15,6 +31,26 @@ The [.NET Platform Extensions support policy page](https://dotnet.microsoft.com/
    Exclude preview-only packages, which are not listed.
 4. If the pull request is missing or incomplete, raise it with the partner team.
 
+## Path B - Servicing release with existing packages only
+
+No support-page PR is required. Record that Stage 7 is intentionally skipped because the servicing
+release did not introduce new package entries.
+
+## Path C - Servicing release with newly published package(s)
+
+In servicing flow, the release manager owns the website update when a new package is introduced.
+
+1. Create a PR in [`dotnet/website`](https://github.com/dotnet/website) updating
+   `website/src/netlandingpage/Pages/platform/support/policy/extensions.cshtml`.
+2. Update:
+   - supported version and release date for this release,
+   - package list entries for newly published packages,
+   - any required out-of-support table changes.
+3. Ensure preview-only packages are not listed.
+4. Submit the PR and track it to completion as part of release sign-off.
+
 ## After the stage
 
-This is the final validation step. The release is complete once its symbols are public (Stage 5), the branches are reconciled (Stage 6), and the support-page listing is confirmed.
+This is the final validation step when applicable. The release is complete once symbols are public
+(Stage 5), branch reconciliation is complete when required (Stage 6), and Stage 7 obligations for the
+selected path are satisfied.

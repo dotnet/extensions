@@ -9,7 +9,7 @@
       ]
     },
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.5.10",
+      "version": "5.5.11",
       "commands": [
         "reportgenerator"
       ]
@@ -21,7 +21,7 @@
       ]
     },
     "PowerShell": {
-      "version": "7.6.3",
+      "version": "7.6.4",
       "commands": [
         "pwsh"
       ]

@@ -61,17 +61,12 @@
       "type": "parameter",
       "displayName": "_AI service provider",
       "datatype": "choice",
-      "defaultValue": "githubmodels",
+      "isRequired": true,
       "choices": [
         {
           "choice": "azureopenai",
           "displayName": "Azure OpenAI",
           "description": "Uses Azure OpenAI service"
-        },
-        {
-          "choice": "githubmodels",
-          "displayName": "GitHub Models",
-          "description": "Uses GitHub Models"
         },
         {
           "choice": "ollama",
@@ -109,10 +104,6 @@
     "IsOpenAI": {
       "type": "computed",
       "value": "(AiServiceProvider == \"openai\")"
-    },
-    "IsGHModels": {
-      "type": "computed",
-      "value": "(AiServiceProvider == \"githubmodels\")"
     },
     "IsOllama": {
       "type": "computed",
