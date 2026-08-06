@@ -15,9 +15,9 @@ namespace Microsoft.Extensions.AI;
 /// started from the sequence returned by <see cref="IChatClient.GetStreamingResponseAsync"/>.
 /// </para>
 /// <para>
-/// <see cref="ChatOptions"/> is cloned from the caller's instance when the context is created, so the caller's
-/// instance is never handed to a selected client and changes the caller makes after the request begins are not
-/// observed.
+/// <see cref="ChatOptions"/> is cloned (via <see cref="ChatOptions.Clone"/>) from the caller-supplied instance when
+/// the context is created, so that instance is never handed to a selected client and subsequent changes to it are not
+/// observed. The clone is shallow, so referenced objects may still be shared.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
