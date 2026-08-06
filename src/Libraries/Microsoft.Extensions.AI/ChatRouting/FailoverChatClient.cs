@@ -29,6 +29,12 @@ namespace Microsoft.Extensions.AI;
 /// client selection, policy state, selection-failure cleanup, and the lifetime of clients they retain.
 /// </para>
 /// <para>
+/// One <see cref="RoutingContext"/> is created for each request and is supplied to every selection and routing
+/// update for that request. A derived class that keeps request-scoped policy state can override
+/// <see cref="RoutingChatClient.CreateContext"/> to return its own <see cref="RoutingContext"/> subclass and store
+/// that state on the context, which releases it with the request instead of requiring explicit cleanup.
+/// </para>
+/// <para>
 /// Once streaming enumeration begins, callers must dispose the enumerator. Abandoning an active enumerator without
 /// disposing it prevents both inner enumerator disposal and the terminal routing update.
 /// </para>
@@ -99,7 +105,8 @@ public abstract class FailoverChatClient : RoutingChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var context = new RoutingContext(messages, options);
+        RoutingContext context = CreateContext(messages, options) ??
+            throw new InvalidOperationException($"{nameof(CreateContext)} returned null.");
         int? maximumAttempts = MaximumAttemptsPerRequest;
         int attemptCount = 0;
 
@@ -169,7 +176,8 @@ public abstract class FailoverChatClient : RoutingChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var context = new RoutingContext(messages, options);
+        RoutingContext context = CreateContext(messages, options) ??
+            throw new InvalidOperationException($"{nameof(CreateContext)} returned null.");
         int? maximumAttempts = MaximumAttemptsPerRequest;
         int attemptCount = 0;
 

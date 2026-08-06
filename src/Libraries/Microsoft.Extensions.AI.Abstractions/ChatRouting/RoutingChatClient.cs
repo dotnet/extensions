@@ -39,6 +39,25 @@ public abstract class RoutingChatClient : IChatClient
         return new CallbackRoutingChatClient(clientSelector);
     }
 
+    /// <summary>Creates the context supplied to client selection for one request.</summary>
+    /// <param name="messages">The messages to route.</param>
+    /// <param name="options">The options supplied by the caller, or <see langword="null"/>.</param>
+    /// <returns>The context for the request.</returns>
+    /// <remarks>
+    /// <para>
+    /// The default implementation returns a new <see cref="RoutingContext"/>. A derived class can return its own
+    /// <see cref="RoutingContext"/> subclass to supply additional request inputs or to carry request-scoped policy
+    /// state, which <see cref="SelectClientAsync"/> then reads by casting the supplied context. State stored on the
+    /// context is released with the request.
+    /// </para>
+    /// <para>
+    /// This method is called once per request by <see cref="GetResponseAsync"/> and
+    /// <see cref="GetStreamingResponseAsync"/>. Exceptions from this method propagate to the caller.
+    /// </para>
+    /// </remarks>
+    protected virtual RoutingContext CreateContext(IEnumerable<ChatMessage> messages, ChatOptions? options) =>
+        new(messages, options);
+
     /// <summary>Selects the client to invoke for the request.</summary>
     /// <param name="context">The request-specific inputs.</param>
     /// <param name="cancellationToken">The cancellation token supplied for the request.</param>
@@ -57,7 +76,8 @@ public abstract class RoutingChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var context = new RoutingContext(messages, options);
+        RoutingContext context = CreateContext(messages, options) ??
+            throw new InvalidOperationException($"{nameof(CreateContext)} returned null.");
         IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
 
@@ -74,7 +94,8 @@ public abstract class RoutingChatClient : IChatClient
     {
         _ = Throw.IfNull(messages);
 
-        var context = new RoutingContext(messages, options);
+        RoutingContext context = CreateContext(messages, options) ??
+            throw new InvalidOperationException($"{nameof(CreateContext)} returned null.");
         IChatClient client = await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
 

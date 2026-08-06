@@ -189,11 +189,16 @@ public class OrderedFailoverChatClientTests
     }
 
     [Fact]
-    public async Task OrderedFailover_ReleasesStateWhenStreamingEnds()
+    public async Task OrderedFailover_AbandonedStreamDoesNotAffectLaterRequests()
     {
+        int firstCalls = 0;
         using var first = new TestChatClient
         {
-            GetStreamingResponseAsyncCallback = (_, _, _) => ThrowingStream("failed"),
+            GetStreamingResponseAsyncCallback = (_, _, _) =>
+            {
+                firstCalls++;
+                return ThrowingStream("failed");
+            },
         };
         using var second = new TestChatClient
         {
@@ -201,14 +206,18 @@ public class OrderedFailoverChatClientTests
         };
         using var client = new OrderedFailoverChatClient([first, second]);
 
-        await using (IAsyncEnumerator<ChatResponseUpdate> enumerator =
-            client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).GetAsyncEnumerator())
-        {
-            Assert.True(await enumerator.MoveNextAsync());
-            Assert.Equal("first", enumerator.Current.Text);
-        }
+        // Abandon the enumerator mid-stream without disposing it, so no terminal routing update is made.
+        IAsyncEnumerator<ChatResponseUpdate> abandoned =
+            client.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).GetAsyncEnumerator();
+        Assert.True(await abandoned.MoveNextAsync());
+        Assert.Equal("first", abandoned.Current.Text);
 
-        Assert.Equal(0, GetOrderedFailoverRequestStateCount(client));
+        // A later request still starts from the first client because state is scoped to its own context.
+        ChatResponse response =
+            await client.GetStreamingResponseAsync([new(ChatRole.User, "again")]).ToChatResponseAsync();
+
+        Assert.Equal(2, firstCalls);
+        Assert.Equal("firstsecond", response.Text);
     }
 
     [Fact]
@@ -362,16 +371,6 @@ public class OrderedFailoverChatClientTests
         ChatResponse response = await outer.GetResponseAsync([new(ChatRole.User, "hi")]);
 
         Assert.Same(expected, response);
-    }
-
-    private static int GetOrderedFailoverRequestStateCount(OrderedFailoverChatClient client)
-    {
-        object requestStates = typeof(OrderedFailoverChatClient)
-            .GetField(
-                "_requestStates",
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-            .GetValue(client)!;
-        return (int)requestStates.GetType().GetProperty("Count")!.GetValue(requestStates)!;
     }
 
     private sealed class CountingDisposeClient : IChatClient

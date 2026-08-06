@@ -117,6 +117,40 @@ public class RoutingChatClientTests
         Assert.Equal(0, selected.DisposeCount);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateContext_SuppliesCustomContextToSelection(bool streaming)
+    {
+        ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "ok"));
+        using var selected = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) => Task.FromResult(expected),
+            GetStreamingResponseAsyncCallback = (_, _, _) => YieldUpdates("ok"),
+        };
+        using var router = new CustomContextTestRouter(selected);
+
+        ChatResponse response = streaming
+            ? await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync()
+            : await router.GetResponseAsync([new(ChatRole.User, "hi")]);
+
+        Assert.Equal("ok", response.Text);
+        Assert.Equal(1, router.ContextsCreated);
+        Assert.Equal(1, router.CustomContextsObserved);
+    }
+
+    [Fact]
+    public async Task CreateContext_NullResultThrows()
+    {
+        using var selected = new TestChatClient();
+        using var router = new NullContextTestRouter(selected);
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
+
+        Assert.Contains("CreateContext", exception.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void GetService_ReturnsSelfAndNullForUnknownOrKeyed()
     {
@@ -127,6 +161,15 @@ public class RoutingChatClientTests
         Assert.Same(client, client.GetService(typeof(IChatClient)));
         Assert.Null(client.GetService(typeof(DelegatingTestRouter), serviceKey: "key"));
         Assert.Null(client.GetService(typeof(string)));
+    }
+
+    private static async IAsyncEnumerable<ChatResponseUpdate> YieldUpdates(params string[] texts)
+    {
+        foreach (string text in texts)
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, text);
+        }
     }
 
     private static async Task<List<ChatResponseUpdate>> CollectAsync(
@@ -154,6 +197,61 @@ public class RoutingChatClientTests
             RoutingContext context,
             CancellationToken cancellationToken) =>
             new(_select(context));
+    }
+
+    private sealed class CustomContextTestRouter : RoutingChatClient
+    {
+        private readonly IChatClient _client;
+
+        public CustomContextTestRouter(IChatClient client)
+        {
+            _client = client;
+        }
+
+        public int ContextsCreated { get; private set; }
+
+        public int CustomContextsObserved { get; private set; }
+
+        protected override RoutingContext CreateContext(
+            IEnumerable<ChatMessage> messages, ChatOptions? options)
+        {
+            ContextsCreated++;
+            return new TaggedRoutingContext(messages, options);
+        }
+
+        protected override ValueTask<IChatClient> SelectClientAsync(
+            RoutingContext context,
+            CancellationToken cancellationToken)
+        {
+            if (context is TaggedRoutingContext)
+            {
+                CustomContextsObserved++;
+            }
+
+            return new(_client);
+        }
+
+        private sealed class TaggedRoutingContext(IEnumerable<ChatMessage> messages, ChatOptions? chatOptions)
+            : RoutingContext(messages, chatOptions);
+    }
+
+    private sealed class NullContextTestRouter : RoutingChatClient
+    {
+        private readonly IChatClient _client;
+
+        public NullContextTestRouter(IChatClient client)
+        {
+            _client = client;
+        }
+
+        protected override RoutingContext CreateContext(
+            IEnumerable<ChatMessage> messages, ChatOptions? options) =>
+            null!;
+
+        protected override ValueTask<IChatClient> SelectClientAsync(
+            RoutingContext context,
+            CancellationToken cancellationToken) =>
+            new(_client);
     }
 
     private sealed class CountingDisposeClient : IChatClient

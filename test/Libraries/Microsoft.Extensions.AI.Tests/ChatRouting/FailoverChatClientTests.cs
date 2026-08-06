@@ -27,6 +27,46 @@ public class FailoverChatClientTests
         Assert.Throws<ArgumentOutOfRangeException>(() => client.MaximumAttemptsPerRequest = -1);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CreateContext_SuppliesCustomContextToSelectionAndUpdates(bool streaming)
+    {
+        using var failing = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) => throw new InvalidOperationException("failed"),
+            GetStreamingResponseAsyncCallback = (_, _, _) => ThrowingStream("failed"),
+        };
+        ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "ok"));
+        using var succeeding = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, _, _) => Task.FromResult(expected),
+            GetStreamingResponseAsyncCallback = (_, _, _) => YieldUpdates("ok"),
+        };
+        using var router = new StatefulFailoverTestRouter(failing, succeeding);
+
+        ChatResponse response = streaming
+            ? await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")]).ToChatResponseAsync()
+            : await router.GetResponseAsync([new(ChatRole.User, "hi")]);
+
+        Assert.Equal("ok", response.Text);
+        Assert.Equal(2, router.ObservedContexts.Count);
+        Assert.Same(router.ObservedContexts[0], router.ObservedContexts[1]);
+        Assert.Equal(1, router.LastObservedAttemptNumber);
+    }
+
+    [Fact]
+    public async Task CreateContext_NullResultThrows()
+    {
+        using var selected = new TestChatClient();
+        using var router = new NullContextFailoverTestRouter(selected);
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => router.GetResponseAsync([new(ChatRole.User, "hi")]));
+
+        Assert.Contains("CreateContext", exception.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Failover_RejectsNullMessagesForNonStreamingAndStreaming()
     {
@@ -1222,6 +1262,74 @@ public class FailoverChatClientTests
             _onRoutingUpdate?.Invoke(context, attempt, isTerminal);
             return default;
         }
+    }
+
+    private sealed class StatefulFailoverTestRouter : FailoverChatClient
+    {
+        private readonly IChatClient[] _clients;
+
+        public StatefulFailoverTestRouter(params IChatClient[] clients)
+        {
+            _clients = clients;
+        }
+
+        public List<RoutingContext> ObservedContexts { get; } = [];
+
+        public int LastObservedAttemptNumber { get; private set; }
+
+        protected override RoutingContext CreateContext(
+            IEnumerable<ChatMessage> messages, ChatOptions? options) =>
+            new CountingRoutingContext(messages, options);
+
+        protected override ValueTask<IChatClient> SelectClientAsync(
+            RoutingContext context,
+            CancellationToken cancellationToken)
+        {
+            ObservedContexts.Add(context);
+            var state = (CountingRoutingContext)context;
+            return new(_clients[state.AttemptNumber]);
+        }
+
+        protected override ValueTask OnRoutingUpdateAsync(
+            RoutingContext context,
+            FailoverChatClientAttempt attempt,
+            bool isTerminal,
+            CancellationToken cancellationToken)
+        {
+            var state = (CountingRoutingContext)context;
+            LastObservedAttemptNumber = state.AttemptNumber;
+            if (!isTerminal)
+            {
+                state.AttemptNumber++;
+            }
+
+            return default;
+        }
+
+        private sealed class CountingRoutingContext(IEnumerable<ChatMessage> messages, ChatOptions? chatOptions)
+            : RoutingContext(messages, chatOptions)
+        {
+            public int AttemptNumber { get; set; }
+        }
+    }
+
+    private sealed class NullContextFailoverTestRouter : FailoverChatClient
+    {
+        private readonly IChatClient _client;
+
+        public NullContextFailoverTestRouter(IChatClient client)
+        {
+            _client = client;
+        }
+
+        protected override RoutingContext CreateContext(
+            IEnumerable<ChatMessage> messages, ChatOptions? options) =>
+            null!;
+
+        protected override ValueTask<IChatClient> SelectClientAsync(
+            RoutingContext context,
+            CancellationToken cancellationToken) =>
+            new(_client);
     }
 
     private sealed class ThrowingGetAsyncEnumeratorEnumerable : IAsyncEnumerable<ChatResponseUpdate>

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -30,10 +29,6 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
 {
     private readonly bool _leaveOpen;
     private readonly IChatClient[] _clients;
-
-    // Holds the next client index for a request that has a failed attempt. A nonterminal update is always followed
-    // by another selection, so a stored index is always in range.
-    private readonly ConcurrentDictionary<RoutingContext, int> _requestStates = new();
     private bool _disposed;
 
     /// <summary>Initializes a new instance of the <see cref="OrderedFailoverChatClient"/> class.</summary>
@@ -67,16 +62,17 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
     }
 
     /// <inheritdoc/>
+    protected override RoutingContext CreateContext(IEnumerable<ChatMessage> messages, ChatOptions? options) =>
+        new OrderedRoutingContext(messages, options);
+
+    /// <inheritdoc/>
     protected override ValueTask<IChatClient> SelectClientAsync(
         RoutingContext context,
         CancellationToken cancellationToken)
     {
-        _ = Throw.IfNull(context);
         _ = cancellationToken;
 
-        int clientIndex = _requestStates.TryGetValue(context, out int nextClientIndex) ? nextClientIndex : 0;
-
-        return new(_clients[clientIndex]);
+        return new(_clients[GetState(context).NextClientIndex]);
     }
 
     /// <inheritdoc/>
@@ -90,22 +86,20 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
 
         if (isTerminal)
         {
-            _ = _requestStates.TryRemove(context, out _);
             return default;
         }
 
         Exception? exception = attempt.Exception;
         Debug.Assert(exception is not null, "A nonterminal update always reports a failed invocation.");
 
-        int nextClientIndex = (_requestStates.TryGetValue(context, out int attemptedIndex) ? attemptedIndex : 0) + 1;
-        if (nextClientIndex < _clients.Length)
+        OrderedRoutingContext state = GetState(context);
+        if (state.NextClientIndex + 1 < _clients.Length)
         {
-            _requestStates[context] = nextClientIndex;
+            state.NextClientIndex++;
             return default;
         }
 
-        // Every client has failed. Release the state before the final failure ends routing.
-        _ = _requestStates.TryRemove(context, out _);
+        // Every client has failed, so the final failure ends routing.
         ExceptionDispatchInfo.Capture(exception!).Throw();
         throw exception!;
     }
@@ -119,7 +113,6 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         }
 
         _disposed = true;
-        _requestStates.Clear();
 
         if (disposing && !_leaveOpen)
         {
@@ -130,5 +123,24 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         }
 
         base.Dispose(disposing);
+    }
+
+    private static OrderedRoutingContext GetState(RoutingContext context)
+    {
+        if (context is not OrderedRoutingContext state)
+        {
+            Throw.ArgumentException(
+                nameof(context),
+                $"The context was not created by {nameof(CreateContext)}.");
+            return null!;
+        }
+
+        return state;
+    }
+
+    private sealed class OrderedRoutingContext(IEnumerable<ChatMessage> messages, ChatOptions? chatOptions)
+        : RoutingContext(messages, chatOptions)
+    {
+        public int NextClientIndex { get; set; }
     }
 }

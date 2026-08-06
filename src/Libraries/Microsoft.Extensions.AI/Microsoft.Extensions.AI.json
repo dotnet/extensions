@@ -1492,6 +1492,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "override Microsoft.Extensions.AI.RoutingContext Microsoft.Extensions.AI.OrderedFailoverChatClient.CreateContext(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "override void Microsoft.Extensions.AI.OrderedFailoverChatClient.Dispose(bool disposing);",
           "Stage": "Experimental"
         },

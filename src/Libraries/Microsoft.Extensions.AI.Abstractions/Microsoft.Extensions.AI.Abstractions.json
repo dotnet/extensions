@@ -3979,6 +3979,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "virtual Microsoft.Extensions.AI.RoutingContext Microsoft.Extensions.AI.RoutingChatClient.CreateContext(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.ChatMessage> messages, Microsoft.Extensions.AI.ChatOptions? options);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "void Microsoft.Extensions.AI.RoutingChatClient.Dispose();",
           "Stage": "Experimental"
         },
