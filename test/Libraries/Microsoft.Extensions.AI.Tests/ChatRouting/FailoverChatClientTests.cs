@@ -230,8 +230,10 @@ public class FailoverChatClientTests
         Assert.Equal("request", requestOptions.ModelId);
     }
 
-    [Fact]
-    public async Task Failover_UsesFreshRequestOptionsForEachAttempt()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Failover_UsesRequestOptionsForEveryAttempt(bool streaming)
     {
         var requestOptions = new ChatOptions
         {
@@ -244,8 +246,12 @@ public class FailoverChatClientTests
             GetResponseAsyncCallback = (_, options, _) =>
             {
                 invokedOptions.Add(options!);
-                options!.ModelId = "changed by first client";
                 throw new InvalidOperationException("failed");
+            },
+            GetStreamingResponseAsyncCallback = (_, options, _) =>
+            {
+                invokedOptions.Add(options!);
+                return ThrowingStream("failed");
             },
         };
         ChatResponse expected = new(new ChatMessage(ChatRole.Assistant, "ok"));
@@ -256,23 +262,70 @@ public class FailoverChatClientTests
                 invokedOptions.Add(options!);
                 return Task.FromResult(expected);
             },
+            GetStreamingResponseAsyncCallback = (_, options, _) =>
+            {
+                invokedOptions.Add(options!);
+                return YieldUpdates("ok");
+            },
         };
         int selections = 0;
         using var router = new DelegatingFailoverTestRouter(
             _ => ++selections == 1 ? first : second);
 
-        ChatResponse response = await router.GetResponseAsync(
-            [new(ChatRole.User, "hi")],
-            requestOptions);
+        ChatResponse response = streaming
+            ? await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")], requestOptions).ToChatResponseAsync()
+            : await router.GetResponseAsync([new(ChatRole.User, "hi")], requestOptions);
 
-        Assert.Same(expected, response);
+        Assert.Equal("ok", response.Text);
         Assert.Equal(2, selections);
         Assert.Equal(2, invokedOptions.Count);
-        Assert.NotSame(invokedOptions[0], invokedOptions[1]);
-        Assert.Equal("changed by first client", invokedOptions[0].ModelId);
-        Assert.Equal("request", invokedOptions[1].ModelId);
-        Assert.Equal("caller", invokedOptions[1].Instructions);
+
+        // Every attempt receives the request's options, which are a clone of the caller's instance.
+        Assert.Same(invokedOptions[0], invokedOptions[1]);
+        Assert.NotSame(requestOptions, invokedOptions[0]);
+        Assert.Equal("request", invokedOptions[0].ModelId);
+        Assert.Equal("caller", invokedOptions[0].Instructions);
         Assert.Equal("request", requestOptions.ModelId);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Failover_SelectionAndInvocationShareRequestOptions(bool streaming)
+    {
+        var requestOptions = new ChatOptions { ModelId = "request" };
+        var invokedOptions = new List<ChatOptions?>();
+        using var inner = new TestChatClient
+        {
+            GetResponseAsyncCallback = (_, options, _) =>
+            {
+                invokedOptions.Add(options);
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "ok")));
+            },
+            GetStreamingResponseAsyncCallback = (_, options, _) =>
+            {
+                invokedOptions.Add(options);
+                return YieldUpdates("ok");
+            },
+        };
+        ChatOptions? selectedOptions = null;
+        using var router = new DelegatingFailoverTestRouter(
+            context =>
+            {
+                selectedOptions = context.ChatOptions;
+
+                // Mutating the request's options during selection shapes the request.
+                context.ChatOptions!.Temperature = 0.25f;
+                return inner;
+            });
+
+        _ = streaming
+            ? await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")], requestOptions).ToChatResponseAsync()
+            : await router.GetResponseAsync([new(ChatRole.User, "hi")], requestOptions);
+
+        Assert.Same(selectedOptions, invokedOptions[0]);
+        Assert.Equal(0.25f, invokedOptions[0]!.Temperature);
+        Assert.Null(requestOptions.Temperature);
     }
 
     [Fact]
@@ -600,49 +653,6 @@ public class FailoverChatClientTests
 
         Assert.Equal("ok", response.Text);
         Assert.Equal(2, selections);
-    }
-
-    [Fact]
-    public async Task Streaming_FailoverUsesFreshRequestOptionsForEachAttempt()
-    {
-        var requestOptions = new ChatOptions
-        {
-            Instructions = "caller",
-            ModelId = "request",
-        };
-        var invokedOptions = new List<ChatOptions>();
-        using var first = new TestChatClient
-        {
-            GetStreamingResponseAsyncCallback = (_, options, _) =>
-            {
-                invokedOptions.Add(options!);
-                options!.ModelId = "changed by first client";
-                return ThrowingStream("failed");
-            },
-        };
-        using var second = new TestChatClient
-        {
-            GetStreamingResponseAsyncCallback = (_, options, _) =>
-            {
-                invokedOptions.Add(options!);
-                return YieldUpdates("ok");
-            },
-        };
-        int selections = 0;
-        using var router = new DelegatingFailoverTestRouter(
-            _ => ++selections == 1 ? first : second);
-
-        ChatResponse response = await router.GetStreamingResponseAsync(
-            [new(ChatRole.User, "hi")],
-            requestOptions).ToChatResponseAsync();
-
-        Assert.Equal("ok", response.Text);
-        Assert.Equal(2, selections);
-        Assert.NotSame(invokedOptions[0], invokedOptions[1]);
-        Assert.Equal("changed by first client", invokedOptions[0].ModelId);
-        Assert.Equal("request", invokedOptions[1].ModelId);
-        Assert.Equal("caller", invokedOptions[1].Instructions);
-        Assert.Equal("request", requestOptions.ModelId);
     }
 
     [Fact]

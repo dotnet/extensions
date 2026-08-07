@@ -50,9 +50,8 @@ public class RoutingChatClientTests
         Assert.Same(expected, response);
         Assert.Same(messages, observedContext!.Messages);
         Assert.NotSame(options, observedContext.ChatOptions);
-        Assert.NotSame(observedContext.ChatOptions, forwardedOptions);
-        Assert.Equal("selected", observedContext.ChatOptions!.ModelId);
-        Assert.Equal("request", forwardedOptions!.ModelId);
+        Assert.Same(observedContext.ChatOptions, forwardedOptions);
+        Assert.Equal("selected", forwardedOptions!.ModelId);
         Assert.Equal("request", options.ModelId);
         Assert.Equal(cancellationSource.Token, observedToken);
         Assert.Equal(1, selectionCount);

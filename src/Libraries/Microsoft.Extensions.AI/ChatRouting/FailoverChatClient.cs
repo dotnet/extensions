@@ -108,7 +108,6 @@ public abstract class FailoverChatClient : RoutingChatClient
             IChatClient selectedClient =
                 await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
                 throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
-            ChatOptions? attemptOptions = options?.Clone();
 
             attemptCount++;
             ChatResponse? response = null;
@@ -119,7 +118,7 @@ public abstract class FailoverChatClient : RoutingChatClient
             {
                 response = await selectedClient.GetResponseAsync(
                     context.Messages,
-                    attemptOptions,
+                    context.ChatOptions,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -178,7 +177,6 @@ public abstract class FailoverChatClient : RoutingChatClient
             IChatClient selectedClient =
                 await SelectClientAsync(context, cancellationToken).ConfigureAwait(false) ??
                 throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
-            ChatOptions? attemptOptions = options?.Clone();
 
             attemptCount++;
             bool reachedAttemptLimit = maximumAttempts is int limit && attemptCount >= limit;
@@ -192,7 +190,7 @@ public abstract class FailoverChatClient : RoutingChatClient
                 enumerator = selectedClient
                     .GetStreamingResponseAsync(
                         context.Messages,
-                        attemptOptions,
+                        context.ChatOptions,
                         cancellationToken)
                     .GetAsyncEnumerator(cancellationToken);
 

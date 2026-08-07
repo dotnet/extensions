@@ -16,12 +16,20 @@ namespace Microsoft.Extensions.AI;
 /// Provides a template for an <see cref="IChatClient"/> that selects and invokes another chat client.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Derived classes implement <see cref="SelectClientAsync"/> to supply one client for each request. The selected
 /// client is invoked once, and its response or failure is propagated to the caller.
 /// The exact client instance represents the selected routing identity. Caller-supplied options may vary per
 /// invocation, but they are ephemeral and do not participate in that identity. Applications can use distinct
 /// configured client wrappers when configurations require distinct routing identities, while custom policies may
 /// maintain separate application-specific grouping keys.
+/// </para>
+/// <para>
+/// <see cref="RoutingContext.ChatOptions"/> holds the options for the request and is what the selected client
+/// receives. Options that belong to a particular route are configured on the client instead, typically with a
+/// <c>ConfigureOptionsChatClient</c> wrapper, which clones the request options and applies the route's own values
+/// on top of them.
+/// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIRoutingChat, UrlFormat = DiagnosticIds.UrlFormat)]
 public abstract class RoutingChatClient : IChatClient
@@ -44,8 +52,9 @@ public abstract class RoutingChatClient : IChatClient
     /// <param name="cancellationToken">The cancellation token supplied for the request.</param>
     /// <returns>The client to invoke.</returns>
     /// <remarks>
-    /// Client-specific behavior should generally be attached to the returned client. Exceptions from this method
-    /// propagate to the caller.
+    /// Client-specific behavior should generally be attached to the returned client. Modifying
+    /// <see cref="RoutingContext.ChatOptions"/> changes the options for the request itself, including any later
+    /// invocation of a different client for the same request. Exceptions from this method propagate to the caller.
     /// </remarks>
     protected abstract ValueTask<IChatClient> SelectClientAsync(
         RoutingContext context,
@@ -63,7 +72,7 @@ public abstract class RoutingChatClient : IChatClient
 
         return await client.GetResponseAsync(
             context.Messages,
-            options?.Clone(),
+            context.ChatOptions,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -79,7 +88,7 @@ public abstract class RoutingChatClient : IChatClient
             throw new InvalidOperationException($"{nameof(SelectClientAsync)} returned null.");
 
         await foreach (ChatResponseUpdate update in
-            client.GetStreamingResponseAsync(context.Messages, options?.Clone(), cancellationToken)
+            client.GetStreamingResponseAsync(context.Messages, context.ChatOptions, cancellationToken)
                 .WithCancellation(cancellationToken)
                 .ConfigureAwait(false))
         {
