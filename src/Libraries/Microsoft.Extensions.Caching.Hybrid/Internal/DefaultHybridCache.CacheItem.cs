@@ -133,7 +133,9 @@ internal partial class DefaultHybridCache
             static void Throw() => throw new ObjectDisposedException("The cache item has been recycled before the value was obtained");
         }
 
-        internal static CacheItem<T> Create(long creationTimestamp, TagSet tags) => ImmutableTypeCache<T>.IsImmutable
-            ? new ImmutableCacheItem<T>(creationTimestamp, tags) : new MutableCacheItem<T>(creationTimestamp, tags);
+        internal static CacheItem<T> Create(long creationTimestamp, TagSet tags, bool disableLocalCacheSerialization)
+            => ImmutableTypeCache<T>.IsImmutable || disableLocalCacheSerialization
+            ? new ImmutableCacheItem<T>(creationTimestamp, tags)
+            : new MutableCacheItem<T>(creationTimestamp, tags);
     }
 }
