@@ -634,7 +634,7 @@ internal sealed partial class Parser
         var paramDataClassAttributes = new HashSet<string>(
             GetDataClassificationAttributes(paramSymbol, symbols)
             .Distinct(SymbolEqualityComparer.Default)
-            .Select(x => x!.ToDisplayString()));
+            .Select(x => x!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
 
         var extractedType = paramTypeSymbol;
         if (paramTypeSymbol.IsNullableOfT())
