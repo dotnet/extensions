@@ -518,8 +518,10 @@ public class HttpRequestReaderTest
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
-    [Fact]
-    public async Task ReadAsync_MetadataWithoutRequestRouteOrNameUsesConstants_ReturnsLogRecord()
+    [Theory]
+    [InlineData(TelemetryConstants.Unknown)]
+    [InlineData("Graph")]
+    public async Task ReadAsync_MetadataWithoutRequestRouteOrName_UsesRedactedPath_ReturnsLogRecord(string dependencyName)
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
@@ -530,7 +532,7 @@ public class HttpRequestReaderTest
         {
             Host = RequestedHost,
             Method = HttpMethod.Post,
-            Path = TelemetryConstants.Unknown,
+            Path = TelemetryConstants.Redacted,
             StatusCode = 200,
             RequestHeaders = [new("Header1", Redacted)],
             ResponseHeaders = [new("Header2", Redacted)],
@@ -569,7 +571,10 @@ public class HttpRequestReaderTest
         };
 
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
-        httpRequestMessage.SetRequestMetadata(new RequestMetadata());
+        httpRequestMessage.SetRequestMetadata(new RequestMetadata
+        {
+            DependencyName = dependencyName
+        });
 
         using var httpResponseMessage = new HttpResponseMessage
         {
@@ -586,6 +591,41 @@ public class HttpRequestReaderTest
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
+    }
+
+    [Fact]
+    public async Task ReadAsync_DependencyMetadataResolverReturnsHostDefaults_UsesRedactedPath()
+    {
+        var opts = new LoggingOptions();
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
+
+        var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(
+            headersReader,
+            configureServices: services => services.AddDownstreamDependencyMetadata(new TestDependencyMetadata()));
+
+        var reader = new HttpRequestReader(
+            serviceProvider,
+            opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(),
+            RequestMetadataContext,
+            serviceProvider.GetRequiredService<HttpDependencyMetadataResolver>());
+
+        // The host is registered, but no route matches, so the resolver hands back the host's default metadata.
+        using var httpRequestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Post,
+            RequestUri = new Uri($"https://{RequestedHost}/foo/bar/123")
+        };
+
+        var actualRecord = new LogRecord();
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, null, CancellationToken.None);
+
+        actualRecord.Path.Should().Be(TelemetryConstants.Redacted);
     }
 
     [Fact]
@@ -886,7 +926,8 @@ public class HttpRequestReaderTest
     private static ServiceProvider GetServiceProvider(
         HttpHeadersReader headersReader,
         string? serviceKey = null,
-        Action<FakeRedactorOptions>? configureRedaction = null)
+        Action<FakeRedactorOptions>? configureRedaction = null,
+        Action<IServiceCollection>? configureServices = null)
     {
         var services = new ServiceCollection();
         if (serviceKey is null)
@@ -898,6 +939,8 @@ public class HttpRequestReaderTest
             _ = services.AddKeyedSingleton<IHttpHeadersReader>(serviceKey, headersReader);
         }
 
+        configureServices?.Invoke(services);
+
         return services
             .AddFakeRedaction(configureRedaction ?? (_ => { }))
             .AddHttpRouteProcessor()
@@ -905,4 +948,16 @@ public class HttpRequestReaderTest
     }
 
     private static IOutgoingRequestContext RequestMetadataContext => Mock.Of<IOutgoingRequestContext>();
+
+    private sealed class TestDependencyMetadata : IDownstreamDependencyMetadata
+    {
+        public string DependencyName => "TestDependency";
+
+        public ISet<string> UniqueHostNameSuffixes { get; } = new HashSet<string> { RequestedHost };
+
+        public ISet<RequestMetadata> RequestMetadata { get; } = new HashSet<RequestMetadata>
+        {
+            new("GET", "/v1/orders/{orderId}", "GetOrder")
+        };
+    }
 }
