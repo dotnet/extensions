@@ -128,6 +128,7 @@ internal static class OpenTelemetryConsts
             public const string Model = "gen_ai.request.model";
             public const string MaxTokens = "gen_ai.request.max_tokens";
             public const string PresencePenalty = "gen_ai.request.presence_penalty";
+            public const string ReasoningLevel = "gen_ai.request.reasoning.level";
             public const string Seed = "gen_ai.request.seed";
             public const string StopSequences = "gen_ai.request.stop_sequences";
             public const string Stream = "gen_ai.request.stream";
