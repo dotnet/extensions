@@ -273,9 +273,7 @@ public class FailoverChatClientTests
             _ => ++selections == 1 ? first : second);
 
         ChatResponse response = streaming
-            ? await router.GetStreamingResponseAsync(
-                [new(ChatRole.User, "hi")],
-                requestOptions).ToChatResponseAsync()
+            ? await router.GetStreamingResponseAsync([new(ChatRole.User, "hi")], requestOptions).ToChatResponseAsync()
             : await router.GetResponseAsync([new(ChatRole.User, "hi")], requestOptions);
 
         Assert.Equal("ok", response.Text);
