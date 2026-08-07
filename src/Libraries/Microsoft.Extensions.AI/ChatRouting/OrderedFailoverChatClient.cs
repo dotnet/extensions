@@ -70,6 +70,7 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
         RoutingContext context,
         CancellationToken cancellationToken)
     {
+        _ = Throw.IfNull(context);
         _ = cancellationToken;
 
         return new(_clients[GetState(context).NextClientIndex]);
@@ -127,15 +128,8 @@ public sealed class OrderedFailoverChatClient : FailoverChatClient
 
     private static OrderedRoutingContext GetState(RoutingContext context)
     {
-        if (context is not OrderedRoutingContext state)
-        {
-            Throw.ArgumentException(
-                nameof(context),
-                $"The context was not created by {nameof(CreateContext)}.");
-            return null!;
-        }
-
-        return state;
+        Debug.Assert(context is OrderedRoutingContext, "The context was created by CreateContext.");
+        return (OrderedRoutingContext)context;
     }
 
     private sealed class OrderedRoutingContext(IEnumerable<ChatMessage> messages, ChatOptions? chatOptions)
