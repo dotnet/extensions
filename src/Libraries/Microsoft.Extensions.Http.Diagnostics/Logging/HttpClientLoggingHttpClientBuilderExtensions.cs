@@ -76,7 +76,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        return AddExtendedHttpClientLoggingInternal(builder, options => options.Bind(section), wrapHandlersPipeline: true);
+        return AddExtendedHttpClientLoggingInternal(builder, options => Configure(options, section), wrapHandlersPipeline: true);
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        return AddExtendedHttpClientLoggingInternal(builder, options => options.Bind(section), wrapHandlersPipeline);
+        return AddExtendedHttpClientLoggingInternal(builder, options => Configure(options, section), wrapHandlersPipeline);
     }
 
     /// <summary>
@@ -170,5 +170,13 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
             .AddLogger(
                 serviceProvider => serviceProvider.GetRequiredKeyedService<HttpClientLogger>(builder.Name),
                 wrapHandlersPipeline);
+    }
+
+    private static void Configure(OptionsBuilder<LoggingOptions> optionsBuilder, IConfigurationSection section)
+    {
+        _ = optionsBuilder.Services.AddSingleton<IConfigureOptions<LoggingOptions>>(
+            new LoggingOptionsConfigureOptions(optionsBuilder.Name, section));
+        _ = optionsBuilder.Services.AddSingleton<IOptionsChangeTokenSource<LoggingOptions>>(
+            new ConfigurationChangeTokenSource<LoggingOptions>(optionsBuilder.Name, section));
     }
 }
