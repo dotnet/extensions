@@ -1,62 +1,49 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET8_0_OR_GREATER
+
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Http.Logging.Internal;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Internal;
 
-internal sealed class LoggingOptionsConfigureOptions : IConfigureNamedOptions<LoggingOptions>
+/// <remarks>
+/// The configuration binding source generator ignores the type converter of
+/// <see cref="DataClassification"/>, so the options are bound explicitly.
+/// </remarks>
+internal sealed class LoggingRedactionOptionsConfigureOptions : IConfigureOptions<LoggingRedactionOptions>
 {
 #pragma warning disable EXTEXP0002 // DataClassificationTypeConverter is experimental.
     private static readonly DataClassificationTypeConverter _dataClassificationConverter = new();
 #pragma warning restore EXTEXP0002
 
-    private readonly string? _name;
     private readonly IConfigurationSection _section;
 
-    public LoggingOptionsConfigureOptions(string? name, IConfigurationSection section)
+    public LoggingRedactionOptionsConfigureOptions(IConfigurationSection section)
     {
-        _name = name;
         _section = Throw.IfNull(section);
     }
 
-    void IConfigureOptions<LoggingOptions>.Configure(LoggingOptions options) => Configure(Options.Options.DefaultName, options);
-
-    public void Configure(string? name, LoggingOptions options)
+    public void Configure(LoggingRedactionOptions options)
     {
-        if (!string.Equals(name, _name, StringComparison.Ordinal) || !_section.Exists())
+        if (!_section.Exists())
         {
             return;
         }
 
-        BindValue(_section, nameof(LoggingOptions.LogRequestStart), bool.Parse, value => options.LogRequestStart = value);
-        BindDataClassifications(_section.GetSection(nameof(LoggingOptions.RequestQueryParametersDataClasses)), options.RequestQueryParametersDataClasses);
-        BindValue(_section, nameof(LoggingOptions.LogBody), bool.Parse, value => options.LogBody = value);
-        BindValue(
-            _section,
-            nameof(LoggingOptions.BodySizeLimit),
-            static value => int.Parse(value, NumberStyles.Integer, CultureInfo.InvariantCulture),
-            value => options.BodySizeLimit = value);
-        BindValue(
-            _section,
-            nameof(LoggingOptions.BodyReadTimeout),
-            static value => TimeSpan.Parse(value, CultureInfo.InvariantCulture),
-            value => options.BodyReadTimeout = value);
-        BindSet(_section.GetSection(nameof(LoggingOptions.RequestBodyContentTypes)), options.RequestBodyContentTypes);
-        BindSet(_section.GetSection(nameof(LoggingOptions.ResponseBodyContentTypes)), options.ResponseBodyContentTypes);
-        BindDataClassifications(_section.GetSection(nameof(LoggingOptions.RequestHeadersDataClasses)), options.RequestHeadersDataClasses);
-        BindDataClassifications(_section.GetSection(nameof(LoggingOptions.ResponseHeadersDataClasses)), options.ResponseHeadersDataClasses);
-        BindEnum<OutgoingPathLoggingMode>(_section, nameof(LoggingOptions.RequestPathLoggingMode), value => options.RequestPathLoggingMode = value);
-        BindEnum<HttpRouteParameterRedactionMode>(_section, nameof(LoggingOptions.RequestPathParameterRedactionMode), value => options.RequestPathParameterRedactionMode = value);
-        BindDataClassifications(_section.GetSection(nameof(LoggingOptions.RouteParameterDataClasses)), options.RouteParameterDataClasses);
-        BindValue(_section, nameof(LoggingOptions.LogContentHeaders), bool.Parse, value => options.LogContentHeaders = value);
+        BindEnum<IncomingPathLoggingMode>(_section, nameof(LoggingRedactionOptions.RequestPathLoggingMode), value => options.RequestPathLoggingMode = value);
+        BindEnum<HttpRouteParameterRedactionMode>(_section, nameof(LoggingRedactionOptions.RequestPathParameterRedactionMode), value => options.RequestPathParameterRedactionMode = value);
+        BindDataClassifications(_section.GetSection(nameof(LoggingRedactionOptions.RouteParameterDataClasses)), options.RouteParameterDataClasses);
+        BindDataClassifications(_section.GetSection(nameof(LoggingRedactionOptions.RequestHeadersDataClasses)), options.RequestHeadersDataClasses);
+        BindDataClassifications(_section.GetSection(nameof(LoggingRedactionOptions.ResponseHeadersDataClasses)), options.ResponseHeadersDataClasses);
+        BindSet(_section.GetSection(nameof(LoggingRedactionOptions.ExcludePathStartsWith)), options.ExcludePathStartsWith);
+        BindValue(_section, nameof(LoggingRedactionOptions.IncludeUnmatchedRoutes), bool.Parse, value => options.IncludeUnmatchedRoutes = value);
     }
 
     private static void BindSet(IConfigurationSection section, ISet<string> destination)
@@ -132,3 +119,5 @@ internal sealed class LoggingOptionsConfigureOptions : IConfigureNamedOptions<Lo
     private static InvalidOperationException CreateBindingException(string path, Type type, Exception innerException)
         => new($"Failed to convert configuration value at '{path}' to type '{type}'.", innerException);
 }
+
+#endif

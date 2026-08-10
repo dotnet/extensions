@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -275,14 +277,64 @@ public class HttpClientLoggingExtensionsTest
         options.LogBody.Should().BeTrue();
         options.BodySizeLimit.Should().Be(1024);
         options.BodyReadTimeout.Should().Be(TimeSpan.FromSeconds(2));
-        options.RequestBodyContentTypes.Should().ContainSingle("application/json");
-        options.ResponseBodyContentTypes.Should().ContainSingle("text/plain");
+        options.RequestBodyContentTypes.Should().Equal("application/json");
+        options.ResponseBodyContentTypes.Should().Equal("text/plain");
         options.RequestHeadersDataClasses.Should().Contain("User-Agent", DataClassification.None);
         options.ResponseHeadersDataClasses.Should().Contain("Content-Type", DataClassification.Unknown);
         options.RequestPathLoggingMode.Should().Be(OutgoingPathLoggingMode.Structured);
         options.RequestPathParameterRedactionMode.Should().Be(HttpRouteParameterRedactionMode.None);
         options.RouteParameterDataClasses.Should().Contain("userId", new DataClassification("MyTaxonomy", "EUII"));
         options.LogContentHeaders.Should().BeTrue();
+    }
+
+    [Fact]
+    public void AddHttpClientLogging_GivenDocumentedConfigurationSample_CreatesClient()
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes("""
+        {
+          "HttpClientLogging": {
+            "LogRequestStart": false,
+            "LogBody": false,
+            "BodySizeLimit": 32768,
+            "BodyReadTimeout": "00:00:01",
+            "RequestHeadersDataClasses": {
+              "User-Agent": "None",
+              "Content-Type": "None"
+            },
+            "ResponseHeadersDataClasses": {
+              "Content-Type": "None"
+            },
+            "RequestPathLoggingMode": "Formatted",
+            "RequestPathParameterRedactionMode": "Strict"
+          }
+        }
+        """));
+
+        var configuration = new ConfigurationBuilder()
+            .AddJsonStream(stream)
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddRedaction();
+        services.AddHttpClient("test")
+            .AddExtendedHttpClientLogging(configuration.GetSection("HttpClientLogging"));
+
+        using var provider = services.BuildServiceProvider();
+
+        using var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+        client.Should().NotBeNull();
+
+        var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
+        options.LogRequestStart.Should().BeFalse();
+        options.LogBody.Should().BeFalse();
+        options.BodySizeLimit.Should().Be(32768);
+        options.BodyReadTimeout.Should().Be(TimeSpan.FromSeconds(1));
+        options.RequestHeadersDataClasses.Should().Contain("User-Agent", DataClassification.None);
+        options.RequestHeadersDataClasses.Should().Contain("Content-Type", DataClassification.None);
+        options.ResponseHeadersDataClasses.Should().Contain("Content-Type", DataClassification.None);
+        options.RequestPathLoggingMode.Should().Be(OutgoingPathLoggingMode.Formatted);
+        options.RequestPathParameterRedactionMode.Should().Be(HttpRouteParameterRedactionMode.Strict);
     }
 
     [Fact]
