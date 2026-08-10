@@ -16,8 +16,9 @@ internal static class LoggingOptionsBinder
     /// <param name="section">The configuration section to bind to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
-    /// A dedicated configurator is used because the configuration binding source generator doesn't honor the
-    /// type converter used by <see cref="Compliance.Classification.DataClassification"/>.
+    /// This is a workaround for <see href="https://github.com/dotnet/runtime/issues/83599">dotnet/runtime#83599</see>.
+    /// The dedicated configurator can be removed when the configuration binding source generator supports custom
+    /// conversion for <see cref="Microsoft.Extensions.Compliance.Classification.DataClassification"/>.
     /// </remarks>
     public static OptionsBuilder<LoggingOptions> BindConfigurationSection(this OptionsBuilder<LoggingOptions> builder, IConfigurationSection section)
     {

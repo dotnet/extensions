@@ -12,6 +12,11 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
 
+/// <remarks>
+/// This is a workaround for <see href="https://github.com/dotnet/runtime/issues/83599">dotnet/runtime#83599</see>
+/// and can be removed when the configuration binding source generator supports custom conversion for
+/// <see cref="DataClassification"/>.
+/// </remarks>
 internal sealed class LoggingOptionsConfigureOptions : IConfigureNamedOptions<LoggingOptions>
 {
 #pragma warning disable EXTEXP0002 // DataClassificationTypeConverter is experimental.

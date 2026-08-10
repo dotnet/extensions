@@ -14,8 +14,9 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.AspNetCore.Diagnostics.Logging.Internal;
 
 /// <remarks>
-/// The configuration binding source generator ignores the type converter of
-/// <see cref="DataClassification"/>, so the options are bound explicitly.
+/// This is a workaround for <see href="https://github.com/dotnet/runtime/issues/83599">dotnet/runtime#83599</see>
+/// and can be removed when the configuration binding source generator supports custom conversion for
+/// <see cref="DataClassification"/>.
 /// </remarks>
 internal sealed class LoggingRedactionOptionsConfigureOptions : IConfigureOptions<LoggingRedactionOptions>
 {
