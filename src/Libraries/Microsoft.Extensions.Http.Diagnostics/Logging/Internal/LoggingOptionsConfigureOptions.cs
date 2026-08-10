@@ -80,6 +80,7 @@ internal sealed class LoggingOptionsConfigureOptions : IConfigureNamedOptions<Lo
 
     private static DataClassification ParseDataClassification(IConfigurationSection section)
     {
+        // A classification is either a string ("None", "Unknown" or "Taxonomy:Value") or a { TaxonomyName, Value } object.
         try
         {
 #pragma warning disable EXTEXP0002 // DataClassificationTypeConverter is experimental.
@@ -89,7 +90,6 @@ internal sealed class LoggingOptionsConfigureOptions : IConfigureNamedOptions<Lo
             }
 #pragma warning restore EXTEXP0002
 
-            // The configuration binding source generator used to accept the object form, so it stays supported.
             return new DataClassification(
                 section[nameof(DataClassification.TaxonomyName)]!,
                 section[nameof(DataClassification.Value)]!);
@@ -128,7 +128,7 @@ internal sealed class LoggingOptionsConfigureOptions : IConfigureNamedOptions<Lo
         }
     }
 
-    // Deliberately excludes the offending value: configuration can hold secrets.
+    // Only the path is reported, since a configuration value may be a secret.
     private static InvalidOperationException CreateBindingException(string path, Type type, Exception innerException)
         => new($"Failed to convert configuration value at '{path}' to type '{type}'.", innerException);
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Http.Logging.Test.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -254,6 +256,7 @@ public class HttpClientLoggingExtensionsTest
                 [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.BodySizeLimit)}"] = "1024",
                 [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.BodyReadTimeout)}"] = "00:00:02",
                 [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestBodyContentTypes)}:0"] = "application/json",
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestBodyContentTypes)}:1"] = null,
                 [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.ResponseBodyContentTypes)}:0"] = "text/plain",
                 [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestHeadersDataClasses)}:User-Agent"] = "None",
                 [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.ResponseHeadersDataClasses)}:Content-Type"] = "Unknown",
@@ -263,15 +266,20 @@ public class HttpClientLoggingExtensionsTest
                 [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.LogContentHeaders)}"] = "true",
             })
             .Build();
+        var configurationSection = configuration.GetSection(nameof(LoggingOptions));
 
         using var provider = new ServiceCollection()
             .AddHttpClient("test")
-            .AddExtendedHttpClientLogging(configuration.GetSection(nameof(LoggingOptions)))
+            .AddExtendedHttpClientLogging(configurationSection)
             .Services
             .BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
 
+        configurationSection.GetChildren().Select(child => child.Key).Should().BeEquivalentTo(
+            typeof(LoggingOptions).GetProperties()
+                .Where(property => property.SetMethod?.IsPublic is true)
+                .Select(property => property.Name));
         options.LogRequestStart.Should().BeTrue();
         options.RequestQueryParametersDataClasses.Should().Contain("search", new DataClassification("MyTaxonomy", "PrivateData"));
         options.LogBody.Should().BeTrue();
@@ -285,6 +293,43 @@ public class HttpClientLoggingExtensionsTest
         options.RequestPathParameterRedactionMode.Should().Be(HttpRouteParameterRedactionMode.None);
         options.RouteParameterDataClasses.Should().Contain("userId", new DataClassification("MyTaxonomy", "EUII"));
         options.LogContentHeaders.Should().BeTrue();
+    }
+
+    [Fact]
+    public void LoggingOptionsConfigureOptions_HandlesOptionNamesAndMissingSections()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.BodySizeLimit)}"] = "1024",
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.LogBody)}"] = "false",
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.LogContentHeaders)}"] = "false",
+            })
+            .Build();
+        var section = configuration.GetSection(nameof(LoggingOptions));
+        int defaultBodySizeLimit = new LoggingOptions().BodySizeLimit;
+
+        var defaultOptions = new LoggingOptions
+        {
+            LogBody = true,
+            LogContentHeaders = true,
+        };
+        var defaultConfigurator = new LoggingOptionsConfigureOptions(Microsoft.Extensions.Options.Options.DefaultName, section);
+        ((IConfigureOptions<LoggingOptions>)defaultConfigurator).Configure(defaultOptions);
+
+        defaultOptions.BodySizeLimit.Should().Be(1024);
+        defaultOptions.LogBody.Should().BeFalse();
+        defaultOptions.LogContentHeaders.Should().BeFalse();
+
+        var mismatchedOptions = new LoggingOptions();
+        new LoggingOptionsConfigureOptions("test", section).Configure("other", mismatchedOptions);
+
+        mismatchedOptions.BodySizeLimit.Should().Be(defaultBodySizeLimit);
+
+        var missingSectionOptions = new LoggingOptions();
+        new LoggingOptionsConfigureOptions("test", configuration.GetSection("Missing")).Configure("test", missingSectionOptions);
+
+        missingSectionOptions.BodySizeLimit.Should().Be(defaultBodySizeLimit);
     }
 
     [Fact]
@@ -357,6 +402,28 @@ public class HttpClientLoggingExtensionsTest
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*LoggingOptions:RequestHeadersDataClasses:User-Agent*");
+    }
+
+    [Fact]
+    public void AddHttpClientLogging_GivenInvalidScalarValue_Throws()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestPathLoggingMode)}"] = "invalid",
+            })
+            .Build();
+
+        using var provider = new ServiceCollection()
+            .AddHttpClient("test")
+            .AddExtendedHttpClientLogging(configuration.GetSection(nameof(LoggingOptions)))
+            .Services
+            .BuildServiceProvider();
+
+        var act = () => provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*LoggingOptions:RequestPathLoggingMode*");
     }
 
     [Fact]

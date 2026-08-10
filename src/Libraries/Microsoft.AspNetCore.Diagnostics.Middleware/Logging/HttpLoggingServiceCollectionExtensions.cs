@@ -64,10 +64,8 @@ public static class HttpLoggingServiceCollectionExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        _ = services
-            .AddSingleton<IConfigureOptions<LoggingRedactionOptions>>(new LoggingRedactionOptionsConfigureOptions(section))
-            .AddSingleton<IOptionsChangeTokenSource<LoggingRedactionOptions>>(
-                new ConfigurationChangeTokenSource<LoggingRedactionOptions>(section));
+        _ = services.AddSingleton<IConfigureOptions<LoggingRedactionOptions>>(
+            new LoggingRedactionOptionsConfigureOptions(section));
 
         return services.AddHttpLoggingRedaction();
     }
