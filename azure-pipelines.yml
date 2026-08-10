@@ -341,8 +341,6 @@ extends:
 
       - stage: publishAzureDevOpsExtension
         displayName: Publish Azure DevOps extension
-        dependsOn:
-        - build
         trigger: manual
         jobs:
         - job: publishAzureDevOpsExtension
