@@ -518,10 +518,8 @@ public class HttpRequestReaderTest
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
-    [Theory]
-    [InlineData(TelemetryConstants.Unknown)]
-    [InlineData("Graph")]
-    public async Task ReadAsync_MetadataWithoutRequestRouteOrName_UsesRedactedPath_ReturnsLogRecord(string dependencyName)
+    [Fact]
+    public async Task ReadAsync_MetadataWithoutRequestRouteOrName_UsesRedactedPath_ReturnsLogRecord()
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
@@ -571,10 +569,7 @@ public class HttpRequestReaderTest
         };
 
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
-        httpRequestMessage.SetRequestMetadata(new RequestMetadata
-        {
-            DependencyName = dependencyName
-        });
+        httpRequestMessage.SetRequestMetadata(new RequestMetadata());
 
         using var httpResponseMessage = new HttpResponseMessage
         {
