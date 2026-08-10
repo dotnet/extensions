@@ -240,6 +240,30 @@ public class HttpClientLoggingExtensionsTest
     }
 
     [Fact]
+    public void AddHttpClientLogging_GivenConfigurationSection_BindsRequestHeadersDataClasses()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestHeadersDataClasses)}:User-Agent"] = "None",
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestHeadersDataClasses)}:Authorization"] = "Unknown",
+            })
+            .Build();
+
+        using var provider = new ServiceCollection()
+            .AddHttpClient("test")
+            .AddExtendedHttpClientLogging(configuration.GetSection(nameof(LoggingOptions)))
+            .Services
+            .BuildServiceProvider();
+
+        var options = provider
+            .GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
+
+        options.RequestHeadersDataClasses.Should().Contain("User-Agent", DataClassification.None);
+        options.RequestHeadersDataClasses.Should().Contain("Authorization", DataClassification.Unknown);
+    }
+
+    [Fact]
     public void AddHttpClientLogEnricher_RegistersEnricherInDI()
     {
         using var provider = new ServiceCollection()
@@ -390,6 +414,28 @@ public class HttpClientLoggingExtensionsTest
 
         using var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
         Assert.NotNull(httpClient);
+    }
+
+    [Fact]
+    public void AddHttpClientLogging_ServiceCollection_GivenConfigurationSection_BindsRequestHeadersDataClasses()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestHeadersDataClasses)}:User-Agent"] = "None",
+                [$"{nameof(LoggingOptions)}:{nameof(LoggingOptions.RequestHeadersDataClasses)}:Authorization"] = "Unknown",
+            })
+            .Build();
+
+        using var provider = new ServiceCollection()
+            .AddHttpClient()
+            .AddExtendedHttpClientLogging(configuration.GetSection(nameof(LoggingOptions)))
+            .BuildServiceProvider();
+
+        var options = provider.GetRequiredService<IOptions<LoggingOptions>>().Value;
+
+        options.RequestHeadersDataClasses.Should().Contain("User-Agent", DataClassification.None);
+        options.RequestHeadersDataClasses.Should().Contain("Authorization", DataClassification.Unknown);
     }
 
     [Fact]
