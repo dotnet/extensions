@@ -162,16 +162,16 @@ internal partial class Parser
                     var current = type;
                     while (current != null)
                     {
-                        classification.UnionWith(GetDataClassificationAttributes(current, symbols).Select(x => x.ToDisplayString()));
+                        classification.UnionWith(GetDataClassificationAttributes(current, symbols).Select(x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
                         current = current.BaseType;
                     }
 
-                    classification.UnionWith(GetDataClassificationAttributes(property, symbols).Select(x => x.ToDisplayString()));
+                    classification.UnionWith(GetDataClassificationAttributes(property, symbols).Select(x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
 
                     // A property might be a sensitive parameter of a constructor:
                     if (sensitivePropsFromCtor.TryGetValue(property.Name, out var dataClassesFromCtor))
                     {
-                        classification.UnionWith(dataClassesFromCtor.Select(x => x.ToDisplayString()));
+                        classification.UnionWith(dataClassesFromCtor.Select(x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
                     }
 
                     if (classification.Count > 0)
