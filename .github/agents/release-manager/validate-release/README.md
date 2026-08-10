@@ -1,18 +1,25 @@
 # Validate Release
 
-Confirms a published `dotnet/extensions` release is correct and finalizes it: verify that the published symbols are on the Microsoft symbol server (msdl) with working Source Link, then reconcile the internal, public, and `main` branches.
+Confirms a published `dotnet/extensions` release is correct and finalizes it: verify every published
+package's exact-version dependencies resolve, verify that published symbols are on the Microsoft
+symbol server (msdl) with working Source Link, then reconcile the internal, public, and `main`
+branches.
 
 Run this playbook after **publish-release**.
 
-- Stage 5 is automated symbol verification.
+- Stage 5 verifies package dependency resolution and symbols.
 - Stage 6 stages reconciliation merges when needed (pushing and PR completion are left to the user).
 - Stage 7 handles support-page follow-up based on release type and package novelty.
 
 For servicing releases prepared directly on public `release/<major>.<minor>`, Stage 6 is often unnecessary because commits were backported from `main` into the release branch up front. In that case, run Stage 5, follow the Stage 7 decision gate (skip if applicable), and run Stage 6 only if the user explicitly asks for additional branch-flow follow-up.
 
-## Stage 5 - Verify Source Link and Symbols
+## Stage 5 - Verify Package Dependencies, Source Link, and Symbols
 
-Run the Source Link sweep against the published packages until every library package reports `valid` on msdl. This is the **release sign-off gate** -- a persistent `symbols-not-indexed` result means the official release build never reached the public `.NET <major>` channel (see publish-release, Stage 4).
+First verify every published package's exact-version dependencies resolve from clean,
+consumer-visible sources. Then run the Source Link sweep until every library package reports `valid`
+on msdl. Both checks are **release sign-off gates**: unresolved dependencies block completion, and a
+persistent `symbols-not-indexed` result means the official release build never reached the public
+`.NET <major>` channel (see publish-release, Stage 4).
 
 Read and follow [references/stage-5-verify-source-link.md](references/stage-5-verify-source-link.md).
 
