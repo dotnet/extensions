@@ -35,7 +35,7 @@ public class DnsSrvServiceEndpointResolverTests
 
     /// <summary>
     /// Regression test for https://github.com/dotnet/extensions/issues/7175: the query suffix used to build the SRV
-    /// query must be the normalized one, which has its leading dot trimmed and falls back to the inferred Kubernetes domain.
+    /// query must be normalized (leading dot trimmed) before composing the SRV query.
     /// </summary>
     [Theory]
     [InlineData(".ns")]
