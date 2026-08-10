@@ -5,7 +5,7 @@ description: >
   prepare-release (monthly release prep: stage internal branch + dependency updates; servicing prep:
   backport selected main commits onto release/* and bump patch version), publish-release (monthly release:
   land to internal/release + publish/promote; servicing: run official build from release/* then publish),
-  validate-release (verify Source Link/symbols on msdl, reconcile branches when applicable), and
+  validate-release (verify package dependency resolution and Source Link/symbols on msdl, reconcile branches when applicable), and
   write-release-notes (draft GitHub release notes for a tag).
   USE FOR: "prepare for a release", "prepare internal release branch", "stage the release",
   "prepare a servicing release", "choose servicing backports", "update release dependencies",
@@ -111,6 +111,8 @@ verification script lives at `release-manager/validate-release/scripts/Test-Sour
   branches. Resolve each by its **URL**, not by remote name -- names vary by machine. Do not rely on
   absolute on-disk clone paths.
 - **Release notes** are never published to a GitHub release without explicit user confirmation.
+- **Package scope and dependency integrity.** Whenever package scope is determined, follow
+  [release-manager/references/package-scope-and-dependency-validation.md](release-manager/references/package-scope-and-dependency-validation.md).
 - **Release wrap-up.** When the full release process is complete (GitHub release published, any
   required branch reconciliation done), present a short celebratory closing message that:
   - Confirms the release version and packages shipped.
@@ -126,11 +128,11 @@ There are two supported release tracks:
 1. **Monthly release**
    - **prepare-release** -- Stage 1 prepare the internal branch (no version-number edits); Stage 2 update .NET 9, then .NET 8, then .NET 10 dependencies (three sub-stages).
    - **publish-release** -- Stage 3 build from `internal/release/<major>.<minor>` (gated on a green official build); Stage 4 publish to nuget.org and **promote the official release build to the public `.NET <major>` channel**.
-   - **validate-release** -- Stage 5 verify Source Link/symbols on msdl; Stage 6 reconcile internal -> public `release/<major>.<minor>` -> `main`; Stage 7 confirm the support-page update.
+   - **validate-release** -- Stage 5 verify exact-version dependency resolution and Source Link/symbols on msdl; Stage 6 reconcile internal -> public `release/<major>.<minor>` -> `main`; Stage 7 confirm the support-page update.
 
 2. **Servicing release**
    - **prepare-release** -- prepare directly on `release/<major>.<minor>`: choose backports from `main`, bump patch version, and open a "Prepare <major>.<minor>.<patch> Servicing Release" PR.
-   - **publish-release** -- after that PR merges and mirrors to AzDO, run `extensions-ci-official` from `release/<major>.<minor>` and publish the selected package scope.
-   - **validate-release** -- run Source Link verification and post-release checks with the servicing package scope; run reconciliation only when explicitly needed.
+   - **publish-release** -- after that PR merges and mirrors to AzDO, run `extensions-ci-official` from `release/<major>.<minor>` and publish the selected packages plus their full `dotnet/extensions` dependency closure.
+   - **validate-release** -- verify exact-version dependency resolution and Source Link with the final published manifest; run reconciliation only when explicitly needed.
 
 Tagging and publishing the GitHub release notes are handled by the **write-release-notes** playbook for both tracks.
