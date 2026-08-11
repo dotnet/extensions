@@ -186,7 +186,6 @@ extends:
           sourceIndexParams:
             condition: ${{ variables['sourceIndexCondition'] }}
             sourceIndexBuildCommand: ''
-            binlogPath: artifacts/log/Debug/build.binlog
             preSteps:
             - template: /eng/pipelines/templates/RestoreAndBuild.yml
               parameters:
