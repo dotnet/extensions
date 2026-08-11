@@ -127,16 +127,17 @@ variables:
   # Enable source index only for main branch builds
   - name: sourceIndexCondition
     value: |
-      or(
-        eq(variables['forceEnableSourceIndex'], 'true'),
-        and(
-          ne(variables['runAsPublic'], 'true'),
-          notin(variables['Build.Reason'], 'PullRequest'),
-          eq(variables['Build.SourceBranch'], 'refs/heads/main')
+      and(
+        succeeded(),
+        or(
+          eq(variables['forceEnableSourceIndex'], 'true'),
+          and(
+            ne(variables['runAsPublic'], 'true'),
+            notin(variables['Build.Reason'], 'PullRequest'),
+            eq(variables['Build.SourceBranch'], 'refs/heads/main')
+          )
         )
       )
-  - name: sourceIndexBuildCommand
-    value: $(Build.SourcesDirectory)/build.cmd -restore -build -ci -NativeToolsOnMachine
 
 resources:
   repositories:
@@ -179,16 +180,6 @@ extends:
               manifests: true
           enableMicrobuild: true
           enableTelemetry: true
-          enableSourceIndex: true
-          sourceIndexParams:
-            condition: ${{ variables['sourceIndexCondition'] }}
-            sourceIndexBuildCommand: ${{ variables['sourceIndexBuildCommand'] }}
-            preSteps:
-            - task: NodeTool@0
-              displayName: Add NodeJS/npm
-              inputs:
-                versionSpec: "20.x"
-                checkLatest: true
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish test logs
           enablePublishTestResults: true
@@ -245,6 +236,7 @@ extends:
                 skipTests: ${{ not(parameters.runTests) }}
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: true
+                sourceIndexCondition: ${{ variables['sourceIndexCondition'] }}
 
           # ----------------------------------------------------------------
           # This job build and run tests on Ubuntu

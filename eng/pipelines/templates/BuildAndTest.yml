@@ -21,6 +21,9 @@ parameters:
   - name: runAsPublic
     type: boolean
     default: false
+  - name: sourceIndexCondition
+    type: string
+    default: 'false'
 
 steps:
   - task: NodeTool@0
@@ -52,6 +55,14 @@ steps:
             /bl:${{ parameters.repoLogPath }}/build.binlog
             $(_OfficialBuildIdArgs)
     displayName: Build
+
+  - ${{ if eq(parameters.isWindows, 'true') }}:
+    - template: /eng/common/core-templates/steps/source-index-stage1-publish.yml
+      parameters:
+        binlogPath: ${{ parameters.repoLogPath }}/build.binlog
+        condition: ${{ parameters.sourceIndexCondition }}
+        continueOnError: true
+        runAsPublic: ${{ parameters.runAsPublic }}
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
