@@ -183,6 +183,12 @@ extends:
           sourceIndexParams:
             condition: ${{ variables['sourceIndexCondition'] }}
             sourceIndexBuildCommand: ${{ variables['sourceIndexBuildCommand'] }}
+            preSteps:
+            - task: NodeTool@0
+              displayName: Add NodeJS/npm
+              inputs:
+                versionSpec: "20.x"
+                checkLatest: true
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish test logs
           enablePublishTestResults: true
