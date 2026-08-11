@@ -12,6 +12,7 @@ jobs:
 - job: SourceIndexStage1
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
+  continueOnError: true
   variables:
   - name: BinlogPath
     value: ${{ parameters.binlogPath }}
