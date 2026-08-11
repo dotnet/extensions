@@ -158,8 +158,14 @@ internal sealed class LinkedChangeToken : IChangeToken
         {
             // Cleared before releasing, so that a concurrent LinkToSources sees that it has to release the
             // registrations it makes after this point.
-            Interlocked.Exchange(ref _callback, null);
-            _state = null;
+            if (Interlocked.Exchange(ref _callback, null) is not null)
+            {
+                // Taking the callback is what claims the state, so the state is dropped here only when it was this
+                // disposal which suppressed the callback. A source signalling concurrently may have taken the
+                // callback instead, and it has to be able to hand the consumer the state it registered with.
+                _state = null;
+            }
+
             Release();
         }
 
@@ -174,6 +180,8 @@ internal sealed class LinkedChangeToken : IChangeToken
 
             _token.OnCallbackClaimed?.Invoke();
 
+            // Taking the callback above claimed the state, so a concurrent disposal cannot clear it from underneath
+            // this callback, and that exchange orders this read after the write which registration made.
             var state = _state;
             _state = null;
             _token._hasChanged = true;
