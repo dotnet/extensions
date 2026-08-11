@@ -125,12 +125,16 @@ variables:
       value: true
 
   # Enable source index only for main branch builds
-  - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
-    - name: enableSourceIndex
-      value: true
-  - ${{ else }}:
-    - name: enableSourceIndex
-      value: false
+  - name: sourceIndexCondition
+    value: |
+      or(
+        eq(variables['forceEnableSourceIndex'], 'true'),
+        and(
+          ne(variables['runAsPublic'], 'true'),
+          notin(variables['Build.Reason'], 'PullRequest'),
+          eq(variables['Build.SourceBranch'], 'refs/heads/main')
+        )
+      )
   - name: sourceIndexBuildCommand
     value: $(Build.SourcesDirectory)/build.cmd -restore -ci -NativeToolsOnMachine
 
@@ -175,8 +179,9 @@ extends:
               manifests: true
           enableMicrobuild: true
           enableTelemetry: true
-          enableSourceIndex: ${{ variables['enableSourceIndex'] }}
+          enableSourceIndex: true
           sourceIndexParams:
+            condition: ${{ variables['sourceIndexCondition'] }}
             sourceIndexBuildCommand: ${{ variables['sourceIndexBuildCommand'] }}
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish test logs
