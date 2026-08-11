@@ -132,7 +132,7 @@ variables:
     - name: enableSourceIndex
       value: false
   - name: sourceIndexBuildCommand
-    value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+    value: $(Build.SourcesDirectory)/build.cmd -restore -ci -NativeToolsOnMachine
 
 resources:
   repositories:
