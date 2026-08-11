@@ -1,4 +1,5 @@
 parameters:
+  runAsPublic: false
   sourceIndexUploadPackageVersion: '2.0.0-20250818.1'
   sourceIndexComplogPackageVersion: '0.9.50'
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
