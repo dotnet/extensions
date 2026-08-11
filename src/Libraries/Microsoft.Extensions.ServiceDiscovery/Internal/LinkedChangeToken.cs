@@ -82,6 +82,18 @@ internal sealed class LinkedChangeToken : IChangeToken
         }
     }
 
+    /// <summary>
+    /// Gets or sets a callout made by a signalling source once it has claimed a consumer's callback and before it
+    /// reads the state that callback was registered with.
+    /// </summary>
+    /// <remarks>
+    /// Only tests set this; it is null everywhere else. Those two steps are adjacent instructions, so setting this
+    /// is the only way a test can decide how the race between Registration.Dispose and
+    /// Registration.OnSourceSignaled comes out, and therefore the only way a test can show that this race is not a
+    /// problem.
+    /// </remarks>
+    internal Action? OnCallbackClaimed { get; set; }
+
     /// <inheritdoc/>
     public IDisposable RegisterChangeCallback(Action<object?> callback, object? state)
     {
@@ -159,6 +171,8 @@ internal sealed class LinkedChangeToken : IChangeToken
             {
                 return;
             }
+
+            _token.OnCallbackClaimed?.Invoke();
 
             var state = _state;
             _state = null;

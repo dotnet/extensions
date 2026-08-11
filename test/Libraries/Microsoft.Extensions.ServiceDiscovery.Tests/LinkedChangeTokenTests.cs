@@ -267,6 +267,65 @@ public class LinkedChangeTokenTests
         Assert.True(token.HasChanged);
     }
 
+    [Fact]
+    public void AConsumerDisposingAfterASignalHasClaimedItsCallback_StillGetsTheStateItRegisteredWith()
+    {
+        // A signal has claimed the consumer's callback and not yet read the state it was registered with, and the
+        // consumer disposes right then. That state belongs to the signal now, so disposal must leave it alone.
+        // Disposing from OnCallbackClaimed is what puts the two paths in that order.
+        var source = new TrackingChangeToken();
+        var token = new LinkedChangeToken([source]);
+        var expectedState = new object();
+
+        IDisposable registration = null!;
+        object? observedState = null;
+        var invocations = 0;
+        var forced = 0;
+
+        token.OnCallbackClaimed = () =>
+        {
+            forced++;
+            registration.Dispose();
+        };
+
+        registration = token.RegisterChangeCallback(
+            state =>
+            {
+                invocations++;
+                observedState = state;
+            },
+            expectedState);
+
+        source.Signal();
+
+        // The interleaving really was forced, rather than the test having quietly asserted nothing.
+        Assert.Equal(1, forced);
+
+        Assert.Equal(1, invocations);
+        Assert.Same(expectedState, observedState);
+
+        // Disposal losing the callback does not stop it from releasing what it holds on the sources.
+        Assert.Equal(0, source.OutstandingRegistrations);
+    }
+
+    [Fact]
+    public void ASignalAfterTheConsumerHasDisposed_DoesNotReachIt()
+    {
+        // The other order: disposal claimed the callback first, so the signal has nothing left to raise.
+        var source = new TrackingChangeToken();
+        var token = new LinkedChangeToken([source]);
+
+        var invocations = 0;
+        var registration = token.RegisterChangeCallback(_ => invocations++, new object());
+
+        registration.Dispose();
+        source.Signal();
+
+        Assert.Equal(0, invocations);
+        Assert.Equal(0, source.OutstandingRegistrations);
+        Assert.True(token.HasChanged);
+    }
+
     [Theory]
     [InlineData(1)] // One token is returned by the builder as-is, with no linking involved.
     [InlineData(2)] // Two or more are linked.
