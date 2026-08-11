@@ -136,7 +136,7 @@ variables:
         )
       )
   - name: sourceIndexBuildCommand
-    value: $(Build.SourcesDirectory)/build.cmd -restore -ci -NativeToolsOnMachine
+    value: $(Build.SourcesDirectory)/build.cmd -restore -build -ci -NativeToolsOnMachine
 
 resources:
   repositories:
