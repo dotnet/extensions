@@ -65,7 +65,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
 
         _ = services
             .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
-            .Bind(section);
+            .BindConfigurationSection(section);
 
         return services.AddExtendedHttpClientLogging();
     }

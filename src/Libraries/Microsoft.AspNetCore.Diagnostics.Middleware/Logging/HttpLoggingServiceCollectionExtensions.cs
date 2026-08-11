@@ -6,10 +6,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Logging;
+using Microsoft.AspNetCore.Diagnostics.Logging.Internal;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -59,9 +61,13 @@ public static class HttpLoggingServiceCollectionExtensions
     [Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, IConfigurationSection section)
     {
+        _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        return services.AddHttpLoggingRedaction(o => section.Bind(o));
+        _ = services.AddSingleton<IConfigureOptions<LoggingRedactionOptions>>(
+            new LoggingRedactionOptionsConfigureOptions(section));
+
+        return services.AddHttpLoggingRedaction();
     }
 
     /// <summary>
