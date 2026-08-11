@@ -1,18 +1,13 @@
 parameters:
-  runAsPublic: false
   sourceIndexUploadPackageVersion: '2.0.0-20250818.1'
   sourceIndexComplogPackageVersion: '0.9.50'
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
   sourceIndexPublicPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
   binlogPath: artifacts/log/Debug/Build.binlog
-  condition: succeeded()
-  continueOnError: false
 
 steps:
 - task: UseDotNet@2
   displayName: "Source Index: Use .NET 9 SDK"
-  condition: ${{ parameters.condition }}
-  continueOnError: ${{ parameters.continueOnError }}
   inputs:
     packageType: sdk
     version: 9.0.x
@@ -23,8 +18,6 @@ steps:
     $(Agent.TempDirectory)/dotnet/dotnet tool install complog --version ${{parameters.sourceIndexComplogPackageVersion}} --source ${{parameters.sourceIndexPublicPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
     $(Agent.TempDirectory)/dotnet/dotnet tool install UploadIndexStage1 --version ${{parameters.sourceIndexUploadPackageVersion}} --source ${{parameters.sourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
   displayName: "Source Index: Download Tools"
-  condition: ${{ parameters.condition }}
-  continueOnError: ${{ parameters.continueOnError }}
   # Set working directory to temp directory so 'dotnet' doesn't try to use global.json and use the repo's sdk.
   workingDirectory: $(Agent.TempDirectory)
 
@@ -33,14 +26,10 @@ steps:
     git rev-parse HEAD > .source-index/stage1output/hash
     $(Agent.TempDirectory)/.source-index/tools/complog create ${{parameters.BinlogPath}} -o .source-index/stage1output/build.complog
   displayName: "Source Index: Process Binlog into Complog"
-  condition: ${{ parameters.condition }}
-  continueOnError: ${{ parameters.continueOnError }}
 
 - ${{ if and(ne(parameters.runAsPublic, 'true'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - task: AzureCLI@2
     displayName: "Source Index: Upload Source Index stage1 artifacts to Azure"
-    condition: ${{ parameters.condition }}
-    continueOnError: ${{ parameters.continueOnError }}
     inputs:
       azureSubscription: 'SourceDotNet Stage1 Publish'
       addSpnToEnvironment: true

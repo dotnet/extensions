@@ -78,6 +78,8 @@ variables:
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
   - name: Build.Arcade.VSIXOutputPath
     value: $(Build.Arcade.ArtifactsPath)VSIX
+  - name: _WindowsBuildScript
+    value: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
 
   # Enable extraction of published outputs for analysis
   - name: GDN_EXTRACT_TOOLS
@@ -180,6 +182,17 @@ extends:
               manifests: true
           enableMicrobuild: true
           enableTelemetry: true
+          enableSourceIndex: true
+          sourceIndexParams:
+            condition: ${{ variables['sourceIndexCondition'] }}
+            sourceIndexBuildCommand: ''
+            binlogPath: artifacts/log/Debug/build.binlog
+            preSteps:
+            - template: /eng/pipelines/templates/RestoreAndBuild.yml
+              parameters:
+                buildScript: $(_WindowsBuildScript)
+                buildConfig: Debug
+                repoLogPath: $(Build.SourcesDirectory)/artifacts/log/Debug
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish test logs
           enablePublishTestResults: true
@@ -203,7 +216,7 @@ extends:
               os: windows
 
             variables:
-            - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+            - _buildScript: $(_WindowsBuildScript)
 
             templateContext:
               outputs:
@@ -236,7 +249,6 @@ extends:
                 skipTests: ${{ not(parameters.runTests) }}
                 skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
                 isWindows: true
-                sourceIndexCondition: ${{ variables['sourceIndexCondition'] }}
 
           # ----------------------------------------------------------------
           # This job build and run tests on Ubuntu
