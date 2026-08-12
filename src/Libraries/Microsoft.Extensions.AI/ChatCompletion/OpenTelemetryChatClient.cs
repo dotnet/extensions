@@ -129,6 +129,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType == typeof(ActivitySource) ? _activitySource :
+        serviceType == typeof(Meter) ? _meter :
         base.GetService(serviceType, serviceKey);
 
     /// <inheritdoc/>

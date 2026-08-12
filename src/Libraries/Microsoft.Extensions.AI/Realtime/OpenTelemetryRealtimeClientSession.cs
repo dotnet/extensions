@@ -168,6 +168,7 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
         return
             serviceType == typeof(ActivitySource) ? _activitySource :
+            serviceType == typeof(Meter) ? _meter :
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             _innerSession.GetService(serviceType, serviceKey);
     }

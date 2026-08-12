@@ -87,6 +87,16 @@ internal static class OpenTelemetryConsts
             }
         }
 
+        public static class ExecuteTool
+        {
+            public static class Duration
+            {
+                public const string Description = "Measures the duration of a single tool execution";
+                public const string Name = "gen_ai.execute_tool.duration";
+                public static readonly double[] ExplicitBucketBoundaries = Client.OperationDuration.ExplicitBucketBoundaries;
+            }
+        }
+
         public static class Conversation
         {
             public const string Id = "gen_ai.conversation.id";
