@@ -338,3 +338,39 @@ extends:
               -TsaCodebaseName $(_TsaCodebaseName)
               -TsaOnboard $(_TsaOnboard)
               -TsaPublish $(_TsaPublish)'
+
+      - stage: publishAzureDevOpsExtension
+        displayName: Publish Azure DevOps extension
+        trigger: manual
+        jobs:
+        - job: publishAzureDevOpsExtension
+          displayName: Publish Azure DevOps extension
+          pool:
+            name: NetCore1ESPool-Internal
+            image: windows.vs2022.amd64
+            os: windows
+          templateContext:
+            outputs:
+            - output: adoExtension
+              targetPath: '$(Pipeline.Workspace)\AzureDevOpsExtension'
+              connectedServiceNameAzureRM: arcade-extensions-marketplace-publish
+              fileType: vsix
+              vsixFile: '$(Pipeline.Workspace)\AzureDevOpsExtension\Microsoft.Extensions.AI.Evaluation.Reporting.vsix'
+              useV5: true
+              validateExtension: true
+          steps:
+          - checkout: none
+
+          - download: current
+            artifact: VSIXArtifacts
+            displayName: Download signed Azure DevOps extension
+
+          - pwsh: |
+              $vsixFiles = @(Get-ChildItem '$(Pipeline.Workspace)\VSIXArtifacts' -Filter '*.vsix' -File -Recurse)
+              if ($vsixFiles.Count -ne 1) {
+                  throw "Expected exactly one signed VSIX artifact, but found $($vsixFiles.Count)."
+              }
+
+              $publishDirectory = New-Item '$(Pipeline.Workspace)\AzureDevOpsExtension' -ItemType Directory -Force
+              Copy-Item $vsixFiles[0].FullName (Join-Path $publishDirectory 'Microsoft.Extensions.AI.Evaluation.Reporting.vsix')
+            displayName: Prepare signed Azure DevOps extension

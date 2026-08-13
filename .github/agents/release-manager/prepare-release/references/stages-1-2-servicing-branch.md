@@ -126,15 +126,11 @@ Prompt the user to select rows from the **selectable candidate table only** (for
 
 Do not cherry-pick until selection is explicit.
 
-## Step 5: Confirm package scope and template inclusion
+## Step 5: Confirm selected roots and provisional dependency closure
 
-Before committing:
-
-1. Propose the package scope derived from selected items (default to coherent related package sets). For example, when any of Microsoft.Extensions.AI, Microsoft.Extensions.AI.Abstractions, and Microsoft.Extensions.AI.OpenAI are updated, all three are released, but the Microsoft.Extensions.AI.Evaluation packages are not released unless they are also updated.
-2. Ask the user to confirm or adjust that package scope.
-3. If selected changes affect packages used by project templates, ask whether template packages should also be included in the servicing release.
-
-Record this confirmed scope; it is the source of truth for publish/validate/release-notes stages.
+Derive the selected roots from the chosen commits and explicit human additions, then follow
+[package scope and dependency validation](../../references/package-scope-and-dependency-validation.md)
+to approve and record the provisional manifest in the servicing-prep PR.
 
 ## Step 6: Apply commits in servicing order
 
@@ -168,8 +164,19 @@ PR title format:
 PR body format:
 
 ```md
-Prepares the <major>.<minor>.<patch> servicing release for the following packages:
-- <package-name> (<version-if-different-or-prerelease>)
+Prepares the <major>.<minor>.<patch> servicing release.
+
+## Selected packages
+- <package-name> (<version>) — <independent change/selection reason>
+- <package-name> (<version>) — <independent change/selection reason>
+
+## Dependency-closure packages
+- <package-name> (<version>) — required by <parent-package> (<exact dependency requirement>)
+- None
+
+The dependency closure is provisional until recomputed from the official build's PackageArtifacts.
+
+## Packages in the complete provisional release scope
 - <package-name> (<version-if-different-or-prerelease>)
 - <package-name> (<version-if-different-or-prerelease>)
 
@@ -192,13 +199,8 @@ Notes:
 
 ## Step 8: Preserve scope for downstream stages
 
-After PR creation, treat the merged servicing-prep PR description as authoritative for:
-
-- package publish scope (publish-release),
-- package validation scope (validate-release),
-- package scope in release notes (write-release-notes).
-
-If scope changes later, update the PR description and confirm with the user before publishing.
+Keep the PR description current if selected roots change: recompute the provisional closure and
+obtain approval again. Publish-release replaces it with the approved artifact-derived final scope.
 
 ## After this preparation
 
@@ -206,5 +208,5 @@ After the servicing-prep PR merges into `release/<major>.<minor>`, continue with
 
 1. wait for mirror into AzDO,
 2. run `extensions-ci-official` from `release/<major>.<minor>`,
-3. publish selected packages,
+3. recompute closure from official artifacts and publish selected plus dependency-closure packages,
 4. continue post-release checks and notes.

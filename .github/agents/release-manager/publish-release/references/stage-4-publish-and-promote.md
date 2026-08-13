@@ -14,7 +14,8 @@ This stage is operational and produces no commit. Both actions are **irreversibl
 - Stage 3 is complete: the official release build succeeded and produced the `PackageArtifacts`.
 - For the channel promotion: the `darc` CLI, authenticated to the Build Asset Registry (BAR).
 
-For servicing releases, also require the merged servicing-prep PR description; it is the source of truth for package scope.
+For servicing releases, also require the merged servicing-prep PR description for selected roots and
+the approved artifact-derived closure from Stage 3.
 
 ## Execution context check
 
@@ -29,15 +30,15 @@ Publishing is irreversible (a published version cannot be overwritten or truly d
 1. Download and extract the `PackageArtifacts` from the official build.
    - If in-session artifact download/auth fails, hand off this step to the user's terminal and ask
      them to return the local extracted package folder path.
-2. Stage the packages to publish into a clean folder:
-   - Always exclude `Microsoft.Internal.*`.
-   - For **servicing releases**, start from the package list in the merged servicing-prep PR description; treat that list as canonical unless the user explicitly changes it.
-   - For **monthly releases**, include all release packages except those the user explicitly holds back.
-   - In both tracks, flag template/tooling packages (for example `*.ProjectTemplates`) for an explicit include/exclude decision.
-3. Present the excluded and to-publish lists for the user to review.
+2. Build and obtain approval for the artifact-derived manifest by following
+   [package scope and dependency validation](../../references/package-scope-and-dependency-validation.md).
+   Treat any required `Microsoft.Internal.*` package as a blocking packaging error.
+3. Validate the approved manifest's dependencies as required by that shared invariant before any push.
 4. Two nuget.org accounts are involved: almost all packages publish from the **dotnetframework** account; **`Microsoft.Agents.AI.ProjectTemplates`** publishes from the **MicrosoftAgentFramework** account, so it must be pushed separately with that account's key.
-5. The **user** runs `dotnet nuget push` with the appropriate API key(s) in their terminal (outside
+5. Order the staged package paths dependency-first where possible. The **user** runs `dotnet nuget push` with the appropriate API key(s) in their terminal (outside
    the agent session). Never run the push, and never handle the API keys.
+6. After propagation, repeat the shared invariant's dependency validation and record the approved
+   **final published manifest** for validate-release and write-release-notes.
 
 ### Secure API key entry (user-run helper)
 
@@ -118,6 +119,7 @@ run it in terminal, then report:
 
 - staged package path(s),
 - push output summary,
+- post-publish exact-version dependency-resolution results for every published package,
 - confirmation that the nuget.org API key was deleted/regenerated.
 
 ## Sub-stage 2 - Ensure the official release build is on the public channel
@@ -136,4 +138,6 @@ Determine whether manual promotion is required:
 
 ## After the stage
 
-This stage produces no repository commit. Next, run the **validate-release** playbook: verify Source Link and symbols on msdl (Stage 5), reconcile the branches (Stage 6), and confirm the support-page listing (Stage 7).
+This stage produces no repository commit. Next, run the **validate-release** playbook: independently
+verify exact-version dependency resolution plus Source Link and symbols on msdl (Stage 5), reconcile
+the branches (Stage 6), and confirm the support-page listing (Stage 7).

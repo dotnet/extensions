@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <MajorVersion>10</MajorVersion>
-    <MinorVersion>9</MinorVersion>
+    <MinorVersion>10</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
@@ -86,7 +86,7 @@
     <!-- Dependencies from https://github.com/dotnet/efcore -->
     <MicrosoftEntityFrameworkCoreSqliteVersion>9.0.18</MicrosoftEntityFrameworkCoreSqliteVersion>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.26379.2</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.26406.9</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <PropertyGroup Label="net10">
     <!-- Packages from dotnet/runtime -->

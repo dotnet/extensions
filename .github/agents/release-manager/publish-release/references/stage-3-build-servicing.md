@@ -7,7 +7,7 @@ Unlike the monthly release flow, there is no `stage-release-*` -> `internal/rele
 ## Prerequisites
 
 - The servicing-prep PR into `release/<major>.<minor>` is merged.
-- You know the package scope from that PR description.
+- You know the selected package roots and provisional closure from that PR description.
 - You have access to Azure DevOps and the `extensions-ci-official` pipeline.
 
 ## Steps
@@ -20,6 +20,9 @@ Unlike the monthly release flow, there is no `stage-release-*` -> `internal/rele
    - AzDO build run URL
    - AzDO build ID / build number
    - BAR build ID for the official release build
+6. Derive the authoritative artifact manifest from the official `PackageArtifacts` `.nuspec` files
+   by following [package scope and dependency validation](../../references/package-scope-and-dependency-validation.md).
+7. Reconcile it with the PR's provisional manifest and obtain explicit approval before Stage 4.
 
 ## Notes
 
@@ -32,4 +35,5 @@ Unlike the monthly release flow, there is no `stage-release-*` -> `internal/rele
 Proceed to **Stage 4 - Publish and Promote** using:
 
 - the official release build from this stage, and
-- the servicing package scope captured in the merged servicing-prep PR description.
+- the selected roots captured in the merged servicing-prep PR description, and
+- the approved artifact-derived dependency closure from this stage.

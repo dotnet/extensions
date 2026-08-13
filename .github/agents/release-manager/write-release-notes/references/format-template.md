@@ -69,19 +69,20 @@ Use this template when all packages ship together (e.g. v10.3.0 → v10.4.0).
 
 ## Targeted patch release
 
-Use this template when only a subset of packages ships (e.g. v10.3.1).
+Use this template when only a subset of packages ships (e.g. v10.3.1). Use the final published
+manifest produced under [package scope and dependency validation](../../references/package-scope-and-dependency-validation.md).
 
 ```markdown
-[Optional preamble — state which packages are patched and why. Example: "This patch release addresses issues in the AI and HTTP Resilience packages." May be omitted.]
+[Optional preamble — 2–3 sentences summarizing the release theme. May be omitted.]
 
 ## Packages in this release
 
-[Only the patched packages]
+[The complete final published manifest]
 
 | Package | Version |
 |---------|---------|
-| Microsoft.Extensions.AI | 10.3.1 |
-| Microsoft.Extensions.AI.Abstractions | 10.3.1 |
+| Package.A | `<version>` |
+| Package.B | `<version>` |
 
 ## What's Changed
 
@@ -99,8 +100,11 @@ Use this template when only a subset of packages ships (e.g. v10.3.1).
 
 ## Section rules
 
-1. **Preamble** — optional. If included, summarize the release theme. For patch releases, if included, name the affected packages. Suggest a couple of options to the user and always offer the option of omitting it.
-2. **Packages in this release** — for patch releases only. Table of affected packages and versions. Omit for full releases (all packages ship at the same version).
+1. **Preamble** — optional. If included, summarize the release theme. Suggest a couple of options to
+   the user and always offer the option of omitting it.
+2. **Packages in this release** — for patch releases only. Table of the complete final published
+   manifest with package ID and version only. Omit for full releases when all packages ship at the
+   same version with no scope exceptions.
 3. **Breaking Changes** — only for stable API breaks (very rare). Omit if none.
 4. **Experimental API Changes** — omit if no experimental changes. Omit empty subsections within.
 5. **What's Changed** — grouped by area. Order areas by activity (most entries first). Omit areas with no entries.
