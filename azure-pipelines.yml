@@ -361,6 +361,8 @@ extends:
           steps:
           - checkout: none
 
+          - task: TfxInstaller@5
+            displayName: Install TFX CLI (tfx)
           - download: current
             artifact: VSIXArtifacts
             displayName: Download signed Azure DevOps extension
