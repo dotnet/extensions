@@ -362,8 +362,7 @@ extends:
           - checkout: none
 
           - task: TfxInstaller@5
-            displayName: Use Node CLI for Azure DevOps
-
+            displayName: Install TFX CLI (tfx)
           - download: current
             artifact: VSIXArtifacts
             displayName: Download signed Azure DevOps extension
