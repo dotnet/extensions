@@ -12,6 +12,7 @@ if ($Version -eq "")
 }
 
 $PackageVersion = $Version
+$OverrideJson = join-path $PSScriptRoot "override.json"
 
 if ($null -eq $PackageVersion)
 {
@@ -35,7 +36,7 @@ copy-item -Path ./node_modules -Destination ./dist/node_modules -Force -Recurse
 remove-item -Path ./dist/node_modules/resolve/test -Recurse -Force -ErrorAction SilentlyContinue
 
 @{  version = $PackageVersion
-    public = $true } | ConvertTo-Json -Compress | Out-File -FilePath $PSScriptRoot/override.json -Encoding ascii
+    public = $true } | ConvertTo-Json -Compress | Out-File -FilePath $OverrideJson -Encoding ascii
     
 # Write-Information "Building Extension Package" 
 Set-Location $PSScriptRoot
@@ -46,13 +47,13 @@ npx vite build
 # Copy LICENSE file from the root
 copy-item -Path $PSScriptRoot/../../../../../LICENSE -Destination . -Force
 
-npx tfx-cli extension create --overrides-file $PSScriptRoot/override.json --output-path $OutputPath
+npx tfx-cli extension create --overrides-file "$OverrideJson" --output-path $OutputPath
 
 if ($true -eq $IncludeTestPackage) {
     @{  version = $PackageVersion
         id = "microsoft-extensions-ai-evaluation-report-test" 
-        name = "[TEST] Azure DevOps AI Evaluation Report" } | ConvertTo-Json -Compress | Out-File -FilePath $PSScriptRoot/override.json -Encoding ascii
+        name = "[TEST] Azure DevOps AI Evaluation Report" } | ConvertTo-Json -Compress | Out-File -FilePath $OverrideJson -Encoding ascii
 
     # Build Preview version of the extension for testing
-    npx tfx-cli extension create --overrides-file $PSScriptRoot/override.json --output-path $OutputPath
+    npx tfx-cli extension create --overrides-file "$OverrideJson" --output-path $OutputPath
 }
