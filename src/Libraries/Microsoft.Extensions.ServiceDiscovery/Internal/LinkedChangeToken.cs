@@ -97,6 +97,10 @@ internal sealed class LinkedChangeToken : IChangeToken
     /// <inheritdoc/>
     public IDisposable RegisterChangeCallback(Action<object?> callback, object? state)
     {
+        // A registration holding no callback is how a claimed or disposed registration is represented, so a null
+        // callback would silently produce a registration which is dead on arrival.
+        ArgumentNullException.ThrowIfNull(callback);
+
         var registration = new Registration(this, callback, state);
 
         // Linked after construction rather than in the constructor, because a source which has already signaled

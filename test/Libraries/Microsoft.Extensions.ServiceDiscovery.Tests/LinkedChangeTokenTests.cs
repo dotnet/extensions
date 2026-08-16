@@ -104,6 +104,14 @@ public class LinkedChangeTokenTests
         => Assert.Throws<ArgumentNullException>(() => new LinkedChangeToken(null!));
 
     [Fact]
+    public void RegisterChangeCallback_Throws_WhenCallbackIsNull()
+    {
+        var token = new LinkedChangeToken([new TrackingChangeToken()]);
+
+        Assert.Throws<ArgumentNullException>(() => token.RegisterChangeCallback(null!, state: null));
+    }
+
+    [Fact]
     public void SourceRegistrations_AreReleased_WhenSignaled()
     {
         var source = new TrackingChangeToken();
