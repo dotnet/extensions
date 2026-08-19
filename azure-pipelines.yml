@@ -361,8 +361,14 @@ extends:
           steps:
           - checkout: none
 
+          # Install NodeJS to support TfxInstaller
+          - task: NodeTool@0
+            inputs:
+              versionSpec: 24.x
+
           - task: TfxInstaller@5
             displayName: Install TFX CLI (tfx)
+            
           - download: current
             artifact: VSIXArtifacts
             displayName: Download signed Azure DevOps extension
