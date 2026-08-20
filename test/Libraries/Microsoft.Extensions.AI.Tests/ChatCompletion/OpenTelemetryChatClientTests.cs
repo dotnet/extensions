@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -381,6 +382,206 @@ public class OpenTelemetryChatClientTests
                   }
                 ]
                 """), ReplaceWhitespace(tags["gen_ai.tool.definitions"]));
+        }
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task CompatibilityExpectedInformationLogged_Async(bool enableSensitiveData, bool streaming)
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        var collector = new FakeLogCollector();
+        using ILoggerFactory loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FakeLoggerProvider(collector)));
+
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = async (messages, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return CreateResponse();
+            },
+            GetStreamingResponseAsyncCallback = CallbackAsync,
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(ChatClientMetadata) ?
+                    new ChatClientMetadata("testservice", new Uri("http://localhost:12345/something"), "defaultmodel") :
+                    null,
+        };
+
+        static ChatResponse CreateResponse() =>
+            new(
+            [
+                new ChatMessage(ChatRole.Assistant, "Hello "),
+                new ChatMessage(ChatRole.Assistant, "Roger."),
+            ])
+            {
+                ResponseId = "id123",
+                ModelId = "responsemodel",
+                FinishReason = ChatFinishReason.Stop,
+                Usage = new UsageDetails
+                {
+                    InputTokenCount = 10,
+                    OutputTokenCount = 20,
+                    CachedInputTokenCount = 5,
+                    ReasoningTokenCount = 8,
+                },
+                AdditionalProperties = new()
+                {
+                    ["system_fingerprint"] = "abcdefgh",
+                },
+            };
+
+        static async IAsyncEnumerable<ChatResponseUpdate> CallbackAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, "Hello Roger.")
+            {
+                ResponseId = "id123",
+                ModelId = "responsemodel",
+                FinishReason = ChatFinishReason.Stop,
+                Contents =
+                [
+                    new TextContent("Hello Roger."),
+                    new UsageContent(new UsageDetails
+                    {
+                        InputTokenCount = 10,
+                        OutputTokenCount = 20,
+                        CachedInputTokenCount = 5,
+                        ReasoningTokenCount = 8,
+                    }),
+                ],
+                AdditionalProperties = new()
+                {
+                    ["system_fingerprint"] = "abcdefgh",
+                },
+            };
+        }
+
+        using var chatClient = innerClient
+            .AsBuilder()
+            .UseOpenTelemetry(loggerFactory, sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = enableSensitiveData;
+                instance.JsonSerializerOptions = TestJsonSerializerContext.Default.Options;
+                instance.SemanticConvention = OpenTelemetryGenAISemanticConvention.Version1_36;
+            })
+            .Build();
+
+        using var durationCollector = new MetricCollector<double>(
+            null,
+            sourceName,
+            "gen_ai.client.operation.duration");
+        using var timeToFirstChunkCollector = new MetricCollector<double>(
+            null,
+            sourceName,
+            "gen_ai.client.operation.time_to_first_chunk");
+        using var timePerOutputChunkCollector = new MetricCollector<double>(
+            null,
+            sourceName,
+            "gen_ai.client.operation.time_per_output_chunk");
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a close friend."),
+            new(ChatRole.User, "Hello."),
+            new(ChatRole.Assistant, [new FunctionCallContent(
+                "12345",
+                "GetPersonName",
+                new Dictionary<string, object?> { ["personId"] = 42 })]),
+            new(ChatRole.Tool, [new FunctionResultContent("12345", "Roger")]),
+        ];
+
+        var options = new ChatOptions
+        {
+            Instructions = "Always greet the user.",
+            ModelId = "replacementmodel",
+            AdditionalProperties = new()
+            {
+                ["service_tier"] = "value1",
+            },
+            Tools = [AIFunctionFactory.Create(() => "Roger", "GetPersonName")],
+        };
+
+        if (streaming)
+        {
+            await foreach (ChatResponseUpdate update in chatClient.GetStreamingResponseAsync(messages, options))
+            {
+                _ = update;
+            }
+        }
+        else
+        {
+            _ = await chatClient.GetResponseAsync(messages, options);
+        }
+
+        Activity activity = Assert.Single(activities);
+        Assert.Equal("testservice", activity.GetTagItem("gen_ai.system"));
+        Assert.Null(activity.GetTagItem("gen_ai.provider.name"));
+        Assert.Null(activity.GetTagItem("gen_ai.request.stream"));
+        Assert.Null(activity.GetTagItem("gen_ai.input.messages"));
+        Assert.Null(activity.GetTagItem("gen_ai.output.messages"));
+        Assert.Null(activity.GetTagItem("gen_ai.system_instructions"));
+        Assert.Null(activity.GetTagItem("gen_ai.tool.definitions"));
+        Assert.Null(activity.GetTagItem("gen_ai.usage.cache_read.input_tokens"));
+        Assert.Null(activity.GetTagItem("gen_ai.usage.reasoning.output_tokens"));
+        Assert.Null(activity.GetTagItem("gen_ai.response.time_to_first_chunk"));
+        Assert.Equal(
+            enableSensitiveData ? "value1" : null,
+            activity.GetTagItem("gen_ai.testservice.request.service_tier"));
+        Assert.Equal(
+            enableSensitiveData ? "abcdefgh" : null,
+            activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
+
+        var duration = Assert.Single(durationCollector.GetMeasurementSnapshot());
+        Assert.True(duration.ContainsTags(
+            new KeyValuePair<string, object?>("gen_ai.operation.name", "chat"),
+            new KeyValuePair<string, object?>("gen_ai.system", "testservice")));
+        Assert.False(duration.ContainsTags(
+            new KeyValuePair<string, object?>("gen_ai.provider.name", "testservice")));
+        Assert.Empty(timeToFirstChunkCollector.GetMeasurementSnapshot());
+        Assert.Empty(timePerOutputChunkCollector.GetMeasurementSnapshot());
+
+        var logs = collector.GetSnapshot();
+        if (!enableSensitiveData)
+        {
+            Assert.Empty(logs);
+            return;
+        }
+
+        Assert.Collection(
+            logs,
+            log => AssertV136Event(log, "gen_ai.system.message", """{"content":"Always greet the user."}"""),
+            log => AssertV136Event(log, "gen_ai.system.message", """{"content":"You are a close friend."}"""),
+            log => AssertV136Event(log, "gen_ai.user.message", """{"content":"Hello."}"""),
+            log => AssertV136Event(
+                log,
+                "gen_ai.assistant.message",
+                """{"tool_calls":[{"id":"12345","type":"function","function":{"name":"GetPersonName","arguments":{"personId":42}}}]}"""),
+            log => AssertV136Event(log, "gen_ai.tool.message", """{"id":"12345","content":"Roger"}"""),
+            log => AssertV136Event(
+                log,
+                "gen_ai.choice",
+                """{"finish_reason":"stop","index":0,"message":{"content":"Hello Roger."}}"""));
+
+        static void AssertV136Event(FakeLogRecord log, string eventName, string body)
+        {
+            Assert.Equal(eventName, log.Id.Name);
+            using JsonDocument expected = JsonDocument.Parse(body);
+            using JsonDocument actual = JsonDocument.Parse(log.Message);
+            Assert.True(JsonElement.DeepEquals(expected.RootElement, actual.RootElement));
+            Assert.Contains(log.StructuredState!, pair => pair.Key == "event.name" && pair.Value == eventName);
+            Assert.Contains(log.StructuredState!, pair => pair.Key == "gen_ai.system" && pair.Value == "testservice");
         }
     }
 
@@ -1038,6 +1239,7 @@ public class OpenTelemetryChatClientTests
                 {
                     _ = update;
                 }
+
             });
         }
         else
@@ -1107,4 +1309,3 @@ public class OpenTelemetryChatClientTests
         }
     }
 }
-

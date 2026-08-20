@@ -15,6 +15,48 @@ internal static class TelemetryHelpers
         Environment.GetEnvironmentVariable(OpenTelemetryConsts.GenAICaptureMessageContentEnvVar) is string envVar &&
         string.Equals(envVar, "true", StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>Gets the default GenAI semantic convention representation for a new instrumentation instance.</summary>
+    public static OpenTelemetryGenAISemanticConvention GetGenAISemanticConventionDefault() =>
+        GetGenAISemanticConvention(Environment.GetEnvironmentVariable(OpenTelemetryConsts.SemanticConventionStabilityOptInEnvVar));
+
+    /// <summary>Resolves the GenAI semantic convention representation from an OpenTelemetry stability opt-in list.</summary>
+    internal static OpenTelemetryGenAISemanticConvention GetGenAISemanticConvention(string? stabilityOptIn)
+    {
+        if (stabilityOptIn is null)
+        {
+            return OpenTelemetryGenAISemanticConvention.LatestExperimental;
+        }
+
+        int startIndex = 0;
+        while (startIndex <= stabilityOptIn.Length)
+        {
+            int separatorIndex = stabilityOptIn.IndexOf(',', startIndex);
+            string value = separatorIndex >= 0 ?
+                stabilityOptIn.Substring(startIndex, separatorIndex - startIndex) :
+                stabilityOptIn.Substring(startIndex);
+
+            if (string.Equals(value.Trim(), OpenTelemetryConsts.GenAILatestExperimentalOptIn, StringComparison.Ordinal))
+            {
+                return OpenTelemetryGenAISemanticConvention.LatestExperimental;
+            }
+
+            if (separatorIndex < 0)
+            {
+                break;
+            }
+
+            startIndex = separatorIndex + 1;
+        }
+
+        return OpenTelemetryGenAISemanticConvention.Version1_36;
+    }
+
+    /// <summary>Gets the provider attribute name for the selected GenAI semantic convention representation.</summary>
+    public static string GetGenAIProviderAttributeName(OpenTelemetryGenAISemanticConvention semanticConvention) =>
+        semanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36 ?
+            OpenTelemetryConsts.GenAI.SystemName :
+            OpenTelemetryConsts.GenAI.Provider.Name;
+
     /// <summary>Serializes <paramref name="value"/> as JSON for logging purposes.</summary>
     public static string AsJson<T>(T value, JsonSerializerOptions? options)
     {

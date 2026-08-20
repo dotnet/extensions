@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
@@ -18,8 +21,9 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating embedding generator that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.41, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
-/// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
+/// This class provides implementations of the OpenTelemetry GenAI Semantic Conventions, beginning with v1.36,
+/// defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// The conventions have Development status and are subject to change; as such, the telemetry output by this generator is also subject to change.
 /// </remarks>
 /// <typeparam name="TInput">The type of input used to produce embeddings.</typeparam>
 /// <typeparam name="TEmbedding">The type of embedding generated.</typeparam>
@@ -87,6 +91,18 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     /// </remarks>
     public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
 
+    /// <summary>Gets or sets the OpenTelemetry GenAI semantic convention representation to emit.</summary>
+    /// <value>
+    /// The default is <see cref="OpenTelemetryGenAISemanticConvention.LatestExperimental"/> when
+    /// <c>OTEL_SEMCONV_STABILITY_OPT_IN</c> is not defined. When the variable is defined, a list containing
+    /// <c>gen_ai_latest_experimental</c> selects <see cref="OpenTelemetryGenAISemanticConvention.LatestExperimental"/>;
+    /// otherwise, it selects <see cref="OpenTelemetryGenAISemanticConvention.Version1_36"/>.
+    /// Explicitly setting this property overrides the environment variable for this instance.
+    /// </value>
+    [Experimental(DiagnosticIds.Experiments.AIOpenTelemetryGenAISemanticConvention, UrlFormat = DiagnosticIds.UrlFormat)]
+    public OpenTelemetryGenAISemanticConvention SemanticConvention { get; set; } =
+        TelemetryHelpers.GetGenAISemanticConventionDefault();
+
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType == typeof(ActivitySource) ? _activitySource :
@@ -147,7 +163,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                 [
                     new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.EmbeddingsName),
                     new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
-                    new(OpenTelemetryConsts.GenAI.Provider.Name, _providerName),
+                    new(TelemetryHelpers.GetGenAIProviderAttributeName(SemanticConvention), _providerName),
                 ]);
 
             if (activity is not null)
@@ -161,7 +177,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
 
                 if ((options?.Dimensions ?? _defaultModelDimensions) is int dimensionsValue)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Embeddings.Dimension.Count, dimensionsValue);
+                    _ = activity.AddTag(
+                        SemanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36 ?
+                            OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions :
+                            OpenTelemetryConsts.GenAI.Embeddings.Dimension.Count,
+                        dimensionsValue);
                 }
 
                 // Log all additional request options as raw values on the span.
@@ -170,7 +190,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                 {
                     foreach (KeyValuePair<string, object?> prop in props)
                     {
-                        _ = activity.AddTag(prop.Key, prop.Value);
+                        string key =
+                            SemanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36 && _providerName is not null ?
+                                OpenTelemetryConsts.GenAI.Request.PerProvider(_providerName, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)) :
+                                prop.Key;
+                        _ = activity.AddTag(key, prop.Value);
                     }
                 }
             }
@@ -239,7 +263,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             {
                 foreach (KeyValuePair<string, object?> prop in props)
                 {
-                    _ = activity.AddTag(prop.Key, prop.Value);
+                    string key =
+                        SemanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36 && _providerName is not null ?
+                            OpenTelemetryConsts.GenAI.Response.PerProvider(_providerName, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)) :
+                            prop.Key;
+                    _ = activity.AddTag(key, prop.Value);
                 }
             }
         }
@@ -254,7 +282,7 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
         }
 
-        tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+        tags.Add(TelemetryHelpers.GetGenAIProviderAttributeName(SemanticConvention), _providerName);
 
         if (_endpointAddress is string endpointAddress)
         {

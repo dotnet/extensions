@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -24,6 +24,7 @@ internal sealed class FunctionInvocationProcessor
     private readonly ActivitySource? _activitySource;
     private readonly Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> _invokeFunction;
     private readonly Func<Activity?, bool> _isSensitiveDataEnabled;
+    private readonly Func<Activity?, OpenTelemetryGenAISemanticConvention> _getSemanticConvention;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvocationProcessor"/> class.
@@ -36,16 +37,19 @@ internal sealed class FunctionInvocationProcessor
     /// Receives the invoke agent activity (or null if not in agent context).
     /// Returns true if sensitive data should be logged/tagged, false otherwise.
     /// </param>
+    /// <param name="getSemanticConvention">A delegate that gets the semantic convention representation for the invocation.</param>
     public FunctionInvocationProcessor(
         ILogger logger,
         ActivitySource? activitySource,
         Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> invokeFunction,
-        Func<Activity?, bool>? isSensitiveDataEnabled = null)
+        Func<Activity?, bool>? isSensitiveDataEnabled = null,
+        Func<Activity?, OpenTelemetryGenAISemanticConvention>? getSemanticConvention = null)
     {
         _logger = logger;
         _activitySource = activitySource;
         _invokeFunction = invokeFunction;
         _isSensitiveDataEnabled = isSensitiveDataEnabled ?? (_ => false);
+        _getSemanticConvention = getSemanticConvention ?? (_ => OpenTelemetryGenAISemanticConvention.LatestExperimental);
     }
 
     /// <summary>
@@ -156,18 +160,26 @@ internal sealed class FunctionInvocationProcessor
     {
         Activity? invokeAgentActivity = FunctionInvocationHelpers.CurrentActivityIsInvokeAgent ? Activity.Current : null;
         ActivitySource? source = invokeAgentActivity?.Source ?? _activitySource;
+        OpenTelemetryGenAISemanticConvention semanticConvention = _getSemanticConvention(invokeAgentActivity);
+
+        ActivityTagsCollection tags =
+        [
+            new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteToolName),
+            new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
+            new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
+            new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
+        ];
+
+        if (semanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental)
+        {
+            tags.Add(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction);
+        }
 
         using Activity? activity = source?.StartActivity(
             $"{OpenTelemetryConsts.GenAI.ExecuteToolName} {context.Function.Name}",
             ActivityKind.Internal,
             default(ActivityContext),
-            [
-                new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ExecuteToolName),
-                new(OpenTelemetryConsts.GenAI.Tool.Type, OpenTelemetryConsts.ToolTypeFunction),
-                new(OpenTelemetryConsts.GenAI.Tool.Call.Id, context.CallContent.CallId),
-                new(OpenTelemetryConsts.GenAI.Tool.Name, context.Function.Name),
-                new(OpenTelemetryConsts.GenAI.Tool.Description, context.Function.Description),
-            ]);
+            tags);
 
         long startingTimestamp = Stopwatch.GetTimestamp();
 
@@ -181,7 +193,7 @@ internal sealed class FunctionInvocationProcessor
         {
             string functionArguments = TelemetryHelpers.AsJson(context.Arguments, context.Function.JsonSerializerOptions);
 
-            if (enableSensitiveData)
+            if (enableSensitiveData && semanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental)
             {
                 _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Arguments, functionArguments);
             }
@@ -229,7 +241,7 @@ internal sealed class FunctionInvocationProcessor
             {
                 string functionResult = TelemetryHelpers.AsJson(result, context.Function.JsonSerializerOptions);
 
-                if (enableSensitiveData)
+                if (enableSensitiveData && semanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental)
                 {
                     _ = activity?.SetTag(OpenTelemetryConsts.GenAI.Tool.Call.Result, functionResult);
                 }

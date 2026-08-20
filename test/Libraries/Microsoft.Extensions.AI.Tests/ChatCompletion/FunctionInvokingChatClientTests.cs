@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -1087,10 +1087,15 @@ public class FunctionInvokingChatClientTests
     }
 
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(true, true)]
-    public async Task FunctionInvocationTrackedWithActivity(bool enableTelemetry, bool enableSensitiveData)
+    [InlineData(false, false, OpenTelemetryGenAISemanticConvention.LatestExperimental)]
+    [InlineData(true, false, OpenTelemetryGenAISemanticConvention.LatestExperimental)]
+    [InlineData(true, true, OpenTelemetryGenAISemanticConvention.LatestExperimental)]
+    [InlineData(true, false, OpenTelemetryGenAISemanticConvention.Version1_36)]
+    [InlineData(true, true, OpenTelemetryGenAISemanticConvention.Version1_36)]
+    public async Task FunctionInvocationTrackedWithActivity(
+        bool enableTelemetry,
+        bool enableSensitiveData,
+        OpenTelemetryGenAISemanticConvention semanticConvention)
     {
         string sourceName = Guid.NewGuid().ToString();
 
@@ -1108,7 +1113,11 @@ public class FunctionInvokingChatClientTests
         };
 
         Func<ChatClientBuilder, ChatClientBuilder> configure = b => b.Use(c =>
-            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName) { EnableSensitiveData = enableSensitiveData }));
+            new FunctionInvokingChatClient(new OpenTelemetryChatClient(c, sourceName: sourceName)
+            {
+                EnableSensitiveData = enableSensitiveData,
+                SemanticConvention = semanticConvention,
+            }));
 
         await InvokeAsync(() => InvokeAndAssertAsync(options, plan, configurePipeline: configure));
 
@@ -1135,7 +1144,7 @@ public class FunctionInvokingChatClientTests
                     activity => Assert.Equal("orchestrate_tools", activity.DisplayName));
 
                 var executeTool = activities[1];
-                if (enableSensitiveData)
+                if (enableSensitiveData && semanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental)
                 {
                     var args = Assert.Single(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
                     Assert.Equal(
@@ -1150,6 +1159,12 @@ public class FunctionInvokingChatClientTests
                     Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.arguments");
                     Assert.DoesNotContain(executeTool.Tags, t => t.Key == "gen_ai.tool.call.result");
                 }
+
+                Assert.Equal(
+                    semanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental ?
+                        "function" :
+                        null,
+                    executeTool.GetTagItem("gen_ai.tool.type"));
 
                 for (int i = 0; i < activities.Count - 1; i++)
                 {
@@ -1942,6 +1957,68 @@ public class FunctionInvokingChatClientTests
             Assert.False(hasArguments, "Expected arguments NOT to be logged when agent EnableSensitiveData is false");
             Assert.False(hasResult, "Expected result NOT to be logged when agent EnableSensitiveData is false");
         }
+    }
+
+    [Theory]
+    [InlineData(
+        OpenTelemetryGenAISemanticConvention.Version1_36,
+        OpenTelemetryGenAISemanticConvention.LatestExperimental)]
+    [InlineData(
+        OpenTelemetryGenAISemanticConvention.LatestExperimental,
+        OpenTelemetryGenAISemanticConvention.Version1_36)]
+    public async Task SemanticConventionPropagatesFromAgentActivityWhenInvokeAgentIsParent(
+        OpenTelemetryGenAISemanticConvention agentSemanticConvention,
+        OpenTelemetryGenAISemanticConvention clientSemanticConvention)
+    {
+        string agentSourceName = Guid.NewGuid().ToString();
+        string clientSourceName = Guid.NewGuid().ToString();
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent(
+                "callId1",
+                "Func1",
+                new Dictionary<string, object?> { ["arg1"] = "secret" })]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Result 1")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        ChatOptions options = new()
+        {
+            Tools = [AIFunctionFactory.Create(() => "Result 1", "Func1")]
+        };
+
+        var activities = new List<Activity>();
+        using TracerProvider tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(agentSourceName)
+            .AddSource(clientSourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using (var agentSource = new ActivitySource(agentSourceName))
+        using (Activity? invokeAgentActivity = agentSource.StartActivity("invoke_agent"))
+        {
+            Assert.NotNull(invokeAgentActivity);
+            invokeAgentActivity.SetCustomProperty("__EnableSensitiveData__", "true");
+            invokeAgentActivity.SetCustomProperty("__GenAISemanticConvention__", agentSemanticConvention);
+
+            await InvokeAndAssertAsync(options, plan, configurePipeline: builder =>
+                builder
+                    .UseFunctionInvocation()
+                    .UseOpenTelemetry(sourceName: clientSourceName, configure: client =>
+                    {
+                        client.EnableSensitiveData = true;
+                        client.SemanticConvention = clientSemanticConvention;
+                    }));
+        }
+
+        Activity executeTool = Assert.Single(activities, activity => activity.DisplayName == "execute_tool Func1");
+        bool latestExperimental = agentSemanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental;
+
+        Assert.Equal(latestExperimental ? "function" : null, executeTool.GetTagItem("gen_ai.tool.type"));
+        Assert.Equal(latestExperimental, executeTool.GetTagItem("gen_ai.tool.call.arguments") is not null);
+        Assert.Equal(latestExperimental, executeTool.GetTagItem("gen_ai.tool.call.result") is not null);
     }
 
     [Theory]
@@ -3640,4 +3717,3 @@ public class FunctionInvokingChatClientTests
             m.Contents.Any(c => c is FunctionResultContent frc2 && frc2.CallId == "callId1"));
     }
 }
-

@@ -17,6 +17,11 @@ public static class OpenTelemetryEmbeddingGeneratorBuilderExtensions
     /// <remarks>
     /// The draft specification this follows is available at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
     /// The specification is still experimental and subject to change; as such, the telemetry output by this generator is also subject to change.
+    /// <para>
+    /// When <c>OTEL_SEMCONV_STABILITY_OPT_IN</c> is not defined, the generator preserves the latest experimental representation.
+    /// When the variable is defined, include <c>gen_ai_latest_experimental</c> to select that representation; otherwise, the generator
+    /// emits the v1.36 representation. The <paramref name="configure"/> callback can override this selection.
+    /// </para>
     /// </remarks>
     /// <typeparam name="TInput">The type of input used to produce embeddings.</typeparam>
     /// <typeparam name="TEmbedding">The type of embedding generated.</typeparam>

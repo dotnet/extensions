@@ -1,9 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA1307 // Specify StringComparison for clarity
@@ -22,13 +24,17 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.41, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
-/// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
+/// This class provides implementations of the OpenTelemetry GenAI Semantic Conventions, beginning with v1.36,
+/// defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// The conventions have Development status and are subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
 public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 {
+    private const LogLevel EventLogLevel = LogLevel.Information;
+
     internal const string SensitiveDataEnabledCustomKey = "__EnableSensitiveData__";
     internal const string SensitiveDataEnabledTrueValue = "true";
+    internal const string SemanticConventionCustomKey = "__GenAISemanticConvention__";
 
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
@@ -46,6 +52,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     private readonly int _serverPort;
 
     private JsonSerializerOptions _jsonSerializerOptions;
+
+    private static string? GetV136MessageContent(IEnumerable<AIContent> contents)
+    {
+        string content = string.Concat(contents.OfType<TextContent>());
+        return content.Length > 0 ? content : null;
+    }
 
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetryChatClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>.</param>
@@ -126,6 +138,18 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     /// </remarks>
     public bool EnableSensitiveData { get; set; } = TelemetryHelpers.EnableSensitiveDataDefault;
 
+    /// <summary>Gets or sets the OpenTelemetry GenAI semantic convention representation to emit.</summary>
+    /// <value>
+    /// The default is <see cref="OpenTelemetryGenAISemanticConvention.LatestExperimental"/> when
+    /// <c>OTEL_SEMCONV_STABILITY_OPT_IN</c> is not defined. When the variable is defined, a list containing
+    /// <c>gen_ai_latest_experimental</c> selects <see cref="OpenTelemetryGenAISemanticConvention.LatestExperimental"/>;
+    /// otherwise, it selects <see cref="OpenTelemetryGenAISemanticConvention.Version1_36"/>.
+    /// Explicitly setting this property overrides the environment variable for this instance.
+    /// </value>
+    [Experimental(DiagnosticIds.Experiments.AIOpenTelemetryGenAISemanticConvention, UrlFormat = DiagnosticIds.UrlFormat)]
+    public OpenTelemetryGenAISemanticConvention SemanticConvention { get; set; } =
+        TelemetryHelpers.GetGenAISemanticConventionDefault();
+
     /// <inheritdoc/>
     public override object? GetService(Type serviceType, object? serviceKey = null) =>
         serviceType == typeof(ActivitySource) ? _activitySource :
@@ -142,7 +166,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
-        AddInputMessagesTags(messages, options, activity);
+        TraceInputMessages(messages, options, activity);
 
         ChatResponse? response = null;
         Exception? error = null;
@@ -170,11 +194,13 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         _jsonSerializerOptions.MakeReadOnly();
 
         using Activity? activity = CreateAndConfigureActivity(options, streaming: true);
-        bool recordChunkHistograms = _timeToFirstChunkHistogram.Enabled || _timePerOutputChunkHistogram.Enabled;
+        bool recordChunkHistograms =
+            SemanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental &&
+            (_timeToFirstChunkHistogram.Enabled || _timePerOutputChunkHistogram.Enabled);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled || recordChunkHistograms || activity is not null ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _defaultModelId;
 
-        AddInputMessagesTags(messages, options, activity);
+        TraceInputMessages(messages, options, activity);
 
         IAsyncEnumerable<ChatResponseUpdate> updates;
         try
@@ -282,6 +308,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 string.IsNullOrWhiteSpace(modelId) ? OpenTelemetryConsts.GenAI.ChatName : $"{OpenTelemetryConsts.GenAI.ChatName} {modelId}",
                 ActivityKind.Client);
 
+            activity?.SetCustomProperty(SemanticConventionCustomKey, SemanticConvention);
+
             if (EnableSensitiveData)
             {
                 activity?.SetCustomProperty(SensitiveDataEnabledCustomKey, SensitiveDataEnabledTrueValue);
@@ -292,9 +320,9 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 _ = activity
                     .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.ChatName)
                     .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
-                    .AddTag(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+                    .AddTag(TelemetryHelpers.GetGenAIProviderAttributeName(SemanticConvention), _providerName);
 
-                if (streaming)
+                if (streaming && SemanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental)
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Stream, true);
                 }
@@ -366,7 +394,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         }
                     }
 
-                    if (options.Tools is { Count: > 0 })
+                    if (SemanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental &&
+                        options.Tools is { Count: > 0 })
                     {
                         _ = activity.AddTag(
                             OpenTelemetryConsts.GenAI.Tool.Definitions,
@@ -381,7 +410,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                         {
                             foreach (KeyValuePair<string, object?> prop in props)
                             {
-                                _ = activity.AddTag(prop.Key, prop.Value);
+                                string key =
+                                    SemanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36 && _providerName is not null ?
+                                        OpenTelemetryConsts.GenAI.Request.PerProvider(_providerName, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)) :
+                                        prop.Key;
+                                _ = activity.AddTag(key, prop.Value);
                             }
                         }
                     }
@@ -437,7 +470,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
         if (response is not null)
         {
-            AddOutputMessagesTags(response, activity);
+            TraceOutputMessages(response, activity);
 
             if (activity is not null)
             {
@@ -458,7 +491,8 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, response.ModelId);
                 }
 
-                if (timeToFirstChunk is double timeToFirstChunkValue)
+                if (SemanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental &&
+                    timeToFirstChunk is double timeToFirstChunkValue)
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.TimeToFirstChunk, timeToFirstChunkValue);
                 }
@@ -473,12 +507,14 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTokens, (int)outputTokens);
                 }
 
-                if (response.Usage?.CachedInputTokenCount is long cachedInputTokens)
+                if (SemanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental &&
+                    response.Usage?.CachedInputTokenCount is long cachedInputTokens)
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.CacheReadInputTokens, (int)cachedInputTokens);
                 }
 
-                if (response.Usage?.ReasoningTokenCount is long reasoningTokens)
+                if (SemanticConvention == OpenTelemetryGenAISemanticConvention.LatestExperimental &&
+                    response.Usage?.ReasoningTokenCount is long reasoningTokens)
                 {
                     _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.ReasoningOutputTokens, (int)reasoningTokens);
                 }
@@ -489,7 +525,11 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 {
                     foreach (KeyValuePair<string, object?> prop in props)
                     {
-                        _ = activity.AddTag(prop.Key, prop.Value);
+                        string key =
+                            SemanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36 && _providerName is not null ?
+                                OpenTelemetryConsts.GenAI.Response.PerProvider(_providerName, JsonNamingPolicy.SnakeCaseLower.ConvertName(prop.Key)) :
+                                prop.Key;
+                        _ = activity.AddTag(key, prop.Value);
                     }
                 }
             }
@@ -505,7 +545,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
             tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
         }
 
-        tags.Add(OpenTelemetryConsts.GenAI.Provider.Name, _providerName);
+        tags.Add(TelemetryHelpers.GetGenAIProviderAttributeName(SemanticConvention), _providerName);
 
         if (_serverAddress is string endpointAddress)
         {
@@ -516,6 +556,30 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         if (response?.ModelId is string responseModel)
         {
             tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
+        }
+    }
+
+    private void TraceInputMessages(IEnumerable<ChatMessage> messages, ChatOptions? options, Activity? activity)
+    {
+        if (SemanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36)
+        {
+            LogV136InputMessageEvents(messages, options?.Instructions);
+        }
+        else
+        {
+            AddInputMessagesTags(messages, options, activity);
+        }
+    }
+
+    private void TraceOutputMessages(ChatResponse response, Activity? activity)
+    {
+        if (SemanticConvention == OpenTelemetryGenAISemanticConvention.Version1_36)
+        {
+            LogV136OutputMessageEvents(response);
+        }
+        else
+        {
+            AddOutputMessagesTags(response, activity);
         }
     }
 
@@ -546,64 +610,124 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         }
     }
 
-    // Chat-specific OTel serialization POCOs.
-    //
-    // Types whose layout is shared 1:1 with OpenTelemetryRealtimeClientSession live in
-    // Common/OtelMessageParts.cs. The types below are either entirely chat-specific or
-    // contain chat-specific fields. The shared JsonSerializerContext lives in Common/OtelContext.cs,
-    // and the shared serialization helpers live in Common/OtelMessageSerializer.cs.
-}
+    private void LogV136InputMessageEvents(IEnumerable<ChatMessage> messages, string? instructions)
+    {
+        if (!EnableSensitiveData || _logger?.IsEnabled(EventLogLevel) is not true)
+        {
+            return;
+        }
 
-#pragma warning disable SA1402 // File may only contain a single type — chat-specific OTel POCOs are co-located with the chat client.
+        if (!string.IsNullOrWhiteSpace(instructions))
+        {
+            LogV136Event(
+                new(1, OpenTelemetryConsts.GenAI.System.Message),
+                JsonSerializer.Serialize(
+                    new OtelV136.SystemOrUserEvent { Content = instructions },
+                    OtelMessageSerializer.DefaultOptions.GetTypeInfo(typeof(OtelV136.SystemOrUserEvent))));
+        }
 
-internal sealed class OtelMessage
-{
-    public string? Role { get; set; }
-    public string? Name { get; set; }
-    public List<object> Parts { get; set; } = [];
-    public string? FinishReason { get; set; }
-}
+        foreach (ChatMessage message in messages)
+        {
+            if (message.Role == ChatRole.Assistant)
+            {
+                LogV136Event(
+                    new(1, OpenTelemetryConsts.GenAI.Assistant.Message),
+                    JsonSerializer.Serialize(
+                        CreateV136AssistantEvent(message.Contents),
+                        OtelMessageSerializer.DefaultOptions.GetTypeInfo(typeof(OtelV136.AssistantEvent))));
+            }
+            else if (message.Role == ChatRole.Tool)
+            {
+                foreach (FunctionResultContent functionResult in message.Contents.OfType<FunctionResultContent>())
+                {
+                    LogV136Event(
+                        new(1, OpenTelemetryConsts.GenAI.Tool.Message),
+                        JsonSerializer.Serialize(
+                            new OtelV136.ToolEvent
+                            {
+                                Id = functionResult.CallId,
+                                Content = functionResult.Result is object result ?
+                                    JsonSerializer.SerializeToNode(result, _jsonSerializerOptions.GetTypeInfo(result.GetType())) :
+                                    null,
+                            },
+                            OtelMessageSerializer.DefaultOptions.GetTypeInfo(typeof(OtelV136.ToolEvent))));
+                }
+            }
+            else
+            {
+                LogV136Event(
+                    new(1, message.Role == ChatRole.System ? OpenTelemetryConsts.GenAI.System.Message : OpenTelemetryConsts.GenAI.User.Message),
+                    JsonSerializer.Serialize(
+                        new OtelV136.SystemOrUserEvent
+                        {
+                            Role =
+                                message.Role != ChatRole.System &&
+                                message.Role != ChatRole.User &&
+                                !string.IsNullOrWhiteSpace(message.Role.Value) ?
+                                    message.Role.Value :
+                                    null,
+                            Content = GetV136MessageContent(message.Contents),
+                        },
+                        OtelMessageSerializer.DefaultOptions.GetTypeInfo(typeof(OtelV136.SystemOrUserEvent))));
+            }
+        }
+    }
 
-internal sealed class OtelToolCallRequestPart
-{
-    public string Type { get; set; } = "tool_call";
-    public string? Id { get; set; }
-    public string? Name { get; set; }
-    public IDictionary<string, object?>? Arguments { get; set; }
-}
+    private void LogV136OutputMessageEvents(ChatResponse response)
+    {
+        if (!EnableSensitiveData || _logger?.IsEnabled(EventLogLevel) is not true)
+        {
+            return;
+        }
 
-internal sealed class OtelCodeInterpreterToolCall
-{
-    public string Type { get; set; } = "code_interpreter";
-    public string? Code { get; set; }
-}
+        IEnumerable<AIContent> contents =
+            response.Messages is { Count: 1 } ?
+                response.Messages[0].Contents :
+                response.Messages.SelectMany(message => message.Contents);
 
-internal sealed class OtelCodeInterpreterToolCallResponse
-{
-    public string Type { get; set; } = "code_interpreter";
-    public object? Output { get; set; }
-}
+        LogV136Event(
+            new(1, OpenTelemetryConsts.GenAI.Choice),
+            JsonSerializer.Serialize(
+                new OtelV136.ChoiceEvent
+                {
+                    FinishReason = response.FinishReason?.Value ?? "error",
+                    Index = 0,
+                    Message = CreateV136AssistantEvent(contents),
+                },
+                OtelMessageSerializer.DefaultOptions.GetTypeInfo(typeof(OtelV136.ChoiceEvent))));
+    }
 
-internal sealed class OtelImageGenerationToolCall
-{
-    public string Type { get; set; } = "image_generation";
-}
+    private void LogV136Event(EventId id, [StringSyntax(StringSyntaxAttribute.Json)] string eventBodyJson)
+    {
+        Debug.Assert(_logger is not null, "The caller verified that the logger is enabled.");
 
-internal sealed class OtelImageGenerationToolCallResponse
-{
-    public string Type { get; set; } = "image_generation";
-    public object? Output { get; set; }
-}
+        KeyValuePair<string, object?>[] tags =
+        [
+            new(OpenTelemetryConsts.Event.Name, id.Name),
+            new(OpenTelemetryConsts.GenAI.SystemName, _providerName),
+        ];
 
-internal sealed class OtelMcpApprovalRequest
-{
-    public string Type { get; set; } = "mcp_approval_request";
-    public string? ServerName { get; set; }
-    public IDictionary<string, object?>? Arguments { get; set; }
-}
+        _logger!.Log(EventLogLevel, id, tags, null, (_, _) => eventBodyJson);
+    }
 
-internal sealed class OtelMcpApprovalResponse
-{
-    public string Type { get; set; } = "mcp_approval_response";
-    public bool Approved { get; set; }
+    private OtelV136.AssistantEvent CreateV136AssistantEvent(IEnumerable<AIContent> contents)
+    {
+        var toolCalls = contents.OfType<FunctionCallContent>().Select(functionCall => new OtelV136.ToolCall
+        {
+            Id = functionCall.CallId,
+            Function = new()
+            {
+                Name = functionCall.Name,
+                Arguments = JsonSerializer.SerializeToNode(
+                    functionCall.Arguments,
+                    _jsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))),
+            },
+        }).ToArray();
+
+        return new()
+        {
+            Content = GetV136MessageContent(contents),
+            ToolCalls = toolCalls.Length > 0 ? toolCalls : null,
+        };
+    }
 }

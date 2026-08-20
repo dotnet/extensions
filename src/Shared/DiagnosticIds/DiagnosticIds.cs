@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable S1144 // Remove the unused internal class
@@ -55,6 +55,7 @@ internal static class DiagnosticIds
         internal const string AIFunctionApprovals = AIExperiments;
         internal const string AIApprovalsInvocationRequired = AIExperiments;
         internal const string AIFunctionAndParameterName = AIExperiments;
+        internal const string AIOpenTelemetryGenAISemanticConvention = AIExperiments;
 
         internal const string AIChatReduction = AIExperiments;
         internal const string AIToolSearch = AIExperiments;

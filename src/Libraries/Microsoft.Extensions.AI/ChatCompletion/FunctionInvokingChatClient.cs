@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -78,6 +78,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <summary>The <see cref="ActivitySource"/> to use for telemetry.</summary>
     /// <remarks>This component does not own the instance and should not dispose it.</remarks>
     private readonly ActivitySource? _activitySource;
+    private readonly OpenTelemetryGenAISemanticConvention _defaultSemanticConvention;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
@@ -90,6 +91,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     {
         _logger = (ILogger?)loggerFactory?.CreateLogger<FunctionInvokingChatClient>() ?? NullLogger.Instance;
         _activitySource = innerClient.GetService<ActivitySource>();
+        _defaultSemanticConvention = TelemetryHelpers.GetGenAISemanticConventionDefault();
         FunctionInvocationServices = functionInvocationServices;
     }
 
@@ -101,7 +103,12 @@ public class FunctionInvokingChatClient : DelegatingChatClient
         invokeAgentActivity =>
             invokeAgentActivity is not null
                 ? invokeAgentActivity.GetCustomProperty(OpenTelemetryChatClient.SensitiveDataEnabledCustomKey) as string is OpenTelemetryChatClient.SensitiveDataEnabledTrueValue
-                : InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true);
+                : InnerClient.GetService<OpenTelemetryChatClient>()?.EnableSensitiveData is true,
+        invokeAgentActivity =>
+            invokeAgentActivity?.GetCustomProperty(OpenTelemetryChatClient.SemanticConventionCustomKey) is OpenTelemetryGenAISemanticConvention semanticConvention ?
+                semanticConvention :
+                InnerClient.GetService<OpenTelemetryChatClient>()?.SemanticConvention ??
+                    _defaultSemanticConvention);
 
     /// <summary>
     /// Gets or sets the <see cref="FunctionInvocationContext"/> for the current function invocation.

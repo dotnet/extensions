@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -49,7 +49,7 @@ internal static class OtelMessageSerializer
 
         foreach (ChatMessage message in messages)
         {
-            OtelMessage m = new()
+            OtelLatest.Message m = new()
             {
                 FinishReason = finishReason,
                 Role =
@@ -75,7 +75,7 @@ internal static class OtelMessageSerializer
                         break;
 
                     case FunctionCallContent fcc:
-                        m.Parts.Add(new OtelToolCallRequestPart
+                        m.Parts.Add(new OtelLatest.ToolCallRequestPart
                         {
                             Id = fcc.CallId,
                             Name = fcc.Name,
@@ -131,11 +131,11 @@ internal static class OtelMessageSerializer
                     // Server tool call content types as specified in the OpenTelemetry semantic conventions:
 
                     case CodeInterpreterToolCallContent citcc:
-                        m.Parts.Add(new OtelServerToolCallPart<OtelCodeInterpreterToolCall>
+                        m.Parts.Add(new OtelServerToolCallPart<OtelLatest.CodeInterpreterToolCall>
                         {
                             Id = citcc.CallId,
                             Name = "code_interpreter",
-                            ServerToolCall = new OtelCodeInterpreterToolCall
+                            ServerToolCall = new OtelLatest.CodeInterpreterToolCall
                             {
                                 Code = ExtractCodeFromInputs(citcc.Inputs),
                             },
@@ -143,10 +143,10 @@ internal static class OtelMessageSerializer
                         break;
 
                     case CodeInterpreterToolResultContent citrc:
-                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelCodeInterpreterToolCallResponse>
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelLatest.CodeInterpreterToolCallResponse>
                         {
                             Id = citrc.CallId,
-                            ServerToolCallResponse = new OtelCodeInterpreterToolCallResponse
+                            ServerToolCallResponse = new OtelLatest.CodeInterpreterToolCallResponse
                             {
                                 Output = citrc.Outputs,
                             },
@@ -154,19 +154,19 @@ internal static class OtelMessageSerializer
                         break;
 
                     case ImageGenerationToolCallContent igtcc:
-                        m.Parts.Add(new OtelServerToolCallPart<OtelImageGenerationToolCall>
+                        m.Parts.Add(new OtelServerToolCallPart<OtelLatest.ImageGenerationToolCall>
                         {
                             Id = igtcc.CallId,
                             Name = "image_generation",
-                            ServerToolCall = new OtelImageGenerationToolCall(),
+                            ServerToolCall = new OtelLatest.ImageGenerationToolCall(),
                         });
                         break;
 
                     case ImageGenerationToolResultContent igtrc:
-                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelImageGenerationToolCallResponse>
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelLatest.ImageGenerationToolCallResponse>
                         {
                             Id = igtrc.CallId,
-                            ServerToolCallResponse = new OtelImageGenerationToolCallResponse
+                            ServerToolCallResponse = new OtelLatest.ImageGenerationToolCallResponse
                             {
                                 Output = igtrc.Outputs,
                             },
@@ -198,11 +198,11 @@ internal static class OtelMessageSerializer
                         break;
 
                     case ToolApprovalRequestContent fareqc when fareqc.ToolCall is McpServerToolCallContent mcpToolCall:
-                        m.Parts.Add(new OtelServerToolCallPart<OtelMcpApprovalRequest>
+                        m.Parts.Add(new OtelServerToolCallPart<OtelLatest.McpApprovalRequest>
                         {
                             Id = fareqc.RequestId,
                             Name = mcpToolCall.Name,
-                            ServerToolCall = new OtelMcpApprovalRequest
+                            ServerToolCall = new OtelLatest.McpApprovalRequest
                             {
                                 Arguments = mcpToolCall.Arguments,
                                 ServerName = mcpToolCall.ServerName,
@@ -211,10 +211,10 @@ internal static class OtelMessageSerializer
                         break;
 
                     case ToolApprovalResponseContent farespc when farespc.ToolCall is McpServerToolCallContent:
-                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelMcpApprovalResponse>
+                        m.Parts.Add(new OtelServerToolCallResponsePart<OtelLatest.McpApprovalResponse>
                         {
                             Id = farespc.RequestId,
-                            ServerToolCallResponse = new OtelMcpApprovalResponse
+                            ServerToolCallResponse = new OtelLatest.McpApprovalResponse
                             {
                                 Approved = farespc.Approved,
                             },

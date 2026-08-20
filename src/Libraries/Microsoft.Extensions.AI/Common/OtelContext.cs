@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -24,17 +24,23 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(OtelToolCallResponsePart))]
 [JsonSerializable(typeof(IEnumerable<OtelFunction>))]
 
-// Chat-specific
-[JsonSerializable(typeof(OtelMessage))]
-[JsonSerializable(typeof(OtelToolCallRequestPart))]
-[JsonSerializable(typeof(OtelServerToolCallPart<OtelCodeInterpreterToolCall>))]
-[JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelCodeInterpreterToolCallResponse>))]
-[JsonSerializable(typeof(OtelServerToolCallPart<OtelImageGenerationToolCall>))]
-[JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelImageGenerationToolCallResponse>))]
+// Latest experimental chat representation
+[JsonSerializable(typeof(OtelLatest.Message))]
+[JsonSerializable(typeof(OtelLatest.ToolCallRequestPart))]
+[JsonSerializable(typeof(OtelServerToolCallPart<OtelLatest.CodeInterpreterToolCall>))]
+[JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelLatest.CodeInterpreterToolCallResponse>))]
+[JsonSerializable(typeof(OtelServerToolCallPart<OtelLatest.ImageGenerationToolCall>))]
+[JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelLatest.ImageGenerationToolCallResponse>))]
 [JsonSerializable(typeof(OtelServerToolCallPart<OtelMcpToolCall>))]
 [JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelMcpToolCallResponse>))]
-[JsonSerializable(typeof(OtelServerToolCallPart<OtelMcpApprovalRequest>))]
-[JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelMcpApprovalResponse>))]
+[JsonSerializable(typeof(OtelServerToolCallPart<OtelLatest.McpApprovalRequest>))]
+[JsonSerializable(typeof(OtelServerToolCallResponsePart<OtelLatest.McpApprovalResponse>))]
+
+// v1.36 chat representation
+[JsonSerializable(typeof(OtelV136.SystemOrUserEvent))]
+[JsonSerializable(typeof(OtelV136.AssistantEvent))]
+[JsonSerializable(typeof(OtelV136.ToolEvent))]
+[JsonSerializable(typeof(OtelV136.ChoiceEvent))]
 
 // Realtime-specific
 [JsonSerializable(typeof(IEnumerable<RealtimeOtelMessage>))]

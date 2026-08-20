@@ -16,6 +16,12 @@ internal static class OpenTelemetryConsts
     /// <summary>Environment variable name for controlling whether sensitive content should be captured in telemetry by default.</summary>
     public const string GenAICaptureMessageContentEnvVar = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT";
 
+    /// <summary>Environment variable name for selecting experimental semantic convention representations.</summary>
+    public const string SemanticConventionStabilityOptInEnvVar = "OTEL_SEMCONV_STABILITY_OPT_IN";
+
+    /// <summary>Opt-in token for selecting the latest experimental GenAI semantic conventions.</summary>
+    public const string GenAILatestExperimentalOptIn = "gen_ai_latest_experimental";
+
     public const string ToolTypeFunction = "function";
 
     public const string TypeText = "text";
@@ -35,9 +41,15 @@ internal static class OpenTelemetryConsts
         public const string Type = "error.type";
     }
 
+    public static class Event
+    {
+        public const string Name = "event.name";
+    }
+
     public static class GenAI
     {
         public const string ChatName = "chat";
+        public const string Choice = "gen_ai.choice";
         public const string EmbeddingsName = "embeddings";
         public const string ExecuteToolName = "execute_tool";
         public const string InvokeAgentName = "invoke_agent";
@@ -55,6 +67,12 @@ internal static class OpenTelemetryConsts
         public const string RealtimeName = "realtime";
 
         public const string SystemInstructions = "gen_ai.system_instructions";
+        public const string SystemName = "gen_ai.system";
+
+        public static class Assistant
+        {
+            public const string Message = "gen_ai.assistant.message";
+        }
 
         public static class Client
         {
@@ -124,6 +142,7 @@ internal static class OpenTelemetryConsts
         public static class Request
         {
             public const string ChoiceCount = "gen_ai.request.choice.count";
+            public const string EmbeddingDimensions = "gen_ai.request.embedding.dimensions";
             public const string FrequencyPenalty = "gen_ai.request.frequency_penalty";
             public const string Model = "gen_ai.request.model";
             public const string MaxTokens = "gen_ai.request.max_tokens";
@@ -134,6 +153,8 @@ internal static class OpenTelemetryConsts
             public const string Temperature = "gen_ai.request.temperature";
             public const string TopK = "gen_ai.request.top_k";
             public const string TopP = "gen_ai.request.top_p";
+
+            public static string PerProvider(string providerName, string parameterName) => $"gen_ai.{providerName}.request.{parameterName}";
         }
 
         public static class Response
@@ -142,6 +163,13 @@ internal static class OpenTelemetryConsts
             public const string Id = "gen_ai.response.id";
             public const string Model = "gen_ai.response.model";
             public const string TimeToFirstChunk = "gen_ai.response.time_to_first_chunk";
+
+            public static string PerProvider(string providerName, string parameterName) => $"gen_ai.{providerName}.response.{parameterName}";
+        }
+
+        public static class System
+        {
+            public const string Message = "gen_ai.system.message";
         }
 
         public static class Token
@@ -175,6 +203,11 @@ internal static class OpenTelemetryConsts
             public const string OutputAudioTokens = "gen_ai.usage.output_audio_tokens";
             public const string OutputTextTokens = "gen_ai.usage.output_text_tokens";
             public const string ReasoningOutputTokens = "gen_ai.usage.reasoning.output_tokens";
+        }
+
+        public static class User
+        {
+            public const string Message = "gen_ai.user.message";
         }
 
         /// <summary>

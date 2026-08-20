@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using OpenTelemetry.Trace;
@@ -93,6 +94,70 @@ public class OpenTelemetryEmbeddingGeneratorTests
         Assert.Equal(enableSensitiveData ? "value3" : null, activity.GetTagItem("AndSomethingElse"));
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
+    }
+
+    [Fact]
+    public async Task CompatibilityExpectedInformationLogged_Async()
+    {
+        var sourceName = Guid.NewGuid().ToString();
+        var activities = new List<Activity>();
+        using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+            .AddSource(sourceName)
+            .AddInMemoryExporter(activities)
+            .Build();
+
+        using var innerGenerator = new TestEmbeddingGenerator
+        {
+            GenerateAsyncCallback = async (values, options, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new GeneratedEmbeddings<Embedding<float>>([new Embedding<float>(new float[] { 1, 2, 3 })])
+                {
+                    Usage = new() { InputTokenCount = 10 },
+                    AdditionalProperties = new() { ["system_fingerprint"] = "abcdefgh" },
+                };
+            },
+            GetServiceCallback = (serviceType, serviceKey) =>
+                serviceType == typeof(EmbeddingGeneratorMetadata) ?
+                    new EmbeddingGeneratorMetadata("testservice", new Uri("http://localhost:12345/something"), "defaultmodel", 1234) :
+                    null,
+        };
+
+        using var generator = innerGenerator
+            .AsBuilder()
+            .UseOpenTelemetry(sourceName: sourceName, configure: instance =>
+            {
+                instance.EnableSensitiveData = true;
+                instance.SemanticConvention = OpenTelemetryGenAISemanticConvention.Version1_36;
+            })
+            .Build();
+
+        using var durationCollector = new MetricCollector<double>(
+            null,
+            sourceName,
+            "gen_ai.client.operation.duration");
+
+        await generator.GenerateVectorAsync(
+            "hello",
+            new EmbeddingGenerationOptions
+            {
+                AdditionalProperties = new() { ["service_tier"] = "value1" },
+            });
+
+        Activity activity = Assert.Single(activities);
+        Assert.Equal("testservice", activity.GetTagItem("gen_ai.system"));
+        Assert.Null(activity.GetTagItem("gen_ai.provider.name"));
+        Assert.Equal(1234, activity.GetTagItem("gen_ai.request.embedding.dimensions"));
+        Assert.Null(activity.GetTagItem("gen_ai.embeddings.dimension.count"));
+        Assert.Equal("value1", activity.GetTagItem("gen_ai.testservice.request.service_tier"));
+        Assert.Equal("abcdefgh", activity.GetTagItem("gen_ai.testservice.response.system_fingerprint"));
+
+        var duration = Assert.Single(durationCollector.GetMeasurementSnapshot());
+        Assert.True(duration.ContainsTags(
+            new KeyValuePair<string, object?>("gen_ai.operation.name", "embeddings"),
+            new KeyValuePair<string, object?>("gen_ai.system", "testservice")));
+        Assert.False(duration.ContainsTags(
+            new KeyValuePair<string, object?>("gen_ai.provider.name", "testservice")));
     }
 
     [Fact]

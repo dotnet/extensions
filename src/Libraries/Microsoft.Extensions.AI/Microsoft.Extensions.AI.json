@@ -1222,6 +1222,10 @@
         {
           "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.OpenTelemetryChatClient.JsonSerializerOptions { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention Microsoft.Extensions.AI.OpenTelemetryChatClient.SemanticConvention { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -1260,6 +1264,10 @@
         {
           "Member": "bool Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>.EnableSensitiveData { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>.SemanticConvention { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -1270,6 +1278,28 @@
         {
           "Member": "static Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> Microsoft.Extensions.AI.OpenTelemetryEmbeddingGeneratorBuilderExtensions.UseOpenTelemetry<TInput, TEmbedding>(this Microsoft.Extensions.AI.EmbeddingGeneratorBuilder<TInput, TEmbedding> builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.AI.OpenTelemetryEmbeddingGenerator<TInput, TEmbedding>>? configure = null);",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention.OpenTelemetryGenAISemanticConvention();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention.Version1_36",
+          "Stage": "Experimental",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention Microsoft.Extensions.AI.OpenTelemetryGenAISemanticConvention.LatestExperimental",
+          "Stage": "Experimental",
+          "Value": "1"
         }
       ]
     },
