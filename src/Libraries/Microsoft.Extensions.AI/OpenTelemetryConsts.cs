@@ -181,10 +181,10 @@ internal static class OpenTelemetryConsts
             public const string InputTokens = "gen_ai.usage.input_tokens";
             public const string OutputTokens = "gen_ai.usage.output_tokens";
             public const string CacheReadInputTokens = "gen_ai.usage.cache_read.input_tokens";
-            public const string InputAudioTokens = "gen_ai.usage.input_audio_tokens";
-            public const string InputTextTokens = "gen_ai.usage.input_text_tokens";
-            public const string OutputAudioTokens = "gen_ai.usage.output_audio_tokens";
-            public const string OutputTextTokens = "gen_ai.usage.output_text_tokens";
+            public const string AudioInputTokens = "gen_ai.usage.audio.input_tokens";
+            public const string TextInputTokens = "gen_ai.usage.text.input_tokens";
+            public const string AudioOutputTokens = "gen_ai.usage.audio.output_tokens";
+            public const string TextOutputTokens = "gen_ai.usage.text.output_tokens";
             public const string ReasoningOutputTokens = "gen_ai.usage.reasoning.output_tokens";
         }
 

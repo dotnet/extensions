@@ -860,22 +860,22 @@ internal sealed partial class OpenTelemetryRealtimeClientSession : IRealtimeClie
 
                 if (responseUsage.InputAudioTokenCount is long inputAudioTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.InputAudioTokens, (int)inputAudioTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.AudioInputTokens, (int)inputAudioTokens);
                 }
 
                 if (responseUsage.InputTextTokenCount is long inputTextTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.InputTextTokens, (int)inputTextTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.TextInputTokens, (int)inputTextTokens);
                 }
 
                 if (responseUsage.OutputAudioTokenCount is long outputAudioTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputAudioTokens, (int)outputAudioTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.AudioOutputTokens, (int)outputAudioTokens);
                 }
 
                 if (responseUsage.OutputTextTokenCount is long outputTextTokens)
                 {
-                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.OutputTextTokens, (int)outputTextTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Usage.TextOutputTokens, (int)outputTextTokens);
                 }
             }
 
