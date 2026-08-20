@@ -349,15 +349,7 @@ extends:
             name: NetCore1ESPool-Internal
             image: windows.vs2022.amd64
             os: windows
-          templateContext:
-            outputs:
-            - output: adoExtension
-              targetPath: '$(Pipeline.Workspace)\AzureDevOpsExtension'
-              connectedServiceNameAzureRM: arcade-extensions-marketplace-publish
-              fileType: vsix
-              vsixFile: '$(Pipeline.Workspace)\AzureDevOpsExtension\Microsoft.Extensions.AI.Evaluation.Reporting.vsix'
-              useV5: true
-              validateExtension: true
+
           steps:
           - checkout: none
 
@@ -382,3 +374,13 @@ extends:
               $publishDirectory = New-Item '$(Pipeline.Workspace)\AzureDevOpsExtension' -ItemType Directory -Force
               Copy-Item $vsixFiles[0].FullName (Join-Path $publishDirectory 'Microsoft.Extensions.AI.Evaluation.Reporting.vsix')
             displayName: Prepare signed Azure DevOps extension
+
+          - task: 1ES.PublishAzureDevOpsExtension@1
+            displayName: Publish Extension
+            inputs:
+              targetPath: '$(Pipeline.Workspace)\AzureDevOpsExtension'
+              connectedServiceNameAzureRM: arcade-extensions-marketplace-publish
+              fileType: vsix
+              vsixFile: '$(Pipeline.Workspace)\AzureDevOpsExtension\Microsoft.Extensions.AI.Evaluation.Reporting.vsix'
+              useV5: true
+              validateExtension: true              
