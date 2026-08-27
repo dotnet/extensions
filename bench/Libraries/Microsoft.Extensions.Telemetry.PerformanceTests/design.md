@@ -44,12 +44,24 @@ Each scenario is a separate BenchmarkDotNet parameter, so its `WithSampling` res
 
 The buffer is sized to retain all batches from a measured iteration and automatic post-flush bypass is disabled. `BufferOnly` is flushed after each benchmark iteration, outside the measurement. This avoids capacity eviction and ensures every measured iteration starts with an empty buffer.
 
+## CCKR benchmark
+
+`CckrImpactBench` is available on the CCKR integration branch. CCKR combines the sampling decision and reservoir buffering in one pipeline, so its decision and buffer costs cannot be isolated through the public logging integration.
+
+- `NoSampling` is the baseline and sends every log directly to `BenchLogger`.
+- `CckrRetainAll` gives the reservoir capacity for all 10,000 logs and measures admission plus buffering with no drops.
+- `CckrRetainAllAndFlush` adds emission of every retained log, making downstream provider work equivalent to the baseline.
+- `CckrAdaptive` uses a representative capacity of 128 for the 10,000-log period and measures the adaptive high-volume path without flush cost.
+- `CckrAdaptiveAndFlush` includes emission of the adaptive reservoir at the period boundary.
+
+The novelty preserve is disabled so retained records are controlled only by the configured reservoir capacity. Automatic time-based flushing is moved beyond the benchmark duration, and iteration cleanup flushes both reservoirs outside the measurement. CCKR uses random ranks, so adaptive results should be interpreted from the full BenchmarkDotNet run rather than a single invocation.
+
 ## Running
 
 From the repository root:
 
 ```powershell
-dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SamplingImpactBench* *BufferingImpactBench*
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SamplingImpactBench* *BufferingImpactBench* *CckrImpactBench*
 ```
 
 Run on an otherwise idle machine with a fixed power plan. Compare `Mean`, `Ratio`, `Allocated`, and GC columns. Retain the generated BenchmarkDotNet artifacts with the machine, OS, runtime, and processor metadata when comparing changes over time.
@@ -62,6 +74,8 @@ Run on an otherwise idle machine with a fixed power plan. Compare `Mean`, `Ratio
 - Results depend on provider cost. `BenchLogger` is deliberately lightweight, so dropped-path savings are conservative relative to providers that format, serialize, buffer, or export logs.
 - `BufferOnly` isolates the cost and managed allocations required to retain logs in memory.
 - `BufferAndFlush` includes deserialization and downstream provider work, so it represents the complete buffering lifecycle.
+- `CckrRetainAll` shows the combined admission and buffering overhead when sampling provides no volume reduction.
+- `CckrAdaptive` shows when dropped-log savings offset reservoir decision cost, while the `AndFlush` variants include the cost of emitting retained records.
 
 ## Follow-up plan
 
@@ -75,6 +89,7 @@ Run on an otherwise idle machine with a fixed power plan. Compare `Mean`, `Ratio
 - Every sampling implementation has both a retained and discarded-log scenario.
 - Each sampling result has an equivalent no-sampling baseline.
 - Buffer insertion and buffer insertion plus flush are both compared with direct logging.
+- CCKR covers retain-all and adaptive-drop paths, both before and through flush.
 - Every measured invocation represents 10,000 logs and reports normalized per-log results.
 - Reports include time per operation, ratio, managed allocation per operation, and GC counts.
 - Benchmark setup and the post-iteration `BufferOnly` flush do not contribute to measured CPU or allocation results.
