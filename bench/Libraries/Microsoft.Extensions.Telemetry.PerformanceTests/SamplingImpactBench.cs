@@ -5,25 +5,19 @@ using System;
 using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 [MemoryDiagnoser]
+[InvocationCount(1)]
 public class SamplingImpactBench
 {
-    private const int LogsPerMinute = 10_000;
-
-    private static readonly Action<ILogger, int, Exception?> _logMessage =
-        LoggerMessage.Define<int>(
-            LogLevel.Information,
-            new EventId(1, "SamplingBenchmark"),
-            "Sampling benchmark message {Value}");
-
     private ServiceProvider _baselineServices = null!;
     private ServiceProvider _sampledServices = null!;
-    private ILogger _baselineLogger = null!;
-    private ILogger _sampledLogger = null!;
+    private ILogger[] _baselineLoggers = null!;
+    private ILogger[] _sampledLoggers = null!;
     private Activity? _activity;
 
     public enum SamplingScenario
@@ -31,14 +25,19 @@ public class SamplingImpactBench
         RandomSampleAll,
         RandomSampleOnePercent,
         RandomDropAll,
+        RandomByCategory,
         TraceSample,
         TraceDrop
     }
+
+    [Params(10_000, 20_000)]
+    public int RecordsPerMinute { get; set; }
 
     [Params(
         SamplingScenario.RandomSampleAll,
         SamplingScenario.RandomSampleOnePercent,
         SamplingScenario.RandomDropAll,
+        SamplingScenario.RandomByCategory,
         SamplingScenario.TraceSample,
         SamplingScenario.TraceDrop)]
     public SamplingScenario Scenario { get; set; }
@@ -48,8 +47,8 @@ public class SamplingImpactBench
     {
         _baselineServices = CreateServices();
         _sampledServices = CreateServices(Scenario);
-        _baselineLogger = _baselineServices.GetRequiredService<ILoggerFactory>().CreateLogger("SamplingBenchmark");
-        _sampledLogger = _sampledServices.GetRequiredService<ILoggerFactory>().CreateLogger("SamplingBenchmark");
+        _baselineLoggers = LoggingBenchmarkWorkload.CreateLoggers(_baselineServices.GetRequiredService<ILoggerFactory>());
+        _sampledLoggers = LoggingBenchmarkWorkload.CreateLoggers(_sampledServices.GetRequiredService<ILoggerFactory>());
 
         if (Scenario is SamplingScenario.TraceSample or SamplingScenario.TraceDrop)
         {
@@ -71,22 +70,16 @@ public class SamplingImpactBench
         _baselineServices.Dispose();
     }
 
-    [Benchmark(Baseline = true, OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark(Baseline = true)]
     public void NoSampling()
     {
-        for (int i = 0; i < LogsPerMinute; i++)
-        {
-            _logMessage(_baselineLogger, i, null);
-        }
+        LoggingBenchmarkWorkload.LogBatch(_baselineLoggers, RecordsPerMinute);
     }
 
-    [Benchmark(OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark]
     public void WithSampling()
     {
-        for (int i = 0; i < LogsPerMinute; i++)
-        {
-            _logMessage(_sampledLogger, i, null);
-        }
+        LoggingBenchmarkWorkload.LogBatch(_sampledLoggers, RecordsPerMinute);
     }
 
     private static ServiceProvider CreateServices(SamplingScenario? scenario = null)
@@ -107,6 +100,18 @@ public class SamplingImpactBench
                     break;
                 case SamplingScenario.RandomDropAll:
                     builder.AddRandomProbabilisticSampler(0.0);
+                    break;
+                case SamplingScenario.RandomByCategory:
+                    builder.AddRandomProbabilisticSampler(options =>
+                    {
+                        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(
+                            0.01,
+                            categoryName: $"{LoggingBenchmarkWorkload.HighVolumeCategoryPrefix}*"));
+                        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(
+                            1.0,
+                            categoryName: $"{LoggingBenchmarkWorkload.CriticalCategoryPrefix}*"));
+                        options.Rules.Add(new RandomProbabilisticSamplerFilterRule(0.1));
+                    });
                     break;
                 case SamplingScenario.TraceSample:
                 case SamplingScenario.TraceDrop:

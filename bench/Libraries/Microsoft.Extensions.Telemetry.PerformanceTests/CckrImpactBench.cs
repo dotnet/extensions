@@ -10,36 +10,33 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 [MemoryDiagnoser]
+[InvocationCount(1)]
 public class CckrImpactBench
 {
     private const int AdaptiveCapacity = 128;
-    private const int LogsPerMinute = 10_000;
-
-    private static readonly Action<ILogger, int, Exception?> _logMessage =
-        LoggerMessage.Define<int>(
-            LogLevel.Information,
-            new EventId(1, "CckrBenchmark"),
-            "CCKR benchmark message {Value}");
 
     private ServiceProvider _baselineServices = null!;
     private ServiceProvider _retainAllServices = null!;
     private ServiceProvider _adaptiveServices = null!;
-    private ILogger _baselineLogger = null!;
-    private ILogger _retainAllLogger = null!;
-    private ILogger _adaptiveLogger = null!;
+    private ILogger[] _baselineLoggers = null!;
+    private ILogger[] _retainAllLoggers = null!;
+    private ILogger[] _adaptiveLoggers = null!;
     private LogBuffer _retainAllBuffer = null!;
     private LogBuffer _adaptiveBuffer = null!;
+
+    [Params(10_000, 20_000)]
+    public int RecordsPerMinute { get; set; }
 
     [GlobalSetup]
     public void GlobalSetup()
     {
         _baselineServices = CreateServices();
-        _retainAllServices = CreateServices(LogsPerMinute);
+        _retainAllServices = CreateServices(RecordsPerMinute);
         _adaptiveServices = CreateServices(AdaptiveCapacity);
 
-        _baselineLogger = CreateLogger(_baselineServices);
-        _retainAllLogger = CreateLogger(_retainAllServices);
-        _adaptiveLogger = CreateLogger(_adaptiveServices);
+        _baselineLoggers = CreateLoggers(_baselineServices);
+        _retainAllLoggers = CreateLoggers(_retainAllServices);
+        _adaptiveLoggers = CreateLoggers(_adaptiveServices);
         _retainAllBuffer = _retainAllServices.GetRequiredService<LogBuffer>();
         _adaptiveBuffer = _adaptiveServices.GetRequiredService<LogBuffer>();
     }
@@ -59,35 +56,35 @@ public class CckrImpactBench
         _adaptiveBuffer.Flush();
     }
 
-    [Benchmark(Baseline = true, OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark(Baseline = true)]
     public void NoSampling()
     {
-        LogBatch(_baselineLogger);
+        LoggingBenchmarkWorkload.LogBatch(_baselineLoggers, RecordsPerMinute);
     }
 
-    [Benchmark(OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark]
     public void CckrRetainAll()
     {
-        LogBatch(_retainAllLogger);
+        LoggingBenchmarkWorkload.LogBatch(_retainAllLoggers, RecordsPerMinute);
     }
 
-    [Benchmark(OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark]
     public void CckrRetainAllAndFlush()
     {
-        LogBatch(_retainAllLogger);
+        LoggingBenchmarkWorkload.LogBatch(_retainAllLoggers, RecordsPerMinute);
         _retainAllBuffer.Flush();
     }
 
-    [Benchmark(OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark]
     public void CckrAdaptive()
     {
-        LogBatch(_adaptiveLogger);
+        LoggingBenchmarkWorkload.LogBatch(_adaptiveLoggers, RecordsPerMinute);
     }
 
-    [Benchmark(OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark]
     public void CckrAdaptiveAndFlush()
     {
-        LogBatch(_adaptiveLogger);
+        LoggingBenchmarkWorkload.LogBatch(_adaptiveLoggers, RecordsPerMinute);
         _adaptiveBuffer.Flush();
     }
 
@@ -113,14 +110,6 @@ public class CckrImpactBench
         return services.BuildServiceProvider();
     }
 
-    private static ILogger CreateLogger(ServiceProvider services)
-        => services.GetRequiredService<ILoggerFactory>().CreateLogger("CckrBenchmark");
-
-    private static void LogBatch(ILogger logger)
-    {
-        for (int i = 0; i < LogsPerMinute; i++)
-        {
-            _logMessage(logger, i, null);
-        }
-    }
+    private static ILogger[] CreateLoggers(ServiceProvider services)
+        => LoggingBenchmarkWorkload.CreateLoggers(services.GetRequiredService<ILoggerFactory>());
 }

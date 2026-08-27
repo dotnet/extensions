@@ -10,29 +10,25 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 [MemoryDiagnoser]
+[InvocationCount(1)]
 public class BufferingImpactBench
 {
-    private const int LogsPerMinute = 10_000;
-
-    private static readonly Action<ILogger, int, Exception?> _logMessage =
-        LoggerMessage.Define<int>(
-            LogLevel.Information,
-            new EventId(1, "BufferingBenchmark"),
-            "Buffering benchmark message {Value}");
-
     private ServiceProvider _baselineServices = null!;
     private ServiceProvider _bufferedServices = null!;
-    private ILogger _baselineLogger = null!;
-    private ILogger _bufferedLogger = null!;
+    private ILogger[] _baselineLoggers = null!;
+    private ILogger[] _bufferedLoggers = null!;
     private GlobalLogBuffer _buffer = null!;
+
+    [Params(10_000, 20_000)]
+    public int RecordsPerMinute { get; set; }
 
     [GlobalSetup]
     public void GlobalSetup()
     {
         _baselineServices = CreateServices(bufferingEnabled: false);
         _bufferedServices = CreateServices(bufferingEnabled: true);
-        _baselineLogger = _baselineServices.GetRequiredService<ILoggerFactory>().CreateLogger("BufferingBenchmark");
-        _bufferedLogger = _bufferedServices.GetRequiredService<ILoggerFactory>().CreateLogger("BufferingBenchmark");
+        _baselineLoggers = LoggingBenchmarkWorkload.CreateLoggers(_baselineServices.GetRequiredService<ILoggerFactory>());
+        _bufferedLoggers = LoggingBenchmarkWorkload.CreateLoggers(_bufferedServices.GetRequiredService<ILoggerFactory>());
         _buffer = _bufferedServices.GetRequiredService<GlobalLogBuffer>();
     }
 
@@ -49,22 +45,22 @@ public class BufferingImpactBench
         _buffer.Flush();
     }
 
-    [Benchmark(Baseline = true, OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark(Baseline = true)]
     public void NoBuffering()
     {
-        LogBatch(_baselineLogger);
+        LoggingBenchmarkWorkload.LogBatch(_baselineLoggers, RecordsPerMinute);
     }
 
-    [Benchmark(OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark]
     public void BufferOnly()
     {
-        LogBatch(_bufferedLogger);
+        LoggingBenchmarkWorkload.LogBatch(_bufferedLoggers, RecordsPerMinute);
     }
 
-    [Benchmark(OperationsPerInvoke = LogsPerMinute)]
+    [Benchmark]
     public void BufferAndFlush()
     {
-        LogBatch(_bufferedLogger);
+        LoggingBenchmarkWorkload.LogBatch(_bufferedLoggers, RecordsPerMinute);
         _buffer.Flush();
     }
 
@@ -88,13 +84,5 @@ public class BufferingImpactBench
         });
 
         return services.BuildServiceProvider();
-    }
-
-    private static void LogBatch(ILogger logger)
-    {
-        for (int i = 0; i < LogsPerMinute; i++)
-        {
-            _logMessage(logger, i, null);
-        }
     }
 }
