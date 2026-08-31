@@ -383,4 +383,4 @@ extends:
               fileType: vsix
               vsixFile: '$(Pipeline.Workspace)\AzureDevOpsExtension\Microsoft.Extensions.AI.Evaluation.Reporting.vsix'
               useV5: true
-              validateExtension: false              
+              validateExtension: false
