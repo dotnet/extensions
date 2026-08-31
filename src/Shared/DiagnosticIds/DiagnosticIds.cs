@@ -67,7 +67,6 @@ internal static class DiagnosticIds
         // We use the same IDs so consumers do not need to suppress additional diagnostics
         // when using the experimental OpenAI APIs.
         internal const string AIOpenAIResponses = "OPENAI001";
-        internal const string AIOpenAIAssistants = "OPENAI001";
         internal const string AIOpenAIImageClient = "OPENAI001";
         internal const string AIOpenAIAudio = "OPENAI001";
         internal const string AIOpenAIReasoning = "OPENAI001";
