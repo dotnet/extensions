@@ -8,6 +8,8 @@ namespace Microsoft.Extensions.Telemetry.Bench;
 
 internal static class LoggingBenchmarkWorkload
 {
+    public const int CategoryCount = 4;
+    public const int SamplingInvocationsPerIteration = 8;
     public const string CriticalCategoryPrefix = "Benchmark.Critical.";
     public const string HighVolumeCategoryPrefix = "Benchmark.HighVolume.";
 
@@ -25,10 +27,21 @@ internal static class LoggingBenchmarkWorkload
 
     public static ILogger[] CreateLoggers(ILoggerFactory factory)
     {
-        var loggers = new ILogger[_categories.Length];
+        var loggers = new ILogger[CategoryCount];
         for (int i = 0; i < loggers.Length; i++)
         {
             loggers[i] = factory.CreateLogger(_categories[i]);
+        }
+
+        return loggers;
+    }
+
+    public static ILogger[] CreateLoggers(ILoggerFactory factory, int categoryCount)
+    {
+        var loggers = new ILogger[categoryCount];
+        for (int i = 0; i < loggers.Length; i++)
+        {
+            loggers[i] = factory.CreateLogger($"Benchmark.Category.{i:D3}");
         }
 
         return loggers;
@@ -38,9 +51,33 @@ internal static class LoggingBenchmarkWorkload
     {
         for (int i = 0; i < recordCount; i++)
         {
-            int eventIndex = SelectEventIndex(i);
-            int categoryIndex = (i / 100) % loggers.Length;
-            _messages[eventIndex](loggers[categoryIndex], i, null);
+            LogRecord(loggers, i);
+        }
+    }
+
+    public static void LogBatchWithObserver(ILogger[] loggers, int recordCount, Action observer)
+    {
+        for (int i = 0; i < recordCount; i++)
+        {
+            LogRecord(loggers, i);
+            if ((i & 255) == 255)
+            {
+                observer();
+            }
+        }
+
+        observer();
+    }
+
+    public static void LogInterleaved(
+        ILogger[] loggers,
+        int firstRecord,
+        int recordStride,
+        int recordCount)
+    {
+        for (int i = firstRecord; i < recordCount; i += recordStride)
+        {
+            LogRecord(loggers, i);
         }
     }
 
@@ -77,5 +114,12 @@ internal static class LoggingBenchmarkWorkload
         }
 
         return 3 + (recordIndex % (EventCount - 3));
+    }
+
+    private static void LogRecord(ILogger[] loggers, int recordIndex)
+    {
+        int eventIndex = SelectEventIndex(recordIndex);
+        int categoryIndex = (recordIndex / 100) % loggers.Length;
+        _messages[eventIndex](loggers[categoryIndex], recordIndex, null);
     }
 }

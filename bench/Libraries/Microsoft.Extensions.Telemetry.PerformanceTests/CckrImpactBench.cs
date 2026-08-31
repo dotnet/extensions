@@ -31,7 +31,7 @@ public class CckrImpactBench
     public void GlobalSetup()
     {
         _baselineServices = CreateServices();
-        _retainAllServices = CreateServices(RecordsPerMinute);
+        _retainAllServices = CreateServices(RecordsPerMinute / LoggingBenchmarkWorkload.CategoryCount);
         _adaptiveServices = CreateServices(AdaptiveCapacity);
 
         _baselineLoggers = CreateLoggers(_baselineServices);
