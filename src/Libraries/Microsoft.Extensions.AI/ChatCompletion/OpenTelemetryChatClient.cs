@@ -561,7 +561,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         {
             _ = activity.AddTag(
                 OpenTelemetryConsts.GenAI.Output.Messages,
-                OtelMessageSerializer.SerializeChatMessages(response.Messages, response.FinishReason, customContentSerializerOptions: _jsonSerializerOptions));
+                OtelMessageSerializer.SerializeChatMessages(response.Messages, customContentSerializerOptions: _jsonSerializerOptions));
         }
     }
 
@@ -580,7 +580,6 @@ internal sealed class OtelMessage
     public string? Role { get; set; }
     public string? Name { get; set; }
     public List<object> Parts { get; set; } = [];
-    public string? FinishReason { get; set; }
 }
 
 internal sealed class OtelToolCallRequestPart

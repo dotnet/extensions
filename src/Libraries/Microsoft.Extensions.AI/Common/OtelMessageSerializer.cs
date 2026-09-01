@@ -36,22 +36,14 @@ internal static class OtelMessageSerializer
     }
 
     internal static string SerializeChatMessages(
-        IEnumerable<ChatMessage> messages, ChatFinishReason? chatFinishReason = null, JsonSerializerOptions? customContentSerializerOptions = null)
+        IEnumerable<ChatMessage> messages, JsonSerializerOptions? customContentSerializerOptions = null)
     {
         List<object> output = [];
-
-        string? finishReason =
-            chatFinishReason?.Value is null ? null :
-            chatFinishReason == ChatFinishReason.Length ? "length" :
-            chatFinishReason == ChatFinishReason.ContentFilter ? "content_filter" :
-            chatFinishReason == ChatFinishReason.ToolCalls ? "tool_call" :
-            "stop";
 
         foreach (ChatMessage message in messages)
         {
             OtelMessage m = new()
             {
-                FinishReason = finishReason,
                 Role =
                     message.Role == ChatRole.Assistant ? "assistant" :
                     message.Role == ChatRole.Tool ? "tool" :

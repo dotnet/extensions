@@ -282,8 +282,7 @@ public class OpenTelemetryChatClientTests
                         "type": "text",
                         "content": "The blue whale, I think."
                       }
-                    ],
-                    "finish_reason": "stop"
+                    ]
                   }
                 ]
                 """), ReplaceWhitespace(tags["gen_ai.output.messages"]));
