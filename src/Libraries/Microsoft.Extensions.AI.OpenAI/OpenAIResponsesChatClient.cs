@@ -780,6 +780,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             "image/png" => ImageGenerationToolOutputFileFormat.Png,
                             "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
                             "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
+
+                            // The SDK defines nullable and non-nullable op_Implicit conversions from string. Force a nullable result so
+                            // null does not bind to the non-nullable conversion, which throws ArgumentNullException.
                             _ => (ImageGenerationToolOutputFileFormat?)null,
                         } :
                         null,
@@ -2058,7 +2061,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             {
                 string detailString => new ResponseImageDetailLevel(detailString),
                 ResponseImageDetailLevel detail => detail,
-                _ => null
+
+                // The SDK defines nullable and non-nullable op_Implicit conversions from string. Force a nullable result so
+                // null does not bind to the non-nullable conversion, which throws ArgumentNullException.
+                _ => (ResponseImageDetailLevel?)null
             };
         }
 

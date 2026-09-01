@@ -334,7 +334,10 @@ internal sealed partial class OpenAIChatClient : IChatClient
             {
                 string detailString => new ChatImageDetailLevel(detailString),
                 ChatImageDetailLevel detail => detail,
-                _ => null
+
+                // The SDK defines nullable and non-nullable op_Implicit conversions from string. Force a nullable result so
+                // null does not bind to the non-nullable conversion, which throws ArgumentNullException.
+                _ => (ChatImageDetailLevel?)null
             };
         }
 
