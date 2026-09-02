@@ -379,6 +379,18 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithoutMediaType_PreservesUnspecifiedOutputFileFormat()
+    {
+        var imageGenTool = new HostedImageGenerationTool();
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Null(tool.OutputFileFormat);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithOptions_ProducesValidImageGenerationTool()
     {
         var imageGenTool = new HostedImageGenerationTool
