@@ -31,13 +31,13 @@ internal partial class DefaultHybridCache
             => _result?.TrySetResult(value);
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, bool canBeCanceled)
-            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), canBeCanceled)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags, cache.Options.DisableLocalCacheSerialization), canBeCanceled)
         {
             _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, TagSet tags, CancellationToken token)
-            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags), token)
+            : base(cache, key, CacheItem<T>.Create(cache.CurrentTimestamp(), tags, cache.Options.DisableLocalCacheSerialization), token)
         {
             // no TCS in this case - this is for SetValue only
         }
