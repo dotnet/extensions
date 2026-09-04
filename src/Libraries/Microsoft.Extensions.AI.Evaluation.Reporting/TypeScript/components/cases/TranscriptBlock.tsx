@@ -425,7 +425,7 @@ const MD_COMPONENTS: Components = {
     h6: ({ children }) => <div className="md-h4">{children}</div>,
 };
 
-const TextNode = ({ content, altHint }: { content: AIContent; altHint?: string }) => {
+export const TextNode = ({ content, altHint }: { content: AIContent; altHint?: string }) => {
     const { renderMarkdown, prettifyJson } = useReportContext();
     const classes = useStyles();
 

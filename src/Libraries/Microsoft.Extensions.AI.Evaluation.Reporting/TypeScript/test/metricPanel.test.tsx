@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import { createScoreSummary, ReportContextProvider } from '../components';
 import { MetricPanel } from '../components/cases/MetricPanel';
+import { multiGroupDataset } from './fixtures/richDataset';
 
-// MetricPanel only reads scenario.evaluationResult?.metrics and needs no ReportContext,
-// so a bare scenario stub with just the metrics is enough to drive it (this mirrors how
-// CasesView mounts <MetricPanel scenario={vm.scenario} />).
 const scenarioWith = (metrics: EvaluationResult['metrics']): ScenarioRunResult =>
     ({ evaluationResult: { metrics } }) as unknown as ScenarioRunResult;
 
@@ -98,16 +97,17 @@ describe('MetricPanel — numeric metrics (rating-ordinal meter)', () => {
         expect(screen.getByText('4')).toBeInTheDocument();
     });
 
-    it('renders a value whose interpretation has no ordinal rating as raw text with a neutral meter', () => {
+    it('renders a value whose interpretation has no ordinal rating inside a neutral pill', () => {
         render(<MetricPanel scenario={scenarioWith({ tokenCount: numeric('tokenCount', 842, 'unknown', false) })} />);
 
-        expect(screen.getByText('?')).toBeInTheDocument();
-
         const button = screen.getByRole('button');
+        const preview = within(button).getByText('842');
+        expect(preview.parentElement).toHaveStyle({ backgroundColor: 'var(--eval-seg-empty)' });
+        expect(within(button).queryByText('?')).not.toBeInTheDocument();
         expect(button.getAttribute('aria-label')).toContain('842');
 
         fireEvent.click(button);
-        expect(screen.getByText('842')).toBeInTheDocument();
+        expect(screen.getAllByText('842')).toHaveLength(2);
     });
 
     it('fills the meter to 1/5 and colours the dot danger for an unacceptable rating', () => {
@@ -127,19 +127,50 @@ describe('MetricPanel — numeric metrics (rating-ordinal meter)', () => {
 });
 
 describe('MetricPanel — string metrics', () => {
-    it('renders the raw string value with no meter/track', () => {
+    it('renders a rated string value inside a neutral pill in the collapsed row', () => {
         render(<MetricPanel scenario={scenarioWith({ verdict: string('verdict', 'PASS', 'good') })} />);
 
         const button = screen.getByRole('button');
-        expect(() => segmentTrack(button)).toThrow();
+        const preview = within(button).getByText('PASS');
+        expect(preview.parentElement).toHaveStyle({ backgroundColor: 'var(--eval-seg-empty)' });
 
         fireEvent.click(button);
-        expect(screen.getByText('PASS')).toBeInTheDocument();
+        expect(screen.getAllByText('PASS')).toHaveLength(2);
+    });
+
+    it('renders a neutral string value instead of "?"', () => {
+        render(<MetricPanel scenario={scenarioWith({ verdict: string('verdict', 'NEEDS_REVIEW', 'unknown') })} />);
+
+        const button = screen.getByRole('button');
+        expect(within(button).getByText('NEEDS_REVIEW')).toBeInTheDocument();
+        expect(within(button).queryByText('?')).not.toBeInTheDocument();
+    });
+
+    it('ellipsizes a long collapsed preview while preserving the full accessible and expanded value', () => {
+        const value = 'A'.repeat(200);
+        render(<MetricPanel scenario={scenarioWith({ verdict: string('verdict', value, 'unknown') })} />);
+
+        const button = screen.getByRole('button', { name: `verdict, Unknown, ${value}` });
+        const preview = within(button).getByText(value);
+        expect(preview.closest('[aria-hidden="true"]')).toBeInTheDocument();
+
+        fireEvent.click(button);
+        expect(screen.getAllByText(value)).toHaveLength(2);
     });
 });
 
 describe('MetricPanel — neutral (none / unknown) rating', () => {
-    it('renders a neutral "?" track for an unknown-rating metric', () => {
+    it('renders a neutral boolean value instead of a rating glyph', () => {
+        render(<MetricPanel scenario={scenarioWith({ enabled: boolean('enabled', true, 'unknown', false) })} />);
+
+        const button = screen.getByRole('button');
+        expect(within(button).getByText('Yes')).toBeInTheDocument();
+        expect(within(button).queryByText('?')).not.toBeInTheDocument();
+        expect(within(button).queryByText('✓')).not.toBeInTheDocument();
+        expect(within(button).queryByText('✗')).not.toBeInTheDocument();
+    });
+
+    it('renders a neutral "?" track for a missing numeric value', () => {
         render(<MetricPanel scenario={scenarioWith({ mystery: numeric('mystery', undefined, 'unknown', false) })} />);
 
         expect(screen.getByText('?')).toBeInTheDocument();
@@ -148,13 +179,13 @@ describe('MetricPanel — neutral (none / unknown) rating', () => {
         expect(screen.getByText('Unknown')).toBeInTheDocument();
     });
 
-    it('renders a neutral "?" track for an inconclusive no-value metric', () => {
-        render(<MetricPanel scenario={scenarioWith({ creativity: none('creativity', 'inconclusive') })} />);
+    it('renders a terminal "?" track for a rated no-value metric', () => {
+        render(<MetricPanel scenario={scenarioWith({ creativity: none('creativity', 'good') })} />);
 
         expect(screen.getByText('?')).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button'));
-        expect(screen.getByText('Inconclusive')).toBeInTheDocument();
+        expect(screen.getByText('Good')).toBeInTheDocument();
     });
 });
 
@@ -165,15 +196,12 @@ describe('MetricPanel — metricFailed product rule', () => {
         ]);
         render(<MetricPanel scenario={scenarioWith({ accuracy: metric })} />);
 
-        // Collapsed row already advertises the failure through its accessible name.
         const button = screen.getByRole('button', { name: /accuracy, failed/i });
         expect(button).toBeInTheDocument();
 
         fireEvent.click(button);
-        // The expanded panel uses the "failed" copy, not "Why this score?".
         expect(screen.getByText('Why this failed?')).toBeInTheDocument();
         expect(screen.queryByText('Why this score?')).not.toBeInTheDocument();
-        // ...and surfaces the diagnostic that triggered the failure.
         expect(screen.getByText('Diagnostics')).toBeInTheDocument();
         expect(screen.getByText('Error')).toBeInTheDocument();
     });
@@ -185,6 +213,59 @@ describe('MetricPanel — metricFailed product rule', () => {
 
         fireEvent.click(screen.getByRole('button', { name: /clarity/i }));
         expect(screen.getByText('Why this score?')).toBeInTheDocument();
+    });
+});
+
+describe('MetricPanel — evaluation context', () => {
+    it('renders ordered context groups and content only inside the owning expanded metric', () => {
+        const groundedness = numeric('groundedness', 4, 'good', false);
+        groundedness.context = {
+            groundTruth: {
+                name: 'Ground Truth (Completeness)',
+                contents: [
+                    { $type: 'text', text: '**Expected:** Mention both causes.' },
+                    { $type: 'text', text: 'Second expected detail.' },
+                ],
+            },
+            reference: {
+                name: 'Reference notes',
+                contents: [{ $type: 'text', text: 'Supporting source.' }],
+            },
+            empty: { name: 'Empty context', contents: [] },
+        };
+
+        render(
+            <ReportContextProvider dataset={multiGroupDataset} scoreSummary={createScoreSummary(multiGroupDataset)}>
+                <MetricPanel
+                    scenario={scenarioWith({
+                        groundedness,
+                        relevance: numeric('relevance', 3, 'average', false),
+                    })}
+                />
+            </ReportContextProvider>,
+        );
+
+        expect(screen.queryByText('Evaluation context')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: /groundedness/i }));
+        const detail = screen.getByRole('region', { name: 'groundedness detail' });
+        const expected = within(detail).getByText('Expected:');
+        const secondDetail = within(detail).getByText('Second expected detail.');
+        const groundTruth = within(detail).getByText('Ground Truth (Completeness)');
+        const reference = within(detail).getByText('Reference notes');
+
+        expect(within(detail).getByText('Evaluation context')).toBeInTheDocument();
+        expect(expected.tagName).toBe('STRONG');
+        expect(groundTruth.compareDocumentPosition(reference) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(expected.compareDocumentPosition(secondDetail) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(expected.parentElement).not.toBe(secondDetail.parentElement);
+        expect(within(detail).queryByText('Empty context')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: /groundedness/i }));
+        expect(screen.queryByText('Evaluation context')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: /relevance/i }));
+        expect(screen.queryByText('Evaluation context')).not.toBeInTheDocument();
     });
 });
 
