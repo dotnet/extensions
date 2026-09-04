@@ -451,6 +451,12 @@ for (let e = execs.length - 1; e >= 0; e--) {
                 reason: 'No scalar value is available for this custom result.',
             },
         };
+        metrics['Raw Confidence'] = {
+            $type: 'numeric',
+            name: 'Raw Confidence',
+            value: 0.82,
+            reason: 'A raw numeric evaluator output without an interpretation.',
+        };
         const outTok = 120 + Math.floor(rng() * 160);
         const inTok = 700 + Math.floor(rng() * 1100);
         const latency = 0.9 + rng() * 2.4;
