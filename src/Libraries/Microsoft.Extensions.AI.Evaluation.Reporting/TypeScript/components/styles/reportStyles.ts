@@ -79,8 +79,11 @@ export const useReportStyles = makeStyles({
         fontFamily: 'inherit',
         textAlign: 'left',
         borderRadius: 'var(--radius-medium)',
-        minHeight: '32px',
+        minHeight: 'var(--interactive-size-compact)',
         padding: 'var(--spacing-s-nudge) var(--spacing-m-nudge)',
+        '@media (max-width: 900px), (pointer: coarse)': {
+            minHeight: 'var(--interactive-size-touch)',
+        },
     },
     sidebarItemLabel: {
         flex: '1 1 auto',

@@ -4,8 +4,9 @@
 import { useId, useState } from 'react';
 import { Body1Strong, Card, makeStyles, mergeClasses } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { useReportStyles, statusSolidVar, statusTextVar, type ReportStatus } from '../styles/reportStyles';
+import { useReportStyles, statusSolidVar, statusTextVar } from '../styles/reportStyles';
 import { formatValue } from '../core/metricModel';
+import { ratingBucket } from '../core/viewModels';
 import { DiagnosticsContent } from './DiagnosticsContent';
 import { MetadataContent } from './MetadataContent';
 import { type MetricType } from './metricTypes';
@@ -18,21 +19,6 @@ const RATING_PIP: Partial<Record<EvaluationRating, number>> = {
     average: 3,
     poor: 2,
     unacceptable: 1,
-};
-
-const statusKeyOf = (rating: EvaluationRating | undefined): ReportStatus => {
-    switch (rating) {
-        case 'exceptional':
-        case 'good':
-            return 'success';
-        case 'average':
-            return 'caution';
-        case 'poor':
-        case 'unacceptable':
-            return 'danger';
-        default:
-            return 'neutral';
-    }
 };
 
 const ratingWord = (rating: EvaluationRating | undefined): string => {
@@ -233,17 +219,21 @@ const useStyles = makeStyles({
     },
 });
 
-const SegmentTrack = ({ metric, sk, value }: { metric: MetricType; sk: ReportStatus; value?: string }) => {
+const SegmentTrack = ({ metric, solid, showRatingGlyph, positive, value }: {
+    metric: MetricType;
+    solid: string;
+    showRatingGlyph: boolean;
+    positive: boolean;
+    value?: string;
+}) => {
     const classes = useStyles();
-    const solid = statusSolidVar(sk);
     const aura = `0 0 0 3px color-mix(in srgb, ${solid} 18%, transparent)`;
 
-    if (sk !== 'neutral' && metric.$type === 'boolean') {
-        const good = sk === 'success';
+    if (showRatingGlyph && metric.$type === 'boolean') {
         return (
             <span className={classes.track} aria-hidden="true">
                 <span className={mergeClasses(classes.seg, classes.segCenter)} style={{ backgroundColor: solid, boxShadow: aura }}>
-                    <span className={classes.segIcon} style={{ color: 'var(--neutral-foreground-on-brand)' }}>{good ? '✓' : '✗'}</span>
+                    <span className={classes.segIcon} style={{ color: 'var(--neutral-foreground-on-brand)' }}>{positive ? '✓' : '✗'}</span>
                 </span>
             </span>
         );
@@ -287,13 +277,16 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
 
     const rating = metric.interpretation?.rating;
     const failed = metricFailed(metric);
-    const sk: ReportStatus = failed ? 'danger' : statusKeyOf(rating);
-    const solid = statusSolidVar(sk);
-    const textColor = statusTextVar(sk);
+    const bucket = ratingBucket(rating);
+    const ratingSolid = `var(--rating-${bucket}-solid)`;
+    const ratingText = `var(--rating-${bucket}-text)`;
+    const solid = failed ? statusSolidVar('danger') : ratingSolid;
+    const textColor = failed ? statusTextVar('danger') : ratingText;
+    const unknown = !failed && bucket === 'unknown';
 
     const dotStyle =
-        sk === 'neutral'
-            ? { backgroundColor: 'transparent', boxShadow: 'inset 0 0 0 1.5px var(--neutral-foreground-4)' }
+        unknown
+            ? { backgroundColor: 'transparent', boxShadow: `inset 0 0 0 1.5px ${solid}` }
             : { backgroundColor: solid, boxShadow: `0 0 0 3px color-mix(in srgb, ${solid} 18%, transparent)` };
 
     const reason = metric.reason;
@@ -325,7 +318,9 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
                 <span className={classes.rowName}>{metric.name}</span>
                 <SegmentTrack
                     metric={metric}
-                    sk={sk}
+                    solid={solid}
+                    showRatingGlyph={failed || !unknown}
+                    positive={!failed && bucket === 'good'}
                     value={metric.$type !== 'none' && metric.value !== undefined ? heroNum : undefined}
                 />
             </button>

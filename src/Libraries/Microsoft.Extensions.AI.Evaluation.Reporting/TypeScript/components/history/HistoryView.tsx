@@ -4,7 +4,7 @@
 import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Card, makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/react-components';
 import { useReportContext } from '../core/ReportContext';
-import { useReportStyles, srOnlyStyle, statusTextVar } from '../styles/reportStyles';
+import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { metricHistoryForScenario, chronologicalExecutions } from '../core/viewModels';
 import { inferBetterDirections, judgeValueDelta, judgmentWord, ratingGoodness, type DeltaJudgment } from '../core/metricDirection';
 import { TrendChart, type BandPoint } from './TrendChart';
@@ -427,8 +427,8 @@ export const HistoryView = () => {
     const firstGoodness = validWithExec[0]?.exec ? goodnessMean.get(validWithExec[0].exec!) : undefined;
     const lastGoodness = validWithExec[validWithExec.length - 1]?.exec ? goodnessMean.get(validWithExec[validWithExec.length - 1].exec!) : undefined;
     const netGoodnessDelta = firstGoodness !== undefined && lastGoodness !== undefined ? lastGoodness - firstGoodness : undefined;
-    const netStatus: DeltaJudgment = netFlat ? 'neutral' : judgeValueDelta(activeDirection, dMean, netGoodnessDelta);
-    const netColor = netFlat ? 'var(--neutral-foreground-4)' : statusTextVar(netStatus);
+    const netStatus: DeltaJudgment = netFlat ? 'unchanged' : judgeValueDelta(activeDirection, dMean, netGoodnessDelta);
+    const netColor = netFlat ? 'var(--trend-unchanged-solid)' : `var(--trend-${netStatus}-text)`;
     const netWord = judgmentWord(netStatus);
     const netDirWord = netFlat ? undefined : dMean > 0 ? 'increased' : 'decreased';
     const netStr = netFlat ? 'stable' : (dMean > 0 ? '▲ ' : '▼ ') + formatNumber(Math.abs(dMean));
@@ -457,7 +457,7 @@ export const HistoryView = () => {
         let changeStr = '—';
         let dirWord: string | undefined;
         let prevPos: number | null = null;
-        let rowStatus: DeltaJudgment = 'neutral';
+        let rowStatus: DeltaJudgment = 'unchanged';
         const curPos = p ? posOn(p.mean, domain.min, domain.max) : 50;
         if (p && prev) {
             prevPos = posOn(prev.mean, domain.min, domain.max);
@@ -467,7 +467,7 @@ export const HistoryView = () => {
             const currGoodness = exec ? goodnessMean.get(exec) : undefined;
             const prevGoodness = prevExec ? goodnessMean.get(prevExec) : undefined;
             const goodnessDelta = currGoodness !== undefined && prevGoodness !== undefined ? currGoodness - prevGoodness : undefined;
-            rowStatus = flat ? 'neutral' : judgeValueDelta(activeDirection, d, goodnessDelta);
+            rowStatus = flat ? 'unchanged' : judgeValueDelta(activeDirection, d, goodnessDelta);
             const word = judgmentWord(rowStatus);
             changeStr = flat ? '—' : (d > 0 ? '▲ ' : '▼ ') + magnitude;
             dirWord = flat ? undefined : `${d > 0 ? 'increased' : 'decreased'} by ${magnitude}${word ? `, ${word}` : ''}`;
@@ -480,7 +480,7 @@ export const HistoryView = () => {
             p && spR - spL > 0.5
                 ? { position: 'absolute', top: '50%', left: `${spL}%`, width: `${spR - spL}%`, height: '3px', transform: 'translateY(-50%)', borderRadius: 'var(--radius-circular)', background: 'var(--neutral-stroke-2)', pointerEvents: 'none' }
                 : { display: 'none' };
-        return { key: `${date}-${i}`, date, scoreStr, changeStr, dirWord, numColor: statusTextVar(db.sk), spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
+        return { key: `${date}-${i}`, date, scoreStr, changeStr, dirWord, numColor: `var(--trend-${db.sk}-text)`, spread, connector: db.connector, dotB: db.dotB, dotA: db.dotA };
     });
 
     return (

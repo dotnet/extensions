@@ -6,7 +6,7 @@ import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluent
 import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { useAnnounce } from '../core/Announcer';
-import { useReportStyles, srOnlyStyle, statusTextVar } from '../styles/reportStyles';
+import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
 import { formatNumber, isDisplayedZero } from '../core/metricModel';
 import {
@@ -103,7 +103,7 @@ const buildCmpRow = (
     const currentGoodness = hasB && currentAgg!.goodnessN > 0 ? currentAgg!.goodnessSum / currentAgg!.goodnessN : undefined;
     const goodnessDelta =
         baselineGoodness !== undefined && currentGoodness !== undefined ? currentGoodness - baselineGoodness : undefined;
-    const status: DeltaJudgment = dir === 0 ? 'neutral' : judgeValueDelta(direction, rawDelta!, goodnessDelta);
+    const status: DeltaJudgment = dir === 0 ? 'unchanged' : judgeValueDelta(direction, rawDelta!, goodnessDelta);
     const baselinePos = baselineAvg !== undefined ? posOn(baselineAvg, domain.min, domain.max) : null;
     const currentPos = currentAvg !== undefined ? posOn(currentAvg, domain.min, domain.max) : null;
     const dumbbell = currentPos !== null
@@ -127,7 +127,7 @@ const buildCmpRow = (
         name: k,
         a: aStr,
         b: bStr,
-        bColor: statusTextVar(status),
+        bColor: `var(--trend-${status}-text)`,
         delta,
         deltaAriaLabel,
         status,
@@ -622,7 +622,7 @@ export const ComparisonView = () => {
             ? {
                   label: 'Biggest change',
                   value: biggest.delta,
-                  valueColor: statusTextVar(biggest.status),
+                  valueColor: `var(--trend-${biggest.status}-text)`,
                   sub: biggest.name,
               }
             : {
@@ -831,7 +831,7 @@ export const ComparisonView = () => {
                                                 </span>
                                                 <span
                                                     className={local.cmpDeltaCell}
-                                                    style={{ color: statusTextVar(m.status) }}
+                                                    style={{ color: `var(--trend-${m.status}-text)` }}
                                                 >
                                                     <span aria-hidden="true">{m.delta}</span>
                                                     <span style={srOnlyStyle}>{m.deltaAriaLabel}</span>

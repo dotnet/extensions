@@ -3,7 +3,6 @@
 
 import type { CSSProperties } from 'react';
 import type { DeltaJudgment } from '../core/metricDirection';
-import { statusSolidVar } from '../styles/reportStyles';
 
 const DUMBBELL_D = 8;
 const DUMBBELL_RING = 1.5;
@@ -23,10 +22,10 @@ export const dumbbellStyles = (
     prevPos: number | null,
     currPos: number,
     hasDelta: boolean,
-    status: DeltaJudgment = 'neutral',
+    status: DeltaJudgment = 'unchanged',
     connEpsilon = 0.01,
 ): DumbbellStyles => {
-    const color = statusSolidVar(status);
+    const color = `var(--trend-${status}-solid)`;
     const halo = '0 0 0 2px var(--neutral-background-1)';
     const hasPrev = prevPos !== null && Number.isFinite(prevPos);
     const cur = Math.max(0, Math.min(100, currPos));

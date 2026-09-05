@@ -24,6 +24,7 @@ import { TranscriptBlock } from './TranscriptBlock';
 import { MetricPanel } from './MetricPanel';
 
 const PAGE_SIZE = 25;
+const CASE_DETAIL_SINGLE_COLUMN_QUERY = '(max-width: 1200px)';
 
 const useStyles = makeStyles({
     root: { display: 'flex', flexDirection: 'column', gap: 'var(--spacing-l)' },
@@ -174,6 +175,9 @@ const useStyles = makeStyles({
     detail: {
         padding: '0 var(--spacing-xxl) var(--spacing-xxl) var(--spacing-xxxl)',
         backgroundColor: 'transparent',
+        '@media (max-width: 640px)': {
+            padding: '0 var(--spacing-s) var(--spacing-xxl)',
+        },
     },
     metaLine: {
         padding: 'var(--spacing-l) 0',
@@ -314,12 +318,14 @@ const CaseRow = ({
     vm,
     open,
     showTag,
+    singleColumn,
     onToggle,
     registerRowRef,
 }: {
     vm: CaseRowVM;
     open: boolean;
     showTag: boolean;
+    singleColumn: boolean;
     onToggle: () => void;
     registerRowRef: (key: string, el: HTMLButtonElement | null) => void;
 }) => {
@@ -331,6 +337,10 @@ const CaseRow = ({
     const dotSolid = vm.failed ? statusSolidVar('danger') : statusSolidVar('success');
     const conversation = open ? getConversationDisplay(vm.scenario.messages, vm.scenario.modelResponse) : null;
     const metaLine = open ? metaLineFor(vm.scenario) : undefined;
+    const transcript = conversation ? (
+        <TranscriptBlock key="transcript" messages={conversation.messages} model={conversation.model} />
+    ) : null;
+    const metrics = conversation ? <MetricPanel key="metrics" scenario={vm.scenario} /> : null;
 
     return (
         <div className={mergeClasses(classes.rowWrap, classes.caseWrap, open && classes.caseWrapOpen)}>
@@ -369,8 +379,7 @@ const CaseRow = ({
                         </div>
                     )}
                     <div className={mergeClasses(classes.twoPane, 'eval-twopane')}>
-                        <TranscriptBlock messages={conversation.messages} model={conversation.model} />
-                        <MetricPanel scenario={vm.scenario} />
+                        {singleColumn ? [metrics, transcript] : [transcript, metrics]}
                     </div>
                 </div>
             )}
@@ -424,7 +433,20 @@ export const CasesView = () => {
 
     const [openKey, setOpenKey] = useState<string | null>(null);
     const [tagMenuOpen, setTagMenuOpen] = useState(false);
+    const [singleColumnQuery] = useState(() =>
+        typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+            ? window.matchMedia(CASE_DETAIL_SINGLE_COLUMN_QUERY)
+            : null);
+    const [singleColumn, setSingleColumn] = useState(singleColumnQuery?.matches ?? false);
     const rowRefs = useRef(new Map<string, HTMLButtonElement | null>());
+
+    useEffect(() => {
+        if (!singleColumnQuery) return;
+        const handleChange = (event: MediaQueryListEvent) => setSingleColumn(event.matches);
+        singleColumnQuery.addEventListener('change', handleChange);
+        return () => singleColumnQuery.removeEventListener('change', handleChange);
+    }, [singleColumnQuery]);
+
     const registerRowRef = (key: string, el: HTMLButtonElement | null) => {
         if (el) {
             rowRefs.current.set(key, el);
@@ -617,6 +639,7 @@ export const CasesView = () => {
                                 vm={vm}
                                 open={openKey === vm.key}
                                 showTag={vm.scenarioName !== selectedScenarioName}
+                                singleColumn={singleColumn}
                                 onToggle={() => (openKey === vm.key ? closeOpen(true) : setOpenKey(vm.key))}
                                 registerRowRef={registerRowRef}
                             />

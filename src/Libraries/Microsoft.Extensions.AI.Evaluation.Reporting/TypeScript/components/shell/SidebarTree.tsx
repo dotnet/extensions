@@ -6,7 +6,7 @@ import { makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/rea
 import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { ScoreNode } from '../core/Summary';
-import { useReportStyles, type ReportStatus } from '../styles/reportStyles';
+import { useReportStyles, statusSolidVar, statusTextVar, type ReportStatus } from '../styles/reportStyles';
 import { StatusPill } from '../styles/StatusPill';
 
 const useLocalStyles = makeStyles({
@@ -106,11 +106,15 @@ const DEPTH_PAD = [
 ] as const;
 const padForDepth = (depth: number) => DEPTH_PAD[Math.min(depth, DEPTH_PAD.length - 1)];
 
-const pillProps = (passing: number, total: number): { status: ReportStatus; appearance: 'ghost' | 'tint' } => {
-    if (total === 0 || passing >= total) {
-        return { status: 'neutral', appearance: 'ghost' };
-    }
-    return { appearance: 'tint', status: passing / total < 0.5 ? 'danger' : 'warning' };
+const pillProps = (passing: number, total: number): { solid: string; textColor: string; appearance: 'ghost' | 'tint' } => {
+    const status: ReportStatus = total === 0 || passing >= total
+        ? 'neutral'
+        : passing / total < 0.5 ? 'danger' : 'warning';
+    return {
+        appearance: status === 'neutral' ? 'ghost' : 'tint',
+        solid: statusSolidVar(status),
+        textColor: statusTextVar(status),
+    };
 };
 
 export const SidebarTree = ({ labelledBy }: { labelledBy: string }) => {

@@ -91,13 +91,13 @@ describe('mobile report scope drawer', () => {
 
         fireEvent.click(drawer.getByRole('treeitem', { name: /^TextSummary/ }));
         expect(dialog).toBeInTheDocument();
-        expect(scopeTrigger('Comparison.TextSummary')).toHaveTextContent('Comparison.TextSummary');
+        expect(trigger).toHaveTextContent('Comparison.TextSummary');
 
         fireEvent.click(drawer.getByRole('combobox', { name: 'Execution' }));
         fireEvent.click(await screen.findByRole('option', { name: 'exec-v2' }));
 
         expect(dialog).toBeInTheDocument();
-        expect(scopeTrigger('Comparison.TextSummary')).toHaveTextContent('Comparison.TextSummary');
+        expect(trigger).toHaveTextContent('Comparison.TextSummary');
         expect(drawer.getByRole('combobox', { name: 'Execution' })).toHaveValue('exec-v2');
 
         const ids = [...document.querySelectorAll<HTMLElement>('[id]')].map((element) => element.id);

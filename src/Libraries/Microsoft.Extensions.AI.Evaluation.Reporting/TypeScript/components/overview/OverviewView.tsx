@@ -306,7 +306,7 @@ const useLocalStyles = makeStyles({
 type DeltaChip = {
     show: boolean;
     label: string;
-    status: 'success' | 'danger' | 'informative';
+    status: DeltaJudgment;
 };
 
 const deltaArrowSign = (delta: number): { arrow: string; sign: string } => ({
@@ -319,7 +319,7 @@ const chip = (
     opts: { unit?: string; lowerBetter?: boolean } = {},
 ): DeltaChip => {
     if (delta === undefined || delta === 0) {
-        return { show: delta !== undefined, label: '—', status: 'informative' };
+        return { show: delta !== undefined, label: '—', status: 'unchanged' };
     }
     const unit = opts.unit ?? '';
     const good = opts.lowerBetter ? delta < 0 : delta > 0;
@@ -327,20 +327,14 @@ const chip = (
     return {
         show: true,
         label: `${arrow} ${sign}${Math.abs(delta)}${unit}`,
-        status: good ? 'success' : 'danger',
+        status: good ? 'improved' : 'regressed',
     };
 };
 
-const JUDGMENT_TO_CHIP: Record<DeltaJudgment, DeltaChip['status']> = {
-    success: 'success',
-    danger: 'danger',
-    neutral: 'informative',
-};
-
 const numDeltaChip = (d: number, judgment: DeltaJudgment): DeltaChip => {
-    if (isDisplayedZero(d)) return { show: true, label: '—', status: 'informative' };
+    if (isDisplayedZero(d)) return { show: true, label: '—', status: 'unchanged' };
     const { arrow, sign } = deltaArrowSign(d);
-    return { show: true, label: `${arrow} ${sign}${formatNumber(Math.abs(d))}`, status: JUDGMENT_TO_CHIP[judgment] };
+    return { show: true, label: `${arrow} ${sign}${formatNumber(Math.abs(d))}`, status: judgment };
 };
 
 const numDeltaAriaLabel = (d: number, judgment: DeltaJudgment): string => {
@@ -356,8 +350,7 @@ const rateStatus = (rate: number): ReportStatus =>
             : rate >= 0.5 ? 'warning'
                 : 'danger';
 
-const auraDotStyle = (status: ReportStatus): React.CSSProperties => {
-    const solid = statusSolidVar(status);
+const auraDotStyle = (solid: string): React.CSSProperties => {
     return {
         width: '8px',
         height: '8px',
@@ -369,19 +362,14 @@ const auraDotStyle = (status: ReportStatus): React.CSSProperties => {
     };
 };
 
-const chipToStatus = (status: DeltaChip['status']): ReportStatus =>
-    status === 'informative' ? 'neutral' : status;
-
 const deltaTextColor = (status: DeltaChip['status']): string =>
-    status === 'success' ? 'var(--status-success-background-3)'
-        : status === 'danger' ? 'var(--status-danger-background-3)'
-            : 'var(--neutral-foreground-3)';
+    `var(--trend-${status}-text)`;
 
 type AttentionItem = {
     key: string;
     label: string;
     scenario: string;
-    status: ReportStatus;
+    solid: string;
     statStr: string;
     weak: number;
     share: number;
@@ -391,30 +379,30 @@ const attentionKey = (scenarioName: string, metricName: string): string =>
     JSON.stringify([scenarioName, metricName]);
 
 const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionItem[] => {
-    const agg = new Map<string, { scenario: string; metric: string; danger: number; warning: number; total: number }>();
+    const agg = new Map<string, { scenario: string; metric: string; weak: number; fair: number; total: number }>();
     for (const s of scenarios) {
         for (const [metricName, metric] of Object.entries(s.evaluationResult?.metrics ?? {})) {
             const bucket = ratingBucket(metric?.interpretation?.rating);
             const id = attentionKey(s.scenarioName, metricName);
-            const entry = agg.get(id) ?? { scenario: s.scenarioName, metric: metricName, danger: 0, warning: 0, total: 0 };
+            const entry = agg.get(id) ?? { scenario: s.scenarioName, metric: metricName, weak: 0, fair: 0, total: 0 };
             entry.total += 1;
-            if (bucket === 'weak') entry.danger += 1;
-            else if (bucket === 'fair') entry.warning += 1;
+            if (bucket === 'weak') entry.weak += 1;
+            else if (bucket === 'fair') entry.fair += 1;
             agg.set(id, entry);
         }
     }
 
     return [...agg.entries()]
         .map(([key, a]) => {
-            const bad = a.danger + a.warning;
-            const status: ReportStatus = a.danger >= a.warning ? 'danger' : 'warning';
+            const bad = a.weak + a.fair;
+            const solid = a.weak >= a.fair ? 'var(--rating-weak-solid)' : 'var(--rating-fair-solid)';
             return {
                 key,
                 label: `${a.scenario} · ${a.metric}`,
                 scenario: a.scenario,
-                status,
-                statStr: `${a.danger} weak · ${a.warning} fair`,
-                weak: a.danger,
+                solid,
+                statStr: `${a.weak} weak · ${a.fair} fair`,
+                weak: a.weak,
                 share: a.total > 0 ? bad / a.total : 0,
             };
         })
@@ -425,7 +413,13 @@ const attentionItems = (scenarios: ScenarioRunResult[], limit = 3): AttentionIte
 
 const DeltaBadge = ({ chip, size = 'medium', shape = 'rounded', appearance = 'ghost' }: { chip: DeltaChip; size?: 'small' | 'medium'; shape?: 'rounded' | 'circular'; appearance?: 'ghost' | 'tint' }) =>
     chip.show ? (
-        <StatusPill status={chipToStatus(chip.status)} appearance={appearance} size={size} shape={shape}>
+        <StatusPill
+            solid={`var(--trend-${chip.status}-solid)`}
+            textColor={`var(--trend-${chip.status}-text)`}
+            appearance={appearance}
+            size={size}
+            shape={shape}
+        >
             {chip.label}
         </StatusPill>
     ) : null;
@@ -519,7 +513,6 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                 <div role="list" className={local.moversGrid}>
                     {movers.map((m) => {
                         const dc = numDeltaChip(m.delta, m.status);
-                        const dotStatus = chipToStatus(dc.status);
                         const valStr = formatNumber(m.value);
                         const isZeroDelta = dc.label === '—';
                         return (
@@ -527,7 +520,7 @@ const MoversCard = ({ movers, compareLabel }: { movers: MoverRow[]; compareLabel
                             // parent CSS grid (unchanged layout) while grouping them as one listitem.
                             <div key={`${m.scenarioName}-${m.metricName}`} role="listitem" className={local.listitemContents}>
                                 <span className={local.moverNameCell}>
-                                    <span aria-hidden="true" style={auraDotStyle(dotStatus)} />
+                                    <span aria-hidden="true" style={auraDotStyle(`var(--trend-${dc.status}-solid)`)} />
                                     <span
                                         title={`${m.scenarioName} · ${m.metricName}`}
                                         className={local.moverNameText}
@@ -578,7 +571,7 @@ const NeedsAttentionCard = ({ items, onView }: { items: AttentionItem[]; onView:
                     <div role="list" className={local.attnList}>
                         {items.map((a) => (
                             <div key={a.key} role="listitem" className={local.attnRow}>
-                                <span aria-hidden="true" style={auraDotStyle(a.status)} />
+                                <span aria-hidden="true" style={auraDotStyle(a.solid)} />
                                 <span title={a.label} className={mergeClasses('eval-attn-name', local.attnName)}>
                                     {a.label}
                                 </span>
@@ -639,11 +632,11 @@ const GroupTable = ({
                         const gb = bucketMetrics(groupScenarios);
                         const status = rateStatus(row.passRate);
                         const ratePct = pctInt(row.passRate);
-                        const deltaBadgeChip = row.deltaRun !== undefined ? chip(ratePct - pctInt(row.passRate - row.deltaRun), { unit: '%' }) : { show: false, label: '', status: 'informative' as const };
+                        const deltaBadgeChip = row.deltaRun !== undefined ? chip(ratePct - pctInt(row.passRate - row.deltaRun), { unit: '%' }) : { show: false, label: '', status: 'unchanged' as const };
                         return (
                             <div key={row.group} className={mergeClasses('eval-grid6', local.groupRow)} role="row">
                                 <span role="cell" className={local.groupNameCell}>
-                                    <span aria-hidden="true" style={auraDotStyle(status)} />
+                                    <span aria-hidden="true" style={auraDotStyle(statusSolidVar(status))} />
                                     <span className={local.groupNameText}>{row.group}</span>
                                 </span>
                                 <span role="cell" className={local.groupNumCell}>{gb.good}</span>

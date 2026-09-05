@@ -167,6 +167,14 @@ const useStyles = makeStyles({
         alignItems: 'center',
         gap: 'var(--spacing-s)',
     },
+    topbarAction: {
+        minWidth: 'var(--interactive-size-compact)',
+        minHeight: 'var(--interactive-size-compact)',
+        '@media (max-width: 900px), (pointer: coarse)': {
+            minWidth: 'var(--interactive-size-touch)',
+            minHeight: 'var(--interactive-size-touch)',
+        },
+    },
 
     shell: {
         flex: '1 1 auto',
@@ -432,11 +440,13 @@ const BrandMark = () => (
 );
 
 const ThemeToggle = () => {
+    const classes = useStyles();
     const { darkMode, setDarkMode } = useReportContext();
     const announce = useAnnounce();
     return (
         <Tooltip content={darkMode ? 'Switch to light theme' : 'Switch to dark theme'} relationship="label">
             <Button
+                className={classes.topbarAction}
                 appearance="subtle"
                 icon={darkMode ? <WeatherSunnyRegular /> : <WeatherMoonRegular />}
                 onClick={() => { const next = !darkMode; setDarkMode(next); announce(next ? 'Dark theme enabled' : 'Light theme enabled'); }}
@@ -844,7 +854,7 @@ export const AppShell = ({
                 <div className={classes.topbarActions}>
                     {themeSource === 'toggle' && <ThemeToggle />}
                     <Tooltip content="Settings" relationship="label">
-                        <Button icon={<Settings28Regular />} appearance="subtle" onClick={() => setIsSettingsOpen(true)} aria-label="Settings" {...restoreFocusTargetAttrs} />
+                        <Button className={classes.topbarAction} icon={<Settings28Regular />} appearance="subtle" onClick={() => setIsSettingsOpen(true)} aria-label="Settings" {...restoreFocusTargetAttrs} />
                     </Tooltip>
                 </div>
             </header>
