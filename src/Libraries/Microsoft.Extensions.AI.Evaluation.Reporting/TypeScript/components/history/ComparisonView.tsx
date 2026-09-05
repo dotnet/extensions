@@ -221,11 +221,30 @@ const useLocalStyles = makeStyles({
         display: 'flex',
         alignItems: 'stretch',
         borderTop: '1px solid var(--neutral-stroke-2)',
+        '@media (max-width: 640px)': {
+            flexDirection: 'column',
+        },
     },
     cmpHeadlineStat: {
         flex: 1,
         minWidth: 0,
         padding: 'var(--spacing-m-nudge) var(--spacing-l)',
+        borderRight: '1px solid var(--neutral-stroke-2)',
+        ':last-child': {
+            borderRight: 'none',
+            '@media (max-width: 640px)': {
+                borderBottom: 'none',
+            },
+        },
+        '@media (max-width: 640px)': {
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) auto',
+            gridTemplateRows: 'auto auto',
+            columnGap: 'var(--spacing-m)',
+            padding: 'var(--spacing-s) var(--spacing-l)',
+            borderRight: 'none',
+            borderBottom: '1px solid var(--neutral-stroke-2)',
+        },
     },
     cmpHeadlineLabel: {
         fontSize: 'var(--font-size-200)',
@@ -234,6 +253,13 @@ const useLocalStyles = makeStyles({
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
+        '@media (max-width: 640px)': {
+            gridColumn: 1,
+            gridRow: 1,
+            whiteSpace: 'normal',
+            overflow: 'visible',
+            textOverflow: 'clip',
+        },
     },
     cmpHeadlineValue: {
         fontSize: 'var(--font-size-600)',
@@ -244,6 +270,14 @@ const useLocalStyles = makeStyles({
         textOverflow: 'ellipsis',
         marginTop: 'var(--spacing-xs)',
         fontVariantNumeric: 'tabular-nums',
+        '@media (max-width: 640px)': {
+            gridColumn: 2,
+            gridRow: '1 / span 2',
+            alignSelf: 'center',
+            marginTop: 0,
+            overflow: 'visible',
+            textOverflow: 'clip',
+        },
     },
     cmpHeadlineSub: {
         fontSize: 'var(--font-size-200)',
@@ -252,6 +286,13 @@ const useLocalStyles = makeStyles({
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
+        '@media (max-width: 640px)': {
+            gridColumn: 1,
+            gridRow: 2,
+            whiteSpace: 'normal',
+            overflow: 'visible',
+            textOverflow: 'clip',
+        },
     },
     cmpCardInner: { margin: '-12px' },
     cmpSectionHeader: {
@@ -564,21 +605,18 @@ export const ComparisonView = () => {
         return b;
     }, [allRows]);
 
-    const DIV = '1px solid var(--neutral-stroke-2)';
     const headline = [
         {
             label: 'Metrics increased',
             value: '' + increased,
             valueColor: 'var(--neutral-foreground-1)',
             sub: 'of ' + comparableRows.length + ' comparable metrics',
-            borderRight: DIV,
         },
         {
             label: 'Metrics decreased',
             value: '' + decreased,
             valueColor: 'var(--neutral-foreground-1)',
             sub: 'of ' + comparableRows.length + ' comparable metrics',
-            borderRight: DIV,
         },
         biggest
             ? {
@@ -586,14 +624,12 @@ export const ComparisonView = () => {
                   value: biggest.delta,
                   valueColor: statusTextVar(biggest.status),
                   sub: biggest.name,
-                  borderRight: 'none',
               }
             : {
                   label: 'Biggest change',
                   value: comparableRows.length > 0 ? 'stable' : 'not comparable',
                   valueColor: 'var(--neutral-foreground-1)',
                   sub: comparableRows.length > 0 ? 'no significant change' : 'no shared metric values',
-                  borderRight: 'none',
               },
     ];
 
@@ -674,7 +710,7 @@ export const ComparisonView = () => {
                 {effectiveA !== effectiveB && allRows.length > 0 && (
                     <div className={local.cmpHeadlineRow}>
                         {headline.map((c) => (
-                            <div key={c.label} className={local.cmpHeadlineStat} style={{ borderRight: c.borderRight }}>
+                            <div key={c.label} className={local.cmpHeadlineStat}>
                                 <div className={local.cmpHeadlineLabel}>
                                     {c.label}
                                 </div>
