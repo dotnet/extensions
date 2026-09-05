@@ -429,6 +429,7 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   --status-warning-foreground-2: #ec6a31;
   --status-warning-background-1: #241a08;
   --status-warning-background-2: #3d2c10;
+  --status-warning-background-3: var(--palette-orange-background3);
 
   --shadow-2: 0 0 2px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.28);
   --shadow-4: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28);
@@ -520,9 +521,13 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 
 .fui-searchbox { width: 100%; }
 .eval-content .eval-cmp-drop { width: 100%; }
+.eval-root .eval-sidebar { display: none; }
 .eval-sidebar .eval-exec-drop { width: 100%; }
 .eval-sidebar .eval-exec-drop .eval-exec-text { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .eval-sidebar .eval-exec-drop .fui-Dropdown__button { min-width: 0; }
+.eval-scope-drawer .eval-exec-drop { width: 100%; }
+.eval-scope-drawer .eval-exec-text { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.eval-scope-drawer .eval-exec-drop .fui-Dropdown__button { min-width: 0; }
 .eval-fitbtn .fui-button, .eval-fitbtn button { min-width: auto; }
 
 .eval-attn-name { min-width: 10ch; }
@@ -544,14 +549,11 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
   .eval-cmp-arrowwrap { align-items: center !important; justify-content: center !important; padding: var(--spacing-xs) 0 !important; }
   .eval-cmp-arrow { transform: rotate(90deg); }
 }
+@media (min-width: 901px) {
+  .eval-root .eval-sidebar { display: flex; }
+}
 @media (max-width: 900px) {
   .eval-root .eval-shell { flex-direction: column; }
-  .eval-root .eval-sidebar {
-    width: 100%; position: static; height: auto;
-    align-self: stretch; border-top-left-radius: 0;
-    border-bottom: 1px solid var(--neutral-stroke-2);
-  }
-  .eval-sidebar-tree { max-height: 280px; }
   .eval-root .eval-main { border-top-left-radius: 0; box-shadow: none; overflow: visible; }
   body .eval-root { height: auto; overflow: visible; }
   .eval-root .eval-pivotbar { position: static; }

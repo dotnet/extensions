@@ -197,8 +197,12 @@ const useLocalStyles = makeStyles({
         borderRadius: '50%',
         flex: 'none',
     },
-    cmpColumnDotBaseline: { background: 'var(--neutral-foreground-4)' },
-    cmpColumnDotCurrent: { background: 'var(--brand-background)' },
+    cmpColumnDotBaseline: {
+        boxSizing: 'border-box',
+        background: 'transparent',
+        border: '1.5px solid var(--neutral-foreground-3)',
+    },
+    cmpColumnDotCurrent: { background: 'var(--brand-foreground-1)' },
     cmpDropdownWrap: { width: '100%' },
     cmpArrowWrap: {
         display: 'flex',
@@ -290,7 +294,7 @@ const useLocalStyles = makeStyles({
         background: 'var(--neutral-background-1)',
         border: '1.5px solid var(--neutral-foreground-3)',
     },
-    cmpLegendDotCurrent: { background: 'var(--status-success-background-3)' },
+    cmpLegendDotCurrent: { background: 'var(--brand-foreground-1)' },
     cmpLegendDivider: {
         width: '1px',
         height: 'var(--spacing-m)',

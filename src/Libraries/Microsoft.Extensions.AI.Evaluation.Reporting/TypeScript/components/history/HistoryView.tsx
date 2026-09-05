@@ -172,7 +172,7 @@ const useLocalStyles = makeStyles({
         background: 'var(--neutral-background-1)',
         border: '1.5px solid var(--neutral-foreground-3)',
     },
-    histLegendDotCurr: { background: 'var(--neutral-foreground-3)' },
+    histLegendDotCurr: { background: 'var(--brand-foreground-1)' },
     histLegendGlyph: { color: 'var(--neutral-foreground-3)' },
     histLegendSep: { color: 'var(--neutral-foreground-4)' },
     histLegendSpread: {
