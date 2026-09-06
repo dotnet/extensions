@@ -16,7 +16,7 @@ import {
     PopoverSurface,
 } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { useReportStyles, statusSolidVar } from '../styles/reportStyles';
+import { useReportStyles } from '../styles/reportStyles';
 import { useReportContext } from '../core/ReportContext';
 import { ScoreNode, getConversationDisplay } from '../core/Summary';
 import { chronologicalExecutions, isLeafFailed, scenariosForExecution } from '../core/viewModels';
@@ -334,7 +334,7 @@ const CaseRow = ({
     // Deliberately NOT a Tabster Mover: this is plain content, not a composite widget.
     const regionId = useId();
 
-    const dotSolid = vm.failed ? statusSolidVar('danger') : statusSolidVar('success');
+    const dotSolid = vm.failed ? 'var(--negative-solid)' : 'var(--positive-solid)';
     const conversation = open ? getConversationDisplay(vm.scenario.messages, vm.scenario.modelResponse) : null;
     const metaLine = open ? metaLineFor(vm.scenario) : undefined;
     const transcript = conversation ? (

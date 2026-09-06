@@ -59,7 +59,7 @@ describe('posOn — value → 0..100 with clamping', () => {
 });
 
 describe('dumbbellStyles — connector/dot geometry', () => {
-    const UNCHANGED_SOLID = 'var(--trend-unchanged-solid)';
+    const UNCHANGED_SOLID = 'var(--neutral-solid)';
 
     it('renders the full connector + both dots when there is a prev, a delta, and a gap > connEpsilon', () => {
         const db = dumbbellStyles(20, 80, true);

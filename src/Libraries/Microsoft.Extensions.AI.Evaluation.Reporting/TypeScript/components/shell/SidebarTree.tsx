@@ -6,7 +6,7 @@ import { makeStyles, mergeClasses, useArrowNavigationGroup } from '@fluentui/rea
 import { ChevronRight16Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { ScoreNode } from '../core/Summary';
-import { useReportStyles, statusSolidVar, statusTextVar, type ReportStatus } from '../styles/reportStyles';
+import { useReportStyles } from '../styles/reportStyles';
 import { StatusPill } from '../styles/StatusPill';
 
 const useLocalStyles = makeStyles({
@@ -107,13 +107,19 @@ const DEPTH_PAD = [
 const padForDepth = (depth: number) => DEPTH_PAD[Math.min(depth, DEPTH_PAD.length - 1)];
 
 const pillProps = (passing: number, total: number): { solid: string; textColor: string; appearance: 'ghost' | 'tint' } => {
-    const status: ReportStatus = total === 0 || passing >= total
-        ? 'neutral'
-        : passing / total < 0.5 ? 'danger' : 'warning';
+    if (total === 0 || passing >= total) {
+        return {
+            appearance: 'ghost',
+            solid: 'var(--neutral-solid)',
+            textColor: 'var(--neutral-text)',
+        };
+    }
+
+    const failed = passing / total < 0.5;
     return {
-        appearance: status === 'neutral' ? 'ghost' : 'tint',
-        solid: statusSolidVar(status),
-        textColor: statusTextVar(status),
+        appearance: 'tint',
+        solid: failed ? 'var(--negative-solid)' : 'var(--warning-solid)',
+        textColor: failed ? 'var(--negative-text)' : 'var(--caution-text)',
     };
 };
 

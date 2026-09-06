@@ -148,12 +148,12 @@ describe('OverviewView — needs-attention row + View action', () => {
     it('uses direct semantic rating tokens for weak- and fair-dominant markers', () => {
         const weakRender = renderOverview(moversDataset);
         const weakRow = weakRender.container.querySelector<HTMLElement>('.eval-attn-name[title="Alpha.Retrieval · safety"]')?.parentElement;
-        expect((weakRow?.firstElementChild as HTMLElement | null)?.style.background).toBe('var(--rating-weak-solid)');
+        expect((weakRow?.firstElementChild as HTMLElement | null)?.style.background).toBe('var(--negative-solid)');
         weakRender.unmount();
 
         const fairRender = renderOverview(noMoversDataset);
         const fairRow = fairRender.container.querySelector<HTMLElement>('.eval-attn-name[title="Beta.QA · clarity"]')?.parentElement;
-        expect((fairRow?.firstElementChild as HTMLElement | null)?.style.background).toBe('var(--rating-fair-solid)');
+        expect((fairRow?.firstElementChild as HTMLElement | null)?.style.background).toBe('var(--caution-solid)');
         expect(screen.getByText('0 weak · 1 fair')).toBeInTheDocument();
     });
 });
@@ -184,10 +184,10 @@ describe('OverviewView — pass-rate color thresholds', () => {
             return row?.firstElementChild?.querySelector<HTMLElement>('span[aria-hidden="true"]')?.style.background;
         };
 
-        expect(groupDotBackground('Ninety')).toBe('var(--status-success-background-3)');
-        expect(groupDotBackground('SeventyFive')).toBe('var(--palette-orange-background3)');
-        expect(groupDotBackground('Fifty')).toBe('var(--status-warning-foreground-2)');
-        expect(groupDotBackground('Below')).toBe('var(--status-danger-background-3)');
+        expect(groupDotBackground('Ninety')).toBe('var(--positive-solid)');
+        expect(groupDotBackground('SeventyFive')).toBe('var(--caution-solid)');
+        expect(groupDotBackground('Fifty')).toBe('var(--warning-solid)');
+        expect(groupDotBackground('Below')).toBe('var(--negative-solid)');
     });
 });
 
@@ -287,9 +287,9 @@ describe('OverviewView — mover delta rendering', () => {
 
         const improvedPill = moverDeltaCell('Alpha.Retrieval · accuracy')?.querySelector<HTMLElement>('span[style]');
         const regressedPill = moverDeltaCell('Alpha.Retrieval · safety')?.querySelector<HTMLElement>('span[style]');
-        expect(improvedPill?.style.color).toBe('var(--trend-improved-text)');
+        expect(improvedPill?.style.color).toBe('var(--positive-text)');
         expect(improvedPill?.style.border).toBe('');
-        expect(regressedPill?.style.color).toBe('var(--trend-regressed-text)');
+        expect(regressedPill?.style.color).toBe('var(--negative-text)');
         expect(regressedPill?.style.border).toBe('');
 
         unmount();
@@ -307,7 +307,7 @@ describe('OverviewView — mover delta rendering', () => {
         const unchangedPill = unchangedCell?.querySelector<HTMLElement>('span[style]');
         expect(unchangedCell?.textContent).toContain('increased by 20');
         expect(unchangedCell?.textContent).not.toMatch(/improved|regressed/i);
-        expect(unchangedPill?.style.color).toBe('var(--trend-unchanged-text)');
+        expect(unchangedPill?.style.color).toBe('var(--neutral-text)');
         expect(unchangedPill?.style.border).toBe('');
     });
 });
@@ -375,10 +375,10 @@ describe('OverviewView — overall pass-rate delta when the suite grows between 
         };
 
         expect(deltaCell('Improved')?.textContent).toBe('▲ +100%');
-        expect(deltaCell('Improved')?.style.color).toBe('var(--trend-improved-text)');
+        expect(deltaCell('Improved')?.style.color).toBe('var(--positive-text)');
         expect(deltaCell('Regressed')?.textContent).toBe('▼ −100%');
-        expect(deltaCell('Regressed')?.style.color).toBe('var(--trend-regressed-text)');
+        expect(deltaCell('Regressed')?.style.color).toBe('var(--negative-text)');
         expect(deltaCell('Stable')?.textContent).toBe('—');
-        expect(deltaCell('Stable')?.style.color).toBe('var(--trend-unchanged-text)');
+        expect(deltaCell('Stable')?.style.color).toBe('var(--neutral-text)');
     });
 });

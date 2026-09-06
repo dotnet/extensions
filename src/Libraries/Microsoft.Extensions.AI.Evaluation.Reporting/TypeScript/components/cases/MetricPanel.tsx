@@ -4,7 +4,7 @@
 import { useId, useState } from 'react';
 import { Body1Strong, Card, makeStyles, mergeClasses } from '@fluentui/react-components';
 import { ChevronRight16Regular } from '@fluentui/react-icons';
-import { useReportStyles, statusSolidVar, statusTextVar } from '../styles/reportStyles';
+import { useReportStyles } from '../styles/reportStyles';
 import { formatValue } from '../core/metricModel';
 import { ratingBucket } from '../core/viewModels';
 import { DiagnosticsContent } from './DiagnosticsContent';
@@ -270,6 +270,8 @@ const SegmentTrack = ({ metric, solid, showRatingGlyph, positive, value }: {
     );
 };
 
+const ratingTone = { good: 'positive', fair: 'caution', weak: 'negative', unknown: 'neutral' } as const;
+
 const MetricRow = ({ metric }: { metric: MetricType }) => {
     const classes = useStyles();
     const [open, setOpen] = useState(false);
@@ -278,10 +280,9 @@ const MetricRow = ({ metric }: { metric: MetricType }) => {
     const rating = metric.interpretation?.rating;
     const failed = metricFailed(metric);
     const bucket = ratingBucket(rating);
-    const ratingSolid = `var(--rating-${bucket}-solid)`;
-    const ratingText = `var(--rating-${bucket}-text)`;
-    const solid = failed ? statusSolidVar('danger') : ratingSolid;
-    const textColor = failed ? statusTextVar('danger') : ratingText;
+    const tone = failed ? 'negative' : ratingTone[bucket];
+    const solid = `var(--${tone}-solid)`;
+    const textColor = `var(--${tone}-text)`;
     const unknown = !failed && bucket === 'unknown';
 
     const dotStyle =

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { createScoreSummary, ReportContextProvider } from '../components';
@@ -121,7 +119,7 @@ describe('MetricPanel — numeric metrics (rating-ordinal meter)', () => {
         expect(filledCount(track)).toBe(1); // unacceptable -> 1/5
 
         const dotStyle = button.querySelector('span span')?.getAttribute('style') ?? '';
-        expect(dotStyle).toContain('status-danger-background-3');
+        expect(dotStyle).toContain('negative-solid');
 
         fireEvent.click(button);
         expect(screen.getByText('6')).toBeInTheDocument();
@@ -230,7 +228,7 @@ describe('MetricPanel — metricFailed product rule', () => {
         for (const name of ['goodFailed', 'unknownFailed']) {
             const button = screen.getByRole('button', { name: new RegExp(`${name}, failed`) });
             expect(within(button).getByText('✗')).toBeInTheDocument();
-            expect(button.querySelector('span span')?.getAttribute('style')).toContain('status-danger-background-3');
+            expect(button.querySelector('span span')?.getAttribute('style')).toContain('negative-solid');
         }
     });
 });
@@ -289,26 +287,6 @@ describe('MetricPanel — evaluation context', () => {
 });
 
 describe('MetricPanel — rating vocabulary and semantic tokens', () => {
-    it('mirrors every rating alias in the dark-theme scope', () => {
-        const themeCss = readFileSync(resolve(process.cwd(), 'components/shell/theme.css'), 'utf8');
-        const darkStart = themeCss.indexOf('.fluent-dark,\n[data-theme="dark"] {');
-        const darkTheme = themeCss.slice(darkStart, themeCss.indexOf('\n}', darkStart));
-
-        expect(darkStart).toBeGreaterThan(-1);
-        for (const declaration of [
-            '--rating-good-solid: var(--status-success-background-3);',
-            '--rating-good-text: var(--status-success-background-3);',
-            '--rating-fair-solid: var(--palette-orange-background3);',
-            '--rating-fair-text: var(--status-warning-foreground-1);',
-            '--rating-weak-solid: var(--status-danger-background-3);',
-            '--rating-weak-text: var(--status-danger-background-3);',
-            '--rating-unknown-solid: var(--neutral-foreground-4);',
-            '--rating-unknown-text: var(--neutral-foreground-3);',
-        ]) {
-            expect(darkTheme).toContain(declaration);
-        }
-    });
-
     it('maps EvaluationRating values to their display words', () => {
         render(
             <MetricPanel
@@ -340,6 +318,7 @@ describe('MetricPanel — rating vocabulary and semantic tokens', () => {
                     avgM: numeric('avgM', 3, 'average', false),
                     weakM: numeric('weakM', 1, 'unacceptable', false),
                     unkM: numeric('unkM', undefined, 'unknown', false),
+                    failedM: numeric('failedM', 4, 'good', true),
                 })}
             />,
         );
@@ -349,16 +328,17 @@ describe('MetricPanel — rating vocabulary and semantic tokens', () => {
             return btn.querySelector('span span')?.getAttribute('style') ?? '';
         };
 
-        expect(dotStyleOf('goodM')).toContain('rating-good-solid');
-        expect(dotStyleOf('avgM')).toContain('rating-fair-solid');
-        expect(dotStyleOf('weakM')).toContain('rating-weak-solid');
-        expect(dotStyleOf('unkM')).toContain('rating-unknown-solid');
+        expect(dotStyleOf('goodM')).toContain('positive-solid');
+        expect(dotStyleOf('avgM')).toContain('caution-solid');
+        expect(dotStyleOf('weakM')).toContain('negative-solid');
+        expect(dotStyleOf('unkM')).toContain('neutral-solid');
+        expect(dotStyleOf('failedM')).toContain('negative-solid');
 
         for (const [name, word, token] of [
-            ['goodM', 'Good', 'rating-good-text'],
-            ['avgM', 'Fair', 'rating-fair-text'],
-            ['weakM', 'Weak', 'rating-weak-text'],
-            ['unkM', 'Unknown', 'rating-unknown-text'],
+            ['goodM', 'Good', 'positive-text'],
+            ['avgM', 'Fair', 'caution-text'],
+            ['weakM', 'Weak', 'negative-text'],
+            ['unkM', 'Unknown', 'neutral-text'],
         ]) {
             fireEvent.click(screen.getByRole('button', { name: new RegExp(name) }));
             expect(screen.getByText(word).getAttribute('style')).toContain(token);

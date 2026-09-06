@@ -6,7 +6,7 @@ import { makeStyles, mergeClasses, Badge, Card, Dropdown, Option } from '@fluent
 import { ChevronRight20Regular } from '@fluentui/react-icons';
 import { useReportContext } from '../core/ReportContext';
 import { useAnnounce } from '../core/Announcer';
-import { useReportStyles, srOnlyStyle } from '../styles/reportStyles';
+import { trendTone, useReportStyles, srOnlyStyle } from '../styles/reportStyles';
 import { chronologicalExecutions } from '../core/viewModels';
 import { formatNumber, isDisplayedZero } from '../core/metricModel';
 import {
@@ -127,12 +127,15 @@ const buildCmpRow = (
         name: k,
         a: aStr,
         b: bStr,
-        bColor: `var(--trend-${status}-text)`,
+        bColor: `var(--${trendTone[status]}-text)`,
         delta,
         deltaAriaLabel,
         status,
         connector: dumbbell.connector,
-        dotB: dumbbell.dotB,
+        dotB: {
+            ...dumbbell.dotB,
+            borderColor: 'var(--comparison-baseline-identity)',
+        },
         dotA: dumbbell.dotA,
         baselineAvg,
         currentAvg,
@@ -189,8 +192,8 @@ const useLocalStyles = makeStyles({
         textTransform: 'uppercase',
         letterSpacing: '.5px',
     },
-    cmpColumnLabelBaseline: { color: 'var(--neutral-foreground-3)' },
-    cmpColumnLabelCurrent: { color: 'var(--brand-foreground-1)' },
+    cmpColumnLabelBaseline: { color: 'var(--comparison-baseline-identity)' },
+    cmpColumnLabelCurrent: { color: 'var(--comparison-current-identity)' },
     cmpColumnDot: {
         width: '8px',
         height: '8px',
@@ -200,9 +203,9 @@ const useLocalStyles = makeStyles({
     cmpColumnDotBaseline: {
         boxSizing: 'border-box',
         background: 'transparent',
-        border: '1.5px solid var(--neutral-foreground-3)',
+        border: '1.5px solid var(--comparison-baseline-identity)',
     },
-    cmpColumnDotCurrent: { background: 'var(--brand-foreground-1)' },
+    cmpColumnDotCurrent: { background: 'var(--comparison-current-identity)' },
     cmpDropdownWrap: { width: '100%' },
     cmpArrowWrap: {
         display: 'flex',
@@ -333,16 +336,15 @@ const useLocalStyles = makeStyles({
     },
     cmpLegendDotBaseline: {
         background: 'var(--neutral-background-1)',
-        border: '1.5px solid var(--neutral-foreground-3)',
+        border: '1.5px solid var(--comparison-baseline-identity)',
     },
-    cmpLegendDotCurrent: { background: 'var(--brand-foreground-1)' },
+    cmpLegendDotCurrent: { background: 'var(--comparison-current-identity)' },
     cmpLegendDivider: {
         width: '1px',
         height: 'var(--spacing-m)',
         background: 'var(--neutral-stroke-2)',
     },
     cmpLegendDirection: { color: 'var(--neutral-foreground-3)' },
-    cmpLegendSep: { color: 'var(--neutral-foreground-4)' },
     sortBtn: {
         display: 'inline-flex',
         alignItems: 'center',
@@ -365,11 +367,6 @@ const useLocalStyles = makeStyles({
         columnGap: 'var(--spacing-l)',
         alignItems: 'center',
         padding: 'var(--spacing-m-nudge) var(--spacing-xl)',
-        fontSize: 'var(--font-size-100)',
-        fontWeight: 'var(--font-weight-semibold)',
-        color: 'var(--neutral-foreground-4)',
-        textTransform: 'uppercase',
-        letterSpacing: '.5px',
         borderBottom: '1px solid var(--neutral-stroke-2)',
     },
     cmpColHeaderName: { display: 'flex' },
@@ -464,7 +461,7 @@ const useLocalStyles = makeStyles({
         height: '1.5px',
         transform: 'translateY(-50%)',
         borderRadius: 'var(--radius-circular)',
-        background: 'var(--neutral-stroke-2)',
+        background: 'var(--chart-track)',
     },
     cmpDeltaCell: {
         width: '64px',
@@ -622,7 +619,7 @@ export const ComparisonView = () => {
             ? {
                   label: 'Biggest change',
                   value: biggest.delta,
-                  valueColor: `var(--trend-${biggest.status}-text)`,
+                  valueColor: `var(--${trendTone[biggest.status]}-text)`,
                   sub: biggest.name,
               }
             : {
@@ -747,7 +744,7 @@ export const ComparisonView = () => {
                                 </span>
                                 <span className={local.cmpLegendDivider} />
                                 <span className={local.cmpLegendItem}>
-                                    <span aria-hidden="true" className={local.cmpLegendDirection}>▲</span> increased <span aria-hidden="true" className={local.cmpLegendSep}>·</span> <span aria-hidden="true" className={local.cmpLegendDirection}>▼</span> decreased
+                                    <span aria-hidden="true" className={local.cmpLegendDirection}>▲</span> increased <span aria-hidden="true" className={local.cmpLegendDirection}>▼</span> decreased
                                 </span>
                             </span>
                         </div>
@@ -755,7 +752,7 @@ export const ComparisonView = () => {
                         <div className={s.tscroll} role="table" aria-label="Per-metric comparison" tabIndex={0}>
                             <div
                                 role="row"
-                                className={mergeClasses('eval-grid3', local.cmpTableHeaderRow)}
+                                className={mergeClasses('eval-grid3', s.compactTableHeader, local.cmpTableHeaderRow)}
                             >
                                 <span role="columnheader" aria-sort={ariaSort('name')} className={local.cmpColHeaderName}>
                                     <button type="button" className={mergeClasses(local.sortBtn, local.cmpColHeaderNameBtn)} onClick={() => onSort('name')} aria-label={ariaLabel('name', 'Metric')}>
@@ -831,7 +828,7 @@ export const ComparisonView = () => {
                                                 </span>
                                                 <span
                                                     className={local.cmpDeltaCell}
-                                                    style={{ color: `var(--trend-${m.status}-text)` }}
+                                                    style={{ color: `var(--${trendTone[m.status]}-text)` }}
                                                 >
                                                     <span aria-hidden="true">{m.delta}</span>
                                                     <span style={srOnlyStyle}>{m.deltaAriaLabel}</span>
