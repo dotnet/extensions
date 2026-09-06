@@ -40,33 +40,14 @@ const useLocalStyles = makeStyles({
         padding: 'var(--spacing-l) var(--spacing-xl) var(--spacing-m)',
         borderBottom: '1px solid var(--neutral-stroke-2)',
     },
-    nowrap: { whiteSpace: 'nowrap' },
-
     // SummaryCard
     heroCardBody: {
         margin: '-12px',
         overflow: 'hidden',
         borderRadius: 'var(--radius-card)',
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    heroRow: {
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--spacing-xxl)',
-        padding: 'var(--spacing-l) 0 var(--spacing-l) var(--spacing-xl)',
-        flexWrap: 'wrap',
-    },
-    flexNone: { flex: 'none' },
-    heroPassRow: {
-        display: 'flex',
-        alignItems: 'baseline',
-        gap: 'var(--spacing-m)',
-        marginTop: 'var(--spacing-xs)',
     },
     heroPassNum: {
-        fontSize: 'var(--font-size-800)',
+        fontSize: '3rem',
         fontWeight: 'var(--font-weight-semibold)',
         lineHeight: 1,
         color: 'var(--neutral-foreground-1)',
@@ -77,21 +58,8 @@ const useLocalStyles = makeStyles({
         fontWeight: 'var(--font-weight-semibold)',
         color: 'var(--neutral-foreground-3)',
     },
-    heroKpisWrap: {
-        marginLeft: 'auto',
-        display: 'flex',
-        alignItems: 'stretch',
-        borderLeft: '1px solid var(--neutral-stroke-2)',
-    },
-    kpiCell: { padding: '0 var(--spacing-xl)' },
-    kpiValueRow: {
-        display: 'flex',
-        alignItems: 'baseline',
-        gap: 'var(--spacing-s)',
-        marginTop: 'var(--spacing-xs)',
-    },
     kpiValue: {
-        fontSize: 'var(--font-size-600)',
+        fontSize: 'var(--font-size-700)',
         fontWeight: 'var(--font-weight-semibold)',
         lineHeight: 1,
         whiteSpace: 'nowrap',
@@ -99,9 +67,8 @@ const useLocalStyles = makeStyles({
         fontVariantNumeric: 'tabular-nums',
     },
     kpiSub: {
-        fontSize: 'var(--font-size-100)',
+        fontSize: 'var(--font-size-200)',
         color: 'var(--neutral-foreground-3)',
-        whiteSpace: 'nowrap',
     },
 
     // MoversCard
@@ -425,7 +392,7 @@ const SummaryCard = ({
 }: {
     passRate: number;
     passChip: DeltaChip;
-    kpis: { label: string; value: string; sub: string; chip: DeltaChip; last?: boolean }[];
+    kpis: { label: string; value: string; sub: string; chip: DeltaChip }[];
 }) => {
     const s = useReportStyles();
     const local = useLocalStyles();
@@ -437,32 +404,30 @@ const SummaryCard = ({
     return (
         <div className={mergeClasses('eval-hero-acrylic', local.mbL)}>
             <Card appearance="outline">
-                <div className={local.heroCardBody}>
-                    <div className={local.heroRow}>
-                        <div role="group" aria-labelledby={`${idPrefix}-passrate`} className={local.flexNone}>
-                            <div className={s.eyebrow} id={`${idPrefix}-passrate`}>Overall pass rate</div>
-                            <div className={local.heroPassRow}>
-                                <span className={mergeClasses('eval-hero-passrate', local.heroPassNum)}>
-                                    {passNow}
-                                    <span className={local.heroPassPct}>%</span>
-                                </span>
-                                <DeltaBadge chip={passChip} size="medium" shape="circular" />
-                            </div>
+                <div className={mergeClasses('eval-hero-body', local.heroCardBody)}>
+                    <div role="group" aria-labelledby={`${idPrefix}-passrate`} className="eval-hero-primary">
+                        <div className={s.eyebrow} id={`${idPrefix}-passrate`}>Overall pass rate</div>
+                        <div className="eval-hero-primary-value">
+                            <span className={local.heroPassNum}>
+                                {passNow}
+                                <span className={local.heroPassPct}>%</span>
+                            </span>
+                            <DeltaBadge chip={passChip} size="medium" shape="circular" />
                         </div>
-                        <div className={mergeClasses('eval-hero-kpis', local.heroKpisWrap)}>
-                            {kpis.map((k, i) => (
-                                <div key={k.label} role="group" aria-labelledby={`${idPrefix}-kpi-${i}`} className={mergeClasses('eval-hero-kpi', local.kpiCell)} style={{ borderRight: k.last ? 'none' : '1px solid var(--neutral-stroke-2)' }}>
-                                    <div className={mergeClasses(s.eyebrow, local.nowrap)} id={`${idPrefix}-kpi-${i}`}>{k.label}</div>
-                                    <div className={local.kpiValueRow}>
-                                        <span className={local.kpiValue}>
-                                            {k.value}
-                                        </span>
-                                        <DeltaBadge chip={k.chip} />
-                                        <span className={local.kpiSub}>{k.sub}</span>
-                                    </div>
+                    </div>
+                    <div className="eval-hero-kpis">
+                        {kpis.map((k, i) => (
+                            <div key={k.label} role="group" aria-labelledby={`${idPrefix}-kpi-${i}`} className="eval-hero-kpi">
+                                <div className={mergeClasses('eval-hero-kpi-label', s.eyebrow)} id={`${idPrefix}-kpi-${i}`}>{k.label}</div>
+                                <div className="eval-hero-kpi-value">
+                                    <span className={local.kpiValue}>
+                                        {k.value}
+                                    </span>
+                                    <DeltaBadge chip={k.chip} />
                                 </div>
-                            ))}
-                        </div>
+                                <span className={mergeClasses('eval-hero-kpi-sub', local.kpiSub)}>{k.sub}</span>
+                            </div>
+                        ))}
                     </div>
                     <ProgressBar
                         value={passNow / 100}
@@ -794,7 +759,7 @@ export const OverviewView = () => {
     const kpis = [
         { label: 'Cases failing', value: String(kpi.failing), sub: `of ${kpi.total} cases`, chip: failChip },
         { label: 'Scenarios fully passing', value: `${groupsFullyPassing} / ${totalGroups}`, sub: groupsFullyPassing === totalGroups ? 'no failing case' : `${totalGroups - groupsFullyPassing} with failures`, chip: scenChip },
-        { label: 'Good ratings', value: `${goodPct}%`, sub: `${buckets.good} of ${totalEvals} evals`, chip: goodChip, last: true },
+        { label: 'Good ratings', value: `${goodPct}%`, sub: `${buckets.good} of ${totalEvals} evals`, chip: goodChip },
     ];
 
     return (
