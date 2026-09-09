@@ -28,6 +28,7 @@ import {
     WeatherSunnyRegular,
 } from '@fluentui/react-icons';
 import { useReportContext, type ReportView } from '../core/ReportContext';
+import type { ScoreNode } from '../core/Summary';
 import { useAnnounce } from '../core/Announcer';
 import { srOnlyStyle } from '../styles/reportStyles';
 import { resolveTheme, detectHostDarkMode } from './theme';
@@ -558,7 +559,13 @@ const PivotBar = ({ casesCount }: { casesCount: number }) => {
     );
 };
 
-const Sidebar = () => {
+const Sidebar = ({
+    expanded,
+    onToggle,
+}: {
+    expanded: ReadonlySet<string>;
+    onToggle: (key: string) => void;
+}) => {
     const classes = useStyles();
     const scenariosLabelId = useId();
     const executionLabelId = useId();
@@ -568,7 +575,7 @@ const Sidebar = () => {
         <nav aria-label="Scenarios" className={mergeClasses(classes.sidebar, 'eval-sidebar')}>
             <div className={mergeClasses(classes.sidebarTree, 'eval-sidebar-tree')}>
                 <div id={scenariosLabelId} className={classes.sidebarSectionLabel}>Scenarios</div>
-                <SidebarTree labelledBy={scenariosLabelId} />
+                <SidebarTree labelledBy={scenariosLabelId} expanded={expanded} onToggle={onToggle} />
             </div>
             <div className={classes.sidebarFooter}>
                 <span id={executionLabelId} className={classes.sidebarSectionLabel} style={{ padding: '0 var(--spacing-xxs)' }}>Execution</span>
@@ -606,9 +613,13 @@ const ExecutionSelector = ({ labelId, controlId }: { labelId: string; controlId:
 const ScopeDrawer = ({
     open,
     onOpenChange,
+    expanded,
+    onToggle,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    expanded: ReadonlySet<string>;
+    onToggle: (key: string) => void;
 }) => {
     const classes = useStyles();
     const restoreFocusSourceAttrs = useRestoreFocusSource();
@@ -647,7 +658,12 @@ const ScopeDrawer = ({
             <DrawerBody className={classes.scopeDrawerBody}>
                 <nav aria-label="Scenarios" className={classes.scopeDrawerTree}>
                     <div id={scenariosLabelId} className={classes.sidebarSectionLabel}>Scenarios</div>
-                    <SidebarTree labelledBy={scenariosLabelId} />
+                    <SidebarTree
+                        labelledBy={scenariosLabelId}
+                        expanded={expanded}
+                        onToggle={onToggle}
+                        onSelect={() => onOpenChange(false)}
+                    />
                 </nav>
                 <div className={classes.scopeDrawerFooter}>
                     <span id={executionLabelId} className={classes.sidebarSectionLabel}>Execution</span>
@@ -735,6 +751,16 @@ const useHostTheme = (themeSource: ThemeSource, setDarkMode: (v: boolean) => voi
     }, [themeSource, setDarkMode]);
 };
 
+const findNodePath = (nodes: ScoreNode[], key: string, path: ScoreNode[] = []): ScoreNode[] | undefined => {
+    for (const node of nodes) {
+        const nextPath = [...path, node];
+        if (node.nodeKey === key) return nextPath;
+        const match = findNodePath(node.childNodes, key, nextPath);
+        if (match) return match;
+    }
+    return undefined;
+};
+
 export const AppShell = ({
     heightStrategy,
     themeSource,
@@ -754,7 +780,18 @@ export const AppShell = ({
     const restoreFocusTargetAttrs = useRestoreFocusTarget();
     const scopeRestoreFocusTargetAttrs = useRestoreFocusTarget();
     const [isScopeOpen, setIsScopeOpen] = useState(false);
+    const [expanded, setExpanded] = useState<ReadonlySet<string>>(
+        () => new Set(activeNode.childNodes.filter((node) => node.hasChildNodes).map((node) => node.nodeKey)),
+    );
     const scopeFocusTimerRef = useRef<number | undefined>(undefined);
+
+    const toggleExpanded = useCallback((key: string) => {
+        setExpanded((previous) => {
+            const next = new Set(previous);
+            if (next.has(key)) next.delete(key); else next.add(key);
+            return next;
+        });
+    }, []);
 
     const goHome = () => {
         setView('overview');
@@ -772,19 +809,20 @@ export const AppShell = ({
         [dataset.scenarioRunResults],
     );
 
-    const selectedScope = useMemo(() => {
-        if (!selectedScenarioLevel) return 'All scenarios';
-        const findPath = (nodes: typeof activeNode.childNodes, path: string[]): string[] | undefined => {
-            for (const node of nodes) {
-                const nextPath = [...path, node.name];
-                if (node.nodeKey === selectedScenarioLevel) return nextPath;
-                const match = findPath(node.childNodes, nextPath);
-                if (match) return match;
-            }
-            return undefined;
-        };
-        return findPath(activeNode.childNodes, [])?.join('.') ?? 'All scenarios';
-    }, [activeNode, selectedScenarioLevel]);
+    const selectedPath = useMemo(
+        () => selectedScenarioLevel ? findNodePath(activeNode.childNodes, selectedScenarioLevel) ?? [] : [],
+        [activeNode, selectedScenarioLevel],
+    );
+    const selectedScope = selectedPath.map((node) => node.name).join('.') || 'All scenarios';
+
+    useEffect(() => {
+        const ancestors = selectedPath.slice(0, -1);
+        if (ancestors.length === 0) return;
+        setExpanded((previous) => {
+            if (ancestors.every((node) => previous.has(node.nodeKey))) return previous;
+            return new Set([...previous, ...ancestors.map((node) => node.nodeKey)]);
+        });
+    }, [selectedPath]);
 
     const restoreScopeFocus = useCallback((target: 'mobile' | 'desktop') => {
         window.clearTimeout(scopeFocusTimerRef.current);
@@ -860,7 +898,7 @@ export const AppShell = ({
             </header>
 
             <div className={mergeClasses(classes.shell, 'eval-shell')}>
-                <Sidebar />
+                <Sidebar expanded={expanded} onToggle={toggleExpanded} />
                 <main id="eval-main" tabIndex={-1} className={mergeClasses(classes.main, 'eval-main')}>
                     <h1 style={srOnlyStyle}>
                         AI Evaluation Report
@@ -882,7 +920,12 @@ export const AppShell = ({
             </div>
 
             <SettingsDrawer />
-            <ScopeDrawer open={isScopeOpen} onOpenChange={setScopeOpen} />
+            <ScopeDrawer
+                open={isScopeOpen}
+                onOpenChange={setScopeOpen}
+                expanded={expanded}
+                onToggle={toggleExpanded}
+            />
             </div>
         </FluentProvider>
     );

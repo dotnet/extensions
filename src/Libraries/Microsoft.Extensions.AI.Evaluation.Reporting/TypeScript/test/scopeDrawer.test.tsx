@@ -47,6 +47,27 @@ const renderShell = () => {
     );
 };
 
+const nestedDataset: Dataset = {
+    ...twoExecutionDataset,
+    scenarioRunResults: twoExecutionDataset.scenarioRunResults.map((result) => ({
+        ...result,
+        scenarioName: result.scenarioName.endsWith('TextSummary')
+            ? 'RAG.Retrieval.Chunking'
+            : 'Other.Path.Leaf',
+    })),
+};
+
+const renderNestedShell = () => {
+    const scoreSummary = createScoreSummary(nestedDataset);
+    return render(
+        <ReportContextProvider dataset={nestedDataset} scoreSummary={scoreSummary}>
+            <AppShell heightStrategy="fill-viewport" themeSource="toggle">
+                <div>Report body</div>
+            </AppShell>
+        </ReportContextProvider>,
+    );
+};
+
 const scopeTrigger = (scope = 'All scenarios') => screen.getByRole('button', {
     name: `Change report scope. Current scenario: ${scope}.`,
 });
@@ -70,7 +91,7 @@ afterEach(() => {
 });
 
 describe('mobile report scope drawer', () => {
-    it('shows the live scope name and keeps the drawer open while selections change', async () => {
+    it('closes after every row selection but stays open for execution changes', async () => {
         renderShell();
         const trigger = scopeTrigger();
         expect(trigger).toHaveTextContent('All scenarios');
@@ -90,18 +111,79 @@ describe('mobile report scope drawer', () => {
         expect(drawer.getByRole('tree')).toHaveAccessibleName('Scenarios');
 
         fireEvent.click(drawer.getByRole('treeitem', { name: /^TextSummary/ }));
+        await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Report scope' })).not.toBeInTheDocument());
+        await waitFor(() => expect(scopeTrigger('Comparison.TextSummary')).toHaveFocus());
+
+        fireEvent.click(scopeTrigger('Comparison.TextSummary'));
+        const reopened = await screen.findByRole('dialog', { name: 'Report scope' });
+        const reopenedDrawer = within(reopened);
+
+        fireEvent.click(reopenedDrawer.getByRole('combobox', { name: 'Execution' }));
+        fireEvent.click(await screen.findByRole('option', { name: 'exec-v2' }));
+
+        expect(reopened).toBeInTheDocument();
+        expect(scopeTrigger('Comparison.TextSummary')).toHaveTextContent('Comparison.TextSummary');
+        expect(reopenedDrawer.getByRole('combobox', { name: 'Execution' })).toHaveValue('exec-v2');
+
+        fireEvent.click(reopenedDrawer.getByRole('treeitem', { name: /^TextSummary/ }));
+        await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Report scope' })).not.toBeInTheDocument());
+        await waitFor(() => expect(scopeTrigger('Comparison.TextSummary')).toHaveFocus());
+        expect(scopeTrigger('Comparison.TextSummary')).toHaveTextContent('Comparison.TextSummary');
+
+        fireEvent.click(scopeTrigger('Comparison.TextSummary'));
+        const selectedDialog = await screen.findByRole('dialog', { name: 'Report scope' });
+        const selectedDrawer = within(selectedDialog);
+        expect(selectedDrawer.getByRole('treeitem', { name: /^TextSummary/ })).toHaveAttribute('aria-selected', 'true');
+        fireEvent.keyDown(selectedDrawer.getByRole('treeitem', { name: 'All scenarios' }), { key: 'Enter' });
+        await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Report scope' })).not.toBeInTheDocument());
+        await waitFor(() => expect(scopeTrigger()).toHaveFocus());
+
+        const ids = [...document.querySelectorAll<HTMLElement>('[id]')].map((element) => element.id);
+        expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('shares nested expansion across trees and reconciles ancestors after execution changes', async () => {
+        renderNestedShell();
+        fireEvent.click(scopeTrigger());
+        let dialog = await screen.findByRole('dialog', { name: 'Report scope' });
+        let drawer = within(dialog);
+
+        expect(drawer.getByRole('treeitem', { name: /^RAG/ })).toHaveAttribute('aria-expanded', 'true');
+        expect(drawer.getByRole('treeitem', { name: /^Retrieval/ })).toBeInTheDocument();
+
+        fireEvent.click(drawer.getByRole('button', { name: 'Expand Retrieval' }));
+        fireEvent.click(drawer.getByRole('treeitem', { name: /^Chunking/ }));
+        await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Report scope' })).not.toBeInTheDocument());
+        await waitFor(() => expect(scopeTrigger('RAG.Retrieval.Chunking')).toHaveFocus());
+
+        fireEvent.click(scopeTrigger('RAG.Retrieval.Chunking'));
+        dialog = await screen.findByRole('dialog', { name: 'Report scope' });
+        drawer = within(dialog);
+        expect(drawer.getByRole('treeitem', { name: /^RAG/ })).toHaveAttribute('aria-expanded', 'true');
+        expect(drawer.getByRole('treeitem', { name: /^Retrieval/ })).toHaveAttribute('aria-expanded', 'true');
+        expect(drawer.getByRole('treeitem', { name: /^Chunking/ })).toHaveAttribute('aria-selected', 'true');
+
+        const desktopNavigation = document.querySelector<HTMLElement>('.eval-sidebar');
+        expect(desktopNavigation).not.toBeNull();
+        const desktop = within(desktopNavigation!);
+        expect(desktop.getByRole('treeitem', { name: /^RAG/, hidden: true })).toHaveAttribute('aria-expanded', 'true');
+        expect(desktop.getByRole('treeitem', { name: /^Retrieval/, hidden: true })).toHaveAttribute('aria-expanded', 'true');
+        expect(desktop.getByRole('treeitem', { name: /^Chunking/, hidden: true })).toHaveAttribute('aria-selected', 'true');
+
+        fireEvent.click(drawer.getByRole('button', { name: 'Collapse Other' }));
         expect(dialog).toBeInTheDocument();
-        expect(trigger).toHaveTextContent('Comparison.TextSummary');
+        fireEvent.click(drawer.getByRole('button', { name: 'Collapse RAG' }));
+        expect(drawer.getByRole('treeitem', { name: /^RAG/ })).toHaveAttribute('aria-expanded', 'false');
+        expect(drawer.queryByRole('treeitem', { name: /^Chunking/ })).not.toBeInTheDocument();
 
         fireEvent.click(drawer.getByRole('combobox', { name: 'Execution' }));
         fireEvent.click(await screen.findByRole('option', { name: 'exec-v2' }));
 
         expect(dialog).toBeInTheDocument();
-        expect(trigger).toHaveTextContent('Comparison.TextSummary');
-        expect(drawer.getByRole('combobox', { name: 'Execution' })).toHaveValue('exec-v2');
-
-        const ids = [...document.querySelectorAll<HTMLElement>('[id]')].map((element) => element.id);
-        expect(new Set(ids).size).toBe(ids.length);
+        await waitFor(() => expect(drawer.getByRole('treeitem', { name: /^RAG/ })).toHaveAttribute('aria-expanded', 'true'));
+        expect(drawer.getByRole('treeitem', { name: /^Retrieval/ })).toHaveAttribute('aria-expanded', 'true');
+        expect(drawer.getByRole('treeitem', { name: /^Chunking/ })).toHaveAttribute('aria-selected', 'true');
+        expect(drawer.getByRole('treeitem', { name: /^Other/ })).toHaveAttribute('aria-expanded', 'false');
     });
 
     it('keeps report state on scope open and preserves the AI button home behavior', async () => {
@@ -109,7 +191,6 @@ describe('mobile report scope drawer', () => {
         fireEvent.click(scopeTrigger());
         const dialog = await screen.findByRole('dialog', { name: 'Report scope' });
         fireEvent.click(within(dialog).getByRole('treeitem', { name: /^TextSummary/ }));
-        fireEvent.click(within(dialog).getByRole('button', { name: 'Close report scope' }));
         await waitFor(() => expect(scopeTrigger('Comparison.TextSummary')).toHaveFocus());
 
         fireEvent.click(screen.getByRole('tab', { name: 'History' }));
@@ -150,9 +231,11 @@ describe('mobile report scope drawer', () => {
 
     it('closes on the desktop breakpoint, focuses the selected desktop item, and removes its listener', async () => {
         const view = renderShell();
-        fireEvent.click(scopeTrigger());
-        const dialog = await screen.findByRole('dialog', { name: 'Report scope' });
-        fireEvent.click(within(dialog).getByRole('treeitem', { name: /^TextSummary/ }));
+        fireEvent.click(screen.getByRole('treeitem', { name: /^TextSummary/ }));
+        expect(document.querySelector('.eval-sidebar')).toBeInTheDocument();
+
+        fireEvent.click(scopeTrigger('Comparison.TextSummary'));
+        await screen.findByRole('dialog', { name: 'Report scope' });
 
         act(() => desktopQuery.setMatches(true));
 
