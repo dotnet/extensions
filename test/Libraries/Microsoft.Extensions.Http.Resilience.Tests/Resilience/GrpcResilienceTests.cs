@@ -97,7 +97,7 @@ public class GrpcResilienceTests
         // with a transient failure that the retry strategy is configured to handle.
         var client = CreateClient(
             builder => builder.AddStandardResilienceHandler(),
-            new TestHandlerStub((_, _) =>
+            () => new TestHandlerStub((_, _) =>
             {
                 cts.Cancel();
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { Version = HttpVersion.Version20 });
@@ -136,7 +136,7 @@ public class GrpcResilienceTests
         }
     }
 
-    private Greeter.GreeterClient CreateClient(Action<IHttpClientBuilder>? configure = null, HttpMessageHandler? primaryHandler = null)
+    private Greeter.GreeterClient CreateClient(Action<IHttpClientBuilder>? configure = null, Func<HttpMessageHandler>? primaryHandler = null)
     {
         var services = new ServiceCollection();
         var clientBuilder = services
@@ -144,7 +144,7 @@ public class GrpcResilienceTests
             {
                 options.Address = _host.GetTestServer().BaseAddress;
             })
-            .ConfigurePrimaryHttpMessageHandler(() => primaryHandler ?? _handler);
+            .ConfigurePrimaryHttpMessageHandler(primaryHandler ?? (() => _handler));
 
         configure?.Invoke(clientBuilder);
 
