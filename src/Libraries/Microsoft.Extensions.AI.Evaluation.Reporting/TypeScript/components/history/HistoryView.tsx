@@ -132,6 +132,7 @@ const useLocalStyles = makeStyles({
         fontWeight: 'var(--font-weight-semibold)',
         lineHeight: 1,
         fontVariantNumeric: 'tabular-nums',
+        overflowWrap: 'anywhere',
     },
     chartWrap: {
         marginBottom: 'var(--spacing-s-nudge)',

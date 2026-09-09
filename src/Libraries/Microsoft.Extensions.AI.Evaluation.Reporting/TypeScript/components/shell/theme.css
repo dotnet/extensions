@@ -477,10 +477,14 @@ body:has(.fluent-dark), body:has([data-theme="dark"]) { background: rgb(30, 30, 
 
 @media (max-width: 1200px) {
   .eval-twopane { grid-template-columns: 1fr !important; }
-  .eval-hist-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .eval-hist-stats { grid-template-columns: repeat(2, 1fr) !important; gap: var(--spacing-m) !important; }
   .eval-cmp-selector { flex-direction: column !important; align-items: stretch !important; }
   .eval-cmp-arrowwrap { align-items: center !important; justify-content: center !important; padding: var(--spacing-xs) 0 !important; }
   .eval-cmp-arrow { transform: rotate(90deg); }
+}
+@media (max-width: 640px) {
+  .eval-hist-stats { display: flex !important; flex-wrap: wrap; gap: var(--spacing-s) !important; }
+  .eval-hist-stats > * { box-sizing: border-box; flex: 1 0 auto; width: fit-content; min-width: calc((100% - var(--spacing-s)) / 2); max-width: 100%; padding: var(--spacing-m) !important; }
 }
 @media (min-width: 901px) {
   .eval-root .eval-sidebar { display: flex; }
