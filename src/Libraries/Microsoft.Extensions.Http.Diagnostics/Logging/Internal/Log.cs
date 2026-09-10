@@ -164,10 +164,11 @@ internal static partial class Log
         var httpMethod = request[startIndex].Value;
         var httpHost = request[startIndex + 1].Value;
         var httpPath = request[startIndex + 2].Value;
+        var separator = httpPath is string path && path.Length > 0 && path[0] == '/' ? string.Empty : "/";
 #if NET
-        return string.Create(CultureInfo.InvariantCulture, stackalloc char[256], $"{httpMethod} {httpHost}/{httpPath}");
+        return string.Create(CultureInfo.InvariantCulture, stackalloc char[256], $"{httpMethod} {httpHost}{separator}{httpPath}");
 #else
-        return FormattableString.Invariant($"{httpMethod} {httpHost}/{httpPath}");
+        return FormattableString.Invariant($"{httpMethod} {httpHost}{separator}{httpPath}");
 #endif
     }
 
