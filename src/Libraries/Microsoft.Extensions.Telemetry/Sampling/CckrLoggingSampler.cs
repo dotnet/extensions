@@ -25,6 +25,6 @@ internal sealed class CckrLoggingSampler : LoggingSampler
 
     /// <inheritdoc/>
     public override bool ShouldSample<TState>(in LogEntry<TState> logEntry)
-        => _buffer.Admit(logEntry.Category, logEntry.EventId);
+        => _buffer.Admit(logEntry.Category, logEntry.LogLevel, logEntry.EventId);
 }
 #endif

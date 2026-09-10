@@ -5,6 +5,7 @@ using System;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
@@ -16,9 +17,13 @@ public class CckrImpactBench
     private const int AdaptiveCapacity = 128;
 
     private ServiceProvider _baselineServices = null!;
+    private ServiceProvider _disabledServices = null!;
+    private ServiceProvider _retainAllPolicyServices = null!;
     private ServiceProvider _retainAllServices = null!;
     private ServiceProvider _adaptiveServices = null!;
     private ILogger[] _baselineLoggers = null!;
+    private ILogger[] _disabledLoggers = null!;
+    private ILogger[] _retainAllPolicyLoggers = null!;
     private ILogger[] _retainAllLoggers = null!;
     private ILogger[] _adaptiveLoggers = null!;
     private LogBuffer _retainAllBuffer = null!;
@@ -31,10 +36,14 @@ public class CckrImpactBench
     public void GlobalSetup()
     {
         _baselineServices = CreateServices();
+        _disabledServices = CreateServices(options => options.Enabled = false);
+        _retainAllPolicyServices = CreateServices(options => options.RetainAllCategories.Add("Benchmark.*"));
         _retainAllServices = CreateServices(RecordsPerMinute / LoggingBenchmarkWorkload.CategoryCount);
         _adaptiveServices = CreateServices(AdaptiveCapacity);
 
         _baselineLoggers = CreateLoggers(_baselineServices);
+        _disabledLoggers = CreateLoggers(_disabledServices);
+        _retainAllPolicyLoggers = CreateLoggers(_retainAllPolicyServices);
         _retainAllLoggers = CreateLoggers(_retainAllServices);
         _adaptiveLoggers = CreateLoggers(_adaptiveServices);
         _retainAllBuffer = _retainAllServices.GetRequiredService<LogBuffer>();
@@ -46,6 +55,8 @@ public class CckrImpactBench
     {
         _adaptiveServices.Dispose();
         _retainAllServices.Dispose();
+        _retainAllPolicyServices.Dispose();
+        _disabledServices.Dispose();
         _baselineServices.Dispose();
     }
 
@@ -60,6 +71,18 @@ public class CckrImpactBench
     public void NoSampling()
     {
         LoggingBenchmarkWorkload.LogBatch(_baselineLoggers, RecordsPerMinute);
+    }
+
+    [Benchmark]
+    public void CckrDisabled()
+    {
+        LoggingBenchmarkWorkload.LogBatch(_disabledLoggers, RecordsPerMinute);
+    }
+
+    [Benchmark]
+    public void CckrRetainAllPolicy()
+    {
+        LoggingBenchmarkWorkload.LogBatch(_retainAllPolicyLoggers, RecordsPerMinute);
     }
 
     [Benchmark]
@@ -90,20 +113,30 @@ public class CckrImpactBench
 
     private static ServiceProvider CreateServices(int? capacity = null)
     {
+        if (!capacity.HasValue)
+        {
+            return CreateServices((Action<ReservoirSamplingConfig>?)null);
+        }
+
+        return CreateServices(options =>
+        {
+            options.Capacity = capacity.Value;
+            options.PreserveCapacity = 0;
+            options.FlushInterval = TimeSpan.FromDays(1);
+        });
+    }
+
+    private static ServiceProvider CreateServices(Action<ReservoirSamplingConfig>? configure)
+    {
         var services = new ServiceCollection();
 
         services.AddLogging(builder =>
         {
             builder.AddProvider(new BenchLoggerProvider());
 
-            if (capacity.HasValue)
+            if (configure is not null)
             {
-                builder.AddCckrLogSampling(options =>
-                {
-                    options.Capacity = capacity.Value;
-                    options.PreserveCapacity = 0;
-                    options.FlushInterval = TimeSpan.FromDays(1);
-                });
+                builder.AddCckrLogSampling(configure);
             }
         });
 

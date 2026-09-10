@@ -10,6 +10,21 @@ Each benchmark invocation processes either 10,000 or 20,000 logs, representing o
 
 The shared deterministic workload uses four categories and sixteen event IDs. Event frequency is intentionally skewed: event 1 accounts for 70% of records, event 2 for 15%, event 3 for 8%, and the remaining 7% is spread across events 4 through 16. This exercises category/event rule caches and gives CCKR both frequent and rare callsites.
 
+.NET sampling benchmarks invoke each method eight times per iteration. Combined with the configured ten warmup iterations, each sampling benchmark process executes 80 warmup batches before measurement. Buffering and CCKR use one invocation per iteration so `IterationCleanup` empties retained state after every batch and each invocation continues to represent one minute of traffic.
+
+Benchmark worker processes disable tiered compilation with `DOTNET_TieredCompilation=0`. This makes every launch use optimized JIT-generated code from the start, avoiding tier-promotion differences between launches while retaining BenchmarkDotNet's ten warmup iterations.
+
+## Retained-memory measurement
+
+`--retained-memory` runs each pipeline outside BenchmarkDotNet, fills it with both record counts, and reports:
+
+- `Retained managed`: the change in live managed memory after a forced full collection.
+- `Peak managed`: the largest observed managed heap increase while filling the pipeline, including objects that may later be collected.
+- `Peak working set`: the largest observed increase in physical process memory.
+- `Peak private bytes`: the largest observed increase in committed private process memory.
+
+Memory is sampled every 256 records. Managed retained memory is the most useful comparison for buffers and sampler caches. Working-set and private-byte deltas are process-level measurements and can be affected by runtime heap reservation, operating-system paging, and earlier scenarios in the same process.
+
 The benchmarks process the minute's traffic as a batch rather than sleeping between logs. This keeps wall-clock waiting out of the measurements and isolates logging pipeline cost.
 
 ## Sampling benchmark
@@ -51,10 +66,50 @@ The buffer is sized to retain all batches from a measured iteration and automati
 - `NoSampling` is the baseline and sends every log directly to `BenchLogger`.
 - `CckrRetainAll` gives the reservoir enough capacity for the selected record count and measures admission plus buffering with no drops.
 - `CckrRetainAllAndFlush` adds emission of every retained log, making downstream provider work equivalent to the baseline.
+- `CckrDisabled` measures the options-monitor and policy-check overhead of a registered CCKR pipeline with its kill switch disabled.
+- `CckrRetainAllPolicy` measures the category-pattern bypass used for protected telemetry.
 - `CckrAdaptive` uses a representative fixed capacity of 128 per category (up to 512 records across the four-category workload) for the selected one-minute period and measures the adaptive high-volume path without flush cost.
 - `CckrAdaptiveAndFlush` includes emission of the adaptive reservoir at the period boundary.
 
 The novelty preserve is disabled so retained records are controlled only by the configured reservoir capacity. Automatic time-based flushing is moved beyond the benchmark duration, and iteration cleanup flushes both reservoirs outside the measurement. CCKR uses random ranks, so adaptive results should be interpreted from the full BenchmarkDotNet run rather than a single invocation.
+
+## Serialized-exporter benchmark
+
+`SerializedExporterImpactBench` is independent from the sampler and buffering microbenchmarks. It uses a dedicated provider that formats retained messages and serializes their category, level, EventId, event name, formatted message, exception, and structured attributes to UTF-8 JSON in a reusable buffer. It performs no terminal, disk, or network I/O.
+
+Each strategy is compared with a no-sampling pipeline using the same serialized exporter:
+
+- `RandomOnePercent` immediately exports approximately 1% of records.
+- `RandomByCategory` applies the same 1% high-volume, 100% critical, and 10% fallback rules as the sampling microbenchmark.
+- `TraceRetain` exports every record from a recorded activity.
+- `TraceDrop` drops every record from an unrecorded activity.
+- `CckrOnePercent` uses a per-category reservoir sized to retain approximately 1% across all four categories and includes the required flush and weighted-record serialization in the measured operation.
+
+This suite measures whether avoided formatting and serialization offset sampling overhead. The exporter retains the last serialized payload in its reusable output buffer, preserving all serialization work while keeping external I/O noise out of the results.
+
+`--serialized-exporter-volume` runs the same pipelines with exporter counters enabled and reports the actual number of records and UTF-8 bytes emitted. Counters are disabled in the timed benchmark so metric collection does not affect performance results.
+
+## Category-cardinality benchmark
+
+`CategoryCardinalityImpactBench` is an independent serialized-exporter suite for 20,000 records and 50, 100, or 200 categories. Both random sampling and CCKR use a 1% output budget. At 20,000 records each category receives enough traffic for an integral CCKR capacity of 4, 2, or 1 respectively. This measures rule-cache, logger, per-category reservoir, flush, and serialization scaling as category cardinality grows.
+
+## Multithreaded contention benchmark
+
+`MultithreadedSamplingImpactBench` processes 20,000 records across 100 shared categories using 1, 4, or 8 workers. Worker record indices are interleaved so workers concurrently target the same category instead of operating on disjoint category ranges. It uses the lightweight provider to emphasize sampler synchronization and compares random 1% with CCKR 1%, including the CCKR flush.
+
+## Sustained GC-pressure measurement
+
+`--sustained-gc` compares random 1% sampling with CCKR under a production-shaped, two-minute run at 10,000 logs per minute. Each strategy runs in an isolated worker process after pipeline warmup and a forced-GC baseline. CCKR uses its configurable 30-second automatic flush interval, producing four sampling periods, and both strategies use the serialized exporter with output counters enabled.
+
+An optional positive integer argument overrides the logging rate while retaining the two-minute duration and 30-second flush interval. A second optional argument overrides the CCKR flush interval in seconds. This supports higher-volume stress runs that generate enough allocation traffic to observe collections and compares the effect of record lifetime:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --sustained-gc 1000000 1
+```
+
+The diagnostic reports input and emitted volume, exporter batch callbacks, total allocated bytes, Gen0/Gen1/Gen2 collection counts, cumulative GC pause time, process CPU time, CPU time as a percentage of wall time, peak managed-memory growth, and retained managed memory after a final forced collection. The final forced collection is performed after the collection counts, pause time, and CPU time are captured, so it does not contribute to those pressure measurements. Process working-set polling is intentionally left to the separate retained-memory diagnostic because repeatedly refreshing operating-system process counters would distort CPU measurements at this logging rate.
+
+At four categories, an exact 1% CCKR budget would require 12.5 records per category per 30-second period. The integer capacity is therefore 12 records per category, or 48 of each 5,000-record period (0.96%). Actual emitted volume is reported beside random sampling's probabilistic output.
 
 ## Running
 
@@ -62,6 +117,36 @@ From the repository root:
 
 ```powershell
 dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SamplingImpactBench* *BufferingImpactBench* *CckrImpactBench*
+```
+
+Run the independent serialized-exporter comparison:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SerializedExporterImpactBench*
+```
+
+Validate actual serialized output volume:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --serialized-exporter-volume
+```
+
+Run category-cardinality and multithreaded contention benchmarks:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *CategoryCardinalityImpactBench* *MultithreadedSamplingImpactBench*
+```
+
+Measure retained and peak memory separately:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --retained-memory
+```
+
+Run the isolated two-minute-per-strategy sustained GC-pressure comparison:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --sustained-gc
 ```
 
 Run on an otherwise idle machine with a fixed power plan. Compare `Mean`, `Ratio`, `Allocated`, and GC columns. Retain the generated BenchmarkDotNet artifacts with the machine, OS, runtime, and processor metadata when comparing changes over time.

@@ -44,6 +44,7 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
 
     private Dictionary<TCallsite, long> _freqPrev;
     private Dictionary<TCallsite, long> _freqCurr;
+    private double _samplingTau;
     private long _seqCounter;
 
     /// <summary>
@@ -80,6 +81,7 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
         _seqCounter = 0;
         ReserveLength = 0;
         Tau = double.PositiveInfinity;
+        _samplingTau = double.PositiveInfinity;
 
         // Until the first flush every callsite is "unseen" with weight 1.0, i.e. we behave as a
         // uniform reservoir.
@@ -164,7 +166,7 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
     {
         _ = Throw.IfNull(output);
 
-        double finalTau = Tau;
+        double finalTau = _samplingTau;
 
         // (1) Drain the bottom-T heap with Horvitz-Thompson weights.
         foreach (var entry in _heap)
@@ -221,6 +223,7 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
 
         _freqCurr.Clear();
         Tau = double.PositiveInfinity;
+        _samplingTau = double.PositiveInfinity;
     }
 
     /// <inheritdoc/>
@@ -272,6 +275,7 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
         if (_heap.Count > _reservoirCapacity)
         {
             HeapEntry evicted = HeapPopMax();
+            _samplingTau = evicted.Key;
 
             // The evicted entry may be the one just pushed (when its key is the new maximum), in which
             // case the increment and decrement cancel.
@@ -284,8 +288,8 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
                 }
             }
 
-            // The (T+1)-th smallest rank is gone; the new root is the largest of the remaining T
-            // smallest, which is the new threshold.
+            // Admission uses the largest retained rank. Estimation separately uses the evicted
+            // (T+1)-th rank, which is the inclusion cutoff for the retained records.
             Tau = _heap[0].Key;
         }
     }
