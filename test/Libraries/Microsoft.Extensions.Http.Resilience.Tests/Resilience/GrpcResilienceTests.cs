@@ -4,7 +4,9 @@
 #if !NETFRAMEWORK
 
 using System;
+using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Grpc.Core;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http.Resilience.Test.Grpc;
+using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Polly;
 using Xunit;
 
@@ -84,6 +87,41 @@ public class GrpcResilienceTests
         response.Message.Should().Be("HI!");
     }
 
+    [Theory]
+    [CombinatorialData]
+    public async Task SayHello_StandardResilience_CancelledWhileAttemptCompletes_Cancelled(bool asynchronous)
+    {
+        using var cts = new CancellationTokenSource();
+
+        // The caller cancels while the attempt is in flight, and the attempt then completes
+        // with a transient failure that the retry strategy is configured to handle.
+        var client = CreateClient(
+            builder => builder.AddStandardResilienceHandler(),
+            () => new TestHandlerStub((_, _) =>
+            {
+                cts.Cancel();
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { Version = HttpVersion.Version20 });
+            }));
+
+        var act = () => SendRequest(client, asynchronous, cts.Token);
+
+        (await act.Should().ThrowAsync<RpcException>()).Which.StatusCode.Should().Be(StatusCode.Cancelled);
+    }
+
+    private static Task<HelloReply> SendRequest(Greeter.GreeterClient client, bool asynchronous, CancellationToken cancellationToken)
+    {
+        var request = new HelloRequest { Name = "dummy" };
+
+        if (asynchronous)
+        {
+            return client.SayHelloAsync(request, cancellationToken: cancellationToken).ResponseAsync;
+        }
+        else
+        {
+            return Task.FromResult(client.SayHello(request, cancellationToken: cancellationToken));
+        }
+    }
+
     private static Task<HelloReply> SendRequest(Greeter.GreeterClient client, bool asynchronous)
     {
         var request = new HelloRequest { Name = "dummy" };
@@ -98,7 +136,7 @@ public class GrpcResilienceTests
         }
     }
 
-    private Greeter.GreeterClient CreateClient(Action<IHttpClientBuilder>? configure = null)
+    private Greeter.GreeterClient CreateClient(Action<IHttpClientBuilder>? configure = null, Func<HttpMessageHandler>? primaryHandler = null)
     {
         var services = new ServiceCollection();
         var clientBuilder = services
@@ -106,7 +144,7 @@ public class GrpcResilienceTests
             {
                 options.Address = _host.GetTestServer().BaseAddress;
             })
-            .ConfigurePrimaryHttpMessageHandler(() => _handler);
+            .ConfigurePrimaryHttpMessageHandler(primaryHandler ?? (() => _handler));
 
         configure?.Invoke(clientBuilder);
 
