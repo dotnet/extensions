@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.DataIngestion.Abstractions\Microsoft.Extensions.DataIngestion.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.DocumentExtraction.Abstractions\Microsoft.Extensions.DocumentExtraction.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
   </ItemGroup>
 

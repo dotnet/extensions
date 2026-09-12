@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.DocumentExtraction</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.DocumentExtraction.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1063;CA1861;S104;SA1130;VSTHRD003;MEDE0001</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.DocumentExtraction.Abstractions.Tests\TestDocumentExtractionClient.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
+    <PackageReference Include="OpenTelemetry.Api" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))">
+    <PackageReference Include="System.Linq.AsyncEnumerable" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DocumentExtraction.Abstractions\Microsoft.Extensions.DocumentExtraction.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.DocumentExtraction\Microsoft.Extensions.DocumentExtraction.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+</Project>
