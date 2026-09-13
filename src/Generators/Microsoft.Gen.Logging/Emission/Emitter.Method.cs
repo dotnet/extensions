@@ -347,7 +347,7 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (NeedsASlot(p) && !p.HasDataClassification)
                     {
-                        var key = $"\"{p.TagName}\"";
+                        var key = EscapeMessageString(p.TagName);
                         string value;
 
                         if (p.IsEnumerable)
@@ -386,7 +386,7 @@ internal sealed partial class Emitter : EmitterBase
                                     ? $"{LoggerMessageHelperType}.Stringify({accessExpression})"
                                     : ts;
 
-                                OutLn($"{stateName}.TagArray[{--count}] = new(\"{propName}\", {value});");
+                                OutLn($"{stateName}.TagArray[{--count}] = new({EscapeMessageString(propName)}, {value});");
                             }
                         });
                     }
@@ -402,7 +402,7 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (NeedsASlot(p) && p.HasDataClassification)
                     {
-                        var key = $"\"{p.TagName}\"";
+                        var key = EscapeMessageString(p.TagName);
                         var classification = MakeClassificationValue(p.ClassificationAttributeTypes);
 
                         var value = ShouldStringifyParameter(p)
@@ -430,7 +430,7 @@ internal sealed partial class Emitter : EmitterBase
 
                                 var classification = MakeClassificationValue(member.ClassificationAttributeTypes);
 
-                                OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new(\"{propName}\", {value}, {classification});");
+                                OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new({EscapeMessageString(propName)}, {value}, {classification});");
                             }
                         });
                     }
@@ -466,14 +466,14 @@ internal sealed partial class Emitter : EmitterBase
                                 OutLn($"var {tmpVarName} = {value};");
                                 OutLn($"if ({tmpVarName} != null)");
                                 OutOpenBrace();
-                                OutLn($"{stateName}.AddClassifiedTag(\"{propName}\", {tmpVarName}, {classification});");
+                                OutLn($"{stateName}.AddClassifiedTag({EscapeMessageString(propName)}, {tmpVarName}, {classification});");
                                 OutCloseBrace();
                                 OutCloseBrace();
                                 OutLn();
                             }
                             else
                             {
-                                OutLn($"{stateName}.AddClassifiedTag(\"{propName}\", {value}, {classification});");
+                                OutLn($"{stateName}.AddClassifiedTag({EscapeMessageString(propName)}, {value}, {classification});");
                             }
                         }
                         else
@@ -496,7 +496,7 @@ internal sealed partial class Emitter : EmitterBase
                                     OutOpenBrace();
                                     OutLn($"if ({accessExpression} != null)");
                                     OutOpenBrace();
-                                    OutLn($"{stateName}.AddTag(\"{propName}\", {value});");
+                                    OutLn($"{stateName}.AddTag({EscapeMessageString(propName)}, {value});");
                                     OutCloseBrace();
                                     OutCloseBrace();
                                     OutLn();
@@ -507,7 +507,7 @@ internal sealed partial class Emitter : EmitterBase
                                     OutLn($"var {tmpVarName} = {value};");
                                     OutLn($"if ({tmpVarName} != null)");
                                     OutOpenBrace();
-                                    OutLn($"{stateName}.AddTag(\"{propName}\", {tmpVarName});");
+                                    OutLn($"{stateName}.AddTag({EscapeMessageString(propName)}, {tmpVarName});");
                                     OutCloseBrace();
                                     OutCloseBrace();
                                     OutLn();
@@ -515,7 +515,7 @@ internal sealed partial class Emitter : EmitterBase
                             }
                             else
                             {
-                                OutLn($"{stateName}.AddTag(\"{propName}\", {value});");
+                                OutLn($"{stateName}.AddTag({EscapeMessageString(propName)}, {value});");
                             }
                         }
                     });
@@ -536,7 +536,7 @@ internal sealed partial class Emitter : EmitterBase
                             : PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
 
                         var tagNamePrefix = prefix.Length > 0
-                            ? $"\"{prefix}\""
+                            ? EscapeMessageString(prefix)
                             : "string.Empty";
 
                         var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");

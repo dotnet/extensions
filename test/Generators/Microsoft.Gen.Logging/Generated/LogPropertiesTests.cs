@@ -683,4 +683,54 @@ public class LogPropertiesTests
         Assert.Equal("Bar", state["objectToLog.PropertyToProvide.provided.property"]);
         Assert.Contains("{OriginalFormat}", state);
     }
+
+    [Fact]
+    public void LogPropertiesSupportsTagProviderOnTransitivelyNestedProperty()
+    {
+        var objectToLog = new ClassToLogWithNestedTagProvider
+        {
+            Nested = new NestedPropertyToProvide
+            {
+                LeafToProvide = new PropertyToProvide { Value = "Foo" },
+                OmittedLeafToProvide = new PropertyToProvide { Value = "Bar" }
+            }
+        };
+
+        TagAttributesOnPropertiesExtensions.LogObjectWithNestedTagProvider(_logger, objectToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+
+        var state = _logger.Collector.LatestRecord.StructuredState!
+            .ToDictionary(p => p.Key, p => p.Value);
+
+        Assert.Equal(3, state.Count);
+        Assert.Equal("Foo", state["objectToLog.nested.tag.custom.leaf.ProvidedProperty"]);
+        Assert.Equal("Bar", state["objectToLog.nested.tag.ProvidedProperty"]);
+        Assert.Contains("{OriginalFormat}", state);
+    }
+
+    [Fact]
+    public void LogPropertiesSupportsTagProviderOnTransitivelyNestedPropertyWhenOmittingParameterName()
+    {
+        var objectToLog = new ClassToLogWithNestedTagProvider
+        {
+            Nested = new NestedPropertyToProvide
+            {
+                LeafToProvide = new PropertyToProvide { Value = "Foo" },
+                OmittedLeafToProvide = new PropertyToProvide { Value = "Bar" }
+            }
+        };
+
+        TagAttributesOnPropertiesExtensions.LogObjectWithNestedTagProviderOmitParameterName(_logger, objectToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+
+        var state = _logger.Collector.LatestRecord.StructuredState!
+            .ToDictionary(p => p.Key, p => p.Value);
+
+        Assert.Equal(3, state.Count);
+        Assert.Equal("Foo", state["nested.tag.custom.leaf.ProvidedProperty"]);
+        Assert.Equal("Bar", state["nested.tag.ProvidedProperty"]);
+        Assert.Contains("{OriginalFormat}", state);
+    }
 }

@@ -24,6 +24,16 @@ namespace TestClasses
         internal static partial void LogObjectWithTagAttributesSkipNulls(
             ILogger logger,
             [LogProperties(SkipNullProperties = true)] ClassToLogWithTagAttributes objectToLog);
+
+        [LoggerMessage(3, LogLevel.Information, "Testing TagProvider on a nested property when transitively logging properties...")]
+        internal static partial void LogObjectWithNestedTagProvider(
+            ILogger logger,
+            [LogProperties(Transitive = true)] ClassToLogWithNestedTagProvider objectToLog);
+
+        [LoggerMessage(4, LogLevel.Information, "Testing TagProvider on a nested property when transitively logging properties and omitting the parameter name...")]
+        internal static partial void LogObjectWithNestedTagProviderOmitParameterName(
+            ILogger logger,
+            [LogProperties(Transitive = true, OmitReferenceName = true)] ClassToLogWithNestedTagProvider objectToLog);
     }
 
     internal sealed class ClassToLogWithTagAttributes
@@ -47,6 +57,23 @@ namespace TestClasses
     internal sealed class PropertyToProvide
     {
         public string? Value { get; set; }
+    }
+
+    internal sealed class ClassToLogWithNestedTagProvider
+    {
+        [TagName("nested.tag")]
+        public NestedPropertyToProvide Nested { get; set; } = new();
+    }
+
+    internal sealed class NestedPropertyToProvide
+    {
+        [TagName("custom.leaf")]
+        [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideForNullableClass))]
+        public PropertyToProvide LeafToProvide { get; set; } = new();
+
+        [TagName("omitted.leaf")]
+        [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideForNullableClass), OmitReferenceName = true)]
+        public PropertyToProvide OmittedLeafToProvide { get; set; } = new();
     }
 
 #pragma warning restore SA1402 // File may only contain a single type
