@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Gen.Logging.Parsing;
+using Microsoft.Gen.Shared;
 using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
@@ -402,5 +405,64 @@ public partial class ParserTests
             }}";
 
         await RunGenerator(source, DiagDescriptors.TagProviderMethodInaccessible);
+    }
+
+    [Fact]
+    public async Task TagNameAndTagProviderOnProperties()
+    {
+        const string Source = @"
+            namespace Test
+            {
+                using Microsoft.Extensions.Logging;
+
+                class MyClass
+                {
+                    [TagName(""custom.name"")]
+                    public string? Property { get; set; }
+
+                    [TagProvider(typeof(Provider), nameof(Provider.Provide))]
+                    public PropertyToProvide? PropertyToProvide { get; set; }
+                }
+
+                class PropertyToProvide
+                {
+                    public string? Value { get; set; }
+                }
+
+                static class Provider
+                {
+                    public static void Provide(ITagCollector collector, PropertyToProvide? p)
+                    {
+                    }
+                }
+
+                partial class C
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
+                    static partial void M(ILogger logger, [LogProperties] MyClass p1);
+                }
+            }";
+
+        var (d, r) = await RoslynTestUtils.RunGenerator(
+            new LoggingGenerator(),
+            new[]
+            {
+                Assembly.GetAssembly(typeof(ILogger))!,
+                Assembly.GetAssembly(typeof(LoggerMessageAttribute))!,
+                Assembly.GetAssembly(typeof(ITagCollector))!,
+            },
+            [Source],
+            []);
+
+        Assert.Empty(d);
+
+        var generatedSource = Assert.Single(r).SourceText.ToString();
+
+        // the [TagName] attribute applied on a property is used as the tag name
+        Assert.Contains("\"p1.custom.name\"", generatedSource);
+
+        // the [TagProvider] attribute applied on a property invokes the provider method
+        Assert.Contains("state.TagNamePrefix = \"p1.PropertyToProvide\";", generatedSource);
+        Assert.Contains("global::Test.Provider.Provide(state, p1?.PropertyToProvide);", generatedSource);
     }
 }

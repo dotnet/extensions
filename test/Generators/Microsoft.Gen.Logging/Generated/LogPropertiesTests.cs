@@ -370,8 +370,8 @@ public class LogPropertiesTests
             ["P0"] = StringParamValue,
             ["p1.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["p1.MyStringProperty"] = classToLog.MyStringProperty,
-            ["p1.AnotherStringProperty"] = classToLog.AnotherStringProperty,
-            ["{OriginalFormat}"] = "LogProperties: {P0}"
+            ["{OriginalFormat}"] = "LogProperties: {P0}",
+            ["p1.AnotherStringProperty.NestedTagProvider"] = classToLog.AnotherStringProperty
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
@@ -608,5 +608,79 @@ public class LogPropertiesTests
         Assert.Contains("logObject.PropertyToLog", state);
         Assert.Contains("logObject.FieldToLog.Name", state);
         Assert.Contains("logObject.FieldToLog.Value", state);
+    }
+
+    [Fact]
+    public void LogPropertiesSupportsTagNameAndTagProviderOnProperties()
+    {
+        var objectToLog = new ClassToLogWithTagAttributes
+        {
+            PropertyToLog = "Foo",
+            StringPropertyToProvide = "Bar",
+            IntPropertyToProvide = 42,
+            PropertyToProvide = new PropertyToProvide { Value = "Baz" },
+            OmittedPropertyToProvide = new PropertyToProvide { Value = "Qux" }
+        };
+
+        TagAttributesOnPropertiesExtensions.LogObjectWithTagAttributes(_logger, objectToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+
+        var state = _logger.Collector.LatestRecord.StructuredState!
+            .ToDictionary(p => p.Key, p => p.Value);
+
+        Assert.Equal(6, state.Count);
+        Assert.Equal("Foo", state["objectToLog.property.to.log"]);
+        Assert.Equal("Bar", state["objectToLog.StringPropertyToProvide.NestedTagProvider"]);
+        Assert.Equal(objectToLog.IntPropertyToProvide.ToInvariantString(), state["objectToLog.IntPropertyToProvide.ProvidedInt"]);
+        Assert.Equal("Baz", state["objectToLog.PropertyToProvide.ProvidedProperty"]);
+        Assert.Equal("Qux", state["objectToLog.ProvidedProperty"]);
+        Assert.Contains("{OriginalFormat}", state);
+    }
+
+    [Fact]
+    public void LogPropertiesSupportsTagNameAndTagProviderOnPropertiesWhenSkippingNulls()
+    {
+        var objectToLog = new ClassToLogWithTagAttributes
+        {
+            PropertyToLog = null,
+            StringPropertyToProvide = "Bar",
+            IntPropertyToProvide = 42,
+            PropertyToProvide = null
+        };
+
+        TagAttributesOnPropertiesExtensions.LogObjectWithTagAttributesSkipNulls(_logger, objectToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+
+        var state = _logger.Collector.LatestRecord.StructuredState!
+            .ToDictionary(p => p.Key, p => p.Value);
+
+        Assert.Equal(3, state.Count);
+        Assert.Equal("Bar", state["objectToLog.StringPropertyToProvide.NestedTagProvider"]);
+        Assert.Equal(objectToLog.IntPropertyToProvide.ToInvariantString(), state["objectToLog.IntPropertyToProvide.ProvidedInt"]);
+        Assert.Contains("{OriginalFormat}", state);
+    }
+
+    [Fact]
+    public void LogPropertiesSupportsTagNameAndTagProviderOnPropertiesFromAnotherAssembly()
+    {
+        var objectToLog = new ObjectToLogWithTagAttributes
+        {
+            PropertyToLog = "Foo",
+            PropertyToProvide = new ProvidedProperty { Value = "Bar" }
+        };
+
+        TagAttributesOnPropertiesExtensions.LogObjectWithTagAttributesFromAnotherAssembly(_logger, objectToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+
+        var state = _logger.Collector.LatestRecord.StructuredState!
+            .ToDictionary(p => p.Key, p => p.Value);
+
+        Assert.Equal(3, state.Count);
+        Assert.Equal("Foo", state["objectToLog.property.to.log"]);
+        Assert.Equal("Bar", state["objectToLog.PropertyToProvide.provided.property"]);
+        Assert.Contains("{OriginalFormat}", state);
     }
 }
