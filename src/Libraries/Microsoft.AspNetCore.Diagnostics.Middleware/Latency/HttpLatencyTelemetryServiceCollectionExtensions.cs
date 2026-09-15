@@ -19,8 +19,9 @@ public static class HttpLatencyTelemetryServiceCollectionExtensions
     /// <exception cref="System.ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The latency data this enricher reads is populated by the request latency telemetry services. Call
-    /// <c>AddRequestLatencyTelemetry</c> and <c>AddRequestCheckpoint</c>, and add the corresponding middleware to the
-    /// request pipeline, so that an <see cref="Microsoft.Extensions.Diagnostics.Latency.ILatencyContext"/> is available for each request.
+    /// <c>AddLatencyContext</c>, <c>AddRequestLatencyTelemetry</c>, and <c>AddRequestCheckpoint</c>, and add the
+    /// middleware to the request pipeline with <c>UseRequestCheckpoint</c> and <c>UseRequestLatencyTelemetry</c>, so
+    /// that an <see cref="Microsoft.Extensions.Diagnostics.Latency.ILatencyContext"/> is available for each request.
     /// </remarks>
     public static IServiceCollection AddHttpLatencyTelemetry(this IServiceCollection services)
     {
