@@ -15,6 +15,7 @@ using Azure.Storage.Files.DataLake;
 using Azure.Storage.Files.DataLake.Models;
 using Azure.Storage.Files.DataLake.Specialized;
 using Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
+using Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
@@ -189,6 +190,10 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
         string? scenarioName = null,
         string? iterationName = null)
     {
+        PathValidation.ValidatePathSegment(executionName, nameof(executionName));
+        PathValidation.ValidatePathSegment(scenarioName, nameof(scenarioName));
+        PathValidation.ValidatePathSegment(iterationName, nameof(iterationName));
+
         if (executionName is null)
         {
             return ($"{ResultsRootPrefix}/", isDir: true);

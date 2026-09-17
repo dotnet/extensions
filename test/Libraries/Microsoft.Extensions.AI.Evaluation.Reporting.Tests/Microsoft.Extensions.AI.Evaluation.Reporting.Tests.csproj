@@ -16,7 +16,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting.Azure\Microsoft.Extensions.AI.Evaluation.Reporting.Azure.csproj" />
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Evaluation.Reporting\CSharp\Microsoft.Extensions.AI.Evaluation.Reporting.csproj">
+      <Aliases>global, Reporting</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
