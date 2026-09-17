@@ -388,6 +388,10 @@ public class OpenAIResponseClientTests
                     {
                       "type": "reasoning_text",
                       "text": "Compute 1+2+3+4+5=15. Need final concise."
+                    },
+                    {
+                      "type": "output_text",
+                      "text": "This is not reasoning and must not be surfaced."
                     }
                   ]
                 },

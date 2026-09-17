@@ -966,6 +966,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 foreach (JsonElement part in document.RootElement.EnumerateArray())
                 {
                     if (part.ValueKind == JsonValueKind.Object &&
+                        part.TryGetProperty("type"u8, out JsonElement typeElement) &&
+                        typeElement.ValueEquals("reasoning_text"u8) &&
                         part.TryGetProperty("text"u8, out JsonElement textElement) &&
                         textElement.ValueKind == JsonValueKind.String)
                     {
