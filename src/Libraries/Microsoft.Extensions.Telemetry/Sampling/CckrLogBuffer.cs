@@ -167,9 +167,9 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
 
     private static bool MatchesAnyCategory(string category, IList<string> patterns)
     {
-        foreach (string pattern in patterns)
+        for (int i = 0; i < patterns.Count; i++)
         {
-            if (MatchesCategory(category, pattern))
+            if (MatchesCategory(category, patterns[i]))
             {
                 return true;
             }

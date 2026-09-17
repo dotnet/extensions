@@ -73,6 +73,20 @@ The buffer is sized to retain all batches from a measured iteration and automati
 
 The novelty preserve is disabled so retained records are controlled only by the configured reservoir capacity. Automatic time-based flushing is moved beyond the benchmark duration, and iteration cleanup flushes both reservoirs outside the measurement. CCKR uses random ranks, so adaptive results should be interpreted from the full BenchmarkDotNet run rather than a single invocation.
 
+### CCKR log-level policy cost
+
+`CckrLogLevelPolicyBench` isolates the incremental cost of the retain-all log-level decision. Both pipelines process the same Information-only workload with the same CCKR capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline has an empty `RetainAllLogLevels` collection. The comparison scans `Error` and `Critical`, neither of which matches, so both pipelines perform equivalent CCKR admission and retain equivalent output.
+
+The benchmark measures the full logging path. `LogLevel` is already present on `LogEntry`; reading it does not construct or parse a value. The reported delta therefore covers passing that field into CCKR and checking the two configured retain-all levels.
+
+### CCKR category policy cost
+
+`CckrCategoryPolicyBench` isolates the incremental cost of checking retain-all category patterns. Both pipelines use the same CCKR configuration and workload. The comparison checks two non-matching wildcard patterns, `Contoso.Security.*` and `Contoso.Audit.*`, so every record continues through the same adaptive CCKR path as the baseline.
+
+### CCKR EventId policy cost
+
+`CckrEventIdPolicyBench` isolates the incremental cost of checking retain-all EventIds. The comparison checks two non-matching identifiers, `10001` and `10002`. The workload uses EventIds 1 through 16, so every record continues through the same adaptive CCKR path as the baseline.
+
 ## Serialized-exporter benchmark
 
 `SerializedExporterImpactBench` is independent from the sampler and buffering microbenchmarks. It uses a dedicated provider that formats retained messages and serializes their category, level, EventId, event name, formatted message, exception, and structured attributes to UTF-8 JSON in a reusable buffer. It performs no terminal, disk, or network I/O.
@@ -123,6 +137,18 @@ Run the independent serialized-exporter comparison:
 
 ```powershell
 dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SerializedExporterImpactBench*
+```
+
+Measure the incremental CCKR log-level policy cost:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *CckrLogLevelPolicyBench*
+```
+
+Measure category and EventId retain-all policy costs independently:
+
+```powershell
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *CckrCategoryPolicyBench* *CckrEventIdPolicyBench*
 ```
 
 Validate actual serialized output volume:
