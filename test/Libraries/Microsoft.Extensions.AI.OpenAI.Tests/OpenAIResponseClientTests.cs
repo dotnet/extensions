@@ -465,6 +465,131 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task ReasoningContent_SkipsMalformedParts_NonStreaming()
+    {
+        const string Input = """
+            {
+                "model":"openai/gpt-oss-20b",
+                "input":[{
+                    "type":"message",
+                    "role":"user",
+                    "content":[{"type":"input_text","text":"Say hello."}]
+                }]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "resp_77d327649b288191aeb46a824e49dc40058a5e08c46a181f",
+              "object": "response",
+              "created_at": 1741891428,
+              "status": "completed",
+              "error": null,
+              "incomplete_details": null,
+              "instructions": null,
+              "model": "openai/gpt-oss-20b",
+              "output": [
+                {
+                  "type": "reasoning",
+                  "id": "rs_01",
+                  "summary": []
+                },
+                {
+                  "type": "reasoning",
+                  "id": "rs_02",
+                  "summary": [],
+                  "content": { "unexpected": "shape" }
+                },
+                {
+                  "type": "reasoning",
+                  "id": "rs_03",
+                  "summary": [],
+                  "content": [
+                    "a bare string",
+                    { "text": "no type" },
+                    { "type": "reasoning_text" },
+                    { "type": "reasoning_text", "text": 123 },
+                    { "type": "output_text", "text": "not reasoning" }
+                  ]
+                },
+                {
+                  "type": "reasoning",
+                  "id": "rs_04",
+                  "summary": [],
+                  "content": [
+                    { "type": "reasoning_text", "text": 123 },
+                    { "type": "reasoning_text", "text": "kept" }
+                  ]
+                },
+                {
+                  "type": "message",
+                  "id": "msg_77d32764fcdc8191bcf2e444d4088804058a5e08c46a181d",
+                  "status": "completed",
+                  "role": "assistant",
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "Hello!",
+                      "annotations": []
+                    }
+                  ]
+                }
+              ],
+              "parallel_tool_calls": true,
+              "previous_response_id": null,
+              "reasoning": {
+                "effort": null,
+                "generate_summary": null
+              },
+              "store": true,
+              "temperature": 1.0,
+              "text": {
+                "format": {
+                  "type": "text"
+                }
+              },
+              "tool_choice": "auto",
+              "tools": [],
+              "top_p": 1.0,
+              "usage": {
+                "input_tokens": 5,
+                "input_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "output_tokens": 2,
+                "output_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "total_tokens": 7
+              },
+              "user": null,
+              "metadata": {}
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "openai/gpt-oss-20b");
+
+        ChatResponse response = await client.GetResponseAsync("Say hello.");
+
+        ChatMessage message = response.Messages.Single();
+        Assert.Equal(5, message.Contents.Count);
+
+        // Items with no "content", a non-array "content", or only malformed parts produce no reasoning text.
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.Empty(Assert.IsType<TextReasoningContent>(message.Contents[i]).Text);
+        }
+
+        TextReasoningContent reasoning = Assert.IsType<TextReasoningContent>(message.Contents[3]);
+        Assert.Equal("kept", reasoning.Text);
+
+        TextContent text = Assert.IsType<TextContent>(message.Contents[4]);
+        Assert.Equal("Hello!", text.Text);
+    }
+
+    [Fact]
     public async Task ReasoningTextDelta_Streaming()
     {
         const string Input = """
