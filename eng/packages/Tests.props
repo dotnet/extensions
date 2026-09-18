@@ -28,7 +28,7 @@
     <!-- Lift CVE-impacted transitive dependency; remove once the direct dependency updates. -->
     <PackageVersion Include="OpenTelemetry.Api" Version="1.15.3" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.9.0" />
-    <PackageVersion Include="Polly.Testing" Version="8.4.2" />
+    <PackageVersion Include="Polly.Testing" Version="8.7.0" />
     <PackageVersion Include="SharpFuzz" Version="2.1.1" />
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
