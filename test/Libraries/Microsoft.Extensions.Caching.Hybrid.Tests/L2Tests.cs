@@ -32,13 +32,13 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
         T IOptions<T>.Value => value;
     }
 
-    private ServiceProvider GetDefaultCache(bool buffers, out DefaultHybridCache cache)
+    private ServiceProvider GetDefaultCache(bool buffers, out DefaultHybridCache cache, bool disableLocalCacheSerialization = false)
     {
         var services = new ServiceCollection();
         var localCacheOptions = new Options<MemoryDistributedCacheOptions>(new());
         var localCache = new MemoryDistributedCache(localCacheOptions);
         services.AddSingleton<IDistributedCache>(buffers ? new BufferLoggingCache(Log, localCache) : new LoggingCache(Log, localCache));
-        services.AddHybridCache();
+        services.AddHybridCache(options => options.DisableLocalCacheSerialization = disableLocalCacheSerialization);
         ServiceProvider provider = services.BuildServiceProvider();
         cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         return provider;
@@ -153,6 +153,54 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
         var t = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString(true) }), _expiry);
         Assert.NotEqual(s.Value, t.Value);
         Assert.Equal(12, backend.OpCount); // GET, SET
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DisableLocalCacheSerialization_ReturnsSameMutableInstance(bool buffers)
+    {
+        using var provider = GetDefaultCache(buffers, out var cache, disableLocalCacheSerialization: true);
+        var backend = Assert.IsAssignableFrom<LoggingCache>(cache.BackendCache);
+
+        Foo original = await cache.GetOrCreateAsync(Me(), _ => new ValueTask<Foo>(new Foo { Value = "value" }));
+        Foo fromL1 = await cache.GetOrCreateAsync(Me(), _ => new ValueTask<Foo>(new Foo { Value = "unused" }));
+
+        Assert.Same(original, fromL1);
+
+        cache.LocalCache.Remove(Me());
+        Foo fromL2 = await cache.GetOrCreateAsync(Me(), _ => new ValueTask<Foo>(new Foo { Value = "unused" }));
+        Foo fromL1AfterL2 = await cache.GetOrCreateAsync(Me(), _ => new ValueTask<Foo>(new Foo { Value = "unused" }));
+
+        Assert.NotSame(original, fromL2);
+        Assert.Same(fromL2, fromL1AfterL2);
+        Assert.Equal(4, backend.OpCount); // wildcard timestamp GET, GET, SET, GET
+    }
+
+    [Fact]
+    public async Task DisableLocalCacheSerialization_DoesNotSerializeWhenCacheWritesAreDisabled()
+    {
+        var services = new ServiceCollection();
+        services.AddHybridCache(options => options.DisableLocalCacheSerialization = true);
+        services.AddSingleton<IHybridCacheSerializer<Foo>>(new ThrowingFooSerializer());
+        using ServiceProvider provider = services.BuildServiceProvider();
+        HybridCache cache = provider.GetRequiredService<HybridCache>();
+        var value = new Foo { Value = "value" };
+        var options = new HybridCacheEntryOptions
+        {
+            Flags = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite,
+        };
+
+        Foo actual = await cache.GetOrCreateAsync(Me(), _ => new ValueTask<Foo>(value), options);
+
+        Assert.Same(value, actual);
+    }
+
+    private sealed class ThrowingFooSerializer : IHybridCacheSerializer<Foo>
+    {
+        public Foo Deserialize(ReadOnlySequence<byte> source) => throw new NotSupportedException();
+
+        public void Serialize(Foo value, IBufferWriter<byte> target) => throw new NotSupportedException();
     }
 
     private class BufferLoggingCache : LoggingCache, IBufferDistributedCache
