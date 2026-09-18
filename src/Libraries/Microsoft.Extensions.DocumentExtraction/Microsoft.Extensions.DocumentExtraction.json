@@ -1,0 +1,167 @@
+{
+  "Name": "Microsoft.Extensions.DocumentExtraction, Version=10.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.ConfigureOptionsDocumentExtractionClient : Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.ConfigureOptionsDocumentExtractionClient.ConfigureOptionsDocumentExtractionClient(Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient, System.Action<Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.ConfigureOptionsDocumentExtractionClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResult> Microsoft.Extensions.DocumentExtraction.ConfigureOptionsDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DocumentExtraction.ConfigureOptionsDocumentExtractionClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DocumentExtraction.ConfigureOptionsDocumentExtractionClientBuilderExtensions.ConfigureOptions(this Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder builder, System.Action<Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions> configure);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder.DocumentExtractionClientBuilder(Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder.DocumentExtractionClientBuilder(System.Func<System.IServiceProvider, Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient> innerClientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder.Build(System.IServiceProvider? services = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder.Use(System.Func<Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient, Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient> clientFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder.Use(System.Func<Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient, System.IServiceProvider, Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient> clientFactory);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilderExtensions.AsBuilder(this Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.DocumentExtractionClientBuilderServiceCollectionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DependencyInjection.DocumentExtractionClientBuilderServiceCollectionExtensions.AddDocumentExtractionClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DependencyInjection.DocumentExtractionClientBuilderServiceCollectionExtensions.AddDocumentExtractionClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, System.Func<System.IServiceProvider, Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DependencyInjection.DocumentExtractionClientBuilderServiceCollectionExtensions.AddKeyedDocumentExtractionClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DependencyInjection.DocumentExtractionClientBuilderServiceCollectionExtensions.AddKeyedDocumentExtractionClient(this Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, object? serviceKey, System.Func<System.IServiceProvider, Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient> innerClientFactory, Microsoft.Extensions.DependencyInjection.ServiceLifetime lifetime = Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient : Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient.LoggingDocumentExtractionClient(Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient, Microsoft.Extensions.Logging.ILogger logger);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResult> Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient.JsonSerializerOptions { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClientBuilderExtensions.UseLogging(this Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, System.Action<Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient : Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient.OpenTelemetryDocumentExtractionClient(Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient, Microsoft.Extensions.Logging.ILogger? logger = null, string? sourceName = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient.ExtractAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResult> Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override object? Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient.EnableSensitiveData { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClientBuilderExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClientBuilderExtensions.UseOpenTelemetry(this Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientBuilder builder, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null, string? sourceName = null, System.Action<Microsoft.Extensions.DocumentExtraction.OpenTelemetryDocumentExtractionClient>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}
