@@ -125,6 +125,7 @@ For example:
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddLatencyContext();
 builder.Services.AddRequestLatencyTelemetry();
 builder.Services.AddRequestCheckpoint();
 builder.Services.AddHttpLatencyTelemetry();
