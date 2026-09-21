@@ -81,12 +81,21 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
         (string path, _) = GetResultPath(executionName, scenarioName);
         DataLakeDirectoryClient subClient = client.GetSubDirectoryClient(path);
 
+        var iterationNames = new List<string>();
+
 #pragma warning disable S3254 // Default parameter value (for 'recursive') should not be passed as argument.
         await foreach (PathItem item in
             subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
 #pragma warning restore S3254
         {
-            yield return StripExtension(GetLastSegmentFromPath(item.Name));
+            iterationNames.Add(StripExtension(GetLastSegmentFromPath(item.Name)));
+        }
+
+        iterationNames.Sort(IterationNameComparer.Default);
+
+        foreach (string iterationName in iterationNames)
+        {
+            yield return iterationName;
         }
     }
 
