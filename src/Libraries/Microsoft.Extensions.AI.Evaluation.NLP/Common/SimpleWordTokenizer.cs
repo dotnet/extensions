@@ -191,6 +191,7 @@ internal static class SimpleWordTokenizer
                     continue;
                 }
 
+                // Keep punctuation that sits between digits ("1,000.50"), but leave trailing punctuation ("42.") as its own token.
                 while (!text.IsEmpty && (char.IsNumber(text.Span[0]) || IsPunctuationFollowedByNumber(text.Span)))
                 {
                     _ = sb.Append(text.Span[0]);
