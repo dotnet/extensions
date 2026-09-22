@@ -38,7 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.Extensions.AI.Evaluation.Reporting.Azure" />
     <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Integration.Tests" />
     <InternalsVisibleToTest Include="Microsoft.Extensions.AI.Evaluation.Reporting.Tests" />
   </ItemGroup>

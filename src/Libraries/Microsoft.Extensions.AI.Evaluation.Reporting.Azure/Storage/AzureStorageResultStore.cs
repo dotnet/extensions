@@ -81,7 +81,7 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
         (string path, _) = GetResultPath(executionName, scenarioName);
         DataLakeDirectoryClient subClient = client.GetSubDirectoryClient(path);
 
-        var iterationNames = new List<string>();
+        List<string> iterationNames = [];
 
 #pragma warning disable S3254 // Default parameter value (for 'recursive') should not be passed as argument.
         await foreach (PathItem item in
@@ -91,9 +91,7 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
             iterationNames.Add(StripExtension(GetLastSegmentFromPath(item.Name)));
         }
 
-        iterationNames.Sort(IterationNameComparer.Default);
-
-        foreach (string iterationName in iterationNames)
+        foreach (string iterationName in iterationNames.OrderBy(name => name, IterationNameComparer.Default))
         {
             yield return iterationName;
         }

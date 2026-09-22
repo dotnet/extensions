@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias Reporting;
+
+using System;
 using System.Globalization;
-using Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 using Xunit;
+using IterationNameComparer = Reporting::Microsoft.Extensions.AI.Evaluation.Reporting.Utilities.IterationNameComparer;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 
@@ -22,7 +25,7 @@ public class IterationNameComparerTests
     [InlineData("1", "01", 1)]
     public void ComparesIterationNames(string first, string second, int expected)
     {
-        Assert.Equal(expected, System.Math.Sign(IterationNameComparer.Default.Compare(first, second)));
+        Assert.Equal(expected, Math.Sign(IterationNameComparer.Default.Compare(first, second)));
     }
 
     [Fact]
