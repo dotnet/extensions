@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
 
@@ -24,6 +26,7 @@ public abstract class LoggingSampler
     /// only the supplied values and ambient state. It may be called more than once for the same log record,
     /// so implementations should return a stable decision. The default implementation enables the log record.
     /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public virtual bool ShouldSample(string categoryName, LogLevel logLevel) => true;
 
     /// <summary>
