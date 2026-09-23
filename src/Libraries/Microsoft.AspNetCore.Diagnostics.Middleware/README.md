@@ -100,7 +100,7 @@ For example:
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRequestLatencyTelemetry();
-builder.Services.AddRequestCheckpoint(options => { });
+builder.Services.AddRequestCheckpoint();
 
 var app = builder.Build();
 
@@ -128,6 +128,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddLatencyContext();
 builder.Services.AddRequestLatencyTelemetry();
 builder.Services.AddRequestCheckpoint();
+builder.Services.AddHttpLogging();
 builder.Services.AddHttpServerLatencyTelemetry();
 
 var app = builder.Build();
