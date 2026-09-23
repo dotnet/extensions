@@ -8,20 +8,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.Latency.Test;
 
-public class HttpLatencyTelemetryServiceCollectionExtensionsTests
+public class HttpServerLatencyTelemetryTests
 {
     [Fact]
-    public void AddHttpLatencyTelemetry_NullArguments_Throws()
+    public void AddHttpServerLatencyTelemetry_NullArguments_Throws()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            HttpLatencyTelemetryServiceCollectionExtensions.AddHttpLatencyTelemetry(null!));
+            HttpLoggingServiceCollectionExtensions.AddHttpServerLatencyTelemetry(null!));
     }
 
     [Fact]
-    public void AddHttpLatencyTelemetry_RegistersEnricher()
+    public void AddHttpServerLatencyTelemetry_RegistersEnricher()
     {
         using var serviceProvider = new ServiceCollection()
-            .AddHttpLatencyTelemetry()
+            .AddHttpServerLatencyTelemetry()
             .BuildServiceProvider();
 
         var enricher = serviceProvider.GetRequiredService<IHttpLogEnricher>();

@@ -117,7 +117,7 @@ This API is only available for ASP.NET Core 8+.
 The enricher can be registered using the following method:
 
 ```csharp
-public static IServiceCollection AddHttpLatencyTelemetry(this IServiceCollection services)
+public static IServiceCollection AddHttpServerLatencyTelemetry(this IServiceCollection services)
 ```
 
 For example:
@@ -128,7 +128,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddLatencyContext();
 builder.Services.AddRequestLatencyTelemetry();
 builder.Services.AddRequestCheckpoint();
-builder.Services.AddHttpLatencyTelemetry();
+builder.Services.AddHttpServerLatencyTelemetry();
 
 var app = builder.Build();
 
