@@ -145,7 +145,6 @@ steps:
       displayName: Pack docs transport package
 
     - pwsh: |
-          $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.Tests.ps1
           $(Build.SourcesDirectory)/src/Libraries/Microsoft.Extensions.AI.Evaluation.Reporting/TypeScript/azure-devops-report/build.ps1 -OutputPath $(Build.Arcade.VSIXOutputPath)
       displayName: Build Azure DevOps plugin
 
