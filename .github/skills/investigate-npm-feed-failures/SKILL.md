@@ -56,7 +56,7 @@ verbose pkgid <package>@<tarball-url>
 npm parses the server's JSON response body but replaces it with generic login guidance for E401. Use an anonymous GET to see Azure Artifacts' actual explanation:
 
 ```powershell
-curl.exe --silent --show-error <tarball-url>
+curl.exe --silent --show-error --write-out "`nHTTP %{http_code}`n" <tarball-url>
 ```
 
 Do not use `curl --head`; Azure npm tarball endpoints can return 405 for HEAD while GET works.
