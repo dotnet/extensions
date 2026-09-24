@@ -583,8 +583,8 @@ public class OpenAIConversionTests
         Assert.NotNull(result);
         var tool = Assert.IsType<McpTool>(result);
         Assert.NotNull(tool.ToolCallApprovalPolicy);
-        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
-        Assert.Equal(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.DefaultPolicy);
+        Assert.Equal(DefaultMcpToolCallApprovalPolicy.AlwaysRequireApproval, tool.ToolCallApprovalPolicy.DefaultPolicy);
     }
 
     [Fact]
@@ -600,8 +600,8 @@ public class OpenAIConversionTests
         Assert.NotNull(result);
         var tool = Assert.IsType<McpTool>(result);
         Assert.NotNull(tool.ToolCallApprovalPolicy);
-        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
-        Assert.Equal(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.DefaultPolicy);
+        Assert.Equal(DefaultMcpToolCallApprovalPolicy.NeverRequireApproval, tool.ToolCallApprovalPolicy.DefaultPolicy);
     }
 
     [Fact]
