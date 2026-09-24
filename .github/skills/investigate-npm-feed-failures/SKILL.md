@@ -109,4 +109,4 @@ Feed remediation and failure propagation are separate:
 - Importing the package fixes the immediate restore.
 - Native npm/npx exit codes must still terminate `build.ps1`; otherwise CI can remain false green or package stale dependencies.
 
-When changing diagnostics, preserve the original exit code, bound any extra network request, and only replay anonymous requests to the known public feed. Never print or replay credentials for private registries.
+When changing diagnostics, preserve the original exit code, bound any extra network request, and only replay anonymous requests to the known public feed.
