@@ -6,15 +6,67 @@ param (
 
 $ErrorActionPreference = "Stop"
 
+function Write-NpmFailureDetails {
+    param (
+        [string]$LogDirectory
+    )
+
+    $LogFile = Get-ChildItem -LiteralPath $LogDirectory -Filter "*-debug-0.log" |
+        Sort-Object LastWriteTimeUtc -Descending |
+        Select-Object -First 1
+
+    if ($null -eq $LogFile) {
+        return
+    }
+
+    $RequestMatch = Select-String -LiteralPath $LogFile.FullName -Pattern "\bhttp fetch GET [45]\d\d (?<Uri>https?://\S+)" |
+        Select-Object -Last 1
+
+    if ($null -eq $RequestMatch) {
+        return
+    }
+
+    $Uri = $RequestMatch.Matches[0].Groups["Uri"].Value
+    Write-Host "npm request failed: '$Uri'."
+
+    $PublicRegistry = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/"
+    if (-not $Uri.StartsWith($PublicRegistry, [StringComparison]::OrdinalIgnoreCase)) {
+        return
+    }
+
+    try {
+        $Details = Invoke-RestMethod -Uri $Uri -SkipHttpErrorCheck -ConnectionTimeoutSeconds 10 -OperationTimeoutSeconds 10
+        if (-not [string]::IsNullOrWhiteSpace($Details.error)) {
+            Write-Host "Azure Artifacts response: $($Details.error)"
+        }
+    }
+    catch {
+        Write-Warning "Unable to retrieve Azure Artifacts failure details: $_"
+    }
+}
+
 function Invoke-NativeCommand {
     param (
         [string]$Command,
         [string[]]$Arguments
     )
 
+    $NpmLogDirectory = $null
+    if ($Command -in @("npm", "npx")) {
+        $NpmCache = & npm config get cache
+        if ($LASTEXITCODE -eq 0) {
+            $NpmLogDirectory = Join-Path $NpmCache "_logs"
+        }
+    }
+
     & $Command @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "'$Command $($Arguments -join ' ')' failed with exit code $LASTEXITCODE."
+    $ExitCode = $LASTEXITCODE
+
+    if ($ExitCode -ne 0 -and $null -ne $NpmLogDirectory) {
+        Write-NpmFailureDetails $NpmLogDirectory
+    }
+    if ($ExitCode -ne 0) {
+        throw "'$Command $($Arguments -join ' ')' failed with exit code $ExitCode."
     }
 }
 
