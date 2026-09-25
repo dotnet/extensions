@@ -187,6 +187,12 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
             },
             tags: ["tag"]);
 
+        // This is guaranteed to succeed, because the all GetOrCreateAsync code until the tag read is executed synchronously.
+        Assert.True(delayed.TagReadStarted);
+
+        Assert.False(read.IsCompleted);
+        delayed.CompleteTagRead();
+
         Assert.Equal("regenerated", await read);
         Assert.True(factoryRan);
 
@@ -319,21 +325,28 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
     private sealed class DelayedTagReadCache(IDistributedCache tail, string tag) : IDistributedCache
     {
         private readonly TaskCompletionSource<bool> _entryWritten = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<byte[]?> _tagRead = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly string _tagKey = "__MSFT_HCT__" + tag;
 
         public Task EntryWritten => _entryWritten.Task;
+        public bool TagReadStarted { get; private set; }
 
         public byte[]? Get(string key) => tail.Get(key);
 
-        public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Usage",
+            "VSTHRD003:Avoid awaiting or returning a Task representing work that was not started within your context",
+            Justification = "The test controls completion.")]
+        public Task<byte[]?> GetAsync(string key, CancellationToken token = default)
         {
             if (key == _tagKey)
             {
-                // This makes entering the pending tag invalidation path very likely, but not guaranteed.
-                await Task.Delay(100, token);
+                TagReadStarted = true;
+                return _tagRead.Task;
             }
 
-            return await tail.GetAsync(key, token);
+            // Complete entry reads synchronously so parsing reaches the gated tag check before returning to the test.
+            return Task.FromResult(tail.Get(key));
         }
 
         public void Refresh(string key) => tail.Refresh(key);
@@ -355,6 +368,8 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
                 _entryWritten.TrySetResult(true);
             }
         }
+
+        public void CompleteTagRead() => _tagRead.SetResult(tail.Get(_tagKey));
     }
 
     private static string Me([CallerMemberName] string caller = "") => caller;
