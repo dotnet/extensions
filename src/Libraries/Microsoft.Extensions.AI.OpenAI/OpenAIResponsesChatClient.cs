@@ -830,11 +830,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 switch (mcpTool.ApprovalMode)
                 {
                     case HostedMcpServerToolAlwaysRequireApprovalMode:
-                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval);
+                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(DefaultMcpToolCallApprovalPolicy.AlwaysRequireApproval);
                         break;
 
                     case HostedMcpServerToolNeverRequireApprovalMode:
-                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval);
+                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(DefaultMcpToolCallApprovalPolicy.NeverRequireApproval);
                         break;
 
                     case HostedMcpServerToolRequireSpecificApprovalMode specificMode:
