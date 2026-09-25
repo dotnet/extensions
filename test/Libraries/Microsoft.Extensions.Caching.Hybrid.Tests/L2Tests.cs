@@ -322,7 +322,7 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
         }
     }
 
-    private sealed class DelayedTagReadCache(IDistributedCache tail, string tag) : IDistributedCache
+    private sealed class DelayedTagReadCache(IDistributedCache inner, string tag) : IDistributedCache
     {
         private readonly TaskCompletionSource<bool> _entryWritten = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly TaskCompletionSource<byte[]?> _tagRead = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -331,7 +331,7 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
         public Task EntryWritten => _entryWritten.Task;
         public bool TagReadStarted { get; private set; }
 
-        public byte[]? Get(string key) => tail.Get(key);
+        public byte[]? Get(string key) => inner.Get(key);
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Usage",
@@ -346,22 +346,22 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
             }
 
             // Complete entry reads synchronously so parsing reaches the gated tag check before returning to the test.
-            return Task.FromResult(tail.Get(key));
+            return Task.FromResult(inner.Get(key));
         }
 
-        public void Refresh(string key) => tail.Refresh(key);
+        public void Refresh(string key) => inner.Refresh(key);
 
-        public Task RefreshAsync(string key, CancellationToken token = default) => tail.RefreshAsync(key, token);
+        public Task RefreshAsync(string key, CancellationToken token = default) => inner.RefreshAsync(key, token);
 
-        public void Remove(string key) => tail.Remove(key);
+        public void Remove(string key) => inner.Remove(key);
 
-        public Task RemoveAsync(string key, CancellationToken token = default) => tail.RemoveAsync(key, token);
+        public Task RemoveAsync(string key, CancellationToken token = default) => inner.RemoveAsync(key, token);
 
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => tail.Set(key, value, options);
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => inner.Set(key, value, options);
 
         public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
         {
-            await tail.SetAsync(key, value, options, token);
+            await inner.SetAsync(key, value, options, token);
 
             if (key == "key")
             {
@@ -369,7 +369,7 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
             }
         }
 
-        public void CompleteTagRead() => _tagRead.SetResult(tail.Get(_tagKey));
+        public void CompleteTagRead() => _tagRead.SetResult(inner.Get(_tagKey));
     }
 
     private static string Me([CallerMemberName] string caller = "") => caller;
