@@ -225,12 +225,12 @@ internal partial class DefaultHybridCache
                         // result is the wider payload including HC headers; unwrap it:
                         HybridCachePayload.HybridCachePayloadParseResult parseResult = HybridCachePayload.TryParse(
                             result.AsArraySegment(), Key.Key, CacheItem.Tags, Cache, out ArraySegment<byte> payload, out TimeSpan remainingTime,
-                            out HybridCachePayload.PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault);
+                            out HybridCachePayload.PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out long creationTime, out Exception? fault);
                         switch (parseResult)
                         {
                             case HybridCachePayload.HybridCachePayloadParseResult.Success:
                                 // check any pending expirations, if necessary
-                                if (pendingTags.IsEmpty || !await Cache.IsAnyTagExpiredAsync(pendingTags, CacheItem.CreationTimestamp).ConfigureAwait(false))
+                                if (pendingTags.IsEmpty || !await Cache.IsAnyTagExpiredAsync(pendingTags, creationTime).ConfigureAwait(false))
                                 {
                                     // move into the payload segment (minus any framing/header/etc data)
                                     result = new(payload.Array!, payload.Offset, payload.Count, result.ReturnToPool);

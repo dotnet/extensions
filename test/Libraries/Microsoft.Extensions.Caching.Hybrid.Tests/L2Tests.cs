@@ -155,6 +155,51 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
         Assert.Equal(12, backend.OpCount); // GET, SET
     }
 
+    [Fact]
+    public async Task PendingTagInvalidationUsesPayloadCreationTimestamp()
+    {
+        var clock = new DistributedCacheTests.FakeTime();
+        var shared = new MemoryDistributedCache(new Options<MemoryDistributedCacheOptions>(new()));
+        var delayed = new DelayedTagReadCache(shared, "tag");
+
+        // Provider A doesn't need delayed behavior, but can't use the MemoryDistributedCache,
+        // because HybridCache ignores it when combined with MemoryCache.
+        using var providerA = CreateNode(delayed, clock);
+        using var providerB = CreateNode(delayed, clock);
+        var cacheA = providerA.GetRequiredService<HybridCache>();
+        var cacheB = providerB.GetRequiredService<HybridCache>();
+
+        await cacheA.SetAsync("key", "original", tags: ["tag"]);
+        await delayed.EntryWritten;
+
+        clock.Add(TimeSpan.FromSeconds(1));
+        await cacheA.RemoveByTagAsync("tag");
+        Assert.NotNull(await shared.GetAsync("__MSFT_HCT__tag"));
+        clock.Add(TimeSpan.FromSeconds(1));
+
+        bool factoryRan = false;
+        ValueTask<string> read = cacheB.GetOrCreateAsync(
+            "key",
+            _ =>
+            {
+                factoryRan = true;
+                return new ValueTask<string>("regenerated");
+            },
+            tags: ["tag"]);
+
+        Assert.Equal("regenerated", await read);
+        Assert.True(factoryRan);
+
+        static ServiceProvider CreateNode(IDistributedCache backend, TimeProvider clock)
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton(backend);
+            services.AddSingleton(clock);
+            services.AddHybridCache();
+            return services.BuildServiceProvider();
+        }
+    }
+
     private class BufferLoggingCache : LoggingCache, IBufferDistributedCache
     {
         public BufferLoggingCache(ITestOutputHelper log, IDistributedCache tail)
@@ -268,6 +313,47 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
             Interlocked.Increment(ref ProtectedOpCount);
             Log.WriteLine($"SetAsync (byte[]): {key} (expiry: {options.AbsoluteExpirationRelativeToNow})");
             return Tail.SetAsync(key, value, options, token);
+        }
+    }
+
+    private sealed class DelayedTagReadCache(IDistributedCache tail, string tag) : IDistributedCache
+    {
+        private readonly TaskCompletionSource<bool> _entryWritten = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly string _tagKey = "__MSFT_HCT__" + tag;
+
+        public Task EntryWritten => _entryWritten.Task;
+
+        public byte[]? Get(string key) => tail.Get(key);
+
+        public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+        {
+            if (key == _tagKey)
+            {
+                // This makes entering the pending tag invalidation path very likely, but not guaranteed.
+                await Task.Delay(100, token);
+            }
+
+            return await tail.GetAsync(key, token);
+        }
+
+        public void Refresh(string key) => tail.Refresh(key);
+
+        public Task RefreshAsync(string key, CancellationToken token = default) => tail.RefreshAsync(key, token);
+
+        public void Remove(string key) => tail.Remove(key);
+
+        public Task RemoveAsync(string key, CancellationToken token = default) => tail.RemoveAsync(key, token);
+
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options) => tail.Set(key, value, options);
+
+        public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+        {
+            await tail.SetAsync(key, value, options, token);
+
+            if (key == "key")
+            {
+                _entryWritten.TrySetResult(true);
+            }
         }
     }
 

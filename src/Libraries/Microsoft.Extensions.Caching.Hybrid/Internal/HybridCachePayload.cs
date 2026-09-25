@@ -171,12 +171,14 @@ internal static class HybridCachePayload
         "SA1122:Use string.Empty for empty strings", Justification = "Subjective, but; ugly")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:Static elements should appear before instance elements", Justification = "False positive?")]
     public static HybridCachePayloadParseResult TryParse(ArraySegment<byte> source, string key, TagSet knownTags, DefaultHybridCache cache,
-        out ArraySegment<byte> payload, out TimeSpan remainingTime, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags, out Exception? fault)
+        out ArraySegment<byte> payload, out TimeSpan remainingTime, out PayloadFlags flags, out ushort entropy, out TagSet pendingTags,
+        out long creationTime, out Exception? fault)
     {
         fault = null;
 
         // note "cache" is used primarily for expiration checks; we don't automatically add etc
         entropy = 0;
+        creationTime = 0;
         payload = default;
         flags = 0;
         remainingTime = TimeSpan.Zero;
@@ -198,7 +200,7 @@ internal static class HybridCachePayload
             {
                 case UInt16SentinelPrefixPair:
                     entropy = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(2));
-                    long creationTime = BinaryPrimitives.ReadInt64LittleEndian(bytes.Slice(4));
+                    creationTime = BinaryPrimitives.ReadInt64LittleEndian(bytes.Slice(4));
                     bytes = bytes.Slice(12); // the end of the fixed part
 
                     if (cache.IsWildcardExpired(creationTime))
