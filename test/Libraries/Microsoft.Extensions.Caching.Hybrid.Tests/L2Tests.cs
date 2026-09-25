@@ -187,7 +187,7 @@ public class L2Tests(ITestOutputHelper log) : IClassFixture<TestEventListener>
             },
             tags: ["tag"]);
 
-        // This is guaranteed to succeed, because the all GetOrCreateAsync code until the tag read is executed synchronously.
+        // This is guaranteed to succeed, because all GetOrCreateAsync code until the tag read is executed synchronously.
         Assert.True(delayed.TagReadStarted);
 
         Assert.False(read.IsCompleted);
