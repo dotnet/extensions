@@ -100,7 +100,7 @@ For example:
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRequestLatencyTelemetry();
-builder.Services.AddRequestCheckpoint(options => { });
+builder.Services.AddRequestCheckpoint();
 
 var app = builder.Build();
 
@@ -117,7 +117,7 @@ This API is only available for ASP.NET Core 8+.
 The enricher can be registered using the following method:
 
 ```csharp
-public static IServiceCollection AddHttpLatencyTelemetry(this IServiceCollection services)
+public static IServiceCollection AddHttpServerLatencyTelemetry(this IServiceCollection services)
 ```
 
 For example:
@@ -125,9 +125,11 @@ For example:
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddLatencyContext();
 builder.Services.AddRequestLatencyTelemetry();
 builder.Services.AddRequestCheckpoint();
-builder.Services.AddHttpLatencyTelemetry();
+builder.Services.AddHttpLogging();
+builder.Services.AddHttpServerLatencyTelemetry();
 
 var app = builder.Build();
 
