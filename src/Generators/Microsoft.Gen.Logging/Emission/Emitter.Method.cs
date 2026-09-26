@@ -305,6 +305,12 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     p.TraverseParameterPropertiesTransitively((_, member) =>
                     {
+                        if (member.HasTagProvider)
+                        {
+                            // tag providers emit their tags dynamically, so there's nothing to reserve
+                            return;
+                        }
+
                         if (member.HasDataClassification)
                         {
                             numClassifiedTags++;
@@ -341,7 +347,7 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (NeedsASlot(p) && !p.HasDataClassification)
                     {
-                        var key = $"\"{p.TagName}\"";
+                        var key = EscapeMessageString(p.TagName);
                         string value;
 
                         if (p.IsEnumerable)
@@ -367,7 +373,7 @@ internal sealed partial class Emitter : EmitterBase
                     {
                         p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                         {
-                            if (!member.HasDataClassification)
+                            if (!member.HasDataClassification && !member.HasTagProvider)
                             {
                                 var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
@@ -380,7 +386,7 @@ internal sealed partial class Emitter : EmitterBase
                                     ? $"{LoggerMessageHelperType}.Stringify({accessExpression})"
                                     : ts;
 
-                                OutLn($"{stateName}.TagArray[{--count}] = new(\"{propName}\", {value});");
+                                OutLn($"{stateName}.TagArray[{--count}] = new({EscapeMessageString(propName)}, {value});");
                             }
                         });
                     }
@@ -396,7 +402,7 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (NeedsASlot(p) && p.HasDataClassification)
                     {
-                        var key = $"\"{p.TagName}\"";
+                        var key = EscapeMessageString(p.TagName);
                         var classification = MakeClassificationValue(p.ClassificationAttributeTypes);
 
                         var value = ShouldStringifyParameter(p)
@@ -413,7 +419,7 @@ internal sealed partial class Emitter : EmitterBase
                     {
                         p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                         {
-                            if (member.HasDataClassification)
+                            if (member.HasDataClassification && !member.HasTagProvider)
                             {
                                 var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
@@ -424,7 +430,7 @@ internal sealed partial class Emitter : EmitterBase
 
                                 var classification = MakeClassificationValue(member.ClassificationAttributeTypes);
 
-                                OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new(\"{propName}\", {value}, {classification});");
+                                OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new({EscapeMessageString(propName)}, {value}, {classification});");
                             }
                         });
                     }
@@ -437,6 +443,12 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                     {
+                        if (member.HasTagProvider)
+                        {
+                            // tag providers are invoked separately below
+                            return;
+                        }
+
                         if (member.HasDataClassification)
                         {
                             var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
@@ -454,14 +466,14 @@ internal sealed partial class Emitter : EmitterBase
                                 OutLn($"var {tmpVarName} = {value};");
                                 OutLn($"if ({tmpVarName} != null)");
                                 OutOpenBrace();
-                                OutLn($"{stateName}.AddClassifiedTag(\"{propName}\", {tmpVarName}, {classification});");
+                                OutLn($"{stateName}.AddClassifiedTag({EscapeMessageString(propName)}, {tmpVarName}, {classification});");
                                 OutCloseBrace();
                                 OutCloseBrace();
                                 OutLn();
                             }
                             else
                             {
-                                OutLn($"{stateName}.AddClassifiedTag(\"{propName}\", {value}, {classification});");
+                                OutLn($"{stateName}.AddClassifiedTag({EscapeMessageString(propName)}, {value}, {classification});");
                             }
                         }
                         else
@@ -484,7 +496,7 @@ internal sealed partial class Emitter : EmitterBase
                                     OutOpenBrace();
                                     OutLn($"if ({accessExpression} != null)");
                                     OutOpenBrace();
-                                    OutLn($"{stateName}.AddTag(\"{propName}\", {value});");
+                                    OutLn($"{stateName}.AddTag({EscapeMessageString(propName)}, {value});");
                                     OutCloseBrace();
                                     OutCloseBrace();
                                     OutLn();
@@ -495,7 +507,7 @@ internal sealed partial class Emitter : EmitterBase
                                     OutLn($"var {tmpVarName} = {value};");
                                     OutLn($"if ({tmpVarName} != null)");
                                     OutOpenBrace();
-                                    OutLn($"{stateName}.AddTag(\"{propName}\", {tmpVarName});");
+                                    OutLn($"{stateName}.AddTag({EscapeMessageString(propName)}, {tmpVarName});");
                                     OutCloseBrace();
                                     OutCloseBrace();
                                     OutLn();
@@ -503,8 +515,53 @@ internal sealed partial class Emitter : EmitterBase
                             }
                             else
                             {
-                                OutLn($"{stateName}.AddTag(\"{propName}\", {value});");
+                                OutLn($"{stateName}.AddTag({EscapeMessageString(propName)}, {value});");
                             }
+                        }
+                    });
+                }
+
+                if (p.HasProperties)
+                {
+                    p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
+                    {
+                        if (!member.HasTagProvider)
+                        {
+                            return;
+                        }
+
+                        var elementsToSkip = p.OmitReferenceName ? 1 : 0;
+                        var prefix = member.OmitReferenceName
+                            ? string.Join(".", propertyChain.Skip(elementsToSkip).Select(static x => x.TagName))
+                            : PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
+
+                        var tagNamePrefix = prefix.Length > 0
+                            ? EscapeMessageString(prefix)
+                            : "string.Empty";
+
+                        var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
+
+                        var canProduceNull = member.PotentiallyNull || propertyChain.Any(static x => x.PotentiallyNull);
+                        if (canProduceNull && (!member.IsNullable || p.SkipNullProperties))
+                        {
+                            // either the property access can produce a null value which the tag provider doesn't
+                            // accept, or null properties should be skipped entirely
+                            var providerArg = member.IsReference ? tmpVarName : $"{tmpVarName}.Value";
+
+                            OutOpenBrace();
+                            OutLn($"var {tmpVarName} = {accessExpression};");
+                            OutLn($"if ({tmpVarName} != null)");
+                            OutOpenBrace();
+                            OutLn($"{stateName}.TagNamePrefix = {tagNamePrefix};");
+                            OutLn($"{member.TagProvider!.ContainingType}.{member.TagProvider.MethodName}({stateName}, {providerArg});");
+                            OutCloseBrace();
+                            OutCloseBrace();
+                            OutLn();
+                        }
+                        else
+                        {
+                            OutLn($"{stateName}.TagNamePrefix = {tagNamePrefix};");
+                            OutLn($"{member.TagProvider!.ContainingType}.{member.TagProvider.MethodName}({stateName}, {accessExpression});");
                         }
                     });
                 }
@@ -668,12 +725,12 @@ internal sealed partial class Emitter : EmitterBase
                 }
 
                 _ = localStringBuilder
-                    .Append(needAts ? property.PropertyNameWithAt : property.PropertyName)
+                    .Append(needAts ? property.PropertyNameWithAt : property.TagName)
                     .Append(property.PotentiallyNull ? separator : adjustedNonNullSeparator);
             }
 
             // Last item:
-            _ = localStringBuilder.Append(needAts ? leafProperty.PropertyNameWithAt : leafProperty.PropertyName);
+            _ = localStringBuilder.Append(needAts ? leafProperty.PropertyNameWithAt : leafProperty.TagName);
 
             return localStringBuilder.ToString();
         }
