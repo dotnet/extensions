@@ -4,10 +4,10 @@ using Microsoft.Extensions.VectorData;
 namespace AIChatWeb_CSharp.Web.Services;
 
 public class SemanticSearch(
-#if (IsQdrant)
-    VectorStoreCollection<Guid, IngestedChunk> vectorCollection,
-#else
+#if (IsAzureAISearch)
     VectorStoreCollection<string, IngestedChunk> vectorCollection,
+#else
+    VectorStoreCollection<Guid, IngestedChunk> vectorCollection,
 #endif
     [FromKeyedServices("ingestion_directory")] DirectoryInfo ingestionDirectory,
     DataIngestor dataIngestor)
