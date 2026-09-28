@@ -890,7 +890,9 @@ internal sealed partial class OpenAIChatClient : IChatClient
             using JsonDocument doc = JsonDocument.Parse(choicesJson);
             if (doc.RootElement.ValueKind == JsonValueKind.Array &&
                 doc.RootElement.GetArrayLength() > 0 &&
+                doc.RootElement[0].ValueKind == JsonValueKind.Object &&
                 doc.RootElement[0].TryGetProperty(container, out JsonElement containerElement) &&
+                containerElement.ValueKind == JsonValueKind.Object &&
                 containerElement.TryGetProperty("reasoning_content"u8, out JsonElement reasoningElement) &&
                 reasoningElement.ValueKind == JsonValueKind.String)
             {
