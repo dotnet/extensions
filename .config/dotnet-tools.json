@@ -15,7 +15,7 @@
       ]
     },
     "microsoft.visualstudio.slngen.tool": {
-      "version": "12.0.32",
+      "version": "12.0.53",
       "commands": [
         "slngen"
       ]
