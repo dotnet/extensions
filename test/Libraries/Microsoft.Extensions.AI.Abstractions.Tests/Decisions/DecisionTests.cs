@@ -87,6 +87,70 @@ public class DecisionTests
     }
 
     [Fact]
+    public void ProbabilityValidation_RejectsNullEntriesAndAllowsDeclaredRounding()
+    {
+        Assert.Throws<DecisionProtocolException>(() => new ChoiceDecisionAnswer(
+            "choice",
+            "a",
+            [new DecisionProbability("a", 1), null!]));
+
+        ChoiceDecisionAnswer twoDecimal = new(
+            "choice",
+            "a",
+            [
+                new("a", 0.33),
+                new("b", 0.33),
+                new("c", 0.33),
+            ],
+            DecisionPrecision.TwoDecimalPlaces);
+        ChoiceDecisionAnswer fourDecimal = new(
+            "choice",
+            "a",
+            [
+                new("a", 0.3333),
+                new("b", 0.3333),
+                new("c", 0.3333),
+            ],
+            DecisionPrecision.FourDecimalPlaces);
+
+        Assert.Equal(3, twoDecimal.Probabilities.Count);
+        Assert.Equal(3, fourDecimal.Probabilities.Count);
+        Assert.Throws<DecisionProtocolException>(() => new ChoiceDecisionAnswer(
+            "choice",
+            "a",
+            [
+                new("a", 0.33),
+                new("b", 0.33),
+                new("c", 0.33),
+            ]));
+    }
+
+    [Fact]
+    public void RoundedScoreValidation_UsesProbabilityAndScoreBounds()
+    {
+        ScoreDecisionAnswer valid = new(
+            "score",
+            1.58,
+            [
+                new("low", 0.1),
+                new("medium", 0.2),
+                new("high", 0.7),
+            ],
+            DecisionPrecision.TwoDecimalPlaces);
+
+        Assert.Equal(1.58, valid.Score);
+        Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
+            "score",
+            2,
+            [
+                new("low", 1),
+                new("medium", 0),
+                new("high", 0),
+            ],
+            DecisionPrecision.TwoDecimalPlaces));
+    }
+
+    [Fact]
     public void DynamicIds_AreCorrelatedPerRequestAndRejectStaleCandidates()
     {
         string activeId = "route|" + Guid.NewGuid().ToString("N");
@@ -147,6 +211,23 @@ public class DecisionTests
         Assert.NotNull(roundtrip);
         Assert.Equal("payload", roundtrip.State.GetProperty("value").GetString());
         Assert.Equal("q", roundtrip.Questions[0].Id);
+    }
+
+    [Fact]
+    public void ReflectionDisabledJson_RoundTripsAnswerAndResponseSnapshots()
+    {
+        DecisionResponse original = CreateMixedResponse();
+
+        string json = JsonSerializer.Serialize(original, TestJsonSerializerContext.Default.DecisionResponse);
+        DecisionResponse? roundtrip = JsonSerializer.Deserialize(json, TestJsonSerializerContext.Default.DecisionResponse);
+
+        Assert.NotNull(roundtrip);
+        Assert.Equal(3, roundtrip.Answers.Count);
+        Assert.Equal("binary", ((BinaryDecisionAnswer)roundtrip.Answers[0]).AdditionalProperties!["kind"]!.ToString());
+        Assert.Equal("choice", ((ChoiceDecisionAnswer)roundtrip.Answers[1]).AdditionalProperties!["kind"]!.ToString());
+        Assert.Equal("score", ((ScoreDecisionAnswer)roundtrip.Answers[2]).AdditionalProperties!["kind"]!.ToString());
+        Assert.Equal("response", roundtrip.AdditionalProperties!["kind"]!.ToString());
+        Assert.Equal(1.58, ((ScoreDecisionAnswer)roundtrip.Answers[2]).Score);
     }
 
     [Fact]
@@ -250,7 +331,10 @@ public class DecisionTests
         return new DecisionResponse(
             request,
             [
-                new BinaryDecisionAnswer("binary", 0.75),
+                new BinaryDecisionAnswer(
+                    "binary",
+                    0.75,
+                    additionalProperties: new Dictionary<string, object?> { ["kind"] = "binary" }),
                 new ChoiceDecisionAnswer(
                     "choice",
                     "blue|candidate",
@@ -258,7 +342,8 @@ public class DecisionTests
                         new("red|candidate", 0.2),
                         new("blue|candidate", 0.5),
                         new("green|candidate", 0.3),
-                    ]),
+                    ],
+                    additionalProperties: new Dictionary<string, object?> { ["kind"] = "choice" }),
                 new ScoreDecisionAnswer(
                     "score",
                     1.58,
@@ -267,9 +352,11 @@ public class DecisionTests
                         new("medium", 0.2),
                         new("high", 0.7),
                     ],
-                    DecisionPrecision.TwoDecimalPlaces),
+                    DecisionPrecision.TwoDecimalPlaces,
+                    additionalProperties: new Dictionary<string, object?> { ["kind"] = "score" }),
             ],
-            new DecisionProvenance(providerName: "test-provider", modelId: "test-model"));
+            new DecisionProvenance(providerName: "test-provider", modelId: "test-model"),
+            additionalProperties: new Dictionary<string, object?> { ["kind"] = "response" });
     }
 
     internal enum Classification

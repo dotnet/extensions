@@ -54,6 +54,7 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(ReasoningOutput))]
 [JsonSerializable(typeof(HostedFileClientOptions))]
 [JsonSerializable(typeof(DecisionOptions))]
+[JsonSerializable(typeof(DecisionClientMetadata))]
 [JsonSerializable(typeof(DecisionRequest))]
 [JsonSerializable(typeof(DecisionQuestion))]
 [JsonSerializable(typeof(BinaryDecisionQuestion))]

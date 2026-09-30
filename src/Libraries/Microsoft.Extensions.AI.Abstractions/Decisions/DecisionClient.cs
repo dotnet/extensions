@@ -234,7 +234,7 @@ public sealed class DecisionResponse
         DecisionProvenance? provenance = null,
         UsageDetails? usage = null,
         object? rawRepresentation = null,
-        IEnumerable<KeyValuePair<string, object?>>? additionalProperties = null)
+        IReadOnlyDictionary<string, object?>? additionalProperties = null)
     {
         Request = Throw.IfNull(request);
         _ = Throw.IfNull(answers);

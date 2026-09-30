@@ -66,7 +66,7 @@ public abstract class DecisionAnswer
         DecisionKind kind,
         DecisionPrecision precision,
         object? rawRepresentation,
-        IEnumerable<KeyValuePair<string, object?>>? additionalProperties)
+        IReadOnlyDictionary<string, object?>? additionalProperties)
     {
         QuestionId = Throw.IfNullOrWhitespace(questionId);
         if (!Enum.IsDefined(typeof(DecisionPrecision), precision))
@@ -110,13 +110,20 @@ public abstract class DecisionAnswer
         }
     }
 
-    internal static void ValidateDistribution(IReadOnlyList<DecisionProbability> probabilities)
+    internal static void ValidateDistribution(
+        IReadOnlyList<DecisionProbability> probabilities,
+        DecisionPrecision precision)
     {
         double sum = 0;
         HashSet<string> ids = new(StringComparer.Ordinal);
 
         foreach (DecisionProbability probability in probabilities)
         {
+            if (probability is null)
+            {
+                throw new DecisionProtocolException("A probability distribution cannot contain null entries.");
+            }
+
             if (!ids.Add(probability.Id))
             {
                 throw new DecisionProtocolException("A probability distribution contains a duplicate ID.");
@@ -126,11 +133,37 @@ public abstract class DecisionAnswer
             sum += probability.Value;
         }
 
-        if (Math.Abs(sum - 1) > DistributionTolerance)
+        double tolerance = GetDistributionTolerance(precision, probabilities.Count);
+        if (Math.Abs(sum - 1) > tolerance)
         {
             throw new DecisionProtocolException(
-                "A probability distribution must sum to 1 within an absolute tolerance of 1e-6.");
+                "A probability distribution must sum to 1 within the bound allowed by its declared rounding.");
         }
+    }
+
+    internal static double GetDistributionTolerance(DecisionPrecision precision, int count)
+    {
+        return precision switch
+        {
+            DecisionPrecision.HighPrecision => DistributionTolerance,
+            DecisionPrecision.FourDecimalPlaces => (count * 0.00005) + DistributionTolerance,
+            DecisionPrecision.TwoDecimalPlaces => (count * 0.005) + DistributionTolerance,
+            _ => throw new ArgumentOutOfRangeException(nameof(precision)),
+        };
+    }
+
+    internal static double GetScoreTolerance(DecisionPrecision precision, int count)
+    {
+        double roundingUnit = precision switch
+        {
+            DecisionPrecision.HighPrecision => 0,
+            DecisionPrecision.FourDecimalPlaces => 0.00005,
+            DecisionPrecision.TwoDecimalPlaces => 0.005,
+            _ => throw new ArgumentOutOfRangeException(nameof(precision)),
+        };
+
+        double probabilityError = (roundingUnit * count * (count - 1)) / 2;
+        return probabilityError + roundingUnit + DistributionTolerance;
     }
 }
 
@@ -145,7 +178,7 @@ public sealed class BinaryDecisionAnswer : DecisionAnswer
         double trueProbability,
         DecisionPrecision precision = DecisionPrecision.HighPrecision,
         object? rawRepresentation = null,
-        IEnumerable<KeyValuePair<string, object?>>? additionalProperties = null)
+        IReadOnlyDictionary<string, object?>? additionalProperties = null)
         : base(questionId, DecisionKind.Binary, precision, rawRepresentation, additionalProperties)
     {
         ValidateProbability(trueProbability);
@@ -168,7 +201,7 @@ public sealed class ChoiceDecisionAnswer : DecisionAnswer
         IReadOnlyList<DecisionProbability> probabilities,
         DecisionPrecision precision = DecisionPrecision.HighPrecision,
         object? rawRepresentation = null,
-        IEnumerable<KeyValuePair<string, object?>>? additionalProperties = null)
+        IReadOnlyDictionary<string, object?>? additionalProperties = null)
         : base(questionId, DecisionKind.Choice, precision, rawRepresentation, additionalProperties)
     {
         SelectedCandidateId = Throw.IfNullOrWhitespace(selectedCandidateId);
@@ -180,7 +213,7 @@ public sealed class ChoiceDecisionAnswer : DecisionAnswer
             throw new DecisionProtocolException("A choice answer requires a complete distribution.");
         }
 
-        ValidateDistribution(copy);
+        ValidateDistribution(copy, precision);
         if (!Array.Exists(copy, probability => string.Equals(probability.Id, SelectedCandidateId, StringComparison.Ordinal)))
         {
             throw new DecisionProtocolException("The selected candidate is not present in the distribution.");
@@ -208,7 +241,7 @@ public sealed class ScoreDecisionAnswer : DecisionAnswer
         IReadOnlyList<DecisionProbability> probabilities,
         DecisionPrecision precision = DecisionPrecision.HighPrecision,
         object? rawRepresentation = null,
-        IEnumerable<KeyValuePair<string, object?>>? additionalProperties = null)
+        IReadOnlyDictionary<string, object?>? additionalProperties = null)
         : base(questionId, DecisionKind.Score, precision, rawRepresentation, additionalProperties)
     {
         _ = Throw.IfNull(probabilities);
@@ -219,15 +252,14 @@ public sealed class ScoreDecisionAnswer : DecisionAnswer
             throw new DecisionProtocolException("A score answer requires at least two levels.");
         }
 
-        ValidateDistribution(copy);
+        ValidateDistribution(copy, precision);
         if (double.IsNaN(score) || double.IsInfinity(score) || score < 0 || score > copy.Length - 1)
         {
             throw new DecisionProtocolException("A score must be finite and within the ordinal level range.");
         }
 
         double expectedScore = copy.Select((probability, index) => probability.Value * index).Sum();
-        if (precision == DecisionPrecision.HighPrecision &&
-            Math.Abs(score - expectedScore) > DistributionTolerance * (copy.Length - 1))
+        if (Math.Abs(score - expectedScore) > GetScoreTolerance(precision, copy.Length))
         {
             throw new DecisionProtocolException("The score does not agree with its probability distribution.");
         }
@@ -272,7 +304,7 @@ public sealed class DecisionProtocolException : Exception
 internal static class DecisionSnapshots
 {
     internal static IReadOnlyDictionary<string, object?>? Properties(
-        IEnumerable<KeyValuePair<string, object?>>? entries)
+        IReadOnlyDictionary<string, object?>? entries)
     {
         if (entries is null)
         {
