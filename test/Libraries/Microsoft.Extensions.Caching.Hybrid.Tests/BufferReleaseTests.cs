@@ -243,7 +243,7 @@ public class BufferReleaseTests : IClassFixture<TestEventListener>
     [Fact]
     public void ImmutableCacheItem_Reservation()
     {
-        var obj = Assert.IsType<ImmutableCacheItem<string>>(CacheItem<string>.Create(12345, TagSet.Empty));
+        var obj = Assert.IsType<ImmutableCacheItem<string>>(CacheItem<string>.Create(12345, TagSet.Empty, false));
         Assert.True(obj.DebugIsImmutable);
         obj.SetValue("abc", 3);
         Assert.False(obj.TryReserveBuffer(out _));
@@ -258,7 +258,7 @@ public class BufferReleaseTests : IClassFixture<TestEventListener>
     {
         using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
 
-        var obj = Assert.IsType<MutableCacheItem<Customer>>(CacheItem<Customer>.Create(12345, TagSet.Empty));
+        var obj = Assert.IsType<MutableCacheItem<Customer>>(CacheItem<Customer>.Create(12345, TagSet.Empty, false));
 
         Assert.True(new DefaultJsonSerializerFactory(services).TryCreateSerializer<Customer>(out var serializer));
         var target = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);

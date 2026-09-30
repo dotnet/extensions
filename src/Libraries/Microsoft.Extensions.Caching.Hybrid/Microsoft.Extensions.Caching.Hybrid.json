@@ -42,6 +42,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "bool Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DisableLocalCacheSerialization { get; set; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "object? Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DistributedCacheServiceKey { get; set; }",
           "Stage": "Stable"
         },
