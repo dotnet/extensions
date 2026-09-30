@@ -145,6 +145,7 @@ public static partial class AIJsonUtilities
 
     // Decisions
     [JsonSerializable(typeof(DecisionOptions))]
+    [JsonSerializable(typeof(DecisionClientMetadata))]
     [JsonSerializable(typeof(DecisionRequest))]
     [JsonSerializable(typeof(DecisionQuestion))]
     [JsonSerializable(typeof(BinaryDecisionQuestion))]

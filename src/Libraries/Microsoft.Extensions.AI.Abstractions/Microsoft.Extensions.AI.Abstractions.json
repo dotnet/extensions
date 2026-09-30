@@ -4945,7 +4945,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.BinaryDecisionAnswer.BinaryDecisionAnswer(string questionId, double trueProbability, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>? additionalProperties = null);",
+          "Member": "Microsoft.Extensions.AI.BinaryDecisionAnswer.BinaryDecisionAnswer(string questionId, double trueProbability, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties = null);",
           "Stage": "Experimental"
         }
       ],
@@ -4981,7 +4981,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ChoiceDecisionAnswer.ChoiceDecisionAnswer(string questionId, string selectedCandidateId, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> probabilities, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>? additionalProperties = null);",
+          "Member": "Microsoft.Extensions.AI.ChoiceDecisionAnswer.ChoiceDecisionAnswer(string questionId, string selectedCandidateId, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> probabilities, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties = null);",
           "Stage": "Experimental"
         }
       ],
@@ -5554,7 +5554,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.DecisionResponse.DecisionResponse(Microsoft.Extensions.AI.DecisionRequest request, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionAnswer> answers, Microsoft.Extensions.AI.DecisionProvenance? provenance = null, Microsoft.Extensions.AI.UsageDetails? usage = null, object? rawRepresentation = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>? additionalProperties = null);",
+          "Member": "Microsoft.Extensions.AI.DecisionResponse.DecisionResponse(Microsoft.Extensions.AI.DecisionRequest request, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionAnswer> answers, Microsoft.Extensions.AI.DecisionProvenance? provenance = null, Microsoft.Extensions.AI.UsageDetails? usage = null, object? rawRepresentation = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties = null);",
           "Stage": "Experimental"
         },
         {
@@ -5644,7 +5644,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ScoreDecisionAnswer.ScoreDecisionAnswer(string questionId, double score, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> probabilities, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>? additionalProperties = null);",
+          "Member": "Microsoft.Extensions.AI.ScoreDecisionAnswer.ScoreDecisionAnswer(string questionId, double score, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> probabilities, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties = null);",
           "Stage": "Experimental"
         }
       ],
