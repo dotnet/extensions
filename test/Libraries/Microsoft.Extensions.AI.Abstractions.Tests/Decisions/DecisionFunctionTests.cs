@@ -176,7 +176,7 @@ public sealed class DecisionFunctionTests
                     new DecisionProvenance(providerName: "test-provider", modelId: "test-model", responseId: "response"),
                     new UsageDetails { InputTokenCount = 12, OutputTokenCount = 3 },
                     rawRepresentation: "raw-secret",
-                    additionalProperties: [new KeyValuePair<string, object?>("secret", "raw-secret")]));
+                    additionalProperties: new Dictionary<string, object?> { ["secret"] = "raw-secret" }));
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
