@@ -18,9 +18,10 @@ namespace Microsoft.Extensions.AI;
 public sealed class DecisionTypedFunctionTests
 {
     [Fact]
-    public async Task AIFunctionFactory_RoundTripsTypedBusinessResultAndEvidence()
+    public async Task AIFunctionFactory_RoundTripsSourceGeneratedTypedBusinessResultAndEvidence()
     {
         using SupportTicketDecisionClient client = new();
+        DecisionDefinition<TicketAnalysis> definition = CreateDefinition();
         DecisionResponse<TicketAnalysis>? observed = null;
 
         AIFunction function = AIFunctionFactory.Create(
@@ -28,7 +29,7 @@ public sealed class DecisionTypedFunctionTests
             {
                 observed = await client.GetResponseAsync(
                     ticket,
-                    CreateDefinition(),
+                    definition,
                     cancellationToken: cancellationToken);
                 return observed.Result;
             },
