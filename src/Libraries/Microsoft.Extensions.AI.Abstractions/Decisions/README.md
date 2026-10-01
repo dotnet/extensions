@@ -12,10 +12,6 @@ The domain types remain ordinary application-owned types. The standard `Descript
 #pragma warning disable MEAI001
 
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 
 public sealed record SupportTicket(string Message);
 
@@ -36,45 +32,29 @@ public sealed record TicketAnalysis(
     [Description("Is the customer requesting a refund or payment reversal?")] double RefundRequestProbability);
 ```
 
-The business call defines a reusable, explicit declaration once. `Choice` declares the closed enum domain and uses its configured JSON enum names as exact candidate IDs; `BinaryProbability` maps the binary answer's `TrueProbability` to a `double`. No handwritten question IDs, enum dictionary, result mapper, JSON schema, or feature schema is required for this ordinary flow. The client and cancellation token are supplied and owned by the host:
+The business call is ordinary application code. Assume the host supplies the `IDecisionClient client`; the declaration is reusable and explicit. `Choice` declares the closed enum domain and uses its configured JSON enum names as exact candidate IDs; `BinaryProbability` maps the binary answer's `TrueProbability` to a `double`. No handwritten question IDs, enum dictionary, result mapper, JSON schema, or feature schema is required for this ordinary flow:
 
 ```csharp
-public static class SupportTicketAnalyzer
+using Microsoft.Extensions.AI;
+
+var definition = DecisionDefinition<TicketAnalysis>.Create(builder =>
 {
-    private static readonly DecisionDefinition<TicketAnalysis> Definition =
-        DecisionDefinition<TicketAnalysis>.Create(definition =>
-        {
-            definition.Choice(result => result.Category);
-            definition.BinaryProbability(result => result.RefundRequestProbability);
-        });
+    builder.Choice(result => result.Category);
+    builder.BinaryProbability(result => result.RefundRequestProbability);
+});
 
-    public static async Task<DecisionResponse<TicketAnalysis>> AnalyzeAsync(
-        IDecisionClient client,
-        SupportTicket ticket,
-        CancellationToken cancellationToken)
-    {
-        return await client.GetResponseAsync(
-            ticket,
-            Definition,
-            cancellationToken: cancellationToken);
-    }
-}
-```
-
-The typed response exposes both the application result and the complete original evidence:
-
-```csharp
-DecisionResponse<TicketAnalysis> analyzed = await SupportTicketAnalyzer.AnalyzeAsync(client, ticket, cancellationToken);
-TicketAnalysis result = analyzed.Result;
-IReadOnlyDictionary<TicketCategory, double> categoryDistribution =
-    analyzed.GetDistribution(value => value.Category);
-DecisionResponse evidence = analyzed.Evidence;
+var ticket = new SupportTicket("I was charged twice. Please refund the duplicate payment.");
+var response = await client.GetResponseAsync(ticket, definition);
+TicketAnalysis analysis = response.Result;
+DecisionResponse evidence = response.Evidence;
+var categoryDistribution =
+    response.GetDistribution(value => value.Category);
 ```
 
 The same definition can include an explicitly ordered score rubric, and heterogeneous declarations remain independent:
 
 ```csharp
-DecisionDefinition<TicketAnalysis> definition = DecisionDefinition<TicketAnalysis>.Create(builder =>
+var definitionWithScore = DecisionDefinition<TicketAnalysis>.Create(builder =>
 {
     builder.Choice(result => result.Category, "Classify the customer's main concern.");
     builder.BinaryProbability(result => result.RefundRequestProbability);
@@ -86,18 +66,17 @@ DecisionDefinition<TicketAnalysis> definition = DecisionDefinition<TicketAnalysi
 At an explicit JSON boundary, callers can use source-generated metadata for both state and result contracts. The explicit generic arguments are optional for inference, but make the boundary visible:
 
 ```csharp
-DecisionDefinition<TicketAnalysis> definition =
+var metadataDefinition =
     DecisionDefinition<TicketAnalysis>.Create(TicketJsonContext.Default.TicketAnalysis, builder =>
     {
         builder.Choice(result => result.Category);
         builder.BinaryProbability(result => result.RefundRequestProbability);
     });
 
-DecisionResponse<TicketAnalysis> analyzed = await client.GetResponseAsync<SupportTicket, TicketAnalysis>(
+var metadataResponse = await client.GetResponseAsync<SupportTicket, TicketAnalysis>(
     ticket,
     TicketJsonContext.Default.SupportTicket,
-    definition,
-    cancellationToken: cancellationToken);
+    metadataDefinition);
 ```
 
 When the application already has a JSON state snapshot, the result-only overload keeps the same local binding behavior without re-serializing the state:
@@ -108,20 +87,18 @@ using System.Text.Json;
 JsonElement stateJson = JsonSerializer.SerializeToElement(
     ticket,
     TicketJsonContext.Default.SupportTicket);
-DecisionResponse<TicketAnalysis> analyzedFromJson = await client.GetResponseAsync<TicketAnalysis>(
+var analyzedFromJson = await client.GetResponseAsync<TicketAnalysis>(
     stateJson,
-    definition,
-    cancellationToken: cancellationToken);
+    metadataDefinition);
 ```
 
 Applications that only need the neutral response can keep the no-binding path:
 
 ```csharp
-DecisionResponse evidence = await client.GetResponseAsync(
+var evidenceOnly = await client.GetResponseAsync(
     ticket,
     TicketJsonContext.Default.SupportTicket,
-    definition.Questions,
-    cancellationToken: cancellationToken);
+    metadataDefinition.Questions);
 ```
 
 The JSON metadata setup is separate from the business call:
