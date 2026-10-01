@@ -32,6 +32,9 @@ public enum DecisionFeatureValueKind
 
     /// <summary>The provider-reported ordinal score.</summary>
     Score,
+
+    /// <summary>The ordinal score calculated from the complete observed distribution.</summary>
+    ExpectedScore,
 }
 
 /// <summary>Names one stable semantic coordinate in a feature schema.</summary>
@@ -199,7 +202,11 @@ public static class DecisionFeatureProjection
                 DecisionFeatureValueKind.ScoreProbability =>
                     GetProbability(GetScore(answer, coordinate).Probabilities, coordinate.MemberId!),
                 DecisionFeatureValueKind.Score =>
-                    GetScore(answer, coordinate).Score,
+                    GetScore(answer, coordinate).Score ??
+                    throw new DecisionProtocolException(
+                        $"Question '{coordinate.QuestionId}' does not contain a provider-reported score."),
+                DecisionFeatureValueKind.ExpectedScore =>
+                    GetScore(answer, coordinate).ExpectedScore,
                 _ => throw new ArgumentOutOfRangeException(nameof(schema)),
             };
 

@@ -139,6 +139,21 @@ public abstract class DecisionAnswer
             throw new DecisionProtocolException(
                 "A probability distribution must sum to 1 within the bound allowed by its declared rounding.");
         }
+
+        double roundingHalfUnit = GetRoundingHalfUnit(precision);
+        double lowerBound = 0;
+        double upperBound = 0;
+        foreach (DecisionProbability probability in probabilities)
+        {
+            lowerBound += Math.Max(0, probability.Value - roundingHalfUnit);
+            upperBound += Math.Min(1, probability.Value + roundingHalfUnit);
+        }
+
+        if (lowerBound > 1 + DistributionTolerance || upperBound < 1 - DistributionTolerance)
+        {
+            throw new DecisionProtocolException(
+                "A probability distribution has no normalized latent values consistent with its declared rounding.");
+        }
     }
 
     internal static double GetDistributionTolerance(DecisionPrecision precision, int count)
@@ -154,17 +169,20 @@ public abstract class DecisionAnswer
 
     internal static double GetScoreTolerance(DecisionPrecision precision, int count)
     {
-        double roundingUnit = precision switch
+        double roundingUnit = GetRoundingHalfUnit(precision);
+
+        double probabilityError = (roundingUnit * count * (count - 1)) / 2;
+        return probabilityError + roundingUnit + DistributionTolerance;
+    }
+
+    private static double GetRoundingHalfUnit(DecisionPrecision precision) =>
+        precision switch
         {
             DecisionPrecision.HighPrecision => 0,
             DecisionPrecision.FourDecimalPlaces => 0.00005,
             DecisionPrecision.TwoDecimalPlaces => 0.005,
             _ => throw new ArgumentOutOfRangeException(nameof(precision)),
         };
-
-        double probabilityError = (roundingUnit * count * (count - 1)) / 2;
-        return probabilityError + roundingUnit + DistributionTolerance;
-    }
 }
 
 /// <summary>Represents the probability that a binary proposition is true.</summary>
@@ -237,7 +255,7 @@ public sealed class ScoreDecisionAnswer : DecisionAnswer
     [JsonConstructor]
     public ScoreDecisionAnswer(
         string questionId,
-        double score,
+        double? score,
         IReadOnlyList<DecisionProbability> probabilities,
         DecisionPrecision precision = DecisionPrecision.HighPrecision,
         object? rawRepresentation = null,
@@ -253,13 +271,14 @@ public sealed class ScoreDecisionAnswer : DecisionAnswer
         }
 
         ValidateDistribution(copy, precision);
-        if (double.IsNaN(score) || double.IsInfinity(score) || score < 0 || score > copy.Length - 1)
+        if (score is double reportedScore &&
+            (double.IsNaN(reportedScore) || double.IsInfinity(reportedScore) || reportedScore < 0 || reportedScore > copy.Length - 1))
         {
             throw new DecisionProtocolException("A score must be finite and within the ordinal level range.");
         }
 
         double expectedScore = copy.Select((probability, index) => probability.Value * index).Sum();
-        if (Math.Abs(score - expectedScore) > GetScoreTolerance(precision, copy.Length))
+        if (score is double nativeScore && Math.Abs(nativeScore - expectedScore) > GetScoreTolerance(precision, copy.Length))
         {
             throw new DecisionProtocolException("The score does not agree with its probability distribution.");
         }
@@ -269,10 +288,10 @@ public sealed class ScoreDecisionAnswer : DecisionAnswer
         Probabilities = Array.AsReadOnly(copy);
     }
 
-    /// <summary>Gets the provider-reported score, retaining any declared rounding.</summary>
-    public double Score { get; }
+    /// <summary>Gets the provider-reported score, retaining any declared rounding, or <see langword="null"/> when it was not reported.</summary>
+    public double? Score { get; }
 
-    /// <summary>Gets the score derived from the observed distribution without repairing it.</summary>
+    /// <summary>Gets the score derived from the observed distribution without repairing it, which may fall outside the ordinal level bounds after rounding.</summary>
     public double ExpectedScore { get; }
 
     /// <summary>Gets the complete ordered level distribution.</summary>
