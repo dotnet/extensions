@@ -9,6 +9,8 @@ Suppose a retailer annotates customer-support tickets. The application wants a n
 The domain types remain ordinary application-owned types:
 
 ```csharp
+#pragma warning disable MEAI001
+
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -30,38 +32,41 @@ public sealed record TicketAnalysis(
 The application defines the questions once, then reuses each question's exact caller-owned ID when it maps the response. The client and cancellation token are supplied and owned by the host:
 
 ```csharp
-public static async Task<(TicketAnalysis Result, DecisionResponse Evidence)> AnalyzeAsync(
-    IDecisionClient client,
-    SupportTicket ticket,
-    CancellationToken cancellationToken)
+public static class SupportTicketAnalyzer
 {
-    DecisionEnumDefinition<TicketCategory> categories = new(
-    [
-        new(TicketCategory.Billing, "billing", "The ticket concerns invoices, charges, or payment."),
-        new(TicketCategory.Technical, "technical", "The ticket concerns a product or service problem."),
-        new(TicketCategory.Account, "account", "The ticket concerns access, profile, or account details."),
-    ]);
+    public static async Task<(TicketAnalysis Result, DecisionResponse Evidence)> AnalyzeAsync(
+        IDecisionClient client,
+        SupportTicket ticket,
+        CancellationToken cancellationToken)
+    {
+        DecisionEnumDefinition<TicketCategory> categories = new(
+        [
+            new(TicketCategory.Billing, "billing", "The ticket concerns invoices, charges, refunds, or payment."),
+            new(TicketCategory.Technical, "technical", "The ticket concerns product defects, errors, outages, or troubleshooting."),
+            new(TicketCategory.Account, "account", "The ticket concerns sign-in, profile, or account access."),
+        ]);
 
-    ChoiceDecisionQuestion categoryQuestion = categories.CreateQuestion(
-        "category",
-        "Classify the support ticket as billing, technical, or account.");
-    BinaryDecisionQuestion refundQuestion = new(
-        "refund-request",
-        "Does the ticket request or describe a refund?");
+        ChoiceDecisionQuestion categoryQuestion = categories.CreateQuestion(
+            "category",
+            "Classify the support ticket as billing, technical, or account access.");
+        BinaryDecisionQuestion refundQuestion = new(
+            "refund-request",
+            "Does the ticket request or describe a refund?");
 
-    DecisionResultBinding<TicketAnalysis> binding = new(
-        TicketJsonContext.Default.TicketAnalysis,
-        answers => new TicketAnalysis(
-            answers.GetChoice(categoryQuestion.Id, categories),
-            answers.GetBinary(refundQuestion.Id).TrueProbability));
+        DecisionResultBinding<TicketAnalysis> binding = new(
+            TicketJsonContext.Default.TicketAnalysis,
+            answers => new TicketAnalysis(
+                answers.GetChoice(categoryQuestion.Id, categories),
+                answers.GetBinary(refundQuestion.Id).TrueProbability));
 
-    DecisionResponse response = await client.GetResponseAsync(
-        ticket,
-        TicketJsonContext.Default.SupportTicket,
-        [categoryQuestion, refundQuestion],
-        cancellationToken: cancellationToken);
+        DecisionResponse response = await client.GetResponseAsync(
+            ticket,
+            TicketJsonContext.Default.SupportTicket,
+            [categoryQuestion, refundQuestion],
+            cancellationToken: cancellationToken);
 
-    return (response.Bind(binding), response);
+        return (response.Bind(binding), response);
+    }
 }
 ```
 
