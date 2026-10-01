@@ -107,6 +107,180 @@ public sealed class DecisionFunctionTests
         Assert.Equal("mapper failed", mapperFailure.Message);
     }
 
+    [Fact]
+    public async Task AsAIFunction_RejectsResponseForDifferentStateBeforeMapper()
+    {
+        int mapperCalls = 0;
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateResponse(
+                new DecisionRequest(
+                    JsonSerializer.SerializeToElement(
+                        new DecisionToolState { Payload = "different state" },
+                        DecisionFunctionJsonContext.Default.DecisionToolState),
+                    request.Questions)),
+        };
+        AIFunction function = CreateTask(
+            new DecisionResultBinding<DecisionToolResult>(
+                DecisionFunctionJsonContext.Default.DecisionToolResult,
+                answers =>
+                {
+                    mapperCalls++;
+                    return new() { Selected = answers.GetChoice("route").SelectedCandidateId };
+                })).AsAIFunction(
+                    client,
+                    functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+
+        DecisionProtocolException exception = await Assert.ThrowsAsync<DecisionProtocolException>(
+            () => function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }).AsTask());
+
+        Assert.Contains("does not correspond", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal(0, mapperCalls);
+    }
+
+    [Fact]
+    public async Task AsAIFunction_RejectsResponseWithChangedQuestionContractBeforeMapper()
+    {
+        int mapperCalls = 0;
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateResponse(
+                new DecisionRequest(
+                    request.State,
+                    [
+                        new ChoiceDecisionQuestion(
+                            "route",
+                            "Use the alternate instructions.",
+                            [
+                                new DecisionCandidate("secondary", "Alternate secondary route."),
+                                new DecisionCandidate("primary", "Alternate primary route."),
+                            ]),
+                    ])),
+        };
+        AIFunction function = CreateTask(
+            new DecisionResultBinding<DecisionToolResult>(
+                DecisionFunctionJsonContext.Default.DecisionToolResult,
+                answers =>
+                {
+                    mapperCalls++;
+                    return new() { Selected = answers.GetChoice("route").SelectedCandidateId };
+                })).AsAIFunction(
+                    client,
+                    functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+
+        DecisionProtocolException exception = await Assert.ThrowsAsync<DecisionProtocolException>(
+            () => function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }).AsTask());
+
+        Assert.Contains("does not correspond", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal(0, mapperCalls);
+    }
+
+    [Fact]
+    public async Task AsAIFunction_AcceptsEquivalentOwnedRequestSnapshot()
+    {
+        int mapperCalls = 0;
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateResponse(
+                new DecisionRequest(
+                    request.State.Clone(),
+                    [
+                        new ChoiceDecisionQuestion(
+                            "route",
+                            "Choose one route.",
+                            [
+                                new DecisionCandidate("primary", "Use the primary route."),
+                                new DecisionCandidate("secondary", "Use the secondary route."),
+                            ]),
+                    ])),
+        };
+        AIFunction function = CreateTask(
+            new DecisionResultBinding<DecisionToolResult>(
+                DecisionFunctionJsonContext.Default.DecisionToolResult,
+                answers =>
+                {
+                    mapperCalls++;
+                    return new() { Selected = answers.GetChoice("route").SelectedCandidateId };
+                })).AsAIFunction(
+                    client,
+                    functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+
+        JsonElement resultJson = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }));
+
+        Assert.Equal("primary", resultJson.GetProperty("result").GetProperty("selected").GetString());
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal(1, mapperCalls);
+    }
+
+    [Fact]
+    public async Task AsAIFunction_ProjectsExpectedScoreWithoutReportedScoreOrSecondOperation()
+    {
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateScoreResponse(
+                request,
+                reportedScore: null,
+                [0, 0, 0.01, 1]),
+        };
+        AIFunction function = CreateScoreTask(DecisionFeatureValueKind.ExpectedScore).AsAIFunction(
+            client,
+            functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+
+        JsonElement resultJson = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(new AIFunctionArguments
+            {
+                ["state"] = new DecisionToolState { Payload = "sensitive request" },
+            }));
+
+        Assert.Equal(3.02, resultJson.GetProperty("features").GetProperty("values")[0].GetProperty("value").GetDouble());
+        Assert.Equal(1, client.CallCount);
+        Assert.DoesNotContain("sensitive request", resultJson.GetRawText(), StringComparison.Ordinal);
+        Assert.DoesNotContain("raw-secret", resultJson.GetRawText(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AsAIFunction_RejectsMissingReportedScoreForStrictScoreFeature()
+    {
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateScoreResponse(
+                request,
+                reportedScore: null,
+                [0, 0, 0.01, 1]),
+        };
+        AIFunction function = CreateScoreTask(DecisionFeatureValueKind.Score).AsAIFunction(
+            client,
+            functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(
+            () => function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }).AsTask());
+        Assert.Equal(1, client.CallCount);
+    }
+
+    [Fact]
+    public async Task AsAIFunction_ProjectsReportedZeroAsDistinctFromMissingScore()
+    {
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateScoreResponse(
+                request,
+                reportedScore: 0,
+                [1, 0, 0, 0]),
+        };
+        AIFunction function = CreateScoreTask(DecisionFeatureValueKind.Score).AsAIFunction(
+            client,
+            functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+
+        JsonElement resultJson = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }));
+
+        Assert.Equal(0, resultJson.GetProperty("features").GetProperty("values")[0].GetProperty("value").GetDouble());
+        Assert.Equal(1, client.CallCount);
+    }
+
     private static DecisionTask<DecisionToolState, DecisionToolResult> CreateTask(
         DecisionResultBinding<DecisionToolResult>? binding = null)
     {
@@ -131,6 +305,82 @@ public sealed class DecisionFunctionTests
                 [new("route.primary", "route", DecisionFeatureValueKind.ChoiceProbability, "primary")]));
     }
 
+    private static DecisionTask<DecisionToolState, DecisionScoreToolResult> CreateScoreTask(
+        DecisionFeatureValueKind featureValueKind)
+    {
+        ScoreDecisionQuestion question = new(
+            "score",
+            "Score the state using the ordered rubric.",
+            [
+                new DecisionScoreLevel("zero", "Zero"),
+                new DecisionScoreLevel("one", "One"),
+                new DecisionScoreLevel("two", "Two"),
+                new DecisionScoreLevel("three", "Three"),
+            ]);
+
+        return new(
+            [question],
+            DecisionFunctionJsonContext.Default.DecisionToolState,
+            new DecisionResultBinding<DecisionScoreToolResult>(
+                DecisionFunctionJsonContext.Default.DecisionScoreToolResult,
+                answers => new() { Score = answers.GetScore("score").ExpectedScore }),
+            DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionScoreToolResult,
+            new DecisionFeatureSchema(
+                "decision-score-tool-v1",
+                1,
+                [new("score.value", "score", featureValueKind)]));
+    }
+
+    private static DecisionResponse CreateResponse(DecisionRequest request)
+    {
+        ChoiceDecisionQuestion question = Assert.IsType<ChoiceDecisionQuestion>(request.Questions[0]);
+        double firstProbability = 0.75;
+        double remainingProbability = (1 - firstProbability) / (question.Candidates.Count - 1);
+        DecisionProbability[] probabilities = question.Candidates
+            .Select((candidate, index) => new DecisionProbability(
+                candidate.Id,
+                index == 0 ? firstProbability : remainingProbability))
+            .ToArray();
+
+        return new DecisionResponse(
+            request,
+            [
+                new ChoiceDecisionAnswer(
+                    question.Id,
+                    question.Candidates[0].Id,
+                    probabilities),
+            ],
+            new DecisionProvenance(providerName: "test-provider", modelId: "test-model", responseId: "response"),
+            new UsageDetails { InputTokenCount = 12, OutputTokenCount = 3 },
+            rawRepresentation: "raw-secret",
+            additionalProperties: new Dictionary<string, object?> { ["secret"] = "raw-secret" });
+    }
+
+    private static DecisionResponse CreateScoreResponse(
+        DecisionRequest request,
+        double? reportedScore,
+        double[] values)
+    {
+        ScoreDecisionQuestion question = Assert.IsType<ScoreDecisionQuestion>(request.Questions[0]);
+        DecisionProbability[] probabilities = question.Levels
+            .Select((level, index) => new DecisionProbability(level.Id, values[index]))
+            .ToArray();
+
+        return new DecisionResponse(
+            request,
+            [
+                new ScoreDecisionAnswer(
+                    question.Id,
+                    reportedScore,
+                    probabilities,
+                    DecisionPrecision.TwoDecimalPlaces),
+            ],
+            new DecisionProvenance(providerName: "test-provider", modelId: "test-model", responseId: "response"),
+            new UsageDetails { InputTokenCount = 12, OutputTokenCount = 3 },
+            rawRepresentation: "raw-secret",
+            additionalProperties: new Dictionary<string, object?> { ["secret"] = "raw-secret" });
+    }
+
     private sealed class RecordingDecisionClient : IDecisionClient
     {
         public int CallCount { get; private set; }
@@ -142,6 +392,8 @@ public sealed class DecisionFunctionTests
         public bool Cancellation { get; init; }
 
         public Exception? Failure { get; init; }
+
+        public Func<DecisionRequest, DecisionResponse>? ResponseFactory { get; init; }
 
         public Task<DecisionResponse> GetResponseAsync(
             DecisionRequest request,
@@ -161,22 +413,7 @@ public sealed class DecisionFunctionTests
                 return Task.FromCanceled<DecisionResponse>(cancellationToken);
             }
 
-            return Task.FromResult(
-                new DecisionResponse(
-                    request,
-                    [
-                        new ChoiceDecisionAnswer(
-                            "route",
-                            "primary",
-                            [
-                                new("primary", 0.75),
-                                new("secondary", 0.25),
-                            ]),
-                    ],
-                    new DecisionProvenance(providerName: "test-provider", modelId: "test-model", responseId: "response"),
-                    new UsageDetails { InputTokenCount = 12, OutputTokenCount = 3 },
-                    rawRepresentation: "raw-secret",
-                    additionalProperties: new Dictionary<string, object?> { ["secret"] = "raw-secret" }));
+            return Task.FromResult((ResponseFactory ?? CreateResponse)(request));
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
@@ -193,6 +430,11 @@ public sealed class DecisionFunctionTests
     {
         public string? Selected { get; set; }
     }
+
+    internal sealed class DecisionScoreToolResult
+    {
+        public double Score { get; set; }
+    }
 }
 
 [JsonSourceGenerationOptions(
@@ -200,7 +442,9 @@ public sealed class DecisionFunctionTests
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(DecisionFunctionTests.DecisionToolState))]
 [JsonSerializable(typeof(DecisionFunctionTests.DecisionToolResult))]
+[JsonSerializable(typeof(DecisionFunctionTests.DecisionScoreToolResult))]
 [JsonSerializable(typeof(DecisionFunctionResult<DecisionFunctionTests.DecisionToolResult>))]
+[JsonSerializable(typeof(DecisionFunctionResult<DecisionFunctionTests.DecisionScoreToolResult>))]
 [JsonSerializable(typeof(DecisionFeatureVector))]
 [JsonSerializable(typeof(DecisionFeatureSchema))]
 [JsonSerializable(typeof(DecisionFeatureCoordinate))]
