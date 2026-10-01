@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -301,6 +303,203 @@ public class DecisionTests
         Assert.Equal("original", clone.AdditionalProperties!["mode"]);
     }
 
+    [Fact]
+    public void DecisionDefinition_UsesExplicitDeclarationsAndMetadataDescriptions()
+    {
+        DecisionDefinition<TypedDecisionResult> definition = DecisionDefinition<TypedDecisionResult>.Create(
+            TestJsonSerializerContext.Default.TypedDecisionResult,
+            builder =>
+            {
+                builder.Choice(result => result.Category);
+                builder.BinaryProbability(result => result.RefundRequestProbability, "Explicit refund instruction.");
+                builder.Score(
+                    result => result.Satisfaction,
+                    [
+                        new("low", "Low"),
+                        new("medium", "Medium"),
+                        new("high", "High"),
+                    ]);
+            });
+
+        Assert.Equal(["category", "refundRequestProbability", "satisfaction"], definition.Questions.Select(static q => q.Id));
+        Assert.Equal("Classify the customer's main concern.", definition.Questions[0].Instructions);
+        Assert.Equal("Explicit refund instruction.", definition.Questions[1].Instructions);
+        Assert.Equal("Rate the customer's satisfaction.", definition.Questions[2].Instructions);
+
+        ChoiceDecisionQuestion category = Assert.IsType<ChoiceDecisionQuestion>(definition.Questions[0]);
+        Assert.Equal(["Billing", "Technical", "Account"], category.Candidates.Select(static candidate => candidate.Id));
+        Assert.Equal(
+            ["Payment, invoice, or charge concerns.", "Product defects, errors, outages, or troubleshooting.", "Sign-in, profile, or account-access concerns."],
+            category.Candidates.Select(static candidate => candidate.Description));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_BindsTypedResultOnceAndRetainsEvidence()
+    {
+        DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
+        DecisionResponse providerResponse = CreateTypedDefinitionResponse();
+        using RecordingDecisionClient client = new(providerResponse);
+        DecisionOptions options = new() { ModelId = "model" };
+
+        DecisionResponse<TypedDecisionResult> response = await client.GetResponseAsync(
+            new TypedDecisionState("I need a refund for a defective product."),
+            TestJsonSerializerContext.Default.TypedDecisionState,
+            definition,
+            options);
+
+        Assert.Equal(1, client.CallCount);
+        Assert.Same(options, client.Options);
+        Assert.Equal(TicketCategory.Technical, response.Result.Category);
+        Assert.Equal(0.25, response.Result.RefundRequestProbability);
+        Assert.Equal(1.58, response.Result.Satisfaction);
+        Assert.Same(providerResponse, response.Evidence);
+        Assert.Equal(
+            new Dictionary<TicketCategory, double>
+            {
+                [TicketCategory.Billing] = 0.2,
+                [TicketCategory.Technical] = 0.5,
+                [TicketCategory.Account] = 0.3,
+            },
+            response.GetDistribution(result => result.Category));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_InferredStateOverloadUsesOneProviderInvocation()
+    {
+        DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
+        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse());
+
+        DecisionResponse<TypedDecisionResult> response = await client.GetResponseAsync(
+            new TypedDecisionState("Please reverse this payment."),
+            definition,
+            cancellationToken: CancellationToken.None);
+
+        Assert.Equal(TicketCategory.Technical, response.Result.Category);
+        Assert.Equal(1, client.CallCount);
+    }
+
+    [Fact]
+    public void DecisionDefinition_RejectsNestedDuplicateAndFlagsSelectors()
+    {
+        Assert.Throws<ArgumentException>(() => DecisionDefinition<TypedDecisionResult>.Create(
+            TestJsonSerializerContext.Default.TypedDecisionResult,
+            builder => builder.Choice(result => result.Nested.Category)));
+
+        Assert.Throws<ArgumentException>(() => DecisionDefinition<TypedDecisionResult>.Create(
+            TestJsonSerializerContext.Default.TypedDecisionResult,
+            builder =>
+            {
+                builder.BinaryProbability(result => result.RefundRequestProbability);
+                builder.Score(result => result.RefundRequestProbability, [new("low", "Low"), new("high", "High")]);
+            }));
+
+        Assert.Throws<ArgumentException>(() => DecisionDefinition<FlagsResult>.Create(
+            TestJsonSerializerContext.Default.FlagsResult,
+            builder => builder.Choice(result => result.Value)));
+    }
+
+    [Fact]
+    public void DecisionDefinition_UsesPropertyDescriptionAndFluentPrecedence()
+    {
+        DecisionDefinition<PropertyDescriptionResult> propertyDefinition = DecisionDefinition<PropertyDescriptionResult>.Create(
+            TestJsonSerializerContext.Default.PropertyDescriptionResult,
+            builder => builder.BinaryProbability(result => result.Probability));
+        Assert.Equal("Description on the property.", propertyDefinition.Questions[0].Instructions);
+
+        DecisionDefinition<PropertyDescriptionResult> overrideDefinition = DecisionDefinition<PropertyDescriptionResult>.Create(
+            TestJsonSerializerContext.Default.PropertyDescriptionResult,
+            builder => builder.BinaryProbability(result => result.Probability, "Fluent instruction."));
+        Assert.Equal("Fluent instruction.", overrideDefinition.Questions[0].Instructions);
+    }
+
+    [Fact]
+    public void DecisionDefinition_UsesExactConfiguredJsonPropertyName()
+    {
+        DecisionDefinition<JsonNamedResult> definition = DecisionDefinition<JsonNamedResult>.Create(
+            TestJsonSerializerContext.Default.JsonNamedResult,
+            builder => builder.BinaryProbability(result => result.Probability));
+
+        Assert.Equal("refund_probability", definition.Questions[0].Id);
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_PropagatesCancellationWithoutFabricatedTypedResult()
+    {
+        DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse(), cancel: true);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client.GetResponseAsync(
+                new TypedDecisionState("cancelled"),
+                TestJsonSerializerContext.Default.TypedDecisionState,
+                definition,
+                cancellationToken: cancellation.Token));
+        Assert.Equal(1, client.CallCount);
+    }
+
+    private static DecisionDefinition<TypedDecisionResult> CreateTypedDefinition() =>
+        DecisionDefinition<TypedDecisionResult>.Create(
+            TestJsonSerializerContext.Default.TypedDecisionResult,
+            builder =>
+            {
+                builder.Choice(result => result.Category);
+                builder.BinaryProbability(result => result.RefundRequestProbability);
+                builder.Score(
+                    result => result.Satisfaction,
+                    [
+                        new("low", "Low"),
+                        new("medium", "Medium"),
+                        new("high", "High"),
+                    ]);
+            });
+
+    private static DecisionResponse CreateTypedDefinitionResponse()
+    {
+        DecisionRequest request = CreateRequest(
+            new ChoiceDecisionQuestion(
+                "category",
+                "Classify the customer's main concern.",
+                [
+                    new("Billing", "Payment, invoice, or charge concerns."),
+                    new("Technical", "Product defects, errors, outages, or troubleshooting."),
+                    new("Account", "Sign-in, profile, or account-access concerns."),
+                ]),
+            new BinaryDecisionQuestion("refundRequestProbability", "Is the customer requesting a refund or payment reversal?"),
+            new ScoreDecisionQuestion(
+                "satisfaction",
+                "Rate the customer's satisfaction.",
+                [
+                    new("low", "Low"),
+                    new("medium", "Medium"),
+                    new("high", "High"),
+                ]));
+
+        return new DecisionResponse(
+            request,
+            [
+                new ChoiceDecisionAnswer(
+                    "category",
+                    "Technical",
+                    [
+                        new("Billing", 0.2),
+                        new("Technical", 0.5),
+                        new("Account", 0.3),
+                    ]),
+                new BinaryDecisionAnswer("refundRequestProbability", 0.25),
+                new ScoreDecisionAnswer(
+                    "satisfaction",
+                    1.58,
+                    [
+                        new("low", 0.1),
+                        new("medium", 0.2),
+                        new("high", 0.7),
+                    ],
+                    DecisionPrecision.TwoDecimalPlaces),
+            ]);
+    }
+
     private static DecisionRequest CreateRequest(params DecisionQuestion[] questions)
     {
         using JsonDocument document = JsonDocument.Parse("{}");
@@ -365,6 +564,55 @@ public class DecisionTests
         Rejected,
     }
 
+    internal enum TicketCategory
+    {
+        [Description("Payment, invoice, or charge concerns.")]
+        Billing,
+
+        [Description("Product defects, errors, outages, or troubleshooting.")]
+        Technical,
+
+        [Description("Sign-in, profile, or account-access concerns.")]
+        Account,
+    }
+
+    [Flags]
+    internal enum FlagCategory
+    {
+        None = 0,
+        First = 1,
+        Second = 2,
+    }
+
+    internal sealed record TypedDecisionResult(
+        [Description("Classify the customer's main concern.")] TicketCategory Category,
+        [Description("Is the customer requesting a refund or payment reversal?")] double RefundRequestProbability,
+        [Description("Rate the customer's satisfaction.")] double Satisfaction)
+    {
+        public NestedResult Nested { get; } = new();
+    }
+
+    internal sealed record NestedResult
+    {
+        public TicketCategory Category { get; init; }
+    }
+
+    internal sealed record TypedDecisionState(string Message);
+
+    internal sealed record PropertyDescriptionResult
+    {
+        [Description("Description on the property.")]
+        public double Probability { get; init; }
+    }
+
+    internal sealed record JsonNamedResult
+    {
+        [JsonPropertyName("refund_probability")]
+        public double Probability { get; init; }
+    }
+
+    internal sealed record FlagsResult(FlagCategory Value);
+
     internal sealed class DecisionState
     {
         public string? Value { get; set; }
@@ -376,6 +624,43 @@ public class DecisionTests
         public string? Selected { get; set; }
         public double Score { get; set; }
         public double ExpectedScore { get; set; }
+    }
+
+    internal sealed class RecordingDecisionClient : IDecisionClient
+    {
+        private readonly DecisionResponse _response;
+        private readonly bool _cancel;
+
+        public RecordingDecisionClient(DecisionResponse response, bool cancel = false)
+        {
+            _response = response;
+            _cancel = cancel;
+        }
+
+        public int CallCount { get; private set; }
+
+        public DecisionOptions? Options { get; private set; }
+
+        public Task<DecisionResponse> GetResponseAsync(
+            DecisionRequest request,
+            DecisionOptions? options = null,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            Options = options;
+            if (_cancel)
+            {
+                return Task.FromCanceled<DecisionResponse>(cancellationToken);
+            }
+
+            return Task.FromResult(_response);
+        }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class CancellationClient : IDecisionClient

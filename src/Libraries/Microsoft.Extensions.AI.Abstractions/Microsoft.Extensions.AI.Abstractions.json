@@ -5135,6 +5135,18 @@
         {
           "Member": "static TService? Microsoft.Extensions.AI.DecisionClientExtensions.GetService<TService>(this Microsoft.Extensions.AI.IDecisionClient client, object? serviceKey = null);",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse<TResult>> Microsoft.Extensions.AI.DecisionClientExtensions.GetResponseAsync<TResult>(this Microsoft.Extensions.AI.IDecisionClient client, System.Text.Json.JsonElement state, Microsoft.Extensions.AI.DecisionDefinition<TResult> definition, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse<TResult>> Microsoft.Extensions.AI.DecisionClientExtensions.GetResponseAsync<TState, TResult>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, Microsoft.Extensions.AI.DecisionDefinition<TResult> definition, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse<TResult>> Microsoft.Extensions.AI.DecisionClientExtensions.GetResponseAsync<TState, TResult>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TState> stateTypeInfo, Microsoft.Extensions.AI.DecisionDefinition<TResult> definition, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -5675,6 +5687,72 @@
       "Properties": [
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionScoreLevel> Microsoft.Extensions.AI.ScoreDecisionQuestion.Levels { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionDefinition<TResult>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.AI.DecisionDefinition<TResult> Microsoft.Extensions.AI.DecisionDefinition<TResult>.Create(System.Action<Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder> configure, System.Text.Json.JsonSerializerOptions? serializerOptions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.DecisionDefinition<TResult> Microsoft.Extensions.AI.DecisionDefinition<TResult>.Create(System.Text.Json.Serialization.Metadata.JsonTypeInfo<TResult> resultTypeInfo, System.Action<Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder> configure);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionQuestion> Microsoft.Extensions.AI.DecisionDefinition<TResult>.Questions { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Text.Json.Serialization.Metadata.JsonTypeInfo<TResult> Microsoft.Extensions.AI.DecisionDefinition<TResult>.ResultTypeInfo { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.DecisionDefinition<TResult>.SerializerOptions { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.BinaryProbability(System.Linq.Expressions.Expression<System.Func<TResult, double>> selector, string? instructions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.Choice<TEnum>(System.Linq.Expressions.Expression<System.Func<TResult, TEnum>> selector, string? instructions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.Score(System.Linq.Expressions.Expression<System.Func<TResult, double>> selector, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionScoreLevel> levels, string? instructions = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionResponse<TResult>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<TEnum, double> Microsoft.Extensions.AI.DecisionResponse<TResult>.GetDistribution<TEnum>(System.Linq.Expressions.Expression<System.Func<TResult, TEnum>> selector);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.DecisionResponse Microsoft.Extensions.AI.DecisionResponse<TResult>.Evidence { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "TResult Microsoft.Extensions.AI.DecisionResponse<TResult>.Result { get; }",
           "Stage": "Experimental"
         }
       ]

@@ -185,6 +185,116 @@ public static class DecisionClientExtensions
         _ = Throw.IfNull(stateTypeInfo);
         return client.GetResponseAsync(DecisionRequest.Create(state, stateTypeInfo, questions), options, cancellationToken);
     }
+
+    /// <summary>Evaluates a JSON state using a reusable typed decision definition.</summary>
+    /// <typeparam name="TResult">The application-owned result type.</typeparam>
+    /// <param name="client">The decision client.</param>
+    /// <param name="state">The explicit JSON state evaluated by every declared question.</param>
+    /// <param name="definition">The immutable typed decision definition.</param>
+    /// <param name="options">Optional per-request options.</param>
+    /// <param name="cancellationToken">The cancellation token to monitor.</param>
+    /// <returns>The typed result and complete neutral evidence.</returns>
+    public static async Task<DecisionResponse<TResult>> GetResponseAsync<TResult>(
+        this IDecisionClient client,
+        JsonElement state,
+        DecisionDefinition<TResult> definition,
+        DecisionOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(client);
+        _ = Throw.IfNull(definition);
+
+        DecisionResponse response = await client.GetResponseAsync(
+            new DecisionRequest(state, definition.Questions),
+            options,
+            cancellationToken).ConfigureAwait(false);
+        return definition.Bind(response);
+    }
+
+    /// <summary>Evaluates typed application state using a reusable typed decision definition.</summary>
+    /// <typeparam name="TState">The application state type.</typeparam>
+    /// <typeparam name="TResult">The application-owned result type.</typeparam>
+    /// <param name="client">The decision client.</param>
+    /// <param name="state">The application-owned state.</param>
+    /// <param name="definition">The immutable typed decision definition.</param>
+    /// <param name="options">Optional per-request options.</param>
+    /// <param name="cancellationToken">The cancellation token to monitor.</param>
+    /// <returns>The typed result and complete neutral evidence.</returns>
+    public static Task<DecisionResponse<TResult>> GetResponseAsync<TState, TResult>(
+        this IDecisionClient client,
+        TState state,
+        DecisionDefinition<TResult> definition,
+        DecisionOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(definition);
+        return GetResponseAsync(
+            client,
+            state,
+            definition,
+            definition.SerializerOptions,
+            options,
+            cancellationToken);
+    }
+
+    /// <summary>Evaluates typed application state using explicit source-generated state metadata.</summary>
+    /// <typeparam name="TState">The application state type.</typeparam>
+    /// <typeparam name="TResult">The application-owned result type.</typeparam>
+    /// <param name="client">The decision client.</param>
+    /// <param name="state">The application-owned state.</param>
+    /// <param name="stateTypeInfo">The JSON contract for <typeparamref name="TState"/>.</param>
+    /// <param name="definition">The immutable typed decision definition.</param>
+    /// <param name="options">Optional per-request options.</param>
+    /// <param name="cancellationToken">The cancellation token to monitor.</param>
+    /// <returns>The typed result and complete neutral evidence.</returns>
+    public static Task<DecisionResponse<TResult>> GetResponseAsync<TState, TResult>(
+        this IDecisionClient client,
+        TState state,
+        JsonTypeInfo<TState> stateTypeInfo,
+        DecisionDefinition<TResult> definition,
+        DecisionOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        _ = Throw.IfNull(stateTypeInfo);
+        return GetResponseAsync(
+            client,
+            state,
+            definition,
+            stateTypeInfo,
+            options,
+            cancellationToken);
+    }
+
+    private static async Task<DecisionResponse<TResult>> GetResponseAsync<TState, TResult>(
+        IDecisionClient client,
+        TState state,
+        DecisionDefinition<TResult> definition,
+        JsonSerializerOptions serializerOptions,
+        DecisionOptions? options,
+        CancellationToken cancellationToken)
+    {
+        _ = Throw.IfNull(client);
+        _ = Throw.IfNull(definition);
+
+        JsonTypeInfo stateTypeInfo = serializerOptions.GetTypeInfo(typeof(TState));
+        JsonElement stateJson = JsonSerializer.SerializeToElement(state, stateTypeInfo);
+        return await GetResponseAsync(client, stateJson, definition, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<DecisionResponse<TResult>> GetResponseAsync<TState, TResult>(
+        IDecisionClient client,
+        TState state,
+        DecisionDefinition<TResult> definition,
+        JsonTypeInfo<TState> stateTypeInfo,
+        DecisionOptions? options,
+        CancellationToken cancellationToken)
+    {
+        _ = Throw.IfNull(client);
+        _ = Throw.IfNull(definition);
+
+        JsonElement stateJson = JsonSerializer.SerializeToElement(state, stateTypeInfo);
+        return await GetResponseAsync(client, stateJson, definition, options, cancellationToken).ConfigureAwait(false);
+    }
 }
 
 /// <summary>Identifies provider/model provenance without inventing missing identity.</summary>
