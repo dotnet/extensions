@@ -204,11 +204,12 @@ public static class DecisionClientExtensions
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(definition);
 
+        DecisionRequest request = new(state, definition.Questions);
         DecisionResponse response = await client.GetResponseAsync(
-            new DecisionRequest(state, definition.Questions),
+            request,
             options,
             cancellationToken).ConfigureAwait(false);
-        return definition.Bind(response);
+        return definition.Bind(response, request);
     }
 
     /// <summary>Evaluates typed application state using a reusable typed decision definition.</summary>
@@ -406,6 +407,92 @@ public sealed class DecisionResponse
         }
 
         throw new KeyNotFoundException($"No answer exists for question ID '{questionId}'.");
+    }
+
+    internal void ValidateAgainst(DecisionRequest expectedRequest)
+    {
+        _ = Throw.IfNull(expectedRequest);
+
+        if (!JsonElement.DeepEquals(Request.State, expectedRequest.State) ||
+            Request.Questions.Count != expectedRequest.Questions.Count)
+        {
+            throw new DecisionProtocolException("The response does not correspond to the request sent by the client.");
+        }
+
+        for (int i = 0; i < Request.Questions.Count; i++)
+        {
+            if (!QuestionsAreEquivalent(Request.Questions[i], expectedRequest.Questions[i]))
+            {
+                throw new DecisionProtocolException("The response does not correspond to the request sent by the client.");
+            }
+        }
+    }
+
+    private static bool QuestionsAreEquivalent(DecisionQuestion actual, DecisionQuestion expected)
+    {
+        if (actual.Kind != expected.Kind ||
+            !string.Equals(actual.Id, expected.Id, StringComparison.Ordinal) ||
+            !string.Equals(actual.Instructions, expected.Instructions, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return (actual, expected) switch
+        {
+            (BinaryDecisionQuestion actualBinary, BinaryDecisionQuestion expectedBinary) =>
+                string.Equals(actualBinary.TrueDescription, expectedBinary.TrueDescription, StringComparison.Ordinal) &&
+                string.Equals(actualBinary.FalseDescription, expectedBinary.FalseDescription, StringComparison.Ordinal),
+
+            (ChoiceDecisionQuestion actualChoice, ChoiceDecisionQuestion expectedChoice) =>
+                CandidatesAreEquivalent(actualChoice.Candidates, expectedChoice.Candidates),
+
+            (ScoreDecisionQuestion actualScore, ScoreDecisionQuestion expectedScore) =>
+                LevelsAreEquivalent(actualScore.Levels, expectedScore.Levels),
+
+            _ => false,
+        };
+    }
+
+    private static bool CandidatesAreEquivalent(
+        IReadOnlyList<DecisionCandidate> actual,
+        IReadOnlyList<DecisionCandidate> expected)
+    {
+        if (actual.Count != expected.Count)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < actual.Count; i++)
+        {
+            if (!string.Equals(actual[i].Id, expected[i].Id, StringComparison.Ordinal) ||
+                !string.Equals(actual[i].Description, expected[i].Description, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool LevelsAreEquivalent(
+        IReadOnlyList<DecisionScoreLevel> actual,
+        IReadOnlyList<DecisionScoreLevel> expected)
+    {
+        if (actual.Count != expected.Count)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < actual.Count; i++)
+        {
+            if (!string.Equals(actual[i].Id, expected[i].Id, StringComparison.Ordinal) ||
+                !string.Equals(actual[i].Description, expected[i].Description, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static void ValidateAnswer(DecisionQuestion question, DecisionAnswer answer)
