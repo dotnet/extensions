@@ -43,12 +43,19 @@ var definition = DecisionDefinition<TicketAnalysis>.Create(builder =>
     builder.BinaryProbability(result => result.RefundRequestProbability);
 });
 
-var ticket = new SupportTicket("I was charged twice. Please refund the duplicate payment.");
+var ticket = new SupportTicket(
+    "I was charged twice. Please refund the duplicate payment.");
+
 var response = await client.GetResponseAsync(ticket, definition);
+
 TicketAnalysis analysis = response.Result;
 DecisionResponse evidence = response.Evidence;
-var categoryDistribution =
-    response.GetDistribution(value => value.Category);
+```
+
+When the complete choice evidence is useful for reporting or review, the typed distribution remains available:
+
+```csharp
+var categoryDistribution = response.GetDistribution(value => value.Category);
 ```
 
 The same definition can include an explicitly ordered score rubric, and heterogeneous declarations remain independent:
