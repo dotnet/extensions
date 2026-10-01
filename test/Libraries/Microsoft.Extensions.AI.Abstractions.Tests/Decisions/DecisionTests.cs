@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -76,7 +77,7 @@ public class DecisionTests
                     {
                         Approved = answers.GetBinary("binary").TrueProbability > 0.5,
                         Selected = answers.GetChoice("choice").SelectedCandidateId,
-                        Score = score.Score,
+                        Score = score.Score!.Value,
                         ExpectedScore = score.ExpectedScore,
                     };
                 }));
@@ -121,6 +122,16 @@ public class DecisionTests
             "choice",
             "a",
             [
+                new("a", 1),
+                new("b", 0),
+                new("c", 0),
+                new("d", 0.02),
+            ],
+            DecisionPrecision.TwoDecimalPlaces));
+        Assert.Throws<DecisionProtocolException>(() => new ChoiceDecisionAnswer(
+            "choice",
+            "a",
+            [
                 new("a", 0.33),
                 new("b", 0.33),
                 new("c", 0.33),
@@ -140,7 +151,7 @@ public class DecisionTests
             ],
             DecisionPrecision.TwoDecimalPlaces);
 
-        Assert.Equal(1.58, valid.Score);
+        Assert.Equal(1.58, valid.Score!.Value);
         Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
             "score",
             2,
@@ -150,6 +161,34 @@ public class DecisionTests
                 new("high", 0),
             ],
             DecisionPrecision.TwoDecimalPlaces));
+    }
+
+    [Fact]
+    public void ScoreAnswer_PreservesAbsentNativeScoreAndRoundedExpectedScore()
+    {
+        ScoreDecisionAnswer answer = new(
+            "score",
+            null,
+            [
+                new("low", 0),
+                new("medium", 0),
+                new("high", 0.01),
+                new("highest", 1),
+            ],
+            DecisionPrecision.TwoDecimalPlaces);
+
+        Assert.Null(answer.Score);
+        Assert.Equal(3.02, answer.ExpectedScore, precision: 12);
+
+        string json = JsonSerializer.Serialize(answer, TestJsonSerializerContext.Default.ScoreDecisionAnswer);
+        ScoreDecisionAnswer roundtrip = JsonSerializer.Deserialize(
+            json,
+            TestJsonSerializerContext.Default.ScoreDecisionAnswer)!;
+        Assert.Null(roundtrip.Score);
+        Assert.Equal(3.02, roundtrip.ExpectedScore, precision: 12);
+
+        ScoreDecisionAnswer zero = new("score", 0, [new("low", 1), new("high", 0)]);
+        Assert.Equal(0, zero.Score!.Value);
     }
 
     [Fact]
@@ -184,18 +223,51 @@ public class DecisionTests
                 new("choice.blue", "choice", DecisionFeatureValueKind.ChoiceProbability, "blue|candidate"),
                 new("score.high", "score", DecisionFeatureValueKind.ScoreProbability, "high"),
                 new("score.value", "score", DecisionFeatureValueKind.Score),
+                new("score.expected", "score", DecisionFeatureValueKind.ExpectedScore),
             ]);
 
         DecisionFeatureVector vector = DecisionFeatureProjection.Project(response, schema);
 
         Assert.Equal("routing-decision-v1", vector.Schema.Id);
         Assert.Equal(2, vector.Schema.Version);
-        Assert.Equal(["binary.true", "choice.blue", "score.high", "score.value"], vector.Values.Select(static value => value.Name));
+        Assert.Equal(["binary.true", "choice.blue", "score.high", "score.value", "score.expected"], vector.Values.Select(static value => value.Name));
         Assert.Equal(0.75, vector.Values[0].Value);
         Assert.Equal(0.5, vector.Values[1].Value);
         Assert.Equal(0.7, vector.Values[2].Value);
         Assert.Equal(1.58, vector.Values[3].Value);
+        Assert.Equal(1.6, vector.Values[4].Value, precision: 12);
         Assert.Equal("test-provider", vector.Provenance!.ProviderName);
+    }
+
+    [Fact]
+    public void FeatureProjection_RejectsMissingReportedScoreButProjectsExpectedScore()
+    {
+        DecisionRequest request = CreateRequest(
+            new ScoreDecisionQuestion(
+                "score",
+                "Score the request.",
+                [new("low", "Low"), new("medium", "Medium"), new("high", "High"), new("highest", "Highest")]));
+        DecisionResponse response = new(
+            request,
+            [
+                new ScoreDecisionAnswer(
+                    "score",
+                    null,
+                    [new("low", 0), new("medium", 0), new("high", 0.01), new("highest", 1)],
+                    DecisionPrecision.TwoDecimalPlaces),
+            ]);
+
+        DecisionFeatureSchema expectedSchema = new(
+            "score-expected-v1",
+            1,
+            [new("score.expected", "score", DecisionFeatureValueKind.ExpectedScore)]);
+        Assert.Equal(3.02, DecisionFeatureProjection.Project(response, expectedSchema).Values[0].Value, precision: 12);
+
+        DecisionFeatureSchema reportedSchema = new(
+            "score-reported-v1",
+            1,
+            [new("score.reported", "score", DecisionFeatureValueKind.Score)]);
+        Assert.Throws<DecisionProtocolException>(() => DecisionFeatureProjection.Project(response, reportedSchema));
     }
 
     [Fact]
@@ -229,7 +301,7 @@ public class DecisionTests
         Assert.Equal("choice", ((ChoiceDecisionAnswer)roundtrip.Answers[1]).AdditionalProperties!["kind"]!.ToString());
         Assert.Equal("score", ((ScoreDecisionAnswer)roundtrip.Answers[2]).AdditionalProperties!["kind"]!.ToString());
         Assert.Equal("response", roundtrip.AdditionalProperties!["kind"]!.ToString());
-        Assert.Equal(1.58, ((ScoreDecisionAnswer)roundtrip.Answers[2]).Score);
+        Assert.Equal(1.58, ((ScoreDecisionAnswer)roundtrip.Answers[2]).Score!.Value);
     }
 
     [Fact]
@@ -337,7 +409,7 @@ public class DecisionTests
     public async Task DecisionDefinition_BindsTypedResultOnceAndRetainsEvidence()
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
-        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse);
+        using RecordingDecisionClient client = new(request => CreateTypedDefinitionResponse(request));
         DecisionOptions options = new() { ModelId = "model" };
 
         DecisionResponse<TypedDecisionResult> response = await client.GetResponseAsync(
@@ -366,7 +438,7 @@ public class DecisionTests
     public async Task DecisionDefinition_InferredStateOverloadUsesOneProviderInvocation()
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
-        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse);
+        using RecordingDecisionClient client = new(request => CreateTypedDefinitionResponse(request));
 
         DecisionResponse<TypedDecisionResult> response = await client.GetResponseAsync(
             new TypedDecisionState("Please reverse this payment."),
@@ -375,6 +447,79 @@ public class DecisionTests
 
         Assert.Equal(TicketCategory.Technical, response.Result.Category);
         Assert.Equal(1, client.CallCount);
+    }
+
+    [Fact]
+    public async Task RawMetadataOverloadRejectsSelfValidResponseWithChangedQuestionDomain()
+    {
+        ChoiceDecisionQuestion question = new(
+            "route",
+            "Select the active route.",
+            [new("alpha", "Alpha"), new("beta", "Beta")]);
+        using RecordingDecisionClient client = new(request =>
+        {
+            DecisionRequest staleRequest = new(
+                request.State.Clone(),
+                [
+                    new ChoiceDecisionQuestion(
+                        "route",
+                        "Select the active route.",
+                        [new("beta", "Changed beta"), new("alpha", "Alpha")]),
+                ]);
+            return new DecisionResponse(
+                staleRequest,
+                [
+                    new ChoiceDecisionAnswer(
+                        "route",
+                        "beta",
+                        [new("beta", 0.75), new("alpha", 0.25)]),
+                ]);
+        });
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(
+            new DecisionState { Value = "request" },
+            TestJsonSerializerContext.Default.DecisionState,
+            [question]));
+    }
+
+    [Fact]
+    public async Task RawMetadataOverloadRejectsSelfValidResponseWithStaleState()
+    {
+        BinaryDecisionQuestion question = new("valid", "Is this valid?");
+        using RecordingDecisionClient client = new(request =>
+        {
+            using JsonDocument staleState = JsonDocument.Parse("""{"value":"stale"}""");
+            DecisionRequest staleRequest = new(staleState.RootElement.Clone(), [question]);
+            return new DecisionResponse(staleRequest, [new BinaryDecisionAnswer("valid", 0.5)]);
+        });
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(
+            new DecisionState { Value = "request" },
+            TestJsonSerializerContext.Default.DecisionState,
+            [question]));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_ReflectionMetadataPathRejectsSelfValidStaleResponse()
+    {
+        JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        };
+        DecisionDefinition<ReflectionResult> definition = DecisionDefinition<ReflectionResult>.Create(
+            builder => builder.BinaryProbability(result => result.Probability),
+            options);
+        using RecordingDecisionClient client = new(request =>
+        {
+            DecisionRequest staleRequest = new(
+                request.State.Clone(),
+                [new BinaryDecisionQuestion(request.Questions[0].Id, "A stale instruction.")]);
+            return new DecisionResponse(staleRequest, [new BinaryDecisionAnswer(request.Questions[0].Id, 0.5)]);
+        });
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(
+            new ReflectionState { Value = "request" },
+            definition));
     }
 
     [Fact]
@@ -427,7 +572,7 @@ public class DecisionTests
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
         using CancellationTokenSource cancellation = new();
         cancellation.Cancel();
-        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse, cancel: true);
+        using RecordingDecisionClient client = new(request => CreateTypedDefinitionResponse(request), cancel: true);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             client.GetResponseAsync(
@@ -523,6 +668,44 @@ public class DecisionTests
         Assert.Equal(CustomCategory.Technical, response.Result.Category);
     }
 
+    [Fact]
+    public void DecisionDefinition_UsesConfiguredEnumNamingPolicy()
+    {
+        JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        };
+        DecisionDefinition<NamingPolicyResult> definition = DecisionDefinition<NamingPolicyResult>.Create(
+            builder => builder.Choice(result => result.Category),
+            options);
+
+        ChoiceDecisionQuestion question = Assert.IsType<ChoiceDecisionQuestion>(definition.Questions[0]);
+        Assert.Equal(["billing", "technical", "account"], question.Candidates.Select(static candidate => candidate.Id));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_ExpectedScoreUsesObservedDistributionAndReportedScoreRequiresNativeValue()
+    {
+        DecisionDefinition<TypedDecisionResult> expectedDefinition = CreateExpectedScoreDefinition();
+        using RecordingDecisionClient expectedClient = new(request => CreateTypedDefinitionResponse(request, reportedScore: null));
+
+        DecisionResponse<TypedDecisionResult> expectedResponse = await expectedClient.GetResponseAsync(
+            new TypedDecisionState("request"),
+            TestJsonSerializerContext.Default.TypedDecisionState,
+            expectedDefinition);
+
+        Assert.Equal(1.6, expectedResponse.Result.Satisfaction, precision: 12);
+        Assert.Null(((ScoreDecisionAnswer)expectedResponse.Evidence.Answers[2]).Score);
+
+        DecisionDefinition<TypedDecisionResult> reportedDefinition = CreateTypedDefinition();
+        using RecordingDecisionClient reportedClient = new(request => CreateTypedDefinitionResponse(request, reportedScore: null));
+        await Assert.ThrowsAsync<DecisionProtocolException>(() => reportedClient.GetResponseAsync(
+            new TypedDecisionState("request"),
+            TestJsonSerializerContext.Default.TypedDecisionState,
+            reportedDefinition));
+    }
+
     private static DecisionDefinition<TypedDecisionResult> CreateTypedDefinition() =>
         DecisionDefinition<TypedDecisionResult>.Create(
             TestJsonSerializerContext.Default.TypedDecisionResult,
@@ -539,7 +722,23 @@ public class DecisionTests
                     ]);
             });
 
-    private static DecisionResponse CreateTypedDefinitionResponse(DecisionRequest request)
+    private static DecisionDefinition<TypedDecisionResult> CreateExpectedScoreDefinition() =>
+        DecisionDefinition<TypedDecisionResult>.Create(
+            TestJsonSerializerContext.Default.TypedDecisionResult,
+            builder =>
+            {
+                builder.Choice(result => result.Category);
+                builder.BinaryProbability(result => result.RefundRequestProbability);
+                builder.ExpectedScore(
+                    result => result.Satisfaction,
+                    [
+                        new("low", "Low"),
+                        new("medium", "Medium"),
+                        new("high", "High"),
+                    ]);
+            });
+
+    private static DecisionResponse CreateTypedDefinitionResponse(DecisionRequest request, double? reportedScore = 1.58)
     {
         return new DecisionResponse(
             request,
@@ -555,7 +754,7 @@ public class DecisionTests
                 new BinaryDecisionAnswer(request.Questions[1].Id, 0.25),
                 new ScoreDecisionAnswer(
                     request.Questions[2].Id,
-                    1.58,
+                    reportedScore,
                     [
                         new(((ScoreDecisionQuestion)request.Questions[2]).Levels[0].Id, 0.1),
                         new(((ScoreDecisionQuestion)request.Questions[2]).Levels[1].Id, 0.2),
@@ -814,10 +1013,22 @@ public class DecisionTests
 
     internal sealed record CustomEnumResult(CustomCategory Category);
 
+    internal sealed record NamingPolicyResult(TicketCategory Category);
+
     internal sealed record PropertyConverterResult(
         [property: JsonConverter(typeof(CustomCategoryConverter))] CustomCategory Category);
 
     internal sealed record JsonElementState;
+
+    internal sealed class ReflectionState
+    {
+        public string? Value { get; set; }
+    }
+
+    internal sealed class ReflectionResult
+    {
+        public double Probability { get; set; }
+    }
 
     internal sealed class CustomCategoryConverter : JsonConverter<CustomCategory>
     {

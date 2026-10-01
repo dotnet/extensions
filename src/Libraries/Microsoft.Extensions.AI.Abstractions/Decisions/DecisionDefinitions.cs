@@ -113,7 +113,20 @@ public sealed class DecisionDefinition<TResult>
                         break;
 
                     case DecisionKind.Score:
-                        writer.WriteNumber(question.PropertyName, ((ScoreDecisionAnswer)answer).Score);
+                        ScoreDecisionAnswer score = (ScoreDecisionAnswer)answer;
+                        if (question.UsesExpectedScore)
+                        {
+                            writer.WriteNumber(question.PropertyName, score.ExpectedScore);
+                        }
+                        else if (score.Score is double reportedScore)
+                        {
+                            writer.WriteNumber(question.PropertyName, reportedScore);
+                        }
+                        else
+                        {
+                            throw new DecisionProtocolException(
+                                $"Question '{question.Question.Id}' does not contain a provider-reported score.");
+                        }
                         break;
 
                     default:
@@ -469,6 +482,27 @@ public sealed class DecisionDefinition<TResult>
             IReadOnlyList<DecisionScoreLevel> levels,
             string? instructions = null)
         {
+            AddScore(selector, levels, instructions, usesExpectedScore: false);
+        }
+
+        /// <summary>Declares an ordinal score question projected from the complete observed distribution.</summary>
+        /// <param name="selector">A direct result property selector.</param>
+        /// <param name="levels">The caller-defined ordered score levels.</param>
+        /// <param name="instructions">Optional explicit question instructions.</param>
+        public void ExpectedScore(
+            Expression<Func<TResult, double>> selector,
+            IReadOnlyList<DecisionScoreLevel> levels,
+            string? instructions = null)
+        {
+            AddScore(selector, levels, instructions, usesExpectedScore: true);
+        }
+
+        private void AddScore(
+            Expression<Func<TResult, double>> selector,
+            IReadOnlyList<DecisionScoreLevel> levels,
+            string? instructions,
+            bool usesExpectedScore)
+        {
             PropertyInfo property = GetDirectProperty(selector);
             EnsurePropertyCanBeDeclared(property, typeof(double));
             _ = Throw.IfNull(levels);
@@ -480,7 +514,8 @@ public sealed class DecisionDefinition<TResult>
                 jsonProperty.Name,
                 new ScoreDecisionQuestion(jsonProperty.Name, GetInstructions(jsonProperty, property, instructions), levels),
                 enumDefinition: null,
-                DecisionKind.Score);
+                DecisionKind.Score,
+                usesExpectedScore);
         }
 
         internal DecisionDefinition<TResult> Build()
@@ -501,14 +536,15 @@ public sealed class DecisionDefinition<TResult>
             string propertyName,
             DecisionQuestion question,
             object? enumDefinition,
-            DecisionKind kind)
+            DecisionKind kind,
+            bool usesExpectedScore = false)
         {
             if (_questions.Exists(existing => existing.Property == property || string.Equals(existing.PropertyName, propertyName, StringComparison.Ordinal)))
             {
                 Throw.ArgumentException("selector", "A result property or JSON property name can only be declared once.");
             }
 
-            _questions.Add(new DecisionDefinitionQuestion<TResult>(property, propertyName, question, enumDefinition, kind));
+            _questions.Add(new DecisionDefinitionQuestion<TResult>(property, propertyName, question, enumDefinition, kind, usesExpectedScore));
         }
     }
 
@@ -551,13 +587,15 @@ internal sealed class DecisionDefinitionQuestion<TResult>
         string propertyName,
         DecisionQuestion question,
         object? enumDefinition,
-        DecisionKind kind)
+        DecisionKind kind,
+        bool usesExpectedScore)
     {
         Property = property;
         PropertyName = propertyName;
         Question = question;
         EnumDefinition = enumDefinition;
         Kind = kind;
+        UsesExpectedScore = usesExpectedScore;
     }
 
     internal PropertyInfo Property { get; }
@@ -565,4 +603,5 @@ internal sealed class DecisionDefinitionQuestion<TResult>
     internal DecisionQuestion Question { get; }
     internal object? EnumDefinition { get; }
     internal DecisionKind Kind { get; }
+    internal bool UsesExpectedScore { get; }
 }

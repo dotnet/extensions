@@ -5334,6 +5334,11 @@
           "Value": "2"
         },
         {
+          "Member": "const Microsoft.Extensions.AI.DecisionFeatureValueKind Microsoft.Extensions.AI.DecisionFeatureValueKind.ExpectedScore",
+          "Stage": "Experimental",
+          "Value": "5"
+        },
+        {
           "Member": "const Microsoft.Extensions.AI.DecisionFeatureValueKind Microsoft.Extensions.AI.DecisionFeatureValueKind.Score",
           "Stage": "Experimental",
           "Value": "4"
@@ -5656,7 +5661,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.AI.ScoreDecisionAnswer.ScoreDecisionAnswer(string questionId, double score, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> probabilities, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties = null);",
+          "Member": "Microsoft.Extensions.AI.ScoreDecisionAnswer.ScoreDecisionAnswer(string questionId, double? score, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> probabilities, Microsoft.Extensions.AI.DecisionPrecision precision = Microsoft.Extensions.AI.DecisionPrecision.HighPrecision, object? rawRepresentation = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? additionalProperties = null);",
           "Stage": "Experimental"
         }
       ],
@@ -5670,7 +5675,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "double Microsoft.Extensions.AI.ScoreDecisionAnswer.Score { get; }",
+          "Member": "double? Microsoft.Extensions.AI.ScoreDecisionAnswer.Score { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -5729,6 +5734,10 @@
         },
         {
           "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.Choice<TEnum>(System.Linq.Expressions.Expression<System.Func<TResult, TEnum>> selector, string? instructions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.ExpectedScore(System.Linq.Expressions.Expression<System.Func<TResult, double>> selector, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionScoreLevel> levels, string? instructions = null);",
           "Stage": "Experimental"
         },
         {

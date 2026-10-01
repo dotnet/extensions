@@ -173,7 +173,7 @@ public static class DecisionClientExtensions
     /// <summary>Evaluates typed state using an explicit source-generated JSON contract.</summary>
     /// <typeparam name="TState">The application state type.</typeparam>
     /// <returns>A complete, correlated decision response.</returns>
-    public static Task<DecisionResponse> GetResponseAsync<TState>(
+    public static async Task<DecisionResponse> GetResponseAsync<TState>(
         this IDecisionClient client,
         TState state,
         JsonTypeInfo<TState> stateTypeInfo,
@@ -183,7 +183,11 @@ public static class DecisionClientExtensions
     {
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(stateTypeInfo);
-        return client.GetResponseAsync(DecisionRequest.Create(state, stateTypeInfo, questions), options, cancellationToken);
+
+        DecisionRequest request = DecisionRequest.Create(state, stateTypeInfo, questions);
+        DecisionResponse response = await client.GetResponseAsync(request, options, cancellationToken).ConfigureAwait(false);
+        response.ValidateAgainst(request);
+        return response;
     }
 
     /// <summary>Evaluates a JSON state using a reusable typed decision definition.</summary>

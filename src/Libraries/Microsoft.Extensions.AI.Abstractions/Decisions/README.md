@@ -67,8 +67,11 @@ var definitionWithScore = DecisionDefinition<TicketAnalysis>.Create(builder =>
     builder.BinaryProbability(result => result.RefundRequestProbability);
     // A score property would be declared with an explicit DecisionScoreLevel list:
     // builder.Score(result => result.Satisfaction, [new("low", "Low"), new("high", "High")]);
+    // builder.ExpectedScore(result => result.Satisfaction, [new("low", "Low"), new("high", "High")]);
 });
 ```
+
+`Score` projects only a provider-reported native ordinal score and fails explicitly when that scalar is absent. `ExpectedScore` projects the unmodified ordinal expectation calculated from the complete observed distribution, so the two choices remain distinguishable; after probability rounding, that observed expectation can fall outside the ordinal bounds and is not repaired. Every probability is conditioned on the full request state and question set; declaring questions independently does not promise marginal invariance, independence, a joint distribution, or calibration.
 
 At an explicit JSON boundary, callers can use source-generated metadata for both state and result contracts. The explicit generic arguments are optional for inference, but make the boundary visible:
 
@@ -140,5 +143,7 @@ Layer 1 intentionally reuses existing .NET and MEAI primitives rather than addin
 - [EF Core model conventions and explicit overrides](https://learn.microsoft.com/ef/core/modeling/) are useful precedent for bounded opt-in conventions, not a reason to add an EF dependency or `DbContext`. [EF Core query providers](https://learn.microsoft.com/ef/core/querying/) likewise do not justify an `IQueryable` decision API for explicit paid asynchronous model inference; ordinary LINQ projection over returned probabilities remains appropriate.
 
 Automated arbitrary semantic inference is out. This layer already uses bounded opt-in conventions for JSON enum naming and standard member descriptions; future conventions for known enum/member mappings remain reasonable only when explicit, source-generation/AOT-compatible, and unable to hide provider-facing identities or application-owned result mapping.
+
+Provider evidence for the package-level contract is bounded and documented in the [upstream provider-validation report](https://github.com/luisquintanilla/typesafe-meai/blob/13adb58c7d7479bc8c73bf31960c08349b7c3185/docs/upstream-provider-validation.md): Julia/Laya provide CPU binary/choice/score proof, Qwen provides choice-only proof, and the dedicated `tev1:0.8b` Ollama/OllamaSharp path provides live binary/choice/score proof. Other adapters use native HTTP fixtures rather than live executions; this is not a claim of universal provider accuracy.
 
 This layer intentionally does not define tools, routing composition, MEDI processors, provider adapters, ML.NET or Arrow integrations, or automatic arbitrary POCO/union semantic inference. AIFunction/tool interoperability is a Layer 2 concern and is not implied by these abstractions.
