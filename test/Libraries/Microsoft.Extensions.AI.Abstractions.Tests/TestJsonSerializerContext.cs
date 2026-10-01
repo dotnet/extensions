@@ -79,4 +79,10 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(DecisionTests.PropertyDescriptionResult))]
 [JsonSerializable(typeof(DecisionTests.JsonNamedResult))]
 [JsonSerializable(typeof(DecisionTests.FlagsResult))]
+[JsonSerializable(typeof(DecisionTests.ReadOnlyResult))]
+[JsonSerializable(typeof(DecisionTests.RequiredUnmappedResult))]
+[JsonSerializable(typeof(DecisionTests.CustomCategory))]
+[JsonSerializable(typeof(DecisionTests.CustomEnumResult))]
+[JsonSerializable(typeof(DecisionTests.PropertyConverterResult))]
+[JsonSerializable(typeof(DecisionTests.JsonElementState))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;

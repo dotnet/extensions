@@ -88,9 +88,10 @@ public sealed class DecisionDefinition<TResult>
         return builder.Build();
     }
 
-    internal DecisionResponse<TResult> Bind(DecisionResponse response)
+    internal DecisionResponse<TResult> Bind(DecisionResponse response, DecisionRequest expectedRequest)
     {
         _ = Throw.IfNull(response);
+        response.ValidateAgainst(expectedRequest);
 
         using MemoryStream stream = new();
         using (Utf8JsonWriter writer = new(stream))
@@ -123,10 +124,11 @@ public sealed class DecisionDefinition<TResult>
             writer.WriteEndObject();
         }
 
+        byte[] resultJson = stream.ToArray();
         TResult result;
         try
         {
-            result = JsonSerializer.Deserialize<TResult>(stream.ToArray(), ResultTypeInfo)!;
+            result = JsonSerializer.Deserialize<TResult>(resultJson, ResultTypeInfo)!;
         }
         catch (Exception exception) when (exception is JsonException or NotSupportedException)
         {
@@ -138,6 +140,33 @@ public sealed class DecisionDefinition<TResult>
         if (result is null)
         {
             throw new DecisionProtocolException("The decision response produced a null result.");
+        }
+
+        try
+        {
+            JsonElement materializedJson = JsonSerializer.SerializeToElement(result, ResultTypeInfo);
+            using JsonDocument expectedJson = JsonDocument.Parse(resultJson);
+
+            foreach (DecisionDefinitionQuestion<TResult> question in _questions)
+            {
+                if (!expectedJson.RootElement.TryGetProperty(question.PropertyName, out JsonElement expectedValue) ||
+                    !materializedJson.TryGetProperty(question.PropertyName, out JsonElement materializedValue) ||
+                    !JsonElement.DeepEquals(expectedValue, materializedValue))
+                {
+                    throw new DecisionProtocolException(
+                        $"The decision response value for result property '{question.Property.Name}' was not preserved by the configured JSON contract.");
+                }
+            }
+        }
+        catch (DecisionProtocolException)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is JsonException or NotSupportedException)
+        {
+            throw new DecisionProtocolException(
+                "The decision response could not be verified against the configured result contract.",
+                exception);
         }
 
         return new DecisionResponse<TResult>(result, response, this);
@@ -215,12 +244,20 @@ public sealed class DecisionDefinition<TResult>
 
         private static DecisionEnumDefinition<TEnum> CreateEnumDefinition<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] TEnum>(
             PropertyInfo property,
-            JsonTypeInfo<TResult> resultTypeInfo)
+            JsonTypeInfo<TResult> resultTypeInfo,
+            JsonPropertyInfo jsonProperty)
             where TEnum : struct, Enum
         {
             if (property.PropertyType.IsDefined(typeof(FlagsAttribute), inherit: false))
             {
                 Throw.ArgumentException("selector", "Flags enums are not supported as closed decision choices.");
+            }
+
+            if (jsonProperty.CustomConverter is not null)
+            {
+                throw new NotSupportedException(
+                    $"Property-specific JSON converters are not supported for decision enum property '{property.Name}'. " +
+                    "Configure the enum converter at the JSON type/options level so candidate IDs and result materialization share one contract.");
             }
 
             JsonTypeInfo enumTypeInfo;
@@ -325,6 +362,40 @@ public sealed class DecisionDefinition<TResult>
         }
 
 #if !NET9_0_OR_GREATER
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The reflection convenience path checks preserved constructor binding metadata; source-generated metadata is used on newer TFMs.")]
+#endif
+        private static void EnsurePropertyCanBeMaterialized(
+            PropertyInfo property,
+            JsonPropertyInfo jsonProperty)
+        {
+            if (jsonProperty.Set is not null)
+            {
+                return;
+            }
+
+#if NET9_0_OR_GREATER
+            if (jsonProperty.AssociatedParameter is not null)
+            {
+                return;
+            }
+#else
+            ConstructorInfo[] constructors = property.DeclaringType?.GetConstructors() ?? [];
+            if (Array.Exists(
+                constructors,
+                candidate => Array.Exists(
+                    candidate.GetParameters(),
+                    parameter => string.Equals(parameter.Name, property.Name, StringComparison.OrdinalIgnoreCase))))
+            {
+                return;
+            }
+#endif
+
+            Throw.ArgumentException(
+                "selector",
+                $"The selected property '{property.Name}' is not writable or bound to a JSON constructor parameter.");
+        }
+
+#if !NET9_0_OR_GREATER
         [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The reflection convenience path intentionally reads preserved constructor parameter metadata; source-generated metadata is used on newer TFMs.")]
         private static string? GetConstructorDescription(PropertyInfo property)
         {
@@ -358,8 +429,9 @@ public sealed class DecisionDefinition<TResult>
             PropertyInfo property = GetDirectProperty(selector);
             EnsurePropertyCanBeDeclared(property, typeof(TEnum));
 
-            DecisionEnumDefinition<TEnum> enumDefinition = CreateEnumDefinition<TEnum>(property, _resultTypeInfo);
             JsonPropertyInfo jsonProperty = GetJsonProperty(_resultTypeInfo, property);
+            EnsurePropertyCanBeMaterialized(property, jsonProperty);
+            DecisionEnumDefinition<TEnum> enumDefinition = CreateEnumDefinition<TEnum>(property, _resultTypeInfo, jsonProperty);
             AddQuestion(
                 property,
                 jsonProperty.Name,
@@ -379,6 +451,7 @@ public sealed class DecisionDefinition<TResult>
             EnsurePropertyCanBeDeclared(property, typeof(double));
 
             JsonPropertyInfo jsonProperty = GetJsonProperty(_resultTypeInfo, property);
+            EnsurePropertyCanBeMaterialized(property, jsonProperty);
             AddQuestion(
                 property,
                 jsonProperty.Name,
@@ -401,6 +474,7 @@ public sealed class DecisionDefinition<TResult>
             _ = Throw.IfNull(levels);
 
             JsonPropertyInfo jsonProperty = GetJsonProperty(_resultTypeInfo, property);
+            EnsurePropertyCanBeMaterialized(property, jsonProperty);
             AddQuestion(
                 property,
                 jsonProperty.Name,

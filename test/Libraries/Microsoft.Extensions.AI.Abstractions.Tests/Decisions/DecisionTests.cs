@@ -337,8 +337,7 @@ public class DecisionTests
     public async Task DecisionDefinition_BindsTypedResultOnceAndRetainsEvidence()
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
-        DecisionResponse providerResponse = CreateTypedDefinitionResponse();
-        using RecordingDecisionClient client = new(providerResponse);
+        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse);
         DecisionOptions options = new() { ModelId = "model" };
 
         DecisionResponse<TypedDecisionResult> response = await client.GetResponseAsync(
@@ -352,7 +351,7 @@ public class DecisionTests
         Assert.Equal(TicketCategory.Technical, response.Result.Category);
         Assert.Equal(0.25, response.Result.RefundRequestProbability);
         Assert.Equal(1.58, response.Result.Satisfaction);
-        Assert.Same(providerResponse, response.Evidence);
+        Assert.Equal("test-provider", response.Evidence.Provenance!.ProviderName);
         Assert.Equal(
             new Dictionary<TicketCategory, double>
             {
@@ -367,7 +366,7 @@ public class DecisionTests
     public async Task DecisionDefinition_InferredStateOverloadUsesOneProviderInvocation()
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
-        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse());
+        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse);
 
         DecisionResponse<TypedDecisionResult> response = await client.GetResponseAsync(
             new TypedDecisionState("Please reverse this payment."),
@@ -428,7 +427,7 @@ public class DecisionTests
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
         using CancellationTokenSource cancellation = new();
         cancellation.Cancel();
-        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse(), cancel: true);
+        using RecordingDecisionClient client = new(CreateTypedDefinitionResponse, cancel: true);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             client.GetResponseAsync(
@@ -437,6 +436,91 @@ public class DecisionTests
                 definition,
                 cancellationToken: cancellation.Token));
         Assert.Equal(1, client.CallCount);
+    }
+
+    [Theory]
+    [InlineData("case")]
+    [InlineData("stale")]
+    [InlineData("missing")]
+    [InlineData("reordered")]
+    [InlineData("extra")]
+    [InlineData("wrong-kind")]
+    public async Task DecisionDefinition_RejectsResponseNotMatchingSentRequest(string mutation)
+    {
+        DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
+        using RecordingDecisionClient client = new(request => CreateMismatchedResponse(request, mutation));
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(
+            new TypedDecisionState("request"),
+            TestJsonSerializerContext.Default.TypedDecisionState,
+            definition));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_AllowsEquivalentOwnedResponseSnapshots()
+    {
+        DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
+        using RecordingDecisionClient client = new(request => CreateTypedDefinitionResponse(CloneRequest(request)));
+
+        DecisionResponse<TypedDecisionResult> response = await client.GetResponseAsync(
+            new TypedDecisionState("request"),
+            TestJsonSerializerContext.Default.TypedDecisionState,
+            definition);
+
+        Assert.Equal(TicketCategory.Technical, response.Result.Category);
+    }
+
+    [Fact]
+    public void DecisionDefinition_RejectsReadOnlyUnboundProperties()
+    {
+        Assert.Throws<ArgumentException>(() => DecisionDefinition<ReadOnlyResult>.Create(
+            TestJsonSerializerContext.Default.ReadOnlyResult,
+            builder => builder.BinaryProbability(result => result.Probability)));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_RejectsRequiredUnmappedProperties()
+    {
+        DecisionDefinition<RequiredUnmappedResult> definition = DecisionDefinition<RequiredUnmappedResult>.Create(
+            TestJsonSerializerContext.Default.RequiredUnmappedResult,
+            builder => builder.BinaryProbability(result => result.Probability));
+        using RecordingDecisionClient client = new(request => new DecisionResponse(
+            request,
+            [new BinaryDecisionAnswer(request.Questions[0].Id, 0.25)]));
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(
+            new TypedDecisionState("request"),
+            definition));
+    }
+
+    [Fact]
+    public void DecisionDefinition_RejectsPropertySpecificEnumConverters()
+    {
+        Assert.Throws<NotSupportedException>(() => DecisionDefinition<PropertyConverterResult>.Create(
+            TestJsonSerializerContext.Default.PropertyConverterResult,
+            builder => builder.Choice(result => result.Category)));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_UsesConfiguredEnumConverterForExactCandidateIds()
+    {
+        DecisionDefinition<CustomEnumResult> definition = DecisionDefinition<CustomEnumResult>.Create(
+            TestJsonSerializerContext.Default.CustomEnumResult,
+            builder => builder.Choice(result => result.Category));
+        ChoiceDecisionQuestion question = Assert.IsType<ChoiceDecisionQuestion>(definition.Questions[0]);
+        Assert.Equal(["billing-id", "technical-id", "account-id"], question.Candidates.Select(static candidate => candidate.Id));
+
+        using RecordingDecisionClient client = new(request => new DecisionResponse(
+            request,
+            [new ChoiceDecisionAnswer(
+                request.Questions[0].Id,
+                "technical-id",
+                [new("billing-id", 0.2), new("technical-id", 0.5), new("account-id", 0.3)])]));
+
+        DecisionResponse<CustomEnumResult> response = await client.GetResponseAsync(
+            new JsonElementState(),
+            definition);
+        Assert.Equal(CustomCategory.Technical, response.Result.Category);
     }
 
     private static DecisionDefinition<TypedDecisionResult> CreateTypedDefinition() =>
@@ -455,50 +539,141 @@ public class DecisionTests
                     ]);
             });
 
-    private static DecisionResponse CreateTypedDefinitionResponse()
+    private static DecisionResponse CreateTypedDefinitionResponse(DecisionRequest request)
     {
-        DecisionRequest request = CreateRequest(
-            new ChoiceDecisionQuestion(
-                "category",
-                "Classify the customer's main concern.",
-                [
-                    new("Billing", "Payment, invoice, or charge concerns."),
-                    new("Technical", "Product defects, errors, outages, or troubleshooting."),
-                    new("Account", "Sign-in, profile, or account-access concerns."),
-                ]),
-            new BinaryDecisionQuestion("refundRequestProbability", "Is the customer requesting a refund or payment reversal?"),
-            new ScoreDecisionQuestion(
-                "satisfaction",
-                "Rate the customer's satisfaction.",
-                [
-                    new("low", "Low"),
-                    new("medium", "Medium"),
-                    new("high", "High"),
-                ]));
-
         return new DecisionResponse(
             request,
             [
                 new ChoiceDecisionAnswer(
-                    "category",
-                    "Technical",
+                    request.Questions[0].Id,
+                    ((ChoiceDecisionQuestion)request.Questions[0]).Candidates[1].Id,
                     [
-                        new("Billing", 0.2),
-                        new("Technical", 0.5),
-                        new("Account", 0.3),
+                        new(((ChoiceDecisionQuestion)request.Questions[0]).Candidates[0].Id, 0.2),
+                        new(((ChoiceDecisionQuestion)request.Questions[0]).Candidates[1].Id, 0.5),
+                        new(((ChoiceDecisionQuestion)request.Questions[0]).Candidates[2].Id, 0.3),
                     ]),
-                new BinaryDecisionAnswer("refundRequestProbability", 0.25),
+                new BinaryDecisionAnswer(request.Questions[1].Id, 0.25),
                 new ScoreDecisionAnswer(
-                    "satisfaction",
+                    request.Questions[2].Id,
                     1.58,
                     [
-                        new("low", 0.1),
-                        new("medium", 0.2),
-                        new("high", 0.7),
+                        new(((ScoreDecisionQuestion)request.Questions[2]).Levels[0].Id, 0.1),
+                        new(((ScoreDecisionQuestion)request.Questions[2]).Levels[1].Id, 0.2),
+                        new(((ScoreDecisionQuestion)request.Questions[2]).Levels[2].Id, 0.7),
                     ],
+                    DecisionPrecision.TwoDecimalPlaces),
+            ],
+            new DecisionProvenance(providerName: "test-provider"));
+    }
+
+    private static DecisionResponse CreateMismatchedResponse(DecisionRequest request, string mutation)
+    {
+        if (mutation == "wrong-kind")
+        {
+            DecisionRequest wrongKindRequest = new(
+                request.State,
+                [
+                    new BinaryDecisionQuestion(request.Questions[0].Id, request.Questions[0].Instructions),
+                    request.Questions[1],
+                    request.Questions[2],
+                ]);
+            return new DecisionResponse(
+                wrongKindRequest,
+                [
+                    new BinaryDecisionAnswer(wrongKindRequest.Questions[0].Id, 0.5),
+                    new BinaryDecisionAnswer(wrongKindRequest.Questions[1].Id, 0.25),
+                    new ScoreDecisionAnswer(
+                        wrongKindRequest.Questions[2].Id,
+                        1.58,
+                        [new("low", 0.1), new("medium", 0.2), new("high", 0.7)],
+                        DecisionPrecision.TwoDecimalPlaces),
+                ]);
+        }
+
+        ChoiceDecisionQuestion original = (ChoiceDecisionQuestion)request.Questions[0];
+        IReadOnlyList<DecisionCandidate> candidates = mutation switch
+        {
+            "case" =>
+            [
+                new("Billing", "Payment, invoice, or charge concerns."),
+                new("technical", "Product defects, errors, outages, or troubleshooting."),
+                new("Account", "Sign-in, profile, or account-access concerns."),
+            ],
+            "stale" =>
+            [
+                new("Billing", "Old billing instruction."),
+                new("Technical", "Old technical instruction."),
+                new("Account", "Old account instruction."),
+            ],
+            "missing" =>
+            [
+                original.Candidates[0],
+                original.Candidates[1],
+            ],
+            "reordered" =>
+            [
+                original.Candidates[1],
+                original.Candidates[0],
+                original.Candidates[2],
+            ],
+            "extra" =>
+            [
+                original.Candidates[0],
+                original.Candidates[1],
+                original.Candidates[2],
+                new("Other", "Other"),
+            ],
+            _ => throw new ArgumentOutOfRangeException(nameof(mutation)),
+        };
+
+        DecisionQuestion changedChoice = mutation == "stale"
+            ? new ChoiceDecisionQuestion(original.Id, "A stale instruction.", candidates)
+            : new ChoiceDecisionQuestion(original.Id, original.Instructions, candidates);
+        DecisionRequest changedRequest = new(
+            request.State,
+            [changedChoice, request.Questions[1], request.Questions[2]]);
+        return CreateResponseForRequest(changedRequest);
+    }
+
+    private static DecisionResponse CreateResponseForRequest(DecisionRequest request)
+    {
+        ChoiceDecisionQuestion choice = (ChoiceDecisionQuestion)request.Questions[0];
+        ScoreDecisionQuestion score = (ScoreDecisionQuestion)request.Questions[2];
+        return new DecisionResponse(
+            request,
+            [
+                new ChoiceDecisionAnswer(
+                    choice.Id,
+                    choice.Candidates[0].Id,
+                    choice.Candidates.Select(static (candidate, index) => new DecisionProbability(candidate.Id, index == 0 ? 1 : 0)).ToArray()),
+                new BinaryDecisionAnswer(request.Questions[1].Id, 0.25),
+                new ScoreDecisionAnswer(
+                    score.Id,
+                    1.58,
+                    score.Levels.Select(static (level, index) => new DecisionProbability(level.Id, index == 1 ? 1 : 0)).ToArray(),
                     DecisionPrecision.TwoDecimalPlaces),
             ]);
     }
+
+    private static DecisionRequest CloneRequest(DecisionRequest request) =>
+        new(
+            request.State.Clone(),
+            request.Questions.Select(CloneQuestion).ToArray());
+
+    private static DecisionQuestion CloneQuestion(DecisionQuestion question) =>
+        question switch
+        {
+            BinaryDecisionQuestion binary => new BinaryDecisionQuestion(binary.Id, binary.Instructions, binary.TrueDescription, binary.FalseDescription),
+            ChoiceDecisionQuestion choice => new ChoiceDecisionQuestion(
+                choice.Id,
+                choice.Instructions,
+                choice.Candidates.Select(static candidate => new DecisionCandidate(candidate.Id, candidate.Description)).ToArray()),
+            ScoreDecisionQuestion score => new ScoreDecisionQuestion(
+                score.Id,
+                score.Instructions,
+                score.Levels.Select(static level => new DecisionScoreLevel(level.Id, level.Description)).ToArray()),
+            _ => throw new ArgumentOutOfRangeException(nameof(question)),
+        };
 
     private static DecisionRequest CreateRequest(params DecisionQuestion[] questions)
     {
@@ -611,6 +786,60 @@ public class DecisionTests
         public double Probability { get; init; }
     }
 
+    internal sealed class ReadOnlyResult
+    {
+        public double Probability { get; }
+    }
+
+    internal sealed class RequiredUnmappedResult
+    {
+        public double Probability { get; set; }
+
+        [JsonRequired]
+        public string Required { get; set; } = null!;
+    }
+
+    [JsonConverter(typeof(CustomCategoryConverter))]
+    internal enum CustomCategory
+    {
+        [Description("Billing category.")]
+        Billing,
+
+        [Description("Technical category.")]
+        Technical,
+
+        [Description("Account category.")]
+        Account,
+    }
+
+    internal sealed record CustomEnumResult(CustomCategory Category);
+
+    internal sealed record PropertyConverterResult(
+        [property: JsonConverter(typeof(CustomCategoryConverter))] CustomCategory Category);
+
+    internal sealed record JsonElementState;
+
+    internal sealed class CustomCategoryConverter : JsonConverter<CustomCategory>
+    {
+        public override CustomCategory Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+            reader.GetString() switch
+            {
+                "billing-id" => CustomCategory.Billing,
+                "technical-id" => CustomCategory.Technical,
+                "account-id" => CustomCategory.Account,
+                _ => throw new JsonException(),
+            };
+
+        public override void Write(Utf8JsonWriter writer, CustomCategory value, JsonSerializerOptions options) =>
+            writer.WriteStringValue(value switch
+            {
+                CustomCategory.Billing => "billing-id",
+                CustomCategory.Technical => "technical-id",
+                CustomCategory.Account => "account-id",
+                _ => throw new JsonException(),
+            });
+    }
+
     internal sealed record FlagsResult(FlagCategory Value);
 
     internal sealed class DecisionState
@@ -628,12 +857,17 @@ public class DecisionTests
 
     internal sealed class RecordingDecisionClient : IDecisionClient
     {
-        private readonly DecisionResponse _response;
+        private readonly Func<DecisionRequest, DecisionResponse> _responseFactory;
         private readonly bool _cancel;
 
         public RecordingDecisionClient(DecisionResponse response, bool cancel = false)
+            : this(_ => response, cancel)
         {
-            _response = response;
+        }
+
+        public RecordingDecisionClient(Func<DecisionRequest, DecisionResponse> responseFactory, bool cancel = false)
+        {
+            _responseFactory = responseFactory;
             _cancel = cancel;
         }
 
@@ -653,7 +887,7 @@ public class DecisionTests
                 return Task.FromCanceled<DecisionResponse>(cancellationToken);
             }
 
-            return Task.FromResult(_response);
+            return Task.FromResult(_responseFactory(request));
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;

@@ -100,6 +100,20 @@ DecisionResponse<TicketAnalysis> analyzed = await client.GetResponseAsync<Suppor
     cancellationToken: cancellationToken);
 ```
 
+When the application already has a JSON state snapshot, the result-only overload keeps the same local binding behavior without re-serializing the state:
+
+```csharp
+using System.Text.Json;
+
+JsonElement stateJson = JsonSerializer.SerializeToElement(
+    ticket,
+    TicketJsonContext.Default.SupportTicket);
+DecisionResponse<TicketAnalysis> analyzedFromJson = await client.GetResponseAsync<TicketAnalysis>(
+    stateJson,
+    definition,
+    cancellationToken: cancellationToken);
+```
+
 Applications that only need the neutral response can keep the no-binding path:
 
 ```csharp
@@ -132,7 +146,7 @@ The returned `Evidence` is the complete `DecisionResponse`, including every cate
 
 ## .NET platform reuse / ergonomics under review
 
-Layer 1 intentionally reuses existing .NET and MEAI primitives rather than adding a builder, `IQueryable`, ORM, or new source-generator dependency:
+Layer 1 intentionally reuses existing .NET and MEAI primitives rather than adding `IQueryable`, an ORM, or a new source-generator dependency:
 
 - [`JsonSchemaExporter`](https://learn.microsoft.com/dotnet/standard/serialization/system-text-json/extract-schema) was introduced in .NET 9. The decision contracts use `JsonTypeInfo` and serializer options for explicit metadata; they do not add another schema exporter, and `AIJsonUtilities` provides the existing MEAI compatibility helpers where applicable.
 - [System.Text.Json source generation](https://learn.microsoft.com/dotnet/standard/serialization/system-text-json/source-generation) is the AOT-friendly way to supply `JsonTypeInfo`. `JsonTypeInfo` itself is not synonymous with generated code; ordinary JIT reflection through a configured resolver remains a platform option.
@@ -141,6 +155,6 @@ Layer 1 intentionally reuses existing .NET and MEAI primitives rather than addin
 - [Structured output](https://learn.microsoft.com/dotnet/ai/quickstarts/structured-output) already supports enum/record-shaped chat results. If an application only needs a label or JSON result, `IChatClient.GetResponseAsync<T>` may be the simpler choice; that path does not by itself establish a provider-reported probability distribution.
 - [EF Core model conventions and explicit overrides](https://learn.microsoft.com/ef/core/modeling/) are useful precedent for bounded opt-in conventions, not a reason to add an EF dependency or `DbContext`. [EF Core query providers](https://learn.microsoft.com/ef/core/querying/) likewise do not justify an `IQueryable` decision API for explicit paid asynchronous model inference; ordinary LINQ projection over returned probabilities remains appropriate.
 
-Automated arbitrary semantic inference is out. Bounded opt-in conventions for known enum naming or member mappings remain possible future ergonomics if they are explicit, source-generation/AOT-compatible, and do not hide provider-facing identities or application-owned result mapping.
+Automated arbitrary semantic inference is out. This layer already uses bounded opt-in conventions for JSON enum naming and standard member descriptions; future conventions for known enum/member mappings remain reasonable only when explicit, source-generation/AOT-compatible, and unable to hide provider-facing identities or application-owned result mapping.
 
 This layer intentionally does not define tools, routing composition, MEDI processors, provider adapters, ML.NET or Arrow integrations, or automatic arbitrary POCO/union semantic inference. AIFunction/tool interoperability is a Layer 2 concern and is not implied by these abstractions.
