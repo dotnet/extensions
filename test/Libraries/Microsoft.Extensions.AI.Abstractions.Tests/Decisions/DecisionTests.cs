@@ -217,6 +217,78 @@ public class DecisionTests
     }
 
     [Fact]
+    public void RoundedScoreValidation_FourDecimalPrecisionRequiresNormalizedLatentMass()
+    {
+        ScoreDecisionAnswer valid = new(
+            "score",
+            1,
+            [
+                new("low", 0.3333),
+                new("medium", 0.3333),
+                new("high", 0.3333),
+            ],
+            DecisionPrecision.FourDecimalPlaces);
+
+        Assert.Equal(1, valid.Score!.Value);
+        Assert.Equal(0.9999, valid.ExpectedScore, precision: 12);
+        Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
+            "score",
+            0.9998,
+            [
+                new("low", 0.3333),
+                new("medium", 0.3333),
+                new("high", 0.3333),
+            ],
+            DecisionPrecision.FourDecimalPlaces));
+    }
+
+    [Fact]
+    public void RoundedScoreValidation_UsesClippedTwoDecimalFeasibleExtremes()
+    {
+        ScoreDecisionAnswer valid = new(
+            "score",
+            0.02,
+            [
+                new("low", 0.99),
+                new("medium", 0.01),
+                new("high", 0),
+            ],
+            DecisionPrecision.TwoDecimalPlaces);
+
+        Assert.Equal(0.02, valid.Score!.Value);
+        Assert.Equal(0.01, valid.ExpectedScore, precision: 12);
+        Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
+            "score",
+            0.03,
+            [
+                new("low", 0.99),
+                new("medium", 0.01),
+                new("high", 0),
+            ],
+            DecisionPrecision.TwoDecimalPlaces));
+    }
+
+    [Fact]
+    public void RoundedScoreValidation_PreservesHighPrecisionSlackWithoutRepair()
+    {
+        ScoreDecisionAnswer above = new(
+            "score",
+            0.5,
+            [new("low", 0.5000004), new("high", 0.5)]);
+        ScoreDecisionAnswer below = new(
+            "score",
+            0.5,
+            [new("low", 0.4999996), new("high", 0.5)]);
+
+        Assert.Equal(0.5, above.ExpectedScore, precision: 12);
+        Assert.Equal(0.5, below.ExpectedScore, precision: 12);
+        Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
+            "score",
+            0.500002,
+            [new("low", 0.5000004), new("high", 0.5)]));
+    }
+
+    [Fact]
     public void ScoreAnswer_PreservesAbsentNativeScoreAndRoundedExpectedScore()
     {
         ScoreDecisionAnswer answer = new(
@@ -555,10 +627,8 @@ public class DecisionTests
     [Fact]
     public async Task DecisionDefinition_ReflectionMetadataPathRejectsSelfValidStaleResponse()
     {
-        JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
-        {
-            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-        };
+        DefaultJsonTypeInfoResolver resolver = new();
+        JsonSerializerOptions options = new(JsonSerializerDefaults.Web) { TypeInfoResolver = resolver };
         DecisionDefinition<ReflectionResult> definition = DecisionDefinition<ReflectionResult>.Create(
             builder => builder.BinaryProbability(result => result.Probability),
             options);
@@ -573,6 +643,8 @@ public class DecisionTests
         await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(
             new ReflectionState { Value = "request" },
             definition));
+        Assert.Same(resolver, options.TypeInfoResolver);
+        Assert.False(options.IsReadOnly);
     }
 
     [Fact]
@@ -760,6 +832,8 @@ public class DecisionTests
         Assert.Throws<NotSupportedException>(() => DecisionDefinition<ReflectionResult>.Create(
             builder => builder.BinaryProbability(result => result.Probability),
             options));
+        Assert.Null(options.TypeInfoResolver);
+        Assert.False(options.IsReadOnly);
     }
 
     [Fact]
@@ -788,6 +862,110 @@ public class DecisionTests
     }
 
     [Fact]
+    public async Task DecisionDefinition_PreservesGlobalWriteAsStringAndDefaultIgnoreSettings()
+    {
+        string serialized = JsonSerializer.Serialize(
+            new GlobalConfiguredResult { Probability = 0.25, NativeScore = 1.6, ExpectedScore = 1.6 },
+            GlobalConfiguredJsonSerializerContext.Default.GlobalConfiguredResult);
+        Assert.Contains("\"probability\":\"0.25\"", serialized);
+
+        DecisionResponse<GlobalConfiguredResult> response = await BindConfiguredResult(
+            GlobalConfiguredJsonSerializerContext.Default.GlobalConfiguredResult,
+            builder =>
+            {
+                builder.BinaryProbability(result => result.Probability);
+                builder.Score(result => result.NativeScore, CreateLevels());
+                builder.ExpectedScore(result => result.ExpectedScore, CreateLevels());
+            },
+            zero: false);
+
+        Assert.Equal(0.25, response.Result.Probability);
+        Assert.Equal(1.6, response.Result.NativeScore, precision: 12);
+        Assert.Equal(1.6, response.Result.ExpectedScore, precision: 12);
+        Assert.Equal(3, response.Evidence.Answers.Count);
+        Assert.Equal(3, response.Evidence.Request.Questions.Count);
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_PreservesGlobalDefaultIgnoredNativeZeroAndExpectedScore()
+    {
+        string serialized = JsonSerializer.Serialize(
+            new GlobalConfiguredResult(),
+            GlobalConfiguredJsonSerializerContext.Default.GlobalConfiguredResult);
+        Assert.DoesNotContain("probability", serialized);
+        Assert.DoesNotContain("nativeScore", serialized);
+        Assert.DoesNotContain("expectedScore", serialized);
+
+        DecisionResponse<GlobalConfiguredResult> response = await BindConfiguredResult(
+            GlobalConfiguredJsonSerializerContext.Default.GlobalConfiguredResult,
+            builder =>
+            {
+                builder.BinaryProbability(result => result.Probability);
+                builder.Score(result => result.NativeScore, CreateLevels());
+                builder.ExpectedScore(result => result.ExpectedScore, CreateLevels());
+            },
+            zero: true);
+
+        Assert.Equal(0, response.Result.Probability);
+        Assert.Equal(0, response.Result.NativeScore);
+        Assert.Equal(0, response.Result.ExpectedScore);
+        Assert.Equal(0, ((ScoreDecisionAnswer)response.Evidence.Answers[1]).Score!.Value);
+        Assert.Null(((ScoreDecisionAnswer)response.Evidence.Answers[2]).Score);
+        Assert.Equal(3, response.Evidence.Answers.Count);
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_PreservesPropertyWriteAsStringAndDefaultIgnoreSettings()
+    {
+        string serialized = JsonSerializer.Serialize(
+            new PropertyConfiguredResult { Probability = 0.25, NativeScore = 1.6, ExpectedScore = 1.6 },
+            PropertyConfiguredJsonSerializerContext.Default.PropertyConfiguredResult);
+        Assert.Contains("\"probability\":\"0.25\"", serialized);
+
+        DecisionResponse<PropertyConfiguredResult> response = await BindConfiguredResult(
+            PropertyConfiguredJsonSerializerContext.Default.PropertyConfiguredResult,
+            builder =>
+            {
+                builder.BinaryProbability(result => result.Probability);
+                builder.Score(result => result.NativeScore, CreateLevels());
+                builder.ExpectedScore(result => result.ExpectedScore, CreateLevels());
+            },
+            zero: false);
+
+        Assert.Equal(0.25, response.Result.Probability);
+        Assert.Equal(1.6, response.Result.NativeScore, precision: 12);
+        Assert.Equal(1.6, response.Result.ExpectedScore, precision: 12);
+        Assert.Equal(3, response.Evidence.Answers.Count);
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_PreservesPropertyDefaultIgnoredNativeZeroAndExpectedScore()
+    {
+        string serialized = JsonSerializer.Serialize(
+            new PropertyConfiguredResult(),
+            PropertyConfiguredJsonSerializerContext.Default.PropertyConfiguredResult);
+        Assert.DoesNotContain("probability", serialized);
+        Assert.DoesNotContain("nativeScore", serialized);
+        Assert.DoesNotContain("expectedScore", serialized);
+
+        DecisionResponse<PropertyConfiguredResult> response = await BindConfiguredResult(
+            PropertyConfiguredJsonSerializerContext.Default.PropertyConfiguredResult,
+            builder =>
+            {
+                builder.BinaryProbability(result => result.Probability);
+                builder.Score(result => result.NativeScore, CreateLevels());
+                builder.ExpectedScore(result => result.ExpectedScore, CreateLevels());
+            },
+            zero: true);
+
+        Assert.Equal(0, response.Result.Probability);
+        Assert.Equal(0, response.Result.NativeScore);
+        Assert.Equal(0, response.Result.ExpectedScore);
+        Assert.Equal(0, ((ScoreDecisionAnswer)response.Evidence.Answers[1]).Score!.Value);
+        Assert.Null(((ScoreDecisionAnswer)response.Evidence.Answers[2]).Score);
+    }
+
+    [Fact]
     public async Task DecisionDefinition_ExpectedScoreUsesObservedDistributionAndReportedScoreRequiresNativeValue()
     {
         DecisionDefinition<TypedDecisionResult> expectedDefinition = CreateExpectedScoreDefinition();
@@ -807,6 +985,55 @@ public class DecisionTests
             new TypedDecisionState("request"),
             TestJsonSerializerContext.Default.TypedDecisionState,
             reportedDefinition));
+    }
+
+    private static DecisionScoreLevel[] CreateLevels() =>
+    [
+        new("low", "Low"),
+        new("medium", "Medium"),
+        new("high", "High"),
+    ];
+
+    private static async Task<DecisionResponse<TResult>> BindConfiguredResult<TResult>(
+        JsonTypeInfo<TResult> resultTypeInfo,
+        Action<DecisionDefinition<TResult>.Builder> configure,
+        bool zero)
+    {
+        DecisionDefinition<TResult> definition = DecisionDefinition<TResult>.Create(resultTypeInfo, configure);
+        using RecordingDecisionClient client = new(request => CreateConfiguredSerializationResponse(request, zero));
+        DecisionResponse<TResult> response = await client.GetResponseAsync(
+            new TypedDecisionState("request"),
+            TestJsonSerializerContext.Default.TypedDecisionState,
+            definition);
+        Assert.Equal(1, client.CallCount);
+        return response;
+    }
+
+    private static DecisionResponse CreateConfiguredSerializationResponse(DecisionRequest request, bool zero)
+    {
+        double binary = zero ? 0 : 0.25;
+        double nativeScore = zero ? 0 : 1.6;
+        double[] distribution = zero ? [1, 0, 0] : [0.1, 0.2, 0.7];
+
+        return new DecisionResponse(
+            request,
+            [
+                new BinaryDecisionAnswer(request.Questions[0].Id, binary),
+                new ScoreDecisionAnswer(
+                    request.Questions[1].Id,
+                    nativeScore,
+                    distribution.Select((value, index) => new DecisionProbability(
+                        ((ScoreDecisionQuestion)request.Questions[1]).Levels[index].Id,
+                        value)).ToArray(),
+                    DecisionPrecision.TwoDecimalPlaces),
+                new ScoreDecisionAnswer(
+                    request.Questions[2].Id,
+                    null,
+                    distribution.Select((value, index) => new DecisionProbability(
+                        ((ScoreDecisionQuestion)request.Questions[2]).Levels[index].Id,
+                        value)).ToArray(),
+                    DecisionPrecision.TwoDecimalPlaces),
+            ]);
     }
 
     private static DecisionDefinition<TypedDecisionResult> CreateTypedDefinition() =>
@@ -1131,6 +1358,28 @@ public class DecisionTests
     internal sealed class ReflectionResult
     {
         public double Probability { get; set; }
+    }
+
+    internal sealed class GlobalConfiguredResult
+    {
+        public double Probability { get; set; }
+        public double NativeScore { get; set; }
+        public double ExpectedScore { get; set; }
+    }
+
+    internal sealed class PropertyConfiguredResult
+    {
+        [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public double Probability { get; set; }
+
+        [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public double NativeScore { get; set; }
+
+        [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public double ExpectedScore { get; set; }
     }
 
     internal sealed class MaskedGetterResult

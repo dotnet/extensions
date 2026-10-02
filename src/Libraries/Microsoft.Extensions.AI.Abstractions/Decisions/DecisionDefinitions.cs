@@ -58,7 +58,10 @@ public sealed class DecisionDefinition<TResult>
     /// Creates a typed definition using the configured default JSON contract for <typeparamref name="TResult"/>.
     /// </summary>
     /// <param name="configure">The explicit question declaration callback.</param>
-    /// <param name="serializerOptions">Optional JSON options used for property and enum metadata.</param>
+    /// <param name="serializerOptions">
+    /// Optional JSON options used for property and enum metadata. A missing resolver is supplied from the MEAI defaults;
+    /// explicit caller resolvers and converters are preserved without mutating the caller's options.
+    /// </param>
     /// <returns>An immutable decision definition.</returns>
     public static DecisionDefinition<TResult> Create(
         Action<Builder> configure,

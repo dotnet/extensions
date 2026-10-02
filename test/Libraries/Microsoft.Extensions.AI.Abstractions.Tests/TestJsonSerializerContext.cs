@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable SA1402 // Test JSON contexts are co-located for the shared test contracts.
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -86,3 +88,14 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(DecisionTests.PropertyConverterResult))]
 [JsonSerializable(typeof(DecisionTests.JsonElementState))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;
+
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+    NumberHandling = JsonNumberHandling.WriteAsString)]
+[JsonSerializable(typeof(DecisionTests.GlobalConfiguredResult))]
+internal sealed partial class GlobalConfiguredJsonSerializerContext : JsonSerializerContext;
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(DecisionTests.PropertyConfiguredResult))]
+internal sealed partial class PropertyConfiguredJsonSerializerContext : JsonSerializerContext;

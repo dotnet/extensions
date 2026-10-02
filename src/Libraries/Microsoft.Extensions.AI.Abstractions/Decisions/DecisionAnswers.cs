@@ -296,7 +296,10 @@ public sealed class ChoiceDecisionAnswer : DecisionAnswer
     public IReadOnlyList<DecisionProbability> Probabilities { get; }
 }
 
-/// <summary>Represents an ordinal score and its complete level distribution.</summary>
+/// <summary>
+/// Represents an ordinal score and its complete level distribution.
+/// A reported score is checked against normalized latent values within the declared clipped rounding intervals; observed probabilities and the derived expectation are never repaired.
+/// </summary>
 [Experimental(DiagnosticIds.Experiments.AIDecisions, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ScoreDecisionAnswer : DecisionAnswer
 {
