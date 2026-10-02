@@ -119,8 +119,15 @@ public sealed class DecisionTypedFunctionTests
                 }));
 
         Assert.Equal("Technical", output.GetProperty("result").GetProperty("category").GetString());
+        Assert.Equal(0.25, output.GetProperty("result").GetProperty("refundRequestProbability").GetDouble());
         Assert.Equal("test-provider", output.GetProperty("provenance").GetProperty("providerName").GetString());
+        Assert.Equal("test-model", output.GetProperty("provenance").GetProperty("modelId").GetString());
         Assert.Equal(7, output.GetProperty("usage").GetProperty("inputTokenCount").GetInt32());
+        Assert.Equal(2, output.GetProperty("usage").GetProperty("outputTokenCount").GetInt32());
+        Assert.False(output.TryGetProperty("features", out _));
+        Assert.DoesNotContain("provider-evidence", output.GetRawText(), StringComparison.Ordinal);
+        Assert.DoesNotContain("retained", output.GetRawText(), StringComparison.Ordinal);
+        Assert.DoesNotContain("The product is unavailable", output.GetRawText(), StringComparison.Ordinal);
         Assert.NotNull(observed);
         Assert.Equal("provider-evidence", observed.Evidence.RawRepresentation);
         Assert.Equal("retained", observed.Evidence.AdditionalProperties!["evidence"]);

@@ -93,7 +93,89 @@ public sealed class DecisionFunctionTests
     }
 
     [Fact]
-    public async Task AsAIFunction_PropagatesCancellationProviderAndMapperFailures()
+    public void DecisionTask_UsesFourArgumentConstructorWhenFeatureSchemaIsOmitted()
+    {
+        DecisionTask<DecisionToolState, DecisionToolResult> task = CreateTask(omitFeatureSchema: true);
+
+        Assert.Null(task.FeatureSchema);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public async Task AsAIFunction_SourceGeneratedResultRoundTripsOptionalFeaturesAndMetadata(
+        bool includeFeatureSchema,
+        bool includeMetadata)
+    {
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateResponse(request, includeMetadata),
+        };
+        DecisionTask<DecisionToolState, DecisionToolResult> task = CreateTask(includeFeatureSchema: includeFeatureSchema);
+        DecisionFunctionResult<DecisionToolResult>? captured = null;
+        AIFunction function = task.AsAIFunction(
+            client,
+            functionOptions: new()
+            {
+                SerializerOptions = DecisionFunctionJsonContext.Default.Options,
+                MarshalResult = (value, _, _) =>
+                {
+                    captured = Assert.IsType<DecisionFunctionResult<DecisionToolResult>>(value);
+                    return new(value);
+                },
+            });
+
+        object? output = await function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() });
+        Assert.Same(captured, output);
+        Assert.NotNull(captured);
+        DecisionFunctionResult<DecisionToolResult> result = captured!;
+        JsonElement resultJson = JsonSerializer.SerializeToElement(
+            result,
+            DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionToolResult);
+
+        if (includeFeatureSchema)
+        {
+            DecisionFeatureVector? features = result.Features;
+            Assert.NotNull(features);
+            Assert.Equal("decision-tool-v1", features.Schema.Id);
+            Assert.Equal("route.primary", features.Values[0].Name);
+            Assert.Equal(0.75, features.Values[0].Value);
+        }
+        else
+        {
+            DecisionFunctionResult<DecisionToolResult>? roundTripped = JsonSerializer.Deserialize(
+                resultJson,
+                DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionToolResult);
+            Assert.NotNull(roundTripped);
+            Assert.Null(roundTripped!.Features);
+            Assert.False(resultJson.TryGetProperty("features", out _));
+        }
+
+        if (includeMetadata)
+        {
+            DecisionProvenance? provenance = result.Provenance;
+            UsageDetails? usage = result.Usage;
+            Assert.NotNull(provenance);
+            Assert.NotNull(usage);
+            Assert.Equal("test-provider", provenance.ProviderName);
+            Assert.Equal("test-model", provenance.ModelId);
+            Assert.Equal(12, usage.InputTokenCount);
+            Assert.Equal(3, usage.OutputTokenCount);
+        }
+        else
+        {
+            Assert.Null(result.Provenance);
+            Assert.Null(result.Usage);
+            Assert.False(resultJson.TryGetProperty("provenance", out _));
+            Assert.False(resultJson.TryGetProperty("usage", out _));
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AsAIFunction_PropagatesCancellationProviderAndMapperFailures(bool includeFeatureSchema)
     {
         using CancellationTokenSource cancellation = new();
         cancellation.Cancel();
@@ -101,7 +183,7 @@ public sealed class DecisionFunctionTests
         {
             Cancellation = true,
         };
-        AIFunction cancelledFunction = CreateTask().AsAIFunction(
+        AIFunction cancelledFunction = CreateTask(includeFeatureSchema: includeFeatureSchema).AsAIFunction(
             cancelledClient,
             functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
 
@@ -115,28 +197,33 @@ public sealed class DecisionFunctionTests
         {
             Failure = new DecisionClientException("provider failed", isTransient: true),
         };
-        AIFunction failedFunction = CreateTask().AsAIFunction(
+        AIFunction failedFunction = CreateTask(includeFeatureSchema: includeFeatureSchema).AsAIFunction(
             failedClient,
             functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
         DecisionClientException providerFailure = await Assert.ThrowsAsync<DecisionClientException>(
             () => failedFunction.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }).AsTask());
         Assert.True(providerFailure.IsTransient);
+        Assert.Equal(1, failedClient.CallCount);
 
         using RecordingDecisionClient mapperClient = new();
         AIFunction mapperFunction = CreateTask(
             new DecisionResultBinding<DecisionToolResult>(
                 DecisionFunctionJsonContext.Default.DecisionToolResult,
-                _ => throw new InvalidOperationException("mapper failed"))).AsAIFunction(
-                    mapperClient,
-                    functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+                _ => throw new InvalidOperationException("mapper failed")),
+            includeFeatureSchema).AsAIFunction(
+                mapperClient,
+                functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
 
         InvalidOperationException mapperFailure = await Assert.ThrowsAsync<InvalidOperationException>(
             () => mapperFunction.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }).AsTask());
         Assert.Equal("mapper failed", mapperFailure.Message);
+        Assert.Equal(1, mapperClient.CallCount);
     }
 
-    [Fact]
-    public async Task AsAIFunction_RejectsResponseForDifferentStateBeforeMapper()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AsAIFunction_RejectsResponseForDifferentStateBeforeMapper(bool includeFeatureSchema)
     {
         int mapperCalls = 0;
         using RecordingDecisionClient client = new()
@@ -155,9 +242,10 @@ public sealed class DecisionFunctionTests
                 {
                     mapperCalls++;
                     return new() { Selected = answers.GetChoice("route").SelectedCandidateId };
-                })).AsAIFunction(
-                    client,
-                    functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+                }),
+            includeFeatureSchema).AsAIFunction(
+                client,
+                functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
 
         DecisionProtocolException exception = await Assert.ThrowsAsync<DecisionProtocolException>(
             () => function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }).AsTask());
@@ -167,8 +255,10 @@ public sealed class DecisionFunctionTests
         Assert.Equal(0, mapperCalls);
     }
 
-    [Fact]
-    public async Task AsAIFunction_RejectsResponseWithChangedQuestionContractBeforeMapper()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AsAIFunction_RejectsResponseWithChangedQuestionContractBeforeMapper(bool includeFeatureSchema)
     {
         int mapperCalls = 0;
         using RecordingDecisionClient client = new()
@@ -193,9 +283,10 @@ public sealed class DecisionFunctionTests
                 {
                     mapperCalls++;
                     return new() { Selected = answers.GetChoice("route").SelectedCandidateId };
-                })).AsAIFunction(
-                    client,
-                    functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+                }),
+            includeFeatureSchema).AsAIFunction(
+                client,
+                functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
 
         DecisionProtocolException exception = await Assert.ThrowsAsync<DecisionProtocolException>(
             () => function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }).AsTask());
@@ -205,8 +296,10 @@ public sealed class DecisionFunctionTests
         Assert.Equal(0, mapperCalls);
     }
 
-    [Fact]
-    public async Task AsAIFunction_AcceptsEquivalentOwnedRequestSnapshot()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AsAIFunction_AcceptsEquivalentOwnedRequestSnapshot(bool includeFeatureSchema)
     {
         int mapperCalls = 0;
         using RecordingDecisionClient client = new()
@@ -231,9 +324,10 @@ public sealed class DecisionFunctionTests
                 {
                     mapperCalls++;
                     return new() { Selected = answers.GetChoice("route").SelectedCandidateId };
-                })).AsAIFunction(
-                    client,
-                    functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+                }),
+            includeFeatureSchema).AsAIFunction(
+                client,
+                functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
 
         JsonElement resultJson = Assert.IsType<JsonElement>(
             await function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }));
@@ -333,7 +427,8 @@ public sealed class DecisionFunctionTests
 
     private static DecisionTask<DecisionToolState, DecisionToolResult> CreateTask(
         DecisionResultBinding<DecisionToolResult>? binding = null,
-        bool includeFeatureSchema = true)
+        bool includeFeatureSchema = true,
+        bool omitFeatureSchema = false)
     {
         ChoiceDecisionQuestion question = new(
             "route",
@@ -343,12 +438,24 @@ public sealed class DecisionFunctionTests
                 new DecisionCandidate("secondary", "Use the secondary route."),
             ]);
 
+        DecisionResultBinding<DecisionToolResult> effectiveBinding = binding
+            ?? new DecisionResultBinding<DecisionToolResult>(
+                DecisionFunctionJsonContext.Default.DecisionToolResult,
+                answers => new() { Selected = answers.GetChoice("route").SelectedCandidateId });
+
+        if (omitFeatureSchema)
+        {
+            return new(
+                [question],
+                DecisionFunctionJsonContext.Default.DecisionToolState,
+                effectiveBinding,
+                DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionToolResult);
+        }
+
         return new(
             [question],
             DecisionFunctionJsonContext.Default.DecisionToolState,
-            binding ?? new DecisionResultBinding<DecisionToolResult>(
-                DecisionFunctionJsonContext.Default.DecisionToolResult,
-                answers => new() { Selected = answers.GetChoice("route").SelectedCandidateId }),
+            effectiveBinding,
             DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionToolResult,
             includeFeatureSchema
                 ? new DecisionFeatureSchema(
@@ -386,7 +493,7 @@ public sealed class DecisionFunctionTests
                     [new("score.value", "score", featureValueKind.Value)]));
     }
 
-    private static DecisionResponse CreateResponse(DecisionRequest request)
+    private static DecisionResponse CreateResponse(DecisionRequest request, bool includeMetadata = true)
     {
         ChoiceDecisionQuestion question = Assert.IsType<ChoiceDecisionQuestion>(request.Questions[0]);
         double firstProbability = 0.75;
@@ -405,8 +512,8 @@ public sealed class DecisionFunctionTests
                     question.Candidates[0].Id,
                     probabilities),
             ],
-            new DecisionProvenance(providerName: "test-provider", modelId: "test-model", responseId: "response"),
-            new UsageDetails { InputTokenCount = 12, OutputTokenCount = 3 },
+            includeMetadata ? new DecisionProvenance(providerName: "test-provider", modelId: "test-model", responseId: "response") : null,
+            includeMetadata ? new UsageDetails { InputTokenCount = 12, OutputTokenCount = 3 } : null,
             rawRepresentation: "raw-secret",
             additionalProperties: new Dictionary<string, object?> { ["secret"] = "raw-secret" });
     }
@@ -468,7 +575,7 @@ public sealed class DecisionFunctionTests
                 return Task.FromCanceled<DecisionResponse>(cancellationToken);
             }
 
-            return Task.FromResult((ResponseFactory ?? CreateResponse)(request));
+            return Task.FromResult((ResponseFactory ?? (request => CreateResponse(request)))(request));
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
