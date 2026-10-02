@@ -104,7 +104,7 @@ public sealed class DecisionFunctionTests
     [InlineData(true, true)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    public async Task AsAIFunction_SourceGeneratedResultRoundTripsOptionalFeaturesAndMetadata(
+    public async Task AsAIFunction_SourceGeneratedResultPreservesFeaturesAndRoundTripsMetadataOnlyOutput(
         bool includeFeatureSchema,
         bool includeMetadata)
     {
@@ -141,6 +141,8 @@ public sealed class DecisionFunctionTests
             Assert.Equal("decision-tool-v1", features.Schema.Id);
             Assert.Equal("route.primary", features.Values[0].Name);
             Assert.Equal(0.75, features.Values[0].Value);
+            Assert.Equal("route.primary", resultJson.GetProperty("features").GetProperty("values")[0].GetProperty("name").GetString());
+            Assert.Equal(0.75, resultJson.GetProperty("features").GetProperty("values")[0].GetProperty("value").GetDouble());
         }
         else
         {
@@ -148,8 +150,24 @@ public sealed class DecisionFunctionTests
                 resultJson,
                 DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionToolResult);
             Assert.NotNull(roundTripped);
+            Assert.Equal("primary", roundTripped!.Result.Selected);
             Assert.Null(roundTripped!.Features);
             Assert.False(resultJson.TryGetProperty("features", out _));
+
+            if (includeMetadata)
+            {
+                Assert.Equal("test-provider", roundTripped.Provenance!.ProviderName);
+                Assert.Equal("test-model", roundTripped.Provenance.ModelId);
+                Assert.Equal(12, roundTripped.Usage!.InputTokenCount);
+                Assert.Equal(3, roundTripped.Usage.OutputTokenCount);
+            }
+            else
+            {
+                Assert.Null(roundTripped.Provenance);
+                Assert.Null(roundTripped.Usage);
+                Assert.False(resultJson.TryGetProperty("provenance", out _));
+                Assert.False(resultJson.TryGetProperty("usage", out _));
+            }
         }
 
         if (includeMetadata)

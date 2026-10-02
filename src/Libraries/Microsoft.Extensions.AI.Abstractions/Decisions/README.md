@@ -166,9 +166,6 @@ Func<SupportTicket, CancellationToken, Task<TicketAnalysis>> analyze =
                 definition,
                 cancellationToken: cancellationToken);
 
-        // Evidence remains available to the host for reporting or review.
-        DecisionResponse evidence = response.Evidence;
-
         return response.Result;
     };
 
@@ -182,7 +179,7 @@ AIFunction function = AIFunctionFactory.Create(
     });
 ```
 
-The delegate returns only `response.Result`; it does not expose the complete `DecisionResponse`, request, provider extensions, raw state beyond the bounded input parameter, or reasoning text as tool output. `AIFunctionFactory` supplies the normal MEAI JSON tool contract, while the host retains ownership of the `IDecisionClient`, endpoint/model/options, and any reporting or human-review action. A useful decision tool needs no analytics contract: this path needs no handwritten question IDs, enum dictionary, result mapper, `DecisionTask`, `DecisionFunctionResult`, or feature schema. The ordinary `DecisionDefinition.Create(builder => ...)` path uses the library's normal JSON metadata behavior and is intended for reflection-enabled JIT applications.
+The delegate returns only `response.Result`; it does not expose the complete `DecisionResponse`, request, provider extensions, raw state beyond the bounded input parameter, or reasoning text as tool output. The complete evidence is available inside the delegate; retaining it requires an explicit host callback such as the metadata example below. `AIFunctionFactory` supplies the normal MEAI JSON tool contract, while the host retains ownership of the `IDecisionClient`, endpoint/model/options, and any reporting or human-review action. A useful decision tool needs no analytics contract: this path needs no handwritten question IDs, enum dictionary, result mapper, `DecisionTask`, `DecisionFunctionResult`, or feature schema. The ordinary `DecisionDefinition.Create(builder => ...)` path uses the library's normal JSON metadata behavior and is intended for reflection-enabled JIT applications.
 
 If the tool should return selected decision metadata as well as the business result, keep that output type application-owned and retain the complete evidence separately:
 
@@ -191,30 +188,42 @@ public sealed record TicketToolOutput(
     TicketAnalysis Result,
     DecisionProvenance? Provenance,
     UsageDetails? Usage);
-
-DecisionResponse<TicketAnalysis>? observed = null;
-Func<SupportTicket, CancellationToken, Task<TicketToolOutput>> analyzeWithMetadata =
-    async (ticket, cancellationToken) =>
-    {
-        observed = await client.GetResponseAsync(
-            ticket,
-            definition,
-            cancellationToken: cancellationToken);
-
-        // The host's retained reference is the evidence boundary for reporting or review.
-        return new(
-            observed.Result,
-            observed.Evidence.Provenance,
-            observed.Evidence.Usage);
-    };
-
-AIFunction metadataFunction = AIFunctionFactory.Create(
-    analyzeWithMetadata,
-    new AIFunctionFactoryOptions
-    {
-        Name = "analyze_support_ticket_with_metadata",
-    });
 ```
+
+```csharp
+public static class SupportTicketTools
+{
+    public static AIFunction CreateMetadataFunction(
+        IDecisionClient client,
+        DecisionDefinition<TicketAnalysis> definition,
+        Action<DecisionResponse> recordEvidence)
+    {
+        Func<SupportTicket, CancellationToken, Task<TicketToolOutput>> analyzeWithMetadata =
+            async (ticket, cancellationToken) =>
+            {
+                DecisionResponse<TicketAnalysis> response = await client.GetResponseAsync(
+                    ticket,
+                    definition,
+                    cancellationToken: cancellationToken);
+
+                recordEvidence(response.Evidence);
+                return new(
+                    response.Result,
+                    response.Evidence.Provenance,
+                    response.Evidence.Usage);
+            };
+
+        return AIFunctionFactory.Create(
+            analyzeWithMetadata,
+            new AIFunctionFactoryOptions
+            {
+                Name = "analyze_support_ticket_with_metadata",
+            });
+    }
+}
+```
+
+Here `recordEvidence` is an application-owned `Action<DecisionResponse>` supplied by the host and invoked once for each response; it is not shared production state holding the last response. The DTO remains bounded and excludes raw evidence from tool output.
 
 Decision provenance and usage describe the decision operation; they do not execute or authorize a business action. The host decides separately whether to persist evidence, perform an action, or record an outcome.
 
