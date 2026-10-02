@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -14,147 +16,199 @@ namespace Microsoft.Extensions.AI;
 
 public sealed class DecisionRoutingProofTests
 {
-    private static readonly ChoiceDecisionQuestion _routeQuestion = new(
-        "route",
-        "Choose the configured chat route.",
-        [
-            new DecisionCandidate("primary", "Use the primary route."),
-            new DecisionCandidate("secondary", "Use the secondary route."),
-        ]);
-
-    [Fact]
-    public async Task ConsumerOwnedDecisionSelectorPreservesForwardingAndLifetime()
+    [Theory]
+    [InlineData(RouteKind.Fast, "fast-model")]
+    [InlineData(RouteKind.Reasoning, "reasoning-model")]
+    public async Task ConsumerOwnedTypedDecisionSelectorSelectsConfiguredClientAndPreservesRequest(
+        RouteKind expectedRoute,
+        string expectedModel)
     {
-        ChatMessage[] messages = [new(ChatRole.User, "hello")];
-        ChatOptions options = new() { ModelId = "request-model" };
+        ChatMessage[] messages =
+        [
+            new(ChatRole.User, "Compare the retry behavior of these two designs."),
+            new(ChatRole.Assistant, "The first design retries immediately."),
+        ];
+        ChatOptions options = new() { ModelId = "caller-model", Temperature = 0.2f };
         using CancellationTokenSource cancellation = new();
-        using RecordingDecisionClient decisionClient = new("primary");
-        using CountingChatClient selectedClient = new();
-        Dictionary<string, IChatClient> clients = new(StringComparer.Ordinal)
+        using RecordingDecisionClient decisionClient = new(expectedRoute);
+        using ConfiguredChatClient fastClient = new("fast-model", "fast response");
+        using ConfiguredChatClient reasoningClient = new("reasoning-model", "reasoning response");
+        IReadOnlyDictionary<RouteKind, IChatClient> clients = new Dictionary<RouteKind, IChatClient>
         {
-            ["primary"] = selectedClient,
-        };
-        IEnumerable<ChatMessage>? forwardedMessages = null;
-        ChatOptions? forwardedOptions = null;
-        ChatResponse expectedResponse = new(new ChatMessage(ChatRole.Assistant, "selected"));
-        selectedClient.GetResponseAsyncCallback = (forwarded, forwardedChatOptions, token) =>
-        {
-            forwardedMessages = forwarded;
-            forwardedOptions = forwardedChatOptions;
-            Assert.Equal(cancellation.Token, token);
-            return Task.FromResult(expectedResponse);
+            [RouteKind.Fast] = fastClient,
+            [RouteKind.Reasoning] = reasoningClient,
         };
 
-        using RoutingChatClient router = CreateConsumerOwnedRouter(
-            decisionClient,
-            clients,
-            context =>
-            {
-                Assert.Same(messages, context.Messages);
-                context.ChatOptions!.ModelId = "configured-primary";
-                return new RoutingDecisionState(
-                    context.Messages.Count(),
-                    context.ChatOptions.ModelId,
-                    context.ChatOptions.Tools is not null);
-            });
+        using RoutingChatClient router = CreateRouter(decisionClient, clients);
+        ChatResponse response = await router.GetResponseAsync(messages, options, cancellation.Token);
 
-        ChatResponse actual = await router.GetResponseAsync(messages, options, cancellation.Token);
-
-        Assert.Same(expectedResponse, actual);
-        Assert.Same(messages, forwardedMessages);
-        Assert.NotSame(options, forwardedOptions);
-        Assert.Equal("configured-primary", forwardedOptions!.ModelId);
-        Assert.Equal("request-model", options.ModelId);
+        ConfiguredChatClient selected = expectedRoute == RouteKind.Fast ? fastClient : reasoningClient;
+        ConfiguredChatClient unused = expectedRoute == RouteKind.Fast ? reasoningClient : fastClient;
+        Assert.Equal($"{expectedRoute switch { RouteKind.Fast => "fast", _ => "reasoning" }} response", response.Text);
+        Assert.Same(messages, selected.ForwardedMessages);
+        Assert.NotSame(options, selected.ForwardedOptions);
+        Assert.Equal(expectedModel, selected.ForwardedOptions!.ModelId);
+        Assert.Equal(0.2f, selected.ForwardedOptions.Temperature);
+        Assert.Equal("caller-model", options.ModelId);
         Assert.Equal(1, decisionClient.CallCount);
+        Assert.Equal(1, selected.CallCount);
+        Assert.Equal(0, unused.CallCount);
         Assert.Equal(cancellation.Token, decisionClient.LastCancellationToken);
+        Assert.Equal(cancellation.Token, selected.LastCancellationToken);
 
         router.Dispose();
-        Assert.Equal(0, selectedClient.DisposeCount);
+        Assert.Equal(0, selected.DisposeCount);
     }
 
     [Fact]
-    public async Task ConsumerOwnedDecisionSelectorRequiresConfiguredCandidate()
+    public async Task ConsumerOwnedTypedDecisionSelectorForwardsStreamingResponse()
     {
-        using RecordingDecisionClient decisionClient = new("secondary");
-        using CountingChatClient primaryClient = new();
-        using RoutingChatClient router = CreateConsumerOwnedRouter(
+        ChatMessage[] messages = [new(ChatRole.User, "Stream the reasoning route.")];
+        ChatOptions options = new() { ModelId = "caller-model" };
+        using RecordingDecisionClient decisionClient = new(RouteKind.Reasoning);
+        using ConfiguredChatClient fastClient = new("fast-model", "fast response");
+        using ConfiguredChatClient reasoningClient = new("reasoning-model", "reasoning response");
+        using RoutingChatClient router = CreateRouter(
             decisionClient,
-            new Dictionary<string, IChatClient>(StringComparer.Ordinal)
+            new Dictionary<RouteKind, IChatClient>
             {
-                ["primary"] = primaryClient,
+                [RouteKind.Fast] = fastClient,
+                [RouteKind.Reasoning] = reasoningClient,
             });
 
-        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => router.GetResponseAsync([new(ChatRole.User, "hello")]));
+        List<ChatResponseUpdate> updates = [];
+        await foreach (ChatResponseUpdate update in router.GetStreamingResponseAsync(messages, options))
+        {
+            updates.Add(update);
+        }
 
-        Assert.Contains("secondary", exception.Message, StringComparison.Ordinal);
+        Assert.Equal("reasoning response", Assert.Single(updates).Text);
+        Assert.Same(messages, reasoningClient.ForwardedMessages);
+        Assert.Equal("reasoning-model", reasoningClient.ForwardedOptions!.ModelId);
         Assert.Equal(1, decisionClient.CallCount);
-        Assert.Equal(0, primaryClient.CallCount);
+        Assert.Equal(1, reasoningClient.StreamingCallCount);
+        Assert.Equal(0, fastClient.StreamingCallCount);
     }
 
     [Fact]
-    public async Task ConsumerOwnedDecisionSelectorPropagatesCancellation()
+    public async Task ConsumerOwnedTypedDecisionSelectorRequiresConfiguredCandidate()
+    {
+        using RecordingDecisionClient decisionClient = new(RouteKind.Fast) { ReturnUnconfigured = true };
+        using ConfiguredChatClient fastClient = new("fast-model", "fast response");
+        using ConfiguredChatClient reasoningClient = new("reasoning-model", "reasoning response");
+        using RoutingChatClient router = CreateRouter(
+            decisionClient,
+            new Dictionary<RouteKind, IChatClient>
+            {
+                [RouteKind.Fast] = fastClient,
+                [RouteKind.Reasoning] = reasoningClient,
+            });
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(
+            () => router.GetResponseAsync([new(ChatRole.User, "select a route")]));
+
+        Assert.Equal(1, decisionClient.CallCount);
+        Assert.Equal(0, fastClient.CallCount);
+        Assert.Equal(0, reasoningClient.CallCount);
+    }
+
+    [Theory]
+    [InlineData(RouteResponseFailure.Provider)]
+    [InlineData(RouteResponseFailure.WrongQuestion)]
+    public async Task ConsumerOwnedTypedDecisionSelectorPropagatesDecisionFailureBeforeChat(
+        RouteResponseFailure failure)
+    {
+        using RecordingDecisionClient decisionClient = new(RouteKind.Fast) { Failure = failure };
+        using ConfiguredChatClient fastClient = new("fast-model", "fast response");
+        using ConfiguredChatClient reasoningClient = new("reasoning-model", "reasoning response");
+        using RoutingChatClient router = CreateRouter(
+            decisionClient,
+            new Dictionary<RouteKind, IChatClient>
+            {
+                [RouteKind.Fast] = fastClient,
+                [RouteKind.Reasoning] = reasoningClient,
+            });
+
+        Type exceptionType = failure == RouteResponseFailure.Provider
+            ? typeof(DecisionClientException)
+            : typeof(DecisionProtocolException);
+        Exception exception = await Assert.ThrowsAsync(
+            exceptionType,
+            () => router.GetResponseAsync([new(ChatRole.User, "select a route")]));
+
+        Assert.NotNull(exception);
+        Assert.Equal(0, fastClient.CallCount);
+        Assert.Equal(0, reasoningClient.CallCount);
+    }
+
+    [Fact]
+    public async Task ConsumerOwnedTypedDecisionSelectorPropagatesCancellationBeforeChat()
     {
         using CancellationTokenSource cancellation = new();
         cancellation.Cancel();
-        using RecordingDecisionClient decisionClient = new("primary");
-        using CountingChatClient selectedClient = new();
-        using RoutingChatClient router = CreateConsumerOwnedRouter(
+        using RecordingDecisionClient decisionClient = new(RouteKind.Fast);
+        using ConfiguredChatClient fastClient = new("fast-model", "fast response");
+        using RoutingChatClient router = CreateRouter(
             decisionClient,
-            new Dictionary<string, IChatClient>(StringComparer.Ordinal)
+            new Dictionary<RouteKind, IChatClient>
             {
-                ["primary"] = selectedClient,
+                [RouteKind.Fast] = fastClient,
             });
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => router.GetResponseAsync([new(ChatRole.User, "hello")], cancellationToken: cancellation.Token));
+            () => router.GetResponseAsync(
+                [new(ChatRole.User, "select a route")],
+                cancellationToken: cancellation.Token));
 
         Assert.Equal(1, decisionClient.CallCount);
-        Assert.Equal(0, selectedClient.CallCount);
+        Assert.Equal(0, fastClient.CallCount);
     }
 
-    private static RoutingChatClient CreateConsumerOwnedRouter(
+    private static RoutingChatClient CreateRouter(
         IDecisionClient decisionClient,
-        IReadOnlyDictionary<string, IChatClient> clients,
-        Func<RoutingContext, RoutingDecisionState>? projectState = null)
-    {
-        projectState ??= static context => new(
-            context.Messages.Count(),
-            context.ChatOptions?.ModelId,
-            context.ChatOptions?.Tools is not null);
-
-        return RoutingChatClient.Create(async (context, cancellationToken) =>
+        IReadOnlyDictionary<RouteKind, IChatClient> clients) =>
+        RoutingChatClient.Create(async (context, cancellationToken) =>
         {
-            RoutingDecisionState state = projectState(context);
-            DecisionResponse response = await decisionClient.GetResponseAsync(
+            string requestText = string.Join(
+                "\n",
+                context.Messages.Select(static message => message.Text));
+            RoutingState state = new(requestText, context.ChatOptions?.Tools is not null);
+            DecisionResponse<RoutingDecision> response = await decisionClient.GetResponseAsync(
                 state,
-                DecisionRoutingJsonContext.Default.RoutingDecisionState,
-                [_routeQuestion],
+                DecisionRoutingJsonContext.Default.RoutingState,
+                CreateDefinition(),
                 cancellationToken: cancellationToken);
-            string selectedId = ((ChoiceDecisionAnswer)response.GetAnswer("route")).SelectedCandidateId;
 
-            if (!_routeQuestion.Candidates.Any(candidate => string.Equals(candidate.Id, selectedId, StringComparison.Ordinal)) ||
-                !clients.TryGetValue(selectedId, out IChatClient? selected))
+            RouteKind selectedRoute = response.Result.Route;
+            if (!clients.TryGetValue(selectedRoute, out IChatClient? selected))
             {
-                throw new InvalidOperationException($"Decision selected unconfigured route '{selectedId}'.");
+                throw new InvalidOperationException($"Decision selected unconfigured route '{selectedRoute}'.");
             }
 
             return selected;
         });
-    }
+
+    private static DecisionDefinition<RoutingDecision> CreateDefinition() =>
+        DecisionDefinition<RoutingDecision>.Create(
+            DecisionRoutingJsonContext.Default.RoutingDecision,
+            definition => definition.Choice(result => result.Route));
 
     private sealed class RecordingDecisionClient : IDecisionClient
     {
-        private readonly string _selectedId;
+        private readonly RouteKind _selectedRoute;
 
-        public RecordingDecisionClient(string selectedId)
+        public RecordingDecisionClient(RouteKind selectedRoute)
         {
-            _selectedId = selectedId;
+            _selectedRoute = selectedRoute;
         }
 
         public int CallCount { get; private set; }
 
         public CancellationToken LastCancellationToken { get; private set; }
+
+        public RouteResponseFailure Failure { get; init; }
+
+        public bool ReturnUnconfigured { get; init; }
 
         public Task<DecisionResponse> GetResponseAsync(
             DecisionRequest request,
@@ -164,21 +218,46 @@ public sealed class DecisionRoutingProofTests
             CallCount++;
             LastCancellationToken = cancellationToken;
 
+            if (Failure == RouteResponseFailure.Provider)
+            {
+                return Task.FromException<DecisionResponse>(
+                    new DecisionClientException("route provider failed", isTransient: true));
+            }
+
             if (cancellationToken.IsCancellationRequested)
             {
                 return Task.FromCanceled<DecisionResponse>(cancellationToken);
             }
 
+            DecisionQuestion question = request.Questions[0];
+            if (Failure == RouteResponseFailure.WrongQuestion)
+            {
+                question = new ChoiceDecisionQuestion(
+                    "wrong-route-question",
+                    question.Instructions,
+                    ((ChoiceDecisionQuestion)question).Candidates);
+            }
+
+            ChoiceDecisionQuestion choice = Assert.IsType<ChoiceDecisionQuestion>(question);
+            string selectedId = ReturnUnconfigured
+                ? "unconfigured"
+                : _selectedRoute switch
+                {
+                    RouteKind.Fast => choice.Candidates[0].Id,
+                    RouteKind.Reasoning => choice.Candidates[1].Id,
+                    _ => throw new InvalidOperationException(),
+                };
+            DecisionRequest responseRequest = new(request.State, [question]);
             return Task.FromResult(
                 new DecisionResponse(
-                    request,
+                    responseRequest,
                     [
                         new ChoiceDecisionAnswer(
-                            "route",
-                            _selectedId,
+                            question.Id,
+                            selectedId,
                             [
-                                new("primary", _selectedId == "primary" ? 0.8 : 0.2),
-                                new("secondary", _selectedId == "secondary" ? 0.8 : 0.2),
+                                new(choice.Candidates[0].Id, selectedId == choice.Candidates[0].Id ? 0.9 : 0.1),
+                                new(choice.Candidates[1].Id, selectedId == choice.Candidates[1].Id ? 0.9 : 0.1),
                             ]),
                     ]));
         }
@@ -190,13 +269,28 @@ public sealed class DecisionRoutingProofTests
         }
     }
 
-    private sealed class CountingChatClient : IChatClient
+    private sealed class ConfiguredChatClient : IChatClient
     {
+        private readonly string _configuredModel;
+        private readonly string _responseText;
+
+        public ConfiguredChatClient(string configuredModel, string responseText)
+        {
+            _configuredModel = configuredModel;
+            _responseText = responseText;
+        }
+
         public int CallCount { get; private set; }
+
+        public int StreamingCallCount { get; private set; }
 
         public int DisposeCount { get; private set; }
 
-        public Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task<ChatResponse>>? GetResponseAsyncCallback { get; set; }
+        public IEnumerable<ChatMessage>? ForwardedMessages { get; private set; }
+
+        public ChatOptions? ForwardedOptions { get; private set; }
+
+        public CancellationToken LastCancellationToken { get; private set; }
 
         public Task<ChatResponse> GetResponseAsync(
             IEnumerable<ChatMessage> messages,
@@ -204,25 +298,58 @@ public sealed class DecisionRoutingProofTests
             CancellationToken cancellationToken = default)
         {
             CallCount++;
-            return GetResponseAsyncCallback?.Invoke(messages, options, cancellationToken) ??
-                Task.FromResult(new ChatResponse());
+            ForwardedMessages = messages;
+            ChatOptions forwardedOptions = options ?? new ChatOptions();
+            ForwardedOptions = forwardedOptions;
+            LastCancellationToken = cancellationToken;
+            forwardedOptions.ModelId = _configuredModel;
+
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, _responseText)));
         }
 
-        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
             IEnumerable<ChatMessage> messages,
             ChatOptions? options = null,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            StreamingCallCount++;
+            ForwardedMessages = messages;
+            ChatOptions forwardedOptions = options ?? new ChatOptions();
+            ForwardedOptions = forwardedOptions;
+            LastCancellationToken = cancellationToken;
+            forwardedOptions.ModelId = _configuredModel;
+
+            await Task.Yield();
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return new ChatResponseUpdate(ChatRole.Assistant, _responseText);
+        }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
 
         public void Dispose() => DisposeCount++;
     }
 
-    internal sealed record RoutingDecisionState(int MessageCount, string? ModelId, bool HasTools);
+    public enum RouteResponseFailure
+    {
+        None,
+        Provider,
+        WrongQuestion,
+    }
+
+    public enum RouteKind
+    {
+        Fast,
+        Reasoning,
+    }
+
+    internal sealed record RoutingDecision(RouteKind Route);
+
+    internal sealed record RoutingState(string RequestText, bool HasTools);
 }
 
-[System.Text.Json.Serialization.JsonSourceGenerationOptions(
-    PropertyNamingPolicy = System.Text.Json.Serialization.JsonKnownNamingPolicy.CamelCase)]
-[System.Text.Json.Serialization.JsonSerializable(typeof(DecisionRoutingProofTests.RoutingDecisionState))]
-internal sealed partial class DecisionRoutingJsonContext : System.Text.Json.Serialization.JsonSerializerContext;
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true)]
+[JsonSerializable(typeof(DecisionRoutingProofTests.RoutingDecision))]
+[JsonSerializable(typeof(DecisionRoutingProofTests.RoutingState))]
+internal sealed partial class DecisionRoutingJsonContext : JsonSerializerContext;

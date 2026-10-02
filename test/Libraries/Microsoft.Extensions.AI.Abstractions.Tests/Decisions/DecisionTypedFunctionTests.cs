@@ -18,105 +18,70 @@ namespace Microsoft.Extensions.AI;
 public sealed class DecisionTypedFunctionTests
 {
     [Fact]
-    public async Task AIFunctionFactory_RoundTripsSourceGeneratedTypedBusinessResultAndEvidence()
+    public async Task AIFunctionFactory_UsesAnnotatedMethodAndTypedDecisionDefinition()
     {
         using SupportTicketDecisionClient client = new();
         DecisionDefinition<TicketAnalysis> definition = CreateDefinition();
-        DecisionResponse<TicketAnalysis>? observed = null;
+        SupportTicketFunction host = new(client, definition);
 
         AIFunction function = AIFunctionFactory.Create(
-            async (SupportTicket ticket, CancellationToken cancellationToken) =>
-            {
-                observed = await client.GetResponseAsync(
-                    ticket,
-                    definition,
-                    cancellationToken: cancellationToken);
-                return observed.Result;
-            },
+            host.AnalyzeAsync,
             new AIFunctionFactoryOptions
             {
-                Name = "analyze_support_ticket",
                 SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
             });
 
-        JsonElement input = JsonSerializer.SerializeToElement(
-            new SupportTicket("The product is unavailable and I need help."),
-            DecisionTypedFunctionJsonContext.Default.SupportTicket);
-        JsonElement output = Assert.IsType<JsonElement>(
-            await function.InvokeAsync(new AIFunctionArguments { ["ticket"] = input }));
-
         Assert.Equal("analyze_support_ticket", function.Name);
+        Assert.Equal("Annotate one support ticket.", function.Description);
+        JsonElement schema = function.JsonSchema;
+        JsonElement properties = schema.GetProperty("properties");
+        Assert.Equal(["ticket"], properties.EnumerateObject().Select(static property => property.Name));
+        Assert.Equal(
+            "The ticket to classify.",
+            properties.GetProperty("ticket").GetProperty("description").GetString());
+        Assert.Contains("ticket", schema.GetProperty("required").EnumerateArray().Select(static value => value.GetString()));
+        Assert.DoesNotContain("client", properties.EnumerateObject().Select(static property => property.Name));
+        Assert.DoesNotContain("definition", properties.EnumerateObject().Select(static property => property.Name));
+        Assert.DoesNotContain("cancellationToken", properties.EnumerateObject().Select(static property => property.Name));
+
+        JsonElement output = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(new AIFunctionArguments
+            {
+                ["ticket"] = JsonSerializer.SerializeToElement(
+                    new SupportTicket("The product is unavailable and I need help."),
+                    DecisionTypedFunctionJsonContext.Default.SupportTicket),
+            }));
+
         Assert.Equal("Technical", output.GetProperty("category").GetString());
         Assert.Equal(0.25, output.GetProperty("refundRequestProbability").GetDouble());
-
-        Assert.NotNull(observed);
-        Assert.Equal(new TicketAnalysis(TicketCategory.Technical, 0.25), observed.Result);
         Assert.Equal(1, client.CallCount);
         Assert.Equal(
             "The product is unavailable and I need help.",
             client.LastRequest!.State.GetProperty("message").GetString());
-
-        ChoiceDecisionQuestion category = Assert.IsType<ChoiceDecisionQuestion>(
-            client.LastRequest.Questions[0]);
-        Assert.Equal(["Billing", "Technical", "Account"], category.Candidates.Select(static candidate => candidate.Id));
-        Assert.Equal(
-            [
-                "Payment, invoice, or charge concerns.",
-                "Product defects, errors, outages, or troubleshooting.",
-                "Sign-in, profile, or account-access concerns.",
-            ],
-            category.Candidates.Select(static candidate => candidate.Description));
-
-        Assert.Equal(
-            new Dictionary<TicketCategory, double>
-            {
-                [TicketCategory.Billing] = 0.2,
-                [TicketCategory.Technical] = 0.5,
-                [TicketCategory.Account] = 0.3,
-            },
-            observed.GetDistribution(result => result.Category));
-        Assert.Equal(
-            0.25,
-            ((BinaryDecisionAnswer)observed.Evidence.GetAnswer("refundRequestProbability")).TrueProbability);
-        Assert.Equal("test-provider", observed.Evidence.Provenance!.ProviderName);
-        Assert.Equal("provider-evidence", observed.Evidence.RawRepresentation);
-        Assert.Equal("retained", observed.Evidence.AdditionalProperties!["evidence"]);
     }
 
     [Fact]
-    public async Task AIFunctionFactory_CanReturnMetadataWithoutAnAnalyticsContract()
+    public async Task AIFunctionFactory_CanReturnBusinessResultAndRecordEvidencePerInvocation()
     {
         using SupportTicketDecisionClient client = new();
         DecisionDefinition<TicketAnalysis> definition = CreateDefinition();
-        DecisionResponse<TicketAnalysis>? observed = null;
+        List<DecisionResponse> evidence = [];
+        SupportTicketFunction host = new(client, definition, evidence.Add);
 
         AIFunction function = AIFunctionFactory.Create(
-            async (SupportTicket ticket, CancellationToken cancellationToken) =>
-            {
-                observed = await client.GetResponseAsync(
-                    ticket,
-                    definition,
-                    cancellationToken: cancellationToken);
-
-                return new MetadataOnlyToolResult(
-                    observed.Result,
-                    observed.Evidence.Provenance,
-                    observed.Evidence.Usage);
-            },
+            host.AnalyzeWithMetadataAsync,
             new AIFunctionFactoryOptions
             {
-                Name = "analyze_support_ticket",
                 SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
             });
 
         JsonElement output = Assert.IsType<JsonElement>(
-            await function.InvokeAsync(
-                new AIFunctionArguments
-                {
-                    ["ticket"] = JsonSerializer.SerializeToElement(
-                        new SupportTicket("The product is unavailable and I need help."),
-                        DecisionTypedFunctionJsonContext.Default.SupportTicket),
-                }));
+            await function.InvokeAsync(new AIFunctionArguments
+            {
+                ["ticket"] = JsonSerializer.SerializeToElement(
+                    new SupportTicket("The product is unavailable and I need help."),
+                    DecisionTypedFunctionJsonContext.Default.SupportTicket),
+            }));
 
         Assert.Equal("Technical", output.GetProperty("result").GetProperty("category").GetString());
         Assert.Equal(0.25, output.GetProperty("result").GetProperty("refundRequestProbability").GetDouble());
@@ -124,48 +89,113 @@ public sealed class DecisionTypedFunctionTests
         Assert.Equal("test-model", output.GetProperty("provenance").GetProperty("modelId").GetString());
         Assert.Equal(7, output.GetProperty("usage").GetProperty("inputTokenCount").GetInt32());
         Assert.Equal(2, output.GetProperty("usage").GetProperty("outputTokenCount").GetInt32());
-        Assert.False(output.TryGetProperty("features", out _));
         Assert.DoesNotContain("provider-evidence", output.GetRawText(), StringComparison.Ordinal);
         Assert.DoesNotContain("retained", output.GetRawText(), StringComparison.Ordinal);
         Assert.DoesNotContain("The product is unavailable", output.GetRawText(), StringComparison.Ordinal);
-        Assert.NotNull(observed);
-        Assert.Equal("provider-evidence", observed.Evidence.RawRepresentation);
-        Assert.Equal("retained", observed.Evidence.AdditionalProperties!["evidence"]);
-        Assert.Equal(1, client.CallCount);
+        Assert.Single(evidence);
+        Assert.Equal("provider-evidence", evidence[0].RawRepresentation);
+        Assert.Equal("retained", evidence[0].AdditionalProperties!["evidence"]);
     }
 
     [Fact]
-    public async Task AIFunctionFactory_RejectsWrongDomainResponseWithoutToolResult()
+    public void AIFunctionFactory_OptionsOverrideAnnotatedMetadata()
     {
-        using SupportTicketDecisionClient client = new() { ReturnWrongDomain = true };
-        DecisionResponse<TicketAnalysis>? observed = null;
+        using SupportTicketDecisionClient client = new();
+        SupportTicketFunction host = new(client, CreateDefinition());
 
         AIFunction function = AIFunctionFactory.Create(
-            async (SupportTicket ticket, CancellationToken cancellationToken) =>
+            host.AnalyzeAsync,
+            new AIFunctionFactoryOptions
             {
-                observed = await client.GetResponseAsync(
-                    ticket,
-                    CreateDefinition(),
-                    cancellationToken: cancellationToken);
-                return observed.Result;
-            },
+                Name = "override_name",
+                Description = "Override description.",
+                SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
+            });
+
+        Assert.Equal("override_name", function.Name);
+        Assert.Equal("Override description.", function.Description);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_PropagatesCancellationProviderAndHostFailures()
+    {
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        using SupportTicketDecisionClient cancelledClient = new();
+        SupportTicketFunction cancelledHost = new(cancelledClient, CreateDefinition());
+        AIFunction cancelledFunction = CreateFunction(cancelledHost.AnalyzeAsync);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => cancelledFunction.InvokeAsync(
+                CreateArguments(),
+                cancellation.Token).AsTask());
+        Assert.Equal(1, cancelledClient.CallCount);
+
+        DecisionClientException providerFailure = new("provider failed", isTransient: true);
+        using SupportTicketDecisionClient failedClient = new() { Failure = providerFailure };
+        AIFunction failedFunction = CreateFunction(new SupportTicketFunction(failedClient, CreateDefinition()).AnalyzeAsync);
+
+        DecisionClientException actualProviderFailure = await Assert.ThrowsAsync<DecisionClientException>(
+            () => failedFunction.InvokeAsync(CreateArguments()).AsTask());
+        Assert.Same(providerFailure, actualProviderFailure);
+
+        InvalidOperationException hostFailure = new("host evidence failed");
+        using SupportTicketDecisionClient hostClient = new();
+        SupportTicketFunction failingHost = new(hostClient, CreateDefinition(), _ => throw hostFailure);
+        AIFunction hostFunction = CreateFunction(failingHost.AnalyzeWithMetadataAsync);
+
+        InvalidOperationException actualHostFailure = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => hostFunction.InvokeAsync(CreateArguments()).AsTask());
+        Assert.Same(hostFailure, actualHostFailure);
+    }
+
+    [Theory]
+    [InlineData(ResponseMismatch.State)]
+    [InlineData(ResponseMismatch.Question)]
+    [InlineData(ResponseMismatch.Candidate)]
+    public async Task AIFunctionFactory_RejectsResponseCorrelationBeforeResultMapping(ResponseMismatch mismatch)
+    {
+        int mapperCalls = 0;
+        using SupportTicketDecisionClient client = new() { Mismatch = mismatch };
+        DecisionDefinition<TicketAnalysis> definition = CreateDefinition();
+        SupportTicketFunction host = new(client, definition, _ => mapperCalls++);
+        AIFunction function = CreateFunction(host.AnalyzeWithMetadataAsync);
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(
+            () => function.InvokeAsync(CreateArguments()).AsTask());
+
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal(0, mapperCalls);
+    }
+
+    [Fact]
+    public async Task AIFunctionFactory_RejectsInvalidSelectedCandidateDuringTypedBinding()
+    {
+        using SupportTicketDecisionClient client = new() { InvalidSelectedCandidate = true };
+        AIFunction function = CreateFunction(new SupportTicketFunction(client, CreateDefinition()).AnalyzeAsync);
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(
+            () => function.InvokeAsync(CreateArguments()).AsTask());
+
+        Assert.Equal(1, client.CallCount);
+    }
+
+    private static AIFunction CreateFunction(Delegate method) =>
+        AIFunctionFactory.Create(
+            method,
             new AIFunctionFactoryOptions
             {
                 Name = "analyze_support_ticket",
                 SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
             });
 
-        JsonElement input = JsonSerializer.SerializeToElement(
-            new SupportTicket("Please review this account issue."),
-            DecisionTypedFunctionJsonContext.Default.SupportTicket);
-
-        DecisionProtocolException exception = await Assert.ThrowsAsync<DecisionProtocolException>(
-            () => function.InvokeAsync(new AIFunctionArguments { ["ticket"] = input }).AsTask());
-
-        Assert.NotNull(exception);
-        Assert.Equal(1, client.CallCount);
-        Assert.Null(observed);
-    }
+    private static AIFunctionArguments CreateArguments() =>
+        new()
+        {
+            ["ticket"] = JsonSerializer.SerializeToElement(
+                new SupportTicket("Please review this account issue."),
+                DecisionTypedFunctionJsonContext.Default.SupportTicket),
+        };
 
     private static DecisionDefinition<TicketAnalysis> CreateDefinition() =>
         DecisionDefinition<TicketAnalysis>.Create(
@@ -176,11 +206,65 @@ public sealed class DecisionTypedFunctionTests
                 definition.BinaryProbability(result => result.RefundRequestProbability);
             });
 
+    private sealed class SupportTicketFunction
+    {
+        private readonly IDecisionClient _client;
+        private readonly DecisionDefinition<TicketAnalysis> _definition;
+        private readonly Action<DecisionResponse>? _recordEvidence;
+
+        public SupportTicketFunction(
+            IDecisionClient client,
+            DecisionDefinition<TicketAnalysis> definition,
+            Action<DecisionResponse>? recordEvidence = null)
+        {
+            _client = client;
+            _definition = definition;
+            _recordEvidence = recordEvidence;
+        }
+
+        [DisplayName("analyze_support_ticket")]
+        [Description("Annotate one support ticket.")]
+        public async Task<TicketAnalysis> AnalyzeAsync(
+            [Description("The ticket to classify.")] SupportTicket ticket,
+            CancellationToken cancellationToken)
+        {
+            DecisionResponse<TicketAnalysis> response = await _client.GetResponseAsync(
+                ticket,
+                DecisionTypedFunctionJsonContext.Default.SupportTicket,
+                _definition,
+                cancellationToken: cancellationToken);
+            _recordEvidence?.Invoke(response.Evidence);
+            return response.Result;
+        }
+
+        [DisplayName("analyze_support_ticket_with_metadata")]
+        [Description("Annotate one support ticket and return selected decision metadata.")]
+        public async Task<MetadataOnlyToolResult> AnalyzeWithMetadataAsync(
+            [Description("The ticket to classify.")] SupportTicket ticket,
+            CancellationToken cancellationToken)
+        {
+            DecisionResponse<TicketAnalysis> response = await _client.GetResponseAsync(
+                ticket,
+                DecisionTypedFunctionJsonContext.Default.SupportTicket,
+                _definition,
+                cancellationToken: cancellationToken);
+            _recordEvidence?.Invoke(response.Evidence);
+            return new(
+                response.Result,
+                response.Evidence.Provenance,
+                response.Evidence.Usage);
+        }
+    }
+
     private sealed class SupportTicketDecisionClient : IDecisionClient
     {
         public int CallCount { get; private set; }
 
-        public bool ReturnWrongDomain { get; init; }
+        public DecisionClientException? Failure { get; init; }
+
+        public ResponseMismatch Mismatch { get; init; }
+
+        public bool InvalidSelectedCandidate { get; init; }
 
         public DecisionRequest? LastRequest { get; private set; }
 
@@ -192,50 +276,56 @@ public sealed class DecisionTypedFunctionTests
             CallCount++;
             LastRequest = request;
 
+            if (Failure is not null)
+            {
+                return Task.FromException<DecisionResponse>(Failure);
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.FromCanceled<DecisionResponse>(cancellationToken);
+            }
+
             DecisionQuestion[] questions = request.Questions.ToArray();
-            if (ReturnWrongDomain)
+            JsonElement state = request.State;
+            if (Mismatch == ResponseMismatch.State)
+            {
+                state = JsonSerializer.SerializeToElement(
+                    new SupportTicket("different state"),
+                    DecisionTypedFunctionJsonContext.Default.SupportTicket);
+            }
+
+            if (Mismatch == ResponseMismatch.Question)
+            {
+                ChoiceDecisionQuestion choice = Assert.IsType<ChoiceDecisionQuestion>(questions[0]);
+                questions[0] = new ChoiceDecisionQuestion("different-question", choice.Instructions, choice.Candidates);
+            }
+            else if (Mismatch == ResponseMismatch.Candidate)
             {
                 ChoiceDecisionQuestion choice = Assert.IsType<ChoiceDecisionQuestion>(questions[0]);
                 questions[0] = new ChoiceDecisionQuestion(
                     choice.Id,
                     choice.Instructions,
-                    [new DecisionCandidate("Other", "An unrelated domain.")]);
+                    [new DecisionCandidate("unrelated", "Unrelated candidate.")]);
             }
 
-            DecisionRequest responseRequest = new(request.State, questions);
+            DecisionRequest responseRequest = new(state, questions);
             ChoiceDecisionQuestion responseChoice = Assert.IsType<ChoiceDecisionQuestion>(responseRequest.Questions[0]);
             BinaryDecisionQuestion responseBinary = Assert.IsType<BinaryDecisionQuestion>(responseRequest.Questions[1]);
-            string selectedCandidateId = responseChoice.Candidates.Count > 1
-                ? responseChoice.Candidates[1].Id
-                : responseChoice.Candidates[0].Id;
-            DecisionProbability[] probabilities = responseChoice.Candidates.Select((candidate, index) =>
-            {
-                double probability;
-                if (responseChoice.Candidates.Count == 1)
-                {
-                    probability = 1;
-                }
-                else
-                {
-                    probability = index switch
-                    {
-                        0 => 0.2,
-                        1 => 0.5,
-                        _ => 0.3,
-                    };
-                }
-
-                return new DecisionProbability(candidate.Id, probability);
-            }).ToArray();
+            string selectedCandidateId = InvalidSelectedCandidate
+                ? "unknown"
+                : responseChoice.Candidates[Math.Min(1, responseChoice.Candidates.Count - 1)].Id;
+            DecisionProbability[] probabilities = responseChoice.Candidates
+                .Select((candidate, index) => new DecisionProbability(candidate.Id, GetProbability(
+                    responseChoice.Candidates.Count,
+                    index)))
+                .ToArray();
 
             return Task.FromResult(
                 new DecisionResponse(
                     responseRequest,
                     [
-                        new ChoiceDecisionAnswer(
-                            responseChoice.Id,
-                            selectedCandidateId,
-                            probabilities),
+                        new ChoiceDecisionAnswer(responseChoice.Id, selectedCandidateId, probabilities),
                         new BinaryDecisionAnswer(responseBinary.Id, 0.25),
                     ],
                     new DecisionProvenance(providerName: "test-provider", modelId: "test-model"),
@@ -244,11 +334,29 @@ public sealed class DecisionTypedFunctionTests
                     additionalProperties: new Dictionary<string, object?> { ["evidence"] = "retained" }));
         }
 
+        private static double GetProbability(int candidateCount, int index) =>
+            candidateCount == 1
+                ? 1
+                : index switch
+                {
+                    0 => 0.2,
+                    1 => 0.5,
+                    _ => 0.3,
+                };
+
         public object? GetService(Type serviceType, object? serviceKey = null) => null;
 
         public void Dispose()
         {
         }
+    }
+
+    public enum ResponseMismatch
+    {
+        None,
+        State,
+        Question,
+        Candidate,
     }
 
     internal sealed record SupportTicket(string Message);
