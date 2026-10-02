@@ -147,7 +147,7 @@ ChatResponse chatResponse = await chatClient.GetResponseAsync(
     cancellationToken);
 ```
 
-The result-only method returns the business result by default. `recordEvidence` is an explicit host-owned per-invocation callback; it is not a shared last-response slot or automatic analytics. If selected metadata is useful, define an application DTO and return only the mapped result plus `response.Evidence.Provenance` and `response.Evidence.Usage`. Do not return raw state, provider extensions, credentials, reasoning text, or unrestricted dictionaries. The decision call is one logical operation, cancellation and provider/mapper/host failures propagate, and decision usage remains separate from chat usage.
+The result-only method returns the business result by default. `recordEvidence` is an explicit host-owned per-invocation callback; it is not a shared last-response slot or automatic analytics. If selected metadata is useful, define an application DTO and return only the mapped result plus `response.Evidence.Provenance` and `response.Evidence.Usage`. Do not return raw state, provider extensions, credentials, reasoning text, or unrestricted dictionaries. Each invocation performs one logical decision operation, cancellation and provider/mapper/host failures propagate, and decision usage remains separate from chat usage.
 
 `AIFunctionFactory` options can override method attributes. Its schema contains only the application input (`ticket` here); `client`, `definition`, and `CancellationToken` are infrastructure, not model-facing parameters. The middleware example above exercises normal function invocation; direct `AIFunction.InvokeAsync` is sufficient for a platform-only proof and should not be described as a chat-loop proof.
 
