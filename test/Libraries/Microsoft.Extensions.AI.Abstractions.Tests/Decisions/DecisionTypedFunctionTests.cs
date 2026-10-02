@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.Extensions.AI;
@@ -58,6 +59,195 @@ public sealed class DecisionTypedFunctionTests
         Assert.Equal(
             "The product is unavailable and I need help.",
             client.LastRequest!.State.GetProperty("message").GetString());
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_AsAIFunction_UsesOneTypeSyntaxAndReturnsOnlyTheBusinessResult()
+    {
+        SupportTicketDecisionClient client = new();
+        DecisionDefinition<TicketAnalysis> definition = CreateDefinition();
+        AIFunction function = definition.AsAIFunction<SupportTicket>(
+            client,
+            new AIFunctionFactoryOptions
+            {
+                SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
+            });
+
+        Assert.Equal("evaluate_decision", function.Name);
+        Assert.Equal("Evaluate the declared decision for one application state.", function.Description);
+        JsonElement properties = function.JsonSchema.GetProperty("properties");
+        Assert.Equal(["state"], properties.EnumerateObject().Select(static property => property.Name));
+        Assert.Equal(
+            "The application state for the declared decision.",
+            properties.GetProperty("state").GetProperty("description").GetString());
+        Assert.Contains("state", function.JsonSchema.GetProperty("required").EnumerateArray().Select(static value => value.GetString()));
+
+        JsonElement output = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(CreateDecisionArguments()));
+
+        Assert.Equal("Technical", output.GetProperty("category").GetString());
+        Assert.Equal(0.25, output.GetProperty("refundRequestProbability").GetDouble());
+        Assert.DoesNotContain("provenance", output.GetRawText(), StringComparison.Ordinal);
+        Assert.DoesNotContain("usage", output.GetRawText(), StringComparison.Ordinal);
+        Assert.DoesNotContain("provider-evidence", output.GetRawText(), StringComparison.Ordinal);
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal(
+            "Please review this account issue.",
+            client.LastRequest!.State.GetProperty("message").GetString());
+        Assert.Equal(0, client.DisposeCount);
+
+        client.Dispose();
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_AsAIFunction_PreservesFactoryOptionsAndClonesDecisionOptionsPerInvocation()
+    {
+        SupportTicketDecisionClient client = new() { MutateOptions = true };
+        DecisionOptions decisionOptions = new() { ModelId = "configured-model" };
+        AIFunction function = CreateDefinition().AsAIFunction<SupportTicket>(
+            client,
+            new AIFunctionFactoryOptions
+            {
+                Name = "custom_decision",
+                Description = "Custom decision description.",
+                ExcludeResultSchema = true,
+                MarshalResult = static (value, _, _) =>
+                {
+                    TicketAnalysis result = Assert.IsType<TicketAnalysis>(value);
+                    Assert.Equal(TicketCategory.Technical, result.Category);
+                    Assert.Equal(0.25, result.RefundRequestProbability);
+                    return new ValueTask<object?>("custom-marshaled");
+                },
+            },
+            decisionOptions);
+        decisionOptions.ModelId = "caller-mutated";
+
+        Assert.Equal("custom_decision", function.Name);
+        Assert.Equal("Custom decision description.", function.Description);
+        Assert.Null(function.ReturnJsonSchema);
+
+        Assert.Equal("custom-marshaled", await function.InvokeAsync(CreateDecisionArguments()));
+        Assert.Equal("custom-marshaled", await function.InvokeAsync(CreateDecisionArguments("A second request.")));
+
+        Assert.Equal(["configured-model", "configured-model"], client.SeenModelIds);
+        Assert.Equal(2, client.SeenOptions.Count);
+        Assert.NotSame(client.SeenOptions[0], client.SeenOptions[1]);
+        Assert.Equal("caller-mutated", decisionOptions.ModelId);
+
+        client.Dispose();
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_AsAIFunction_InfersStateFromSourceGeneratedMetadata()
+    {
+        SupportTicketDecisionClient client = new();
+        DecisionDefinition<TicketAnalysis> definition = CreateResultOnlyDefinition();
+
+        AIFunction function = definition.AsAIFunction(
+            client,
+            functionOptions: new AIFunctionFactoryOptions
+            {
+                Name = "source_generated_decision",
+                SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
+            },
+            stateTypeInfo: DecisionTypedFunctionJsonContext.Default.SupportTicket);
+
+        JsonElement output = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(CreateRawDecisionArguments()));
+
+        Assert.Equal("Technical", output.GetProperty("category").GetString());
+        Assert.Equal(0.25, output.GetProperty("refundRequestProbability").GetDouble());
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal("Source-generated state.", client.LastRequest!.State.GetProperty("message").GetString());
+
+        client.Dispose();
+    }
+
+    [Fact]
+    public void DecisionDefinition_AsAIFunction_RequiresStateMetadataWhenDefinitionOptionsDoNotContainIt()
+    {
+        using SupportTicketDecisionClient client = new();
+
+        Assert.Throws<NotSupportedException>(
+            () => CreateResultOnlyDefinition().AsAIFunction<SupportTicket>(client));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_AsAIFunction_PropagatesProviderAndCancellationFailures()
+    {
+        DecisionClientException providerFailure = new("provider failed", isTransient: true);
+        using SupportTicketDecisionClient failedClient = new() { Failure = providerFailure };
+        AIFunction failedFunction = CreateDefinition().AsAIFunction<SupportTicket>(failedClient);
+
+        DecisionClientException actualProviderFailure = await Assert.ThrowsAsync<DecisionClientException>(
+            () => failedFunction.InvokeAsync(CreateDecisionArguments()).AsTask());
+        Assert.Same(providerFailure, actualProviderFailure);
+
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        using SupportTicketDecisionClient cancelledClient = new();
+        AIFunction cancelledFunction = CreateDefinition().AsAIFunction<SupportTicket>(cancelledClient);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => cancelledFunction.InvokeAsync(CreateDecisionArguments(), cancellation.Token).AsTask());
+        Assert.Equal(1, cancelledClient.CallCount);
+    }
+
+    [Theory]
+    [InlineData(ResponseMismatch.State)]
+    [InlineData(ResponseMismatch.Question)]
+    [InlineData(ResponseMismatch.Candidate)]
+    public async Task DecisionDefinition_AsAIFunction_RejectsMismatchedResponsesBeforeReturningAResult(ResponseMismatch mismatch)
+    {
+        using SupportTicketDecisionClient client = new() { Mismatch = mismatch };
+        AIFunction function = CreateDefinition().AsAIFunction<SupportTicket>(client);
+
+        await Assert.ThrowsAsync<DecisionProtocolException>(
+            () => function.InvokeAsync(CreateDecisionArguments()).AsTask());
+
+        Assert.Equal(1, client.CallCount);
+    }
+
+    [Fact]
+    public void DecisionDefinition_AsAIFunction_RejectsNullClient()
+    {
+        Assert.Throws<ArgumentNullException>(
+            "client",
+            () => CreateDefinition().AsAIFunction<SupportTicket>(null!));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_AsAIFunction_CanBeRegisteredPerScopeWithOneClientResolution()
+    {
+        using SupportTicketDecisionClient client = new();
+        ServiceCollection services = new();
+        int clientFactoryCalls = 0;
+        services.AddScoped<IDecisionClient>(_ =>
+        {
+            clientFactoryCalls++;
+            return client;
+        });
+        services.AddScoped<AIFunction>(serviceProvider =>
+            CreateDefinition().AsAIFunction<SupportTicket>(
+                serviceProvider.GetRequiredService<IDecisionClient>(),
+                new AIFunctionFactoryOptions
+                {
+                    Name = "scoped_decision",
+                    SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
+                }));
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        using IServiceScope scope = provider.CreateScope();
+        AIFunction first = scope.ServiceProvider.GetRequiredService<AIFunction>();
+        AIFunction second = scope.ServiceProvider.GetRequiredService<AIFunction>();
+
+        Assert.Same(first, second);
+        Assert.Equal(1, clientFactoryCalls);
+
+        await first.InvokeAsync(CreateDecisionArguments());
+
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal(0, client.DisposeCount);
     }
 
     [Fact]
@@ -197,9 +387,35 @@ public sealed class DecisionTypedFunctionTests
                 DecisionTypedFunctionJsonContext.Default.SupportTicket),
         };
 
+    private static AIFunctionArguments CreateDecisionArguments(string message = "Please review this account issue.") =>
+        new()
+        {
+            ["state"] = JsonSerializer.SerializeToElement(
+                new SupportTicket(message),
+                DecisionTypedFunctionJsonContext.Default.SupportTicket),
+        };
+
+    private static AIFunctionArguments CreateRawDecisionArguments()
+    {
+        using JsonDocument document = JsonDocument.Parse("{\"message\":\"Source-generated state.\"}");
+        return new()
+        {
+            ["state"] = document.RootElement.Clone(),
+        };
+    }
+
     private static DecisionDefinition<TicketAnalysis> CreateDefinition() =>
         DecisionDefinition<TicketAnalysis>.Create(
             DecisionTypedFunctionJsonContext.Default.TicketAnalysis,
+            definition =>
+            {
+                definition.Choice(result => result.Category);
+                definition.BinaryProbability(result => result.RefundRequestProbability);
+            });
+
+    private static DecisionDefinition<TicketAnalysis> CreateResultOnlyDefinition() =>
+        DecisionDefinition<TicketAnalysis>.Create(
+            DecisionResultOnlyJsonContext.Default.TicketAnalysis,
             definition =>
             {
                 definition.Choice(result => result.Category);
@@ -268,6 +484,14 @@ public sealed class DecisionTypedFunctionTests
 
         public DecisionRequest? LastRequest { get; private set; }
 
+        public bool MutateOptions { get; init; }
+
+        public List<DecisionOptions> SeenOptions { get; } = [];
+
+        public List<string?> SeenModelIds { get; } = [];
+
+        public int DisposeCount { get; private set; }
+
         public Task<DecisionResponse> GetResponseAsync(
             DecisionRequest request,
             DecisionOptions? options = null,
@@ -275,6 +499,15 @@ public sealed class DecisionTypedFunctionTests
         {
             CallCount++;
             LastRequest = request;
+            if (options is not null)
+            {
+                SeenOptions.Add(options);
+                SeenModelIds.Add(options.ModelId);
+                if (MutateOptions)
+                {
+                    options.ModelId = "provider-mutated";
+                }
+            }
 
             if (Failure is not null)
             {
@@ -348,6 +581,7 @@ public sealed class DecisionTypedFunctionTests
 
         public void Dispose()
         {
+            DisposeCount = 1;
         }
     }
 
@@ -393,3 +627,10 @@ public sealed class DecisionTypedFunctionTests
 [JsonSerializable(typeof(DecisionProvenance))]
 [JsonSerializable(typeof(UsageDetails))]
 internal sealed partial class DecisionTypedFunctionJsonContext : JsonSerializerContext;
+
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    UseStringEnumConverter = true)]
+[JsonSerializable(typeof(DecisionTypedFunctionTests.TicketCategory))]
+[JsonSerializable(typeof(DecisionTypedFunctionTests.TicketAnalysis))]
+internal sealed partial class DecisionResultOnlyJsonContext : JsonSerializerContext;

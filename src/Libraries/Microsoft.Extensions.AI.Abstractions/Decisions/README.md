@@ -32,19 +32,9 @@ public sealed record TicketAnalysis(
     [Description("Is the customer requesting a refund or payment reversal?")] double RefundRequestProbability);
 ```
 
-The host explicitly supplies an `IDecisionClient`. It is provider-neutral; MEAI does not create a default implementation and an arbitrary `IChatClient` is not automatically a decision client. In the external, unpublished provider proof, acquisition is separate from platform composition:
+The host explicitly supplies an `IDecisionClient`. It is provider-neutral; MEAI does not create a default implementation and an arbitrary `IChatClient` is not automatically a decision client. Provider acquisition is intentionally separate from platform composition: the provider owner supplies the configured client entry point, while these examples consume only the interface. Jev/OllamaSharp and the Ollaya, Laya, Julia, and Qwen adapters remain provider-owned and are not shipped, repinned, or executed by this repository. A deterministic test double is used for the platform proofs.
 
-```csharp
-// External proof/provider packages only; not shipped by Microsoft.Extensions.AI.
-using DecisionInference.Julia;
-using DecisionInference.MEAI;
-
-JuliaDecisionGenerator generator =
-    JuliaDecisionGenerator.LoadFromDirectory(assetDirectory);
-IDecisionClient client = generator.AsDecisionClient();
-```
-
-The Julia/MEAI bridge above is historical implementation evidence, not a released dependency or a claim that this repository repins or executes a provider. Jev/OllamaSharp and the Ollaya, Laya, Julia, and Qwen adapters remain provider-owned. A deterministic test double is used for the platform proofs.
+An external, unpublished Julia/MEAI bridge was used as historical implementation evidence. It is not a released dependency or a runnable setup promised by this README. The provider owner's desired native shape is a separate, prospective entry point such as `JuliaDecisionClient.LoadFromDirectory(assetDirectory)`; that client is not implemented or available in this package.
 
 The reusable typed declaration is ordinary application code:
 
@@ -99,37 +89,35 @@ public partial class TicketJsonContext : JsonSerializerContext;
 
 ## Layer 2 interoperability: two independent paths
 
-Layer 2 deliberately adds no decision-specific function wrapper and no public routing type. The two useful compositions are independent consumer-owned uses of existing MEAI primitives.
+Layer 2 keeps function composition and chat routing independent. The function examples use either the stock `AIFunctionFactory` directly or the thin definition-based `AsAIFunction` convenience member. Neither path discovers a provider or takes a client from model-supplied arguments.
 
 ### 1. Annotated application method to `AIFunctionFactory`
 
 An ordinary annotated method can close over a host-injected client and definition. The client, definition, endpoint, model, and options are not model-supplied tool arguments:
 
 ```csharp
-public sealed class SupportTicketTools(
-    IDecisionClient client,
-    DecisionDefinition<TicketAnalysis> definition,
-    Action<DecisionResponse>? recordEvidence = null)
-{
-    [DisplayName("analyze_support_ticket")]
-    [Description("Annotate one support ticket.")]
-    public async Task<TicketAnalysis> AnalyzeAsync(
-        [Description("The ticket to classify.")] SupportTicket ticket,
-        CancellationToken cancellationToken)
-    {
-        DecisionResponse<TicketAnalysis> response = await client.GetResponseAsync(
-            ticket,
-            definition,
-            cancellationToken: cancellationToken);
+// Inside an existing application type, these are ordinary host-owned fields:
+// IDecisionClient client;
+// DecisionDefinition<TicketAnalysis> definition;
+// Action<DecisionResponse>? recordEvidence;
 
-        recordEvidence?.Invoke(response.Evidence);
-        return response.Result;
-    }
+[DisplayName("analyze_support_ticket")]
+[Description("Annotate one support ticket.")]
+public async Task<TicketAnalysis> AnalyzeSupportTicketAsync(
+    [Description("The ticket to classify.")] SupportTicket ticket,
+    CancellationToken cancellationToken)
+{
+    DecisionResponse<TicketAnalysis> response = await client.GetResponseAsync(
+        ticket,
+        definition,
+        cancellationToken: cancellationToken);
+
+    recordEvidence?.Invoke(response.Evidence);
+    return response.Result;
 }
 
-SupportTicketTools host = new(client, definition, recordEvidence);
 AIFunction analyzeTicket = AIFunctionFactory.Create(
-    host.AnalyzeAsync,
+    AnalyzeSupportTicketAsync,
     new AIFunctionFactoryOptions
     {
         Name = "analyze_support_ticket",
@@ -147,11 +135,60 @@ ChatResponse chatResponse = await chatClient.GetResponseAsync(
     cancellationToken);
 ```
 
-The result-only method returns the business result by default. `recordEvidence` is an explicit host-owned per-invocation callback; it is not a shared last-response slot or automatic analytics. If selected metadata is useful, define an application DTO and return only the mapped result plus `response.Evidence.Provenance` and `response.Evidence.Usage`. Do not return raw state, provider extensions, credentials, reasoning text, or unrestricted dictionaries. Each invocation performs one logical decision operation, cancellation and provider/mapper/host failures propagate, and decision usage remains separate from chat usage.
+The result-only method returns the business result by default. `recordEvidence` is an explicit host-owned per-invocation callback; it is not a shared last-response slot or automatic analytics. If selected metadata is useful, define an application DTO and return only the mapped result plus `response.Evidence.Provenance` and `response.Evidence.Usage`. Do not return raw state, provider extensions, credentials, reasoning text, or unrestricted dictionaries. Each invocation performs one logical decision operation, cancellation and provider/mapper/host failures propagate, and decision usage remains separate from chat usage. The callback must retain or process each invocation itself; the platform does not retain a last response.
 
 `AIFunctionFactory` options can override method attributes. Its schema contains only the application input (`ticket` here); `client`, `definition`, and `CancellationToken` are infrastructure, not model-facing parameters. The middleware example above exercises normal function invocation; direct `AIFunction.InvokeAsync` is sufficient for a platform-only proof and should not be described as a chat-loop proof.
 
-For reflection-disabled or trimmed deployments, provide source-generated metadata at both boundaries: use `DecisionDefinition<TicketAnalysis>.Create(TicketJsonContext.Default.TicketAnalysis, ...)`, call the overload accepting `TicketJsonContext.Default.SupportTicket`, and set `AIFunctionFactoryOptions.SerializerOptions = TicketJsonContext.Default.Options`. Function metadata alone does not configure decision state binding. This is a source-generation-compatible deployment variant, not a Native AOT certification.
+### 1a. Definition shorthand
+
+When the application does not need a custom evidence callback, the definition can create the same ordinary `AIFunction` directly. The generic state type is explicit, while the result type remains the `TResult` from the definition:
+
+```csharp
+AIFunction analyzeTicket = definition.AsAIFunction<SupportTicket>(
+    client,
+    new AIFunctionFactoryOptions
+    {
+        Name = "analyze_support_ticket",
+        Description = "Annotate one support ticket for review.",
+        SerializerOptions = TicketJsonContext.Default.Options,
+    });
+```
+
+The helper exposes only one model-facing `state` parameter and returns `TicketAnalysis`. It does not return `DecisionResponse<TicketAnalysis>`, evidence, provenance, usage, raw provider data, or a credentials/options object. Use the annotated-method path when the host needs an explicit per-invocation evidence callback.
+
+For reflection-disabled or trimmed deployments, provide source-generated metadata at both boundaries. The state contract can also provide genuine generic input inference:
+
+```csharp
+AIFunction generatedAnalyzeTicket = definition.AsAIFunction(
+    client,
+    functionOptions: new AIFunctionFactoryOptions
+    {
+        SerializerOptions = TicketJsonContext.Default.Options,
+    },
+    stateTypeInfo: TicketJsonContext.Default.SupportTicket);
+```
+
+`TicketJsonContext.Default.Options` covers both `SupportTicket` and `TicketAnalysis`; `stateTypeInfo` supplies the `TState` contract while `TResult` comes from `definition`. This is source-generation-compatible validation, not a Native AOT certification. Standard factory options remain standard: name and description overrides, schema options, parameter binding, result marshalling, additional properties, and result-schema exclusion are passed through. `DecisionOptions`, when supplied, are copied during construction and cloned again for each invocation. The clone is deliberately shallow: the options dictionary is copied, but nested values and a raw-options factory remain caller/provider-owned.
+
+When registering a function with DI, resolve the caller-owned decision client once while constructing the ordinary function. Do not resolve services from model-supplied arguments or from an ambient service provider during invocation:
+
+```csharp
+services.AddScoped<AIFunction>(serviceProvider =>
+{
+    IDecisionClient decisions =
+        serviceProvider.GetRequiredService<IDecisionClient>();
+
+    return definition.AsAIFunction<SupportTicket>(
+        decisions,
+        new AIFunctionFactoryOptions
+        {
+            Name = "analyze_support_ticket",
+            SerializerOptions = TicketJsonContext.Default.Options,
+        });
+});
+```
+
+The registration's lifetime must be compatible with the registered client. The helper never disposes the client; the owner (for example, the DI scope) does.
 
 ### 2. Decision-driven chat routing
 
@@ -160,18 +197,29 @@ Routing is a separate provider/client-selection problem. Construct one provider-
 ```csharp
 public enum RouteKind
 {
+    [Description("Fast: use for short, routine requests where lower latency is preferred and deep multi-step reasoning is not needed.")]
     Fast,
+
+    [Description("Reasoning: use for multi-step analysis, comparisons, or requests that benefit from deeper deliberation.")]
     Reasoning,
 }
 
 public sealed record RoutingDecision(RouteKind Route);
-public sealed record RoutingState(string RequestText, bool HasTools);
+public sealed record RoutingMessage(string Role, string Text);
+public sealed record RoutingState(IReadOnlyList<RoutingMessage> Messages, bool HasTools);
 
 DecisionDefinition<RoutingDecision> routeDefinition =
     DecisionDefinition<RoutingDecision>.Create(
         RoutingJsonContext.Default.RoutingDecision,
-        builder => builder.Choice(result => result.Route));
+        builder => builder.Choice(
+            result => result.Route,
+            "Choose Fast for short, routine requests where latency is the priority. " +
+            "Choose Reasoning for multi-step analysis, comparisons, or requests that benefit from deeper deliberation."));
 
+// Each provider-owned client must enforce its route identity on every request:
+// Fast -> "fast-model"; Reasoning -> "reasoning-model". A provider's default
+// model ID alone is not sufficient because RoutingChatClient forwards a clone
+// of caller ChatOptions, including ModelId.
 IReadOnlyDictionary<RouteKind, IChatClient> clients =
     new Dictionary<RouteKind, IChatClient>
     {
@@ -182,8 +230,47 @@ IReadOnlyDictionary<RouteKind, IChatClient> clients =
 RoutingChatClient router = RoutingChatClient.Create(
     async (context, cancellationToken) =>
     {
+        const int maxMessages = 32;
+        const int maxMessageTextCharacters = 4_096;
+        const int maxTotalTextCharacters = 64_000;
+        List<RoutingMessage> projectedMessages = [];
+        int totalTextCharacters = 0;
+        foreach (ChatMessage message in context.Messages)
+        {
+            if (projectedMessages.Count == maxMessages)
+            {
+                throw new InvalidOperationException(
+                    $"Route selection accepts at most {maxMessages} messages; no history is truncated.");
+            }
+
+            if (message.Role != ChatRole.System &&
+                message.Role != ChatRole.User &&
+                message.Role != ChatRole.Assistant &&
+                message.Role != ChatRole.Tool)
+            {
+                throw new NotSupportedException(
+                    $"Role '{message.Role}' is not supported by this route selector.");
+            }
+
+            if (message.Contents.Any(static content => content is not TextContent))
+            {
+                throw new NotSupportedException(
+                    "This route selector accepts text content only; no content may be silently dropped.");
+            }
+
+            if (message.Text.Length > maxMessageTextCharacters ||
+                totalTextCharacters > maxTotalTextCharacters - message.Text.Length)
+            {
+                throw new InvalidOperationException(
+                    "Route selection text budgets were exceeded; no text is truncated.");
+            }
+
+            projectedMessages.Add(new(message.Role.Value, message.Text));
+            totalTextCharacters += message.Text.Length;
+        }
+
         RoutingState state = new(
-            string.Join("\n", context.Messages.Select(message => message.Text)),
+            projectedMessages,
             context.ChatOptions?.Tools is not null);
 
         DecisionResponse<RoutingDecision> decision =
@@ -202,7 +289,7 @@ RoutingChatClient router = RoutingChatClient.Create(
     });
 ```
 
-Each configured client owns its route-specific model identity and options. The router forwards the original messages and a cloned request-options object to exactly one selected client, including streaming calls. The caller owns the configured clients and remains responsible for disposing them; the router does not dispose borrowed clients. Invalid or wrong-domain decision responses, cancellation, and provider failures stop before chat forwarding. There is no retry, failover, conversation affinity, mid-stream switching, outcome learning, or automatic calibration. Tool loops run inside the selected client after routing; the first example starts a fresh decision per router call. Decision probabilities are task observations, not calibrated task-success guarantees.
+Each configured client must enforce its route-specific model identity and options on every forwarded call (for example, by overwriting a caller-supplied `ChatOptions.ModelId` in the provider-owned client adapter or rejecting a conflicting value); merely setting a provider default is not enough. The router forwards the original messages and a cloned request-options object to exactly one selected client, including streaming calls. The caller owns the configured clients and remains responsible for disposing them; the router does not dispose borrowed clients. Invalid or wrong-domain decision responses, cancellation, and provider failures stop before chat forwarding. There is no retry, failover, conversation affinity, mid-stream switching, outcome learning, or automatic calibration. Routing selects before each ordinary or streaming call. If function middleware wraps the router, a later tool-loop round can re-enter the router; if a selected configured client owns its own loop, that client remains selected. This example does not add either behavior automatically. Decision probabilities are task observations, not calibrated task-success guarantees.
 
 ### Semantic ingestion proof
 
