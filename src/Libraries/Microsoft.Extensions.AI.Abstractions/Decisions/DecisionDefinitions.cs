@@ -66,6 +66,7 @@ public sealed class DecisionDefinition<TResult>
     {
         _ = Throw.IfNull(configure);
         serializerOptions = new JsonSerializerOptions(serializerOptions ?? AIJsonUtilities.DefaultOptions);
+        serializerOptions.TypeInfoResolver ??= AIJsonUtilities.DefaultOptions.TypeInfoResolver;
         serializerOptions.MakeReadOnly();
 
         JsonTypeInfo<TResult> resultTypeInfo = GetResultTypeInfo(serializerOptions);
@@ -155,31 +156,28 @@ public sealed class DecisionDefinition<TResult>
             throw new DecisionProtocolException("The decision response produced a null result.");
         }
 
-        try
+        foreach (DecisionDefinitionQuestion<TResult> question in _questions)
         {
-            JsonElement materializedJson = JsonSerializer.SerializeToElement(result, ResultTypeInfo);
-            using JsonDocument expectedJson = JsonDocument.Parse(resultJson);
-
-            foreach (DecisionDefinitionQuestion<TResult> question in _questions)
+            DecisionAnswer answer = response.GetAnswer(question.Question.Id);
+            object? actualValue = question.ValueAccessor(result);
+            bool preserved = question.Kind switch
             {
-                if (!expectedJson.RootElement.TryGetProperty(question.PropertyName, out JsonElement expectedValue) ||
-                    !materializedJson.TryGetProperty(question.PropertyName, out JsonElement materializedValue) ||
-                    !JsonElement.DeepEquals(expectedValue, materializedValue))
-                {
-                    throw new DecisionProtocolException(
-                        $"The decision response value for result property '{question.Property.Name}' was not preserved by the configured JSON contract.");
-                }
+                DecisionKind.Binary => actualValue is double actualBinary &&
+                    actualBinary.Equals(((BinaryDecisionAnswer)answer).TrueProbability),
+                DecisionKind.Choice => question.ChoiceValueMatches is not null &&
+                    question.ChoiceValueMatches(actualValue, ((ChoiceDecisionAnswer)answer).SelectedCandidateId),
+                DecisionKind.Score => actualValue is double actualScore &&
+                    actualScore.Equals(question.UsesExpectedScore
+                        ? ((ScoreDecisionAnswer)answer).ExpectedScore
+                        : ((ScoreDecisionAnswer)answer).Score ?? double.NaN),
+                _ => false,
+            };
+
+            if (!preserved)
+            {
+                throw new DecisionProtocolException(
+                    $"The decision response value for result property '{question.Property.Name}' was not preserved by the configured JSON contract.");
             }
-        }
-        catch (DecisionProtocolException)
-        {
-            throw;
-        }
-        catch (Exception exception) when (exception is JsonException or NotSupportedException)
-        {
-            throw new DecisionProtocolException(
-                "The decision response could not be verified against the configured result contract.",
-                exception);
         }
 
         return new DecisionResponse<TResult>(result, response, this);
@@ -425,6 +423,23 @@ public sealed class DecisionDefinition<TResult>
         }
 #endif
 
+        private static Func<TResult, object?> CreateValueAccessor<TValue>(Expression<Func<TResult, TValue>> selector)
+        {
+#if NETFRAMEWORK
+            Func<TResult, TValue> accessor = selector.Compile();
+#else
+            Func<TResult, TValue> accessor = selector.Compile(true);
+#endif
+            return result => accessor(result);
+        }
+
+        private static Func<object?, string, bool> CreateChoiceValueMatcher<TEnum>(
+            DecisionEnumDefinition<TEnum> enumDefinition)
+            where TEnum : struct, Enum =>
+            (actualValue, candidateId) =>
+                actualValue is TEnum actual &&
+                EqualityComparer<TEnum>.Default.Equals(actual, enumDefinition.Parse(candidateId));
+
         internal Builder(JsonTypeInfo<TResult> resultTypeInfo)
         {
             _resultTypeInfo = resultTypeInfo;
@@ -450,7 +465,9 @@ public sealed class DecisionDefinition<TResult>
                 jsonProperty.Name,
                 new ChoiceDecisionQuestion(jsonProperty.Name, GetInstructions(jsonProperty, property, instructions), enumDefinition.Candidates),
                 enumDefinition,
-                DecisionKind.Choice);
+                DecisionKind.Choice,
+                valueAccessor: CreateValueAccessor(selector),
+                choiceValueMatches: CreateChoiceValueMatcher(enumDefinition));
         }
 
         /// <summary>Declares a binary probability question backed by a <see cref="double"/> result property.</summary>
@@ -470,7 +487,8 @@ public sealed class DecisionDefinition<TResult>
                 jsonProperty.Name,
                 new BinaryDecisionQuestion(jsonProperty.Name, GetInstructions(jsonProperty, property, instructions)),
                 enumDefinition: null,
-                DecisionKind.Binary);
+                DecisionKind.Binary,
+                valueAccessor: CreateValueAccessor(selector));
         }
 
         /// <summary>Declares an ordinal score question with an explicit ordered rubric.</summary>
@@ -515,7 +533,8 @@ public sealed class DecisionDefinition<TResult>
                 new ScoreDecisionQuestion(jsonProperty.Name, GetInstructions(jsonProperty, property, instructions), levels),
                 enumDefinition: null,
                 DecisionKind.Score,
-                usesExpectedScore);
+                usesExpectedScore,
+                valueAccessor: CreateValueAccessor(selector));
         }
 
         internal DecisionDefinition<TResult> Build()
@@ -537,14 +556,24 @@ public sealed class DecisionDefinition<TResult>
             DecisionQuestion question,
             object? enumDefinition,
             DecisionKind kind,
-            bool usesExpectedScore = false)
+            bool usesExpectedScore = false,
+            Func<TResult, object?>? valueAccessor = null,
+            Func<object?, string, bool>? choiceValueMatches = null)
         {
             if (_questions.Exists(existing => existing.Property == property || string.Equals(existing.PropertyName, propertyName, StringComparison.Ordinal)))
             {
                 Throw.ArgumentException("selector", "A result property or JSON property name can only be declared once.");
             }
 
-            _questions.Add(new DecisionDefinitionQuestion<TResult>(property, propertyName, question, enumDefinition, kind, usesExpectedScore));
+            _questions.Add(new DecisionDefinitionQuestion<TResult>(
+                property,
+                propertyName,
+                question,
+                enumDefinition,
+                kind,
+                usesExpectedScore,
+                valueAccessor ?? throw new InvalidOperationException("A direct property accessor is required."),
+                choiceValueMatches));
         }
     }
 
@@ -588,7 +617,9 @@ internal sealed class DecisionDefinitionQuestion<TResult>
         DecisionQuestion question,
         object? enumDefinition,
         DecisionKind kind,
-        bool usesExpectedScore)
+        bool usesExpectedScore,
+        Func<TResult, object?> valueAccessor,
+        Func<object?, string, bool>? choiceValueMatches)
     {
         Property = property;
         PropertyName = propertyName;
@@ -596,6 +627,8 @@ internal sealed class DecisionDefinitionQuestion<TResult>
         EnumDefinition = enumDefinition;
         Kind = kind;
         UsesExpectedScore = usesExpectedScore;
+        ValueAccessor = valueAccessor;
+        ChoiceValueMatches = choiceValueMatches;
     }
 
     internal PropertyInfo Property { get; }
@@ -604,4 +637,6 @@ internal sealed class DecisionDefinitionQuestion<TResult>
     internal object? EnumDefinition { get; }
     internal DecisionKind Kind { get; }
     internal bool UsesExpectedScore { get; }
+    internal Func<TResult, object?> ValueAccessor { get; }
+    internal Func<object?, string, bool>? ChoiceValueMatches { get; }
 }

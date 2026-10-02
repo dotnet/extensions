@@ -167,15 +167,64 @@ public abstract class DecisionAnswer
         };
     }
 
-    internal static double GetScoreTolerance(DecisionPrecision precision, int count)
+    internal static (double Minimum, double Maximum) GetFeasibleExpectedScoreBounds(
+        IReadOnlyList<DecisionProbability> probabilities,
+        DecisionPrecision precision)
     {
-        double roundingUnit = GetRoundingHalfUnit(precision);
+        double roundingHalfUnit = GetRoundingHalfUnit(precision);
+        double lowerMass = 0;
+        double upperMass = 0;
+        for (int i = 0; i < probabilities.Count; i++)
+        {
+            double probability = probabilities[i].Value;
+            lowerMass += Math.Max(0, probability - roundingHalfUnit);
+            upperMass += Math.Min(1, probability + roundingHalfUnit);
+        }
 
-        double probabilityError = (roundingUnit * count * (count - 1)) / 2;
-        return probabilityError + roundingUnit + DistributionTolerance;
+        if (lowerMass > 1 + DistributionTolerance || upperMass < 1 - DistributionTolerance)
+        {
+            throw new DecisionProtocolException(
+                "A probability distribution has no normalized latent values consistent with its declared rounding.");
+        }
+
+        double remaining = Math.Max(0, 1 - lowerMass);
+        double minimum = 0;
+        for (int i = 0; i < probabilities.Count; i++)
+        {
+            double lower = Math.Max(0, probabilities[i].Value - roundingHalfUnit);
+            double capacity = Math.Min(1, probabilities[i].Value + roundingHalfUnit) - lower;
+            double allocated = Math.Min(remaining, capacity);
+            minimum += (lower + allocated) * i;
+            remaining -= allocated;
+        }
+
+        remaining = Math.Max(0, 1 - lowerMass);
+        double maximum = 0;
+        double[] lowerValues = new double[probabilities.Count];
+        for (int i = 0; i < probabilities.Count; i++)
+        {
+            lowerValues[i] = Math.Max(0, probabilities[i].Value - roundingHalfUnit);
+            maximum += lowerValues[i] * i;
+        }
+
+        for (int i = probabilities.Count - 1; i >= 0; i--)
+        {
+            double capacity = Math.Min(1, probabilities[i].Value + roundingHalfUnit) - lowerValues[i];
+            double allocated = Math.Min(remaining, capacity);
+            maximum += allocated * i;
+            remaining -= allocated;
+        }
+
+        if (remaining > DistributionTolerance)
+        {
+            throw new DecisionProtocolException(
+                "A probability distribution has no normalized latent values consistent with its declared rounding.");
+        }
+
+        return (minimum, maximum);
     }
 
-    private static double GetRoundingHalfUnit(DecisionPrecision precision) =>
+    internal static double GetRoundingHalfUnit(DecisionPrecision precision) =>
         precision switch
         {
             DecisionPrecision.HighPrecision => 0,
@@ -278,9 +327,15 @@ public sealed class ScoreDecisionAnswer : DecisionAnswer
         }
 
         double expectedScore = copy.Select((probability, index) => probability.Value * index).Sum();
-        if (score is double nativeScore && Math.Abs(nativeScore - expectedScore) > GetScoreTolerance(precision, copy.Length))
+        if (score is double nativeScore)
         {
-            throw new DecisionProtocolException("The score does not agree with its probability distribution.");
+            (double minimum, double maximum) = GetFeasibleExpectedScoreBounds(copy, precision);
+            double scalarHalfUnit = GetRoundingHalfUnit(precision);
+            if (nativeScore + scalarHalfUnit + DistributionTolerance < minimum ||
+                nativeScore - scalarHalfUnit - DistributionTolerance > maximum)
+            {
+                throw new DecisionProtocolException("The score does not agree with its probability distribution.");
+            }
         }
 
         Score = score;

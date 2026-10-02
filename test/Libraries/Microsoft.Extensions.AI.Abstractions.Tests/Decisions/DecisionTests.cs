@@ -84,7 +84,7 @@ public class DecisionTests
 
         Assert.True(result.Approved);
         Assert.Equal("blue|candidate", result.Selected);
-        Assert.Equal(1.58, result.Score);
+        Assert.Equal(1.6, result.Score);
         Assert.Equal(1.6, result.ExpectedScore, precision: 12);
         Assert.Equal(3, ((ScoreDecisionAnswer)response.Answers[2]).Probabilities.Count);
     }
@@ -143,7 +143,7 @@ public class DecisionTests
     {
         ScoreDecisionAnswer valid = new(
             "score",
-            1.58,
+            1.6,
             [
                 new("low", 0.1),
                 new("medium", 0.2),
@@ -151,7 +151,16 @@ public class DecisionTests
             ],
             DecisionPrecision.TwoDecimalPlaces);
 
-        Assert.Equal(1.58, valid.Score!.Value);
+        Assert.Equal(1.6, valid.Score!.Value);
+        Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
+            "score",
+            0.02,
+            [
+                new("low", 1),
+                new("medium", 0),
+                new("high", 0),
+            ],
+            DecisionPrecision.TwoDecimalPlaces));
         Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
             "score",
             2,
@@ -159,6 +168,50 @@ public class DecisionTests
                 new("low", 1),
                 new("medium", 0),
                 new("high", 0),
+            ],
+            DecisionPrecision.TwoDecimalPlaces));
+    }
+
+    [Fact]
+    public void RoundedScoreValidation_AllowsBothFeasibleExpectationExtremes()
+    {
+        ScoreDecisionAnswer minimum = new(
+            "score",
+            1.59,
+            [
+                new("low", 0.1),
+                new("medium", 0.2),
+                new("high", 0.7),
+            ],
+            DecisionPrecision.TwoDecimalPlaces);
+        ScoreDecisionAnswer maximum = new(
+            "score",
+            1.61,
+            [
+                new("low", 0.1),
+                new("medium", 0.2),
+                new("high", 0.7),
+            ],
+            DecisionPrecision.TwoDecimalPlaces);
+
+        Assert.Equal(1.59, minimum.Score!.Value);
+        Assert.Equal(1.61, maximum.Score!.Value);
+        Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
+            "score",
+            1.58,
+            [
+                new("low", 0.1),
+                new("medium", 0.2),
+                new("high", 0.7),
+            ],
+            DecisionPrecision.TwoDecimalPlaces));
+        Assert.Throws<DecisionProtocolException>(() => new ScoreDecisionAnswer(
+            "score",
+            1.62,
+            [
+                new("low", 0.1),
+                new("medium", 0.2),
+                new("high", 0.7),
             ],
             DecisionPrecision.TwoDecimalPlaces));
     }
@@ -234,7 +287,7 @@ public class DecisionTests
         Assert.Equal(0.75, vector.Values[0].Value);
         Assert.Equal(0.5, vector.Values[1].Value);
         Assert.Equal(0.7, vector.Values[2].Value);
-        Assert.Equal(1.58, vector.Values[3].Value);
+        Assert.Equal(1.6, vector.Values[3].Value);
         Assert.Equal(1.6, vector.Values[4].Value, precision: 12);
         Assert.Equal("test-provider", vector.Provenance!.ProviderName);
     }
@@ -301,7 +354,7 @@ public class DecisionTests
         Assert.Equal("choice", ((ChoiceDecisionAnswer)roundtrip.Answers[1]).AdditionalProperties!["kind"]!.ToString());
         Assert.Equal("score", ((ScoreDecisionAnswer)roundtrip.Answers[2]).AdditionalProperties!["kind"]!.ToString());
         Assert.Equal("response", roundtrip.AdditionalProperties!["kind"]!.ToString());
-        Assert.Equal(1.58, ((ScoreDecisionAnswer)roundtrip.Answers[2]).Score!.Value);
+        Assert.Equal(1.6, ((ScoreDecisionAnswer)roundtrip.Answers[2]).Score!.Value);
     }
 
     [Fact]
@@ -422,7 +475,7 @@ public class DecisionTests
         Assert.Same(options, client.Options);
         Assert.Equal(TicketCategory.Technical, response.Result.Category);
         Assert.Equal(0.25, response.Result.RefundRequestProbability);
-        Assert.Equal(1.58, response.Result.Satisfaction);
+        Assert.Equal(1.6, response.Result.Satisfaction);
         Assert.Equal("test-provider", response.Evidence.Provenance!.ProviderName);
         Assert.Equal(
             new Dictionary<TicketCategory, double>
@@ -593,12 +646,27 @@ public class DecisionTests
     public async Task DecisionDefinition_RejectsResponseNotMatchingSentRequest(string mutation)
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
-        using RecordingDecisionClient client = new(request => CreateMismatchedResponse(request, mutation));
+        bool providerReturnedResponse = false;
+        using RecordingDecisionClient client = new(request =>
+        {
+            DecisionResponse response = CreateMismatchedResponse(request, mutation);
+            _ = new DecisionResponse(
+                response.Request,
+                response.Answers,
+                response.Provenance,
+                response.Usage,
+                response.RawRepresentation,
+                response.AdditionalProperties);
+            providerReturnedResponse = true;
+            return response;
+        });
 
         await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(
             new TypedDecisionState("request"),
             TestJsonSerializerContext.Default.TypedDecisionState,
             definition));
+        Assert.True(providerReturnedResponse);
+        Assert.Equal(1, client.CallCount);
     }
 
     [Fact]
@@ -685,6 +753,41 @@ public class DecisionTests
     }
 
     [Fact]
+    public void DecisionDefinition_ReflectionDisabledOptionsRequireExplicitResolver()
+    {
+        JsonSerializerOptions options = new(JsonSerializerDefaults.Web);
+
+        Assert.Throws<NotSupportedException>(() => DecisionDefinition<ReflectionResult>.Create(
+            builder => builder.BinaryProbability(result => result.Probability),
+            options));
+    }
+
+    [Fact]
+    public async Task DecisionDefinition_RejectsMaterializationWhenSerializationGetterMasksActualValue()
+    {
+        DefaultJsonTypeInfoResolver resolver = new();
+        resolver.Modifiers.Add(typeInfo =>
+        {
+            if (typeInfo.Type == typeof(MaskedGetterResult))
+            {
+                JsonPropertyInfo property = typeInfo.Properties.Single(static property => property.Name == nameof(MaskedGetterResult.Probability));
+                property.Set = static (obj, value) => ((MaskedGetterResult)obj).Probability = 0;
+                property.Get = static _ => 0.75;
+            }
+        });
+        JsonSerializerOptions options = new() { TypeInfoResolver = resolver };
+        DecisionDefinition<MaskedGetterResult> definition = DecisionDefinition<MaskedGetterResult>.Create(
+            builder => builder.BinaryProbability(result => result.Probability),
+            options);
+        using RecordingDecisionClient client = new(request => new DecisionResponse(
+            request,
+            [new BinaryDecisionAnswer(request.Questions[0].Id, 0.75)]));
+
+        using JsonDocument state = JsonDocument.Parse("{}");
+        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetResponseAsync(state.RootElement.Clone(), definition));
+    }
+
+    [Fact]
     public async Task DecisionDefinition_ExpectedScoreUsesObservedDistributionAndReportedScoreRequiresNativeValue()
     {
         DecisionDefinition<TypedDecisionResult> expectedDefinition = CreateExpectedScoreDefinition();
@@ -738,7 +841,7 @@ public class DecisionTests
                     ]);
             });
 
-    private static DecisionResponse CreateTypedDefinitionResponse(DecisionRequest request, double? reportedScore = 1.58)
+    private static DecisionResponse CreateTypedDefinitionResponse(DecisionRequest request, double? reportedScore = 1.6)
     {
         return new DecisionResponse(
             request,
@@ -783,7 +886,7 @@ public class DecisionTests
                     new BinaryDecisionAnswer(wrongKindRequest.Questions[1].Id, 0.25),
                     new ScoreDecisionAnswer(
                         wrongKindRequest.Questions[2].Id,
-                        1.58,
+                        1.6,
                         [new("low", 0.1), new("medium", 0.2), new("high", 0.7)],
                         DecisionPrecision.TwoDecimalPlaces),
                 ]);
@@ -848,7 +951,7 @@ public class DecisionTests
                 new BinaryDecisionAnswer(request.Questions[1].Id, 0.25),
                 new ScoreDecisionAnswer(
                     score.Id,
-                    1.58,
+                    1,
                     score.Levels.Select(static (level, index) => new DecisionProbability(level.Id, index == 1 ? 1 : 0)).ToArray(),
                     DecisionPrecision.TwoDecimalPlaces),
             ]);
@@ -919,7 +1022,7 @@ public class DecisionTests
                     additionalProperties: new Dictionary<string, object?> { ["kind"] = "choice" }),
                 new ScoreDecisionAnswer(
                     "score",
-                    1.58,
+                    1.6,
                     [
                         new("low", 0.1),
                         new("medium", 0.2),
@@ -1026,6 +1129,11 @@ public class DecisionTests
     }
 
     internal sealed class ReflectionResult
+    {
+        public double Probability { get; set; }
+    }
+
+    internal sealed class MaskedGetterResult
     {
         public double Probability { get; set; }
     }
