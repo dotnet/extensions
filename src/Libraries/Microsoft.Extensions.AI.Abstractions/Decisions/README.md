@@ -73,6 +73,8 @@ var definitionWithScore = DecisionDefinition<TicketAnalysis>.Create(builder =>
 
 `Score` projects only a provider-reported native ordinal score and fails explicitly when that scalar is absent. `ExpectedScore` projects the unmodified ordinal expectation calculated from the complete observed distribution, so the two choices remain distinguishable; after probability rounding, that observed expectation can fall outside the ordinal bounds and is not repaired. Every probability is conditioned on the full request state and question set; declaring questions independently does not promise marginal invariance, independence, a joint distribution, or calibration.
 
+Reported scalar consistency uses normalized latent feasibility within clipped rounding intervals; the observed probabilities are never normalized or rewritten. Typed binding verifies the actual CLR property values after materialization, independently of write-only JSON formatting. When options omit a resolver, the definition supplies the MEAI default resolver, while explicit caller resolvers and converters remain unchanged.
+
 At an explicit JSON boundary, callers can use source-generated metadata for both state and result contracts. The explicit generic arguments are optional for inference, but make the boundary visible:
 
 ```csharp
