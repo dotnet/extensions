@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,22 +37,21 @@ public sealed class DecisionTask<TState, TResult>
     /// <typeparamref name="TResult"/>.
     /// </param>
     /// <param name="featureSchema">
-    /// The named feature schema used to retain a portable, probability-rich projection.
-    /// Every coordinate must reference a question in <paramref name="questions"/>.
+    /// The optional named feature schema used to retain a portable, probability-rich projection.
+    /// When omitted, no feature projection is performed. Every coordinate, when supplied, must
+    /// reference a question in <paramref name="questions"/>.
     /// </param>
     public DecisionTask(
         IEnumerable<DecisionQuestion> questions,
         JsonTypeInfo<TState> stateTypeInfo,
         DecisionResultBinding<TResult> resultBinding,
         JsonTypeInfo<DecisionFunctionResult<TResult>> resultTypeInfo,
-        DecisionFeatureSchema featureSchema)
+        DecisionFeatureSchema? featureSchema = null)
     {
         _ = Throw.IfNull(questions);
         StateTypeInfo = Throw.IfNull(stateTypeInfo);
         ResultBinding = Throw.IfNull(resultBinding);
         ResultTypeInfo = Throw.IfNull(resultTypeInfo);
-        FeatureSchema = Throw.IfNull(featureSchema);
-
         DecisionQuestion[] questionSnapshot = questions.ToArray();
         if (questionSnapshot.Length == 0 || Array.Exists(questionSnapshot, static question => question is null))
         {
@@ -67,17 +67,21 @@ public sealed class DecisionTask<TState, TResult>
             }
         }
 
-        foreach (DecisionFeatureCoordinate coordinate in featureSchema.Coordinates)
+        if (featureSchema is not null)
         {
-            if (!questionIds.Contains(coordinate.QuestionId))
+            foreach (DecisionFeatureCoordinate coordinate in featureSchema.Coordinates)
             {
-                Throw.ArgumentException(
-                    nameof(featureSchema),
-                    $"Feature coordinate '{coordinate.Name}' references unknown question '{coordinate.QuestionId}'.");
+                if (!questionIds.Contains(coordinate.QuestionId))
+                {
+                    Throw.ArgumentException(
+                        nameof(featureSchema),
+                        $"Feature coordinate '{coordinate.Name}' references unknown question '{coordinate.QuestionId}'.");
+                }
             }
         }
 
         Questions = Array.AsReadOnly(questionSnapshot);
+        FeatureSchema = featureSchema;
     }
 
     /// <summary>Gets the owned question snapshot.</summary>
@@ -92,8 +96,8 @@ public sealed class DecisionTask<TState, TResult>
     /// <summary>Gets the explicit source-generated JSON contract for the function result.</summary>
     public JsonTypeInfo<DecisionFunctionResult<TResult>> ResultTypeInfo { get; }
 
-    /// <summary>Gets the named feature schema projected into the function result.</summary>
-    public DecisionFeatureSchema FeatureSchema { get; }
+    /// <summary>Gets the optional named feature schema projected into the function result.</summary>
+    public DecisionFeatureSchema? FeatureSchema { get; }
 }
 
 /// <summary>
@@ -107,17 +111,17 @@ public sealed class DecisionFunctionResult<TResult>
     /// Initializes a new instance of the <see cref="DecisionFunctionResult{TResult}"/> class.
     /// </summary>
     /// <param name="result">The application-owned mapped result.</param>
-    /// <param name="features">The portable named feature projection.</param>
+    /// <param name="features">The optional portable named feature projection.</param>
     /// <param name="provenance">The decision provider/model provenance, when reported.</param>
     /// <param name="usage">The decision usage, kept separate from chat usage.</param>
     public DecisionFunctionResult(
         TResult result,
-        DecisionFeatureVector features,
+        DecisionFeatureVector? features = null,
         DecisionProvenance? provenance = null,
         UsageDetails? usage = null)
     {
         Result = result;
-        Features = Throw.IfNull(features);
+        Features = features;
         Provenance = provenance;
         Usage = usage;
     }
@@ -125,8 +129,9 @@ public sealed class DecisionFunctionResult<TResult>
     /// <summary>Gets the application-owned mapped result.</summary>
     public TResult Result { get; }
 
-    /// <summary>Gets the portable named feature projection.</summary>
-    public DecisionFeatureVector Features { get; }
+    /// <summary>Gets the optional portable named feature projection.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DecisionFeatureVector? Features { get; }
 
     /// <summary>Gets decision provider/model provenance, when reported.</summary>
     public DecisionProvenance? Provenance { get; }
@@ -151,12 +156,12 @@ public static class DecisionFunctionExtensions
     /// <returns>An invocable function whose only input is <typeparamref name="TState"/>.</returns>
     /// <remarks>
     /// <para>
-    /// The returned function closes over the questions, feature schema, mapper, and client. It performs exactly one
+    /// The returned function closes over the questions, optional feature schema, mapper, and client. It performs exactly one
     /// decision request per invocation, propagates provider, mapper, and cancellation failures, and never disposes
     /// the caller-owned client.
     /// </para>
     /// <para>
-    /// The default result contains only the explicitly mapped result, named native-double features, provenance, and
+    /// The result contains the explicitly mapped result, optional named native-double features, provenance, and
     /// usage. Raw state, raw provider objects, reasoning text, and provider extension dictionaries are not included.
     /// The supplied <see cref="AIFunctionFactoryOptions.SerializerOptions"/> must contain source-generated metadata
     /// for <typeparamref name="TState"/> and <see cref="DecisionFunctionResult{TResult}"/> when reflection-based JSON
@@ -200,7 +205,9 @@ public static class DecisionFunctionExtensions
                 cancellationToken).ConfigureAwait(false);
 
             TResult result = response.Bind(task.ResultBinding);
-            DecisionFeatureVector features = DecisionFeatureProjection.Project(response, task.FeatureSchema);
+            DecisionFeatureVector? features = task.FeatureSchema is null
+                ? null
+                : DecisionFeatureProjection.Project(response, task.FeatureSchema);
             return new(result, features, response.Provenance, response.Usage);
         }
     }

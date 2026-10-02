@@ -84,6 +84,50 @@ public sealed class DecisionTypedFunctionTests
     }
 
     [Fact]
+    public async Task AIFunctionFactory_CanReturnMetadataWithoutAnAnalyticsContract()
+    {
+        using SupportTicketDecisionClient client = new();
+        DecisionDefinition<TicketAnalysis> definition = CreateDefinition();
+        DecisionResponse<TicketAnalysis>? observed = null;
+
+        AIFunction function = AIFunctionFactory.Create(
+            async (SupportTicket ticket, CancellationToken cancellationToken) =>
+            {
+                observed = await client.GetResponseAsync(
+                    ticket,
+                    definition,
+                    cancellationToken: cancellationToken);
+
+                return new MetadataOnlyToolResult(
+                    observed.Result,
+                    observed.Evidence.Provenance,
+                    observed.Evidence.Usage);
+            },
+            new AIFunctionFactoryOptions
+            {
+                Name = "analyze_support_ticket",
+                SerializerOptions = DecisionTypedFunctionJsonContext.Default.Options,
+            });
+
+        JsonElement output = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(
+                new AIFunctionArguments
+                {
+                    ["ticket"] = JsonSerializer.SerializeToElement(
+                        new SupportTicket("The product is unavailable and I need help."),
+                        DecisionTypedFunctionJsonContext.Default.SupportTicket),
+                }));
+
+        Assert.Equal("Technical", output.GetProperty("result").GetProperty("category").GetString());
+        Assert.Equal("test-provider", output.GetProperty("provenance").GetProperty("providerName").GetString());
+        Assert.Equal(7, output.GetProperty("usage").GetProperty("inputTokenCount").GetInt32());
+        Assert.NotNull(observed);
+        Assert.Equal("provider-evidence", observed.Evidence.RawRepresentation);
+        Assert.Equal("retained", observed.Evidence.AdditionalProperties!["evidence"]);
+        Assert.Equal(1, client.CallCount);
+    }
+
+    [Fact]
     public async Task AIFunctionFactory_RejectsWrongDomainResponseWithoutToolResult()
     {
         using SupportTicketDecisionClient client = new() { ReturnWrongDomain = true };
@@ -188,6 +232,7 @@ public sealed class DecisionTypedFunctionTests
                         new BinaryDecisionAnswer(responseBinary.Id, 0.25),
                     ],
                     new DecisionProvenance(providerName: "test-provider", modelId: "test-model"),
+                    new UsageDetails { InputTokenCount = 7, OutputTokenCount = 2 },
                     rawRepresentation: "provider-evidence",
                     additionalProperties: new Dictionary<string, object?> { ["evidence"] = "retained" }));
         }
@@ -216,6 +261,11 @@ public sealed class DecisionTypedFunctionTests
     internal sealed record TicketAnalysis(
         [Description("Classify the customer's main concern.")] TicketCategory Category,
         [Description("Is the customer requesting a refund or payment reversal?")] double RefundRequestProbability);
+
+    internal sealed record MetadataOnlyToolResult(
+        TicketAnalysis Result,
+        DecisionProvenance? Provenance,
+        UsageDetails? Usage);
 }
 
 [JsonSourceGenerationOptions(
@@ -224,4 +274,7 @@ public sealed class DecisionTypedFunctionTests
 [JsonSerializable(typeof(DecisionTypedFunctionTests.SupportTicket))]
 [JsonSerializable(typeof(DecisionTypedFunctionTests.TicketCategory))]
 [JsonSerializable(typeof(DecisionTypedFunctionTests.TicketAnalysis))]
+[JsonSerializable(typeof(DecisionTypedFunctionTests.MetadataOnlyToolResult))]
+[JsonSerializable(typeof(DecisionProvenance))]
+[JsonSerializable(typeof(UsageDetails))]
 internal sealed partial class DecisionTypedFunctionJsonContext : JsonSerializerContext;

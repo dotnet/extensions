@@ -152,7 +152,7 @@ This layer intentionally does not define tools, routing composition, MEDI proces
 
 ## Layer 2 interoperability
 
-### Prefer the existing MEAI path for a result-only business tool
+### A useful decision tool needs no analytics contract
 
 When a tool only needs the business result, the simplest composition is the existing `AIFunctionFactory.Create` plus an ordinary host-owned delegate. With the `client` and `definition` from the business example above, the tool keeps the complete response in the host and returns only the mapped result:
 
@@ -182,7 +182,41 @@ AIFunction function = AIFunctionFactory.Create(
     });
 ```
 
-The delegate returns only `response.Result`; it does not expose the complete `DecisionResponse`, request, provider extensions, raw state beyond the bounded input parameter, or reasoning text as tool output. `AIFunctionFactory` supplies the normal MEAI JSON tool contract, while the host retains ownership of the `IDecisionClient`, endpoint/model/options, and any reporting or human-review action. This path needs no handwritten question IDs, enum dictionary, result mapper, `DecisionTask`, `DecisionFunctionResult`, or feature schema. The ordinary `DecisionDefinition.Create(builder => ...)` path uses the library's normal JSON metadata behavior and is intended for reflection-enabled JIT applications.
+The delegate returns only `response.Result`; it does not expose the complete `DecisionResponse`, request, provider extensions, raw state beyond the bounded input parameter, or reasoning text as tool output. `AIFunctionFactory` supplies the normal MEAI JSON tool contract, while the host retains ownership of the `IDecisionClient`, endpoint/model/options, and any reporting or human-review action. A useful decision tool needs no analytics contract: this path needs no handwritten question IDs, enum dictionary, result mapper, `DecisionTask`, `DecisionFunctionResult`, or feature schema. The ordinary `DecisionDefinition.Create(builder => ...)` path uses the library's normal JSON metadata behavior and is intended for reflection-enabled JIT applications.
+
+If the tool should return selected decision metadata as well as the business result, keep that output type application-owned and retain the complete evidence separately:
+
+```csharp
+public sealed record TicketToolOutput(
+    TicketAnalysis Result,
+    DecisionProvenance? Provenance,
+    UsageDetails? Usage);
+
+DecisionResponse<TicketAnalysis>? observed = null;
+Func<SupportTicket, CancellationToken, Task<TicketToolOutput>> analyzeWithMetadata =
+    async (ticket, cancellationToken) =>
+    {
+        observed = await client.GetResponseAsync(
+            ticket,
+            definition,
+            cancellationToken: cancellationToken);
+
+        // The host's retained reference is the evidence boundary for reporting or review.
+        return new(
+            observed.Result,
+            observed.Evidence.Provenance,
+            observed.Evidence.Usage);
+    };
+
+AIFunction metadataFunction = AIFunctionFactory.Create(
+    analyzeWithMetadata,
+    new AIFunctionFactoryOptions
+    {
+        Name = "analyze_support_ticket_with_metadata",
+    });
+```
+
+Decision provenance and usage describe the decision operation; they do not execute or authorize a business action. The host decides separately whether to persist evidence, perform an action, or record an outcome.
 
 <details>
 <summary>Reflection-disabled/source-generated JSON variant</summary>
@@ -229,11 +263,11 @@ This is still ordinary delegate composition; the extra metadata is the deploymen
 <details>
 <summary>Optional probability-feature export with the proposed helper</summary>
 
-For a host that explicitly needs portable probability features, provenance, and separate decision usage in the tool result, the existing Layer 2 `DecisionTask<SupportTicket, TicketAnalysis>.AsAIFunction` proof remains available. It closes over explicit questions, mapper, feature schema, source-generated state/result contracts, and the caller-owned `IDecisionClient`, performs one decision call, verifies that the response corresponds to the outgoing state and ordered question definitions before mapping or projection, and returns bounded mapped output with named native-`double` features. The advanced sample is optional and is not required by `AIFunctionFactory`, `JsonTypeInfo`, or the .NET platform.
+For a host that explicitly needs portable probability features, provenance, and separate decision usage in the tool result, the existing Layer 2 `DecisionTask<SupportTicket, TicketAnalysis>.AsAIFunction` proof remains available. Its `featureSchema` argument is optional: omitting it returns the mapped result, provenance, and usage without invoking feature projection, while supplying it is an explicit extension that returns bounded named native-`double` features. The helper closes over explicit questions, mapper, source-generated state/result contracts, and the caller-owned `IDecisionClient`, performs one decision call, verifies that the response corresponds to the outgoing state and ordered question definitions before mapping or projection, and returns safe output. The advanced feature path is optional and is not required by `AIFunctionFactory`, `JsonTypeInfo`, or the .NET platform.
 
 </details>
 
-The current `DecisionTask` contract intentionally requires a feature schema and returns its feature vector even when a business tool only needs `TicketAnalysis`. That is an ergonomics simplification candidate under review, not a requirement of `AIFunction`, `JsonTypeInfo`, or the .NET platform. The feature schema remains explicit for hosts that want to retain probability-rich evidence for reporting or review; it does not authorize a refund, calibrate a score, or replace the business result.
+When a `DecisionTask` has no feature schema, `DecisionFunctionResult<T>.Features` is null and the normal JSON contract omits the `features` property. No empty vector or fallback projection is fabricated. Supplying a schema preserves the existing coordinate validation, native `double` values, ordering, and failure behavior; a strict reported-score coordinate still fails when the provider did not report that scalar.
 
 The same explicit feature projection can be used as optional downstream MEDI enrichment. A consumer-owned semantic chunk processor can run after the existing document reader and chunker, ask a host-defined decision question for each bounded chunk, and attach versioned named `double` coordinates, provenance, document identity/context, and unrelated metadata before the existing collecting or serializing writer. The proof uses the current reader -> chunker -> processor -> writer primitives and preserves bounded streaming, cancellation, and failure propagation; it does not add a reusable MEDI processor or change `ClassificationEnricher` or batching.
 

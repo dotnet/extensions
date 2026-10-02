@@ -65,6 +65,34 @@ public sealed class DecisionFunctionTests
     }
 
     [Fact]
+    public async Task AsAIFunction_ReturnsMappedResultAndMetadataWithoutFeatureSchema()
+    {
+        using RecordingDecisionClient client = new();
+        DecisionTask<DecisionToolState, DecisionToolResult> task = CreateTask(includeFeatureSchema: false);
+        DecisionOptions options = new() { ModelId = "decision-model" };
+        AIFunction function = task.AsAIFunction(
+            client,
+            options,
+            new AIFunctionFactoryOptions
+            {
+                SerializerOptions = DecisionFunctionJsonContext.Default.Options,
+            });
+        options.ModelId = "changed-after-creation";
+
+        JsonElement resultJson = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }));
+
+        Assert.Equal("primary", resultJson.GetProperty("result").GetProperty("selected").GetString());
+        Assert.False(resultJson.TryGetProperty("features", out _));
+        Assert.Equal("test-provider", resultJson.GetProperty("provenance").GetProperty("providerName").GetString());
+        Assert.Equal(12, resultJson.GetProperty("usage").GetProperty("inputTokenCount").GetInt32());
+        Assert.Null(task.FeatureSchema);
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal("decision-model", client.LastOptions!.ModelId);
+        Assert.Equal(0, client.DisposeCount);
+    }
+
+    [Fact]
     public async Task AsAIFunction_PropagatesCancellationProviderAndMapperFailures()
     {
         using CancellationTokenSource cancellation = new();
@@ -242,6 +270,28 @@ public sealed class DecisionFunctionTests
     }
 
     [Fact]
+    public async Task AsAIFunction_SkipsFeatureProjectionWhenSchemaIsOmitted()
+    {
+        using RecordingDecisionClient client = new()
+        {
+            ResponseFactory = request => CreateScoreResponse(
+                request,
+                reportedScore: null,
+                [0, 0, 0.01, 1]),
+        };
+        AIFunction function = CreateScoreTask(featureValueKind: null).AsAIFunction(
+            client,
+            functionOptions: new() { SerializerOptions = DecisionFunctionJsonContext.Default.Options });
+
+        JsonElement resultJson = Assert.IsType<JsonElement>(
+            await function.InvokeAsync(new AIFunctionArguments { ["state"] = new DecisionToolState() }));
+
+        Assert.Equal(3.02, resultJson.GetProperty("result").GetProperty("score").GetDouble());
+        Assert.False(resultJson.TryGetProperty("features", out _));
+        Assert.Equal(1, client.CallCount);
+    }
+
+    [Fact]
     public async Task AsAIFunction_RejectsMissingReportedScoreForStrictScoreFeature()
     {
         using RecordingDecisionClient client = new()
@@ -282,7 +332,8 @@ public sealed class DecisionFunctionTests
     }
 
     private static DecisionTask<DecisionToolState, DecisionToolResult> CreateTask(
-        DecisionResultBinding<DecisionToolResult>? binding = null)
+        DecisionResultBinding<DecisionToolResult>? binding = null,
+        bool includeFeatureSchema = true)
     {
         ChoiceDecisionQuestion question = new(
             "route",
@@ -299,14 +350,16 @@ public sealed class DecisionFunctionTests
                 DecisionFunctionJsonContext.Default.DecisionToolResult,
                 answers => new() { Selected = answers.GetChoice("route").SelectedCandidateId }),
             DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionToolResult,
-            new DecisionFeatureSchema(
-                "decision-tool-v1",
-                1,
-                [new("route.primary", "route", DecisionFeatureValueKind.ChoiceProbability, "primary")]));
+            includeFeatureSchema
+                ? new DecisionFeatureSchema(
+                    "decision-tool-v1",
+                    1,
+                    [new("route.primary", "route", DecisionFeatureValueKind.ChoiceProbability, "primary")])
+                : null);
     }
 
     private static DecisionTask<DecisionToolState, DecisionScoreToolResult> CreateScoreTask(
-        DecisionFeatureValueKind featureValueKind)
+        DecisionFeatureValueKind? featureValueKind)
     {
         ScoreDecisionQuestion question = new(
             "score",
@@ -325,10 +378,12 @@ public sealed class DecisionFunctionTests
                 DecisionFunctionJsonContext.Default.DecisionScoreToolResult,
                 answers => new() { Score = answers.GetScore("score").ExpectedScore }),
             DecisionFunctionJsonContext.Default.DecisionFunctionResultDecisionScoreToolResult,
-            new DecisionFeatureSchema(
-                "decision-score-tool-v1",
-                1,
-                [new("score.value", "score", featureValueKind)]));
+            featureValueKind is null
+                ? null
+                : new DecisionFeatureSchema(
+                    "decision-score-tool-v1",
+                    1,
+                    [new("score.value", "score", featureValueKind.Value)]));
     }
 
     private static DecisionResponse CreateResponse(DecisionRequest request)
