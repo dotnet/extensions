@@ -3488,6 +3488,38 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
+    public async Task LogsFunctionRequestedTerminationWhenFunctionThrows()
+    {
+        var collector = new FakeLogCollector();
+        ServiceCollection c = new();
+        c.AddLogging(b => b.AddProvider(new FakeLoggerProvider(collector)).SetMinimumLevel(LogLevel.Debug));
+
+        var options = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(string () =>
+            {
+                FunctionInvokingChatClient.CurrentContext!.Terminate = true;
+                throw new InvalidOperationException("Oh no!");
+            }, "TerminatingFunc")]
+        };
+
+        List<ChatMessage> plan =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "TerminatingFunc")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Error: Function failed.")]),
+        ];
+
+        Func<ChatClientBuilder, ChatClientBuilder> configure = b =>
+            b.Use((c, services) => new FunctionInvokingChatClient(c, services.GetRequiredService<ILoggerFactory>()));
+
+        await InvokeAndAssertAsync(options, plan, null, configure, c.BuildServiceProvider());
+
+        var logs = collector.GetSnapshot();
+        Assert.Contains(logs, e => e.Message.Contains("Function 'TerminatingFunc' requested termination of the processing loop") && e.Level == LogLevel.Debug);
+    }
+
+    [Fact]
     public async Task LogsFunctionRequiresApproval()
     {
         var collector = new FakeLogCollector();
