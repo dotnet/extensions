@@ -141,7 +141,7 @@ internal sealed class FunctionInvocationProcessor
         }
         catch (Exception ex) when (captureExceptions && !cancellationToken.IsCancellationRequested)
         {
-            return new(terminate: false, FunctionInvocationStatus.Exception, callContent, result: null, exception: ex);
+            return new(context.Terminate, FunctionInvocationStatus.Exception, callContent, result: null, exception: ex);
         }
         finally
         {
