@@ -3,6 +3,7 @@
 #if NET9_0_OR_GREATER
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -95,6 +96,47 @@ public class LogBufferingFilterRuleTests
 
         // Assert
         Assert.Same(rules[1], result);
+    }
+
+    [Fact]
+    public void InvalidateCache_CausesRulesToBeReevaluated()
+    {
+        var oldRule = new LogBufferingFilterRule(logLevel: LogLevel.Warning);
+        var newRule = new LogBufferingFilterRule(logLevel: LogLevel.Warning);
+
+        Assert.Same(oldRule, _selector.Select([oldRule], LogLevel.Warning, 1, attributes: null));
+
+        _selector.InvalidateCache();
+
+        Assert.Same(newRule, _selector.Select([newRule], LogLevel.Warning, 1, attributes: null));
+    }
+
+    [Fact]
+    public void Select_IsThreadSafe_WhenCacheIsInvalidatedConcurrently()
+    {
+        // Arrange
+        // Many candidates widen the window during which Select() enumerates the cached candidates,
+        // making it likely that a concurrent InvalidateCache() call happens in the middle of the enumeration.
+        var expected = new LogBufferingFilterRule(logLevel: LogLevel.Warning, eventId: 1, attributes: [new("region", "westus2")]);
+        LogBufferingFilterRule[] rules =
+        [
+            .. Enumerable.Range(0, 100).Select(_ => new LogBufferingFilterRule(logLevel: LogLevel.Warning)),
+            expected,
+        ];
+        KeyValuePair<string, object?>[] attributes = [new("region", "westus2")];
+
+        // Act & Assert
+        Parallel.For(0, 100_000, i =>
+        {
+            if (i % 10 == 0)
+            {
+                _selector.InvalidateCache();
+            }
+            else
+            {
+                Assert.Same(expected, _selector.Select(rules, LogLevel.Warning, 1, attributes));
+            }
+        });
     }
 }
 #endif

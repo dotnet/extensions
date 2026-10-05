@@ -24,9 +24,9 @@ internal sealed class LogBufferingFilterRuleSelector
     private static readonly ObjectPool<List<LogBufferingFilterRule>> _rulePool =
         PoolFactory.CreateListPool<LogBufferingFilterRule>();
 
-    private readonly ObjectPool<List<LogBufferingFilterRule>> _cachedRulePool =
-        PoolFactory.CreateListPool<LogBufferingFilterRule>();
-    private readonly ConcurrentDictionary<(LogLevel, EventId), List<LogBufferingFilterRule>> _ruleCache = new();
+    // Cached values must never be mutated: concurrent Select() calls may still be enumerating them
+    // even after they have been removed from the cache by InvalidateCache().
+    private readonly ConcurrentDictionary<(LogLevel, EventId), LogBufferingFilterRule[]> _ruleCache = new();
 
     public static LogBufferingFilterRule[] SelectByCategory(IList<LogBufferingFilterRule> rules, string category)
     {
@@ -52,11 +52,6 @@ internal sealed class LogBufferingFilterRuleSelector
 
     public void InvalidateCache()
     {
-        foreach (((LogLevel, EventId) key, List<LogBufferingFilterRule> value) in _ruleCache)
-        {
-            _cachedRulePool.Return(value);
-        }
-
         _ruleCache.Clear();
     }
 
@@ -67,18 +62,25 @@ internal sealed class LogBufferingFilterRuleSelector
         IReadOnlyList<KeyValuePair<string, object?>>? attributes)
     {
         // 1. select rule candidates by log level and event id from the cache
-        List<LogBufferingFilterRule> ruleCandidates = _ruleCache.GetOrAdd((logLevel, eventId), _ =>
+        LogBufferingFilterRule[] ruleCandidates = _ruleCache.GetOrAdd((logLevel, eventId), _ =>
         {
-            List<LogBufferingFilterRule> candidates = _cachedRulePool.Get();
-            foreach (LogBufferingFilterRule rule in rules)
+            List<LogBufferingFilterRule> candidates = _rulePool.Get();
+            try
             {
-                if (IsMatch(rule, logLevel, eventId))
+                foreach (LogBufferingFilterRule rule in rules)
                 {
-                    candidates.Add(rule);
+                    if (IsMatch(rule, logLevel, eventId))
+                    {
+                        candidates.Add(rule);
+                    }
                 }
-            }
 
-            return candidates;
+                return candidates.ToArray();
+            }
+            finally
+            {
+                _rulePool.Return(candidates);
+            }
         });
 
         // 2. select the best rule from the candidates by attributes
