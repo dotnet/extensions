@@ -52,11 +52,11 @@ internal static class LogBufferingFilterRuleSelector
         IReadOnlyList<KeyValuePair<string, object?>>? attributes)
     {
         LogBufferingFilterRule? currentBest = null;
-        foreach (LogBufferingFilterRule rule in rules)
+        foreach (LogBufferingFilterRule ruleCandidate in rules)
         {
-            if (IsMatch(rule, logLevel, eventId) && IsAttributesMatch(rule, attributes) && IsBetter(currentBest, rule))
+            if (IsMatch(ruleCandidate, logLevel, eventId) && IsAttributesMatch(ruleCandidate, attributes) && IsBetter(currentBest, ruleCandidate))
             {
-                currentBest = rule;
+                currentBest = ruleCandidate;
             }
         }
 
