@@ -10,13 +10,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Sampling;
 
-public class CckrTests
+public class BottomKSamplerTests
 {
     [Fact]
     public void Flush_UsesFirstExcludedRankForSamplingCount()
     {
         const int Seed = 42;
-        var sampler = new Cckr<int, int>(1, 0, 0, UnseenWeightMode.RarestSeen, Seed);
+        var sampler = new BottomKSampler<int, int>(1, 0, 0, BottomKUnseenWeightMode.RarestSeen, Seed);
 
         Add(sampler, 0, 0);
         Add(sampler, 0, 1);
@@ -36,7 +36,7 @@ public class CckrTests
     [Fact]
     public void Flush_WhenInputFitsCapacity_UsesUnitWeights()
     {
-        var sampler = new Cckr<int, int>(4, 0, 0, UnseenWeightMode.RarestSeen, 42);
+        var sampler = new BottomKSampler<int, int>(4, 0, 0, BottomKUnseenWeightMode.RarestSeen, 42);
 
         Add(sampler, 0, 0);
         Add(sampler, 1, 1);
@@ -61,7 +61,7 @@ public class CckrTests
 
         for (int seed = 0; seed < Trials; seed++)
         {
-            var sampler = new Cckr<int, int>(capacity, 0, 0, UnseenWeightMode.RarestSeen, seed);
+            var sampler = new BottomKSampler<int, int>(capacity, 0, 0, BottomKUnseenWeightMode.RarestSeen, seed);
             for (int i = 0; i < Arrivals; i++)
             {
                 Add(sampler, 0, i);
@@ -90,7 +90,7 @@ public class CckrTests
 
         for (int seed = 0; seed < Trials; seed++)
         {
-            var sampler = new Cckr<int, int>(32, 0, 0, UnseenWeightMode.RarestSeen, seed);
+            var sampler = new BottomKSampler<int, int>(32, 0, 0, BottomKUnseenWeightMode.RarestSeen, seed);
 
             AddPeriod(sampler, arrivals);
             _ = sampler.Flush();
@@ -109,7 +109,76 @@ public class CckrTests
         }
     }
 
-    private static void AddPeriod(Cckr<int, int> sampler, int[] arrivals)
+    [Fact]
+    public void Insert_RetainsKPlusOneAndReleasesLargerRanks()
+    {
+        List<int> released = [];
+        var sampler = new BottomKSampler<int, int>(
+            1,
+            0,
+            0,
+            BottomKUnseenWeightMode.RarestSeen,
+            42,
+            released.Add);
+
+        sampler.Insert(0, Admission.Admit(3.0), 30);
+        sampler.Insert(0, Admission.Admit(2.0), 20);
+
+        Assert.Equal(3.0, sampler.Tau);
+        Assert.Empty(released);
+
+        sampler.Insert(0, Admission.Admit(1.0), 10);
+
+        Assert.Equal(2.0, sampler.Tau);
+        Assert.Equal([30], released);
+
+        SampledRecord<int, int> retained = Assert.Single(sampler.Flush());
+        Assert.Equal(10, retained.Payload);
+        Assert.Equal([30, 20], released);
+    }
+
+    [Fact]
+    public void Insert_StalePreserveAdmission_ReleasesUnretainedPayload()
+    {
+        List<int> released = [];
+        var sampler = new BottomKSampler<int, int>(
+            1,
+            1,
+            0,
+            BottomKUnseenWeightMode.RarestSeen,
+            42,
+            released.Add);
+
+        sampler.Insert(1, Admission.Preserve, 10);
+        sampler.Insert(1, Admission.Preserve, 20);
+
+        Assert.Equal([20], released);
+        SampledRecord<int, int> retained = Assert.Single(sampler.Flush());
+        Assert.Equal(10, retained.Payload);
+        Assert.Equal(0.0, retained.SamplingCount);
+    }
+
+    [Fact]
+    public void Insert_HeapAdmissionSupplantsPreserveAndReleasesItsPayload()
+    {
+        List<int> released = [];
+        var sampler = new BottomKSampler<int, int>(
+            1,
+            1,
+            0,
+            BottomKUnseenWeightMode.RarestSeen,
+            42,
+            released.Add);
+
+        sampler.Insert(1, Admission.Preserve, 10);
+        sampler.Insert(1, Admission.Admit(1.0), 20);
+
+        Assert.Equal([10], released);
+        SampledRecord<int, int> retained = Assert.Single(sampler.Flush());
+        Assert.Equal(20, retained.Payload);
+    }
+
+    private static void AddPeriod(BottomKSampler<int, int> sampler, int[] arrivals)
     {
         for (int callsite = 0; callsite < arrivals.Length; callsite++)
         {
@@ -120,7 +189,7 @@ public class CckrTests
         }
     }
 
-    private static void Add(Cckr<int, int> sampler, int callsite, int payload)
+    private static void Add(BottomKSampler<int, int> sampler, int callsite, int payload)
     {
         Admission admission = sampler.Admit(callsite);
         if (admission.Kind != AdmissionKind.Skip)

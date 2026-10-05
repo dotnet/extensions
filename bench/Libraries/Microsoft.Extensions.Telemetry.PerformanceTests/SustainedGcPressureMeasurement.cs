@@ -24,7 +24,7 @@ internal static class SustainedGcPressureMeasurement
     private enum Strategy
     {
         RandomOnePercent,
-        CckrOnePercent
+        BottomKOnePercent
     }
 
     public static void Run()
@@ -68,7 +68,7 @@ internal static class SustainedGcPressureMeasurement
     {
         Console.WriteLine(
             $"Sustained logging: {logsPerMinute:N0} logs/min, {_defaultDuration.TotalMinutes:N0} min, " +
-            $"{flushInterval.TotalSeconds:N1} s CCKR flush interval");
+            $"{flushInterval.TotalSeconds:N1} s bottom-K flush interval");
         Console.WriteLine();
         Console.WriteLine(
             "| Strategy | Input | Emitted | Retention | Export batches | Allocated | Gen0 | Gen1 | Gen2 | " +
@@ -251,8 +251,8 @@ internal static class SustainedGcPressureMeasurement
                     builder.AddRandomProbabilisticSampler(0.01);
                     break;
 
-                case Strategy.CckrOnePercent:
-                    builder.AddCckrLogSampling(options =>
+                case Strategy.BottomKOnePercent:
+                    builder.AddBottomKLogSampling(options =>
                     {
                         options.Capacity = Math.Max(
                             1,

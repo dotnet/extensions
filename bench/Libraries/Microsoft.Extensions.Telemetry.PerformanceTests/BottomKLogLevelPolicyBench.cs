@@ -10,11 +10,11 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 /// <summary>
-/// Measures the incremental cost of evaluating CCKR retain-all log-level policies.
+/// Measures the incremental cost of evaluating bottom-K retain-all log-level policies.
 /// </summary>
 [MemoryDiagnoser]
 [InvocationCount(1)]
-public class CckrLogLevelPolicyBench
+public class BottomKLogLevelPolicyBench
 {
     private const int AdaptiveCapacity = 128;
 
@@ -54,13 +54,13 @@ public class CckrLogLevelPolicyBench
     }
 
     [Benchmark(Baseline = true)]
-    public void CckrWithoutLogLevelPolicy()
+    public void BottomKWithoutLogLevelPolicy()
     {
         LoggingBenchmarkWorkload.LogBatch(_withoutLogLevelPolicyLoggers, RecordsPerMinute);
     }
 
     [Benchmark]
-    public void CckrWithLogLevelPolicyMiss()
+    public void BottomKWithLogLevelPolicyMiss()
     {
         LoggingBenchmarkWorkload.LogBatch(_withLogLevelPolicyLoggers, RecordsPerMinute);
     }
@@ -72,7 +72,7 @@ public class CckrLogLevelPolicyBench
         services.AddLogging(builder =>
         {
             builder.AddProvider(new BenchLoggerProvider());
-            builder.AddCckrLogSampling(options =>
+            builder.AddBottomKLogSampling(options =>
             {
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;

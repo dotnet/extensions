@@ -21,8 +21,8 @@ internal static class RetainedMemoryMeasurement
         RandomOnePercent,
         RandomByCategory,
         GlobalBuffer,
-        CckrAdaptive,
-        CckrRetainAll
+        BottomKAdaptive,
+        BottomKRetainAll
     }
 
     public static void Run()
@@ -132,12 +132,12 @@ internal static class RetainedMemoryMeasurement
                     });
                     break;
 
-                case Pipeline.CckrAdaptive:
-                    AddCckr(builder, capacity: 128);
+                case Pipeline.BottomKAdaptive:
+                    AddBottomK(builder, capacity: 128);
                     break;
 
-                case Pipeline.CckrRetainAll:
-                    AddCckr(builder, capacity: recordCount);
+                case Pipeline.BottomKRetainAll:
+                    AddBottomK(builder, capacity: recordCount);
                     break;
             }
         });
@@ -145,9 +145,9 @@ internal static class RetainedMemoryMeasurement
         return services.BuildServiceProvider();
     }
 
-    private static void AddCckr(ILoggingBuilder builder, int capacity)
+    private static void AddBottomK(ILoggingBuilder builder, int capacity)
     {
-        builder.AddCckrLogSampling(options =>
+        builder.AddBottomKLogSampling(options =>
         {
             options.Capacity = capacity;
             options.PreserveCapacity = 0;

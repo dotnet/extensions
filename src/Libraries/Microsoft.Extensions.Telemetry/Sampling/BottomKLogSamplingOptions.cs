@@ -1,20 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
-/// Provides configuration for the adaptive CCKR log sampler.
+/// Provides configuration for adaptive bottom-K log sampling.
 /// </summary>
-public sealed class ReservoirSamplingConfig
+[Experimental(DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public sealed class BottomKLogSamplingOptions
 {
     /// <summary>
-    /// Gets or sets a value indicating whether CCKR sampling is enabled.
+    /// Gets or sets a value indicating whether bottom-K sampling is enabled.
     /// </summary>
     public bool Enabled { get; set; } = true;
 
@@ -46,16 +50,16 @@ public sealed class ReservoirSamplingConfig
     /// <summary>
     /// Gets or sets the strategy used to weight callsites unseen in the frozen table.
     /// </summary>
-    public UnseenWeightMode UnseenWeightMode { get; set; } = UnseenWeightMode.Chao1;
+    public BottomKUnseenWeightMode UnseenWeightMode { get; set; } = BottomKUnseenWeightMode.Chao1;
 
     /// <summary>
-    /// Gets or sets the log levels that bypass CCKR and are emitted normally.
+    /// Gets or sets the log levels that bypass bottom-K sampling and are emitted normally.
     /// </summary>
     [Required]
     public IList<LogLevel> RetainAllLogLevels { get; set; } = [LogLevel.Error, LogLevel.Critical];
 
     /// <summary>
-    /// Gets or sets category patterns that bypass CCKR and are emitted normally.
+    /// Gets or sets category patterns that bypass bottom-K sampling and are emitted normally.
     /// </summary>
     /// <remarks>
     /// Matching is case-insensitive. A pattern can contain one <c>*</c> wildcard.
@@ -64,18 +68,19 @@ public sealed class ReservoirSamplingConfig
     public IList<string> RetainAllCategories { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets category patterns eligible for CCKR sampling.
+    /// Gets or sets category patterns eligible for bottom-K sampling.
     /// </summary>
     /// <remarks>
-    /// An empty collection applies CCKR to every category not covered by a retain-all policy.
+    /// An empty collection applies bottom-K sampling to every category not covered by a retain-all policy.
     /// Matching is case-insensitive. A pattern can contain one <c>*</c> wildcard.
     /// </remarks>
     [Required]
     public IList<string> SampledCategories { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets event identifiers that bypass CCKR and are emitted normally.
+    /// Gets or sets event identifiers that bypass bottom-K sampling and are emitted normally.
     /// </summary>
     [Required]
     public IList<int> RetainAllEventIds { get; set; } = [];
 }
+#endif

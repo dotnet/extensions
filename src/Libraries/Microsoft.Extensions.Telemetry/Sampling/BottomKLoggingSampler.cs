@@ -9,16 +9,16 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
-/// A <see cref="LoggingSampler"/> that makes the CCKR admission decision at the sampling seam &#8212;
+/// A <see cref="LoggingSampler"/> that makes the bottom-K admission decision at the sampling seam &#8212;
 /// dropping records the reservoir rejects before they are buffered &#8212; and shares its reservoir
-/// with the paired <see cref="CckrLogBuffer"/>, which holds the admitted records and emits them,
+/// with the paired <see cref="BottomKLogBuffer"/>, which holds the admitted records and emits them,
 /// weighted, at each flush.
 /// </summary>
-internal sealed class CckrLoggingSampler : LoggingSampler
+internal sealed class BottomKLoggingSampler : LoggingSampler
 {
-    private readonly CckrLogBuffer _buffer;
+    private readonly BottomKLogBuffer _buffer;
 
-    public CckrLoggingSampler(CckrLogBuffer buffer)
+    public BottomKLoggingSampler(BottomKLogBuffer buffer)
     {
         _buffer = Throw.IfNull(buffer);
     }

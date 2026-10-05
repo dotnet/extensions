@@ -10,11 +10,11 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 /// <summary>
-/// Measures the incremental cost of evaluating CCKR retain-all EventId policies.
+/// Measures the incremental cost of evaluating bottom-K retain-all EventId policies.
 /// </summary>
 [MemoryDiagnoser]
 [InvocationCount(1)]
-public class CckrEventIdPolicyBench
+public class BottomKEventIdPolicyBench
 {
     private const int AdaptiveCapacity = 128;
 
@@ -54,13 +54,13 @@ public class CckrEventIdPolicyBench
     }
 
     [Benchmark(Baseline = true)]
-    public void CckrWithoutEventIdPolicy()
+    public void BottomKWithoutEventIdPolicy()
     {
         LoggingBenchmarkWorkload.LogBatch(_withoutEventIdPolicyLoggers, RecordsPerMinute);
     }
 
     [Benchmark]
-    public void CckrWithEventIdPolicyMiss()
+    public void BottomKWithEventIdPolicyMiss()
     {
         LoggingBenchmarkWorkload.LogBatch(_withEventIdPolicyLoggers, RecordsPerMinute);
     }
@@ -72,7 +72,7 @@ public class CckrEventIdPolicyBench
         services.AddLogging(builder =>
         {
             builder.AddProvider(new BenchLoggerProvider());
-            builder.AddCckrLogSampling(options =>
+            builder.AddBottomKLogSampling(options =>
             {
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Telemetry.Bench;
 
 [MemoryDiagnoser]
 [InvocationCount(1)]
-public class CckrImpactBench
+public class BottomKImpactBench
 {
     private const int AdaptiveCapacity = 128;
 
@@ -74,38 +74,38 @@ public class CckrImpactBench
     }
 
     [Benchmark]
-    public void CckrDisabled()
+    public void BottomKDisabled()
     {
         LoggingBenchmarkWorkload.LogBatch(_disabledLoggers, RecordsPerMinute);
     }
 
     [Benchmark]
-    public void CckrRetainAllPolicy()
+    public void BottomKRetainAllPolicy()
     {
         LoggingBenchmarkWorkload.LogBatch(_retainAllPolicyLoggers, RecordsPerMinute);
     }
 
     [Benchmark]
-    public void CckrRetainAll()
+    public void BottomKRetainAll()
     {
         LoggingBenchmarkWorkload.LogBatch(_retainAllLoggers, RecordsPerMinute);
     }
 
     [Benchmark]
-    public void CckrRetainAllAndFlush()
+    public void BottomKRetainAllAndFlush()
     {
         LoggingBenchmarkWorkload.LogBatch(_retainAllLoggers, RecordsPerMinute);
         _retainAllBuffer.Flush();
     }
 
     [Benchmark]
-    public void CckrAdaptive()
+    public void BottomKAdaptive()
     {
         LoggingBenchmarkWorkload.LogBatch(_adaptiveLoggers, RecordsPerMinute);
     }
 
     [Benchmark]
-    public void CckrAdaptiveAndFlush()
+    public void BottomKAdaptiveAndFlush()
     {
         LoggingBenchmarkWorkload.LogBatch(_adaptiveLoggers, RecordsPerMinute);
         _adaptiveBuffer.Flush();
@@ -115,7 +115,7 @@ public class CckrImpactBench
     {
         if (!capacity.HasValue)
         {
-            return CreateServices((Action<ReservoirSamplingConfig>?)null);
+            return CreateServices((Action<BottomKLogSamplingOptions>?)null);
         }
 
         return CreateServices(options =>
@@ -126,7 +126,7 @@ public class CckrImpactBench
         });
     }
 
-    private static ServiceProvider CreateServices(Action<ReservoirSamplingConfig>? configure)
+    private static ServiceProvider CreateServices(Action<BottomKLogSamplingOptions>? configure)
     {
         var services = new ServiceCollection();
 
@@ -136,7 +136,7 @@ public class CckrImpactBench
 
             if (configure is not null)
             {
-                builder.AddCckrLogSampling(configure);
+                builder.AddBottomKLogSampling(configure);
             }
         });
 

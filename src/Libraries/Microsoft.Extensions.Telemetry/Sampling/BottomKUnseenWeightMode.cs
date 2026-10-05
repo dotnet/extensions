@@ -1,5 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
@@ -7,7 +11,8 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// Strategy for weighting callsites that were not present in the previous period's frozen
 /// frequency table.
 /// </summary>
-public enum UnseenWeightMode
+[Experimental(DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+public enum BottomKUnseenWeightMode
 {
     /// <summary>
     /// Chao1 / Good-Turing missing-mass estimate.
@@ -20,3 +25,4 @@ public enum UnseenWeightMode
     /// </summary>
     RarestSeen,
 }
+#endif

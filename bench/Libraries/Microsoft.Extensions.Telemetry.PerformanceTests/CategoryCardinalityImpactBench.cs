@@ -24,13 +24,13 @@ public class CategoryCardinalityImpactBench
     public enum SamplingStrategy
     {
         RandomOnePercent,
-        CckrOnePercent
+        BottomKOnePercent
     }
 
     [Params(50, 100, 200)]
     public int CategoryCount { get; set; }
 
-    [Params(SamplingStrategy.RandomOnePercent, SamplingStrategy.CckrOnePercent)]
+    [Params(SamplingStrategy.RandomOnePercent, SamplingStrategy.BottomKOnePercent)]
     public SamplingStrategy Strategy { get; set; }
 
     [GlobalSetup]
@@ -85,8 +85,8 @@ public class CategoryCardinalityImpactBench
                     builder.AddRandomProbabilisticSampler(0.01);
                     break;
 
-                case SamplingStrategy.CckrOnePercent:
-                    builder.AddCckrLogSampling(options =>
+                case SamplingStrategy.BottomKOnePercent:
+                    builder.AddBottomKLogSampling(options =>
                     {
                         options.Capacity = RecordsPerMinute / 100 / categoryCount;
                         options.PreserveCapacity = 0;

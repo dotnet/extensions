@@ -16,14 +16,14 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
-/// Buffers records admitted by the CCKR sampler and emits weighted records at period boundaries.
+/// Buffers records admitted by the bottom-K sampler and emits weighted records at period boundaries.
 /// </summary>
 /// <remarks>
 /// Configuration is read through <see cref="IOptionsMonitor{TOptions}"/>. Retain-all policies bypass
 /// this buffer so protected records continue through the ordinary logging providers unchanged.
 /// </remarks>
 [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "The thread-local values do not own disposable resources and remain available for shutdown-time logging.")]
-internal sealed class CckrLogBuffer : LogBuffer, IDisposable
+internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdownLogBuffer
 {
     private readonly ConcurrentDictionary<string, CategoryReservoir> _categories = new(StringComparer.Ordinal);
     private readonly IDisposable? _optionsChangeToken;
@@ -31,11 +31,11 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
     private readonly ThreadLocal<PendingAdmission> _pending = new();
     private readonly object _flushClock = new();
 
-    private volatile ReservoirSamplingConfig _currentOptions;
+    private volatile BottomKLogSamplingOptions _currentOptions;
     private DateTimeOffset _lastFlush;
     private int _disposed;
 
-    public CckrLogBuffer(IOptionsMonitor<ReservoirSamplingConfig> options, TimeProvider timeProvider)
+    public BottomKLogBuffer(IOptionsMonitor<BottomKLogSamplingOptions> options, TimeProvider timeProvider)
     {
         _ = Throw.IfNull(options);
         _timeProvider = Throw.IfNull(timeProvider);
@@ -44,7 +44,7 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
         _lastFlush = timeProvider.GetUtcNow();
     }
 
-    public CckrLogBuffer(ReservoirSamplingConfig config, TimeProvider timeProvider)
+    public BottomKLogBuffer(BottomKLogSamplingOptions config, TimeProvider timeProvider)
         : this(new FixedOptionsMonitor(Throw.IfNull(config)), timeProvider)
     {
     }
@@ -59,7 +59,13 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
     /// <returns><see langword="true"/> when the record must continue through the pipeline.</returns>
     public bool Admit(string category, LogLevel logLevel, EventId eventId)
     {
-        ReservoirSamplingConfig options = _currentOptions;
+        if (IsDisposed)
+        {
+            _pending.Value = PendingAdmission.CreateBypass(category, logLevel, eventId.Id);
+            return true;
+        }
+
+        BottomKLogSamplingOptions options = _currentOptions;
         MaybeFlush(options.FlushInterval);
 
         PendingAdmission pending = CreateAdmission(category, logLevel, eventId, options);
@@ -80,12 +86,18 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
     /// <inheritdoc/>
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
+        if (IsDisposed)
+        {
+            _pending.Value = default;
+            return false;
+        }
+
         PendingAdmission pending = _pending.Value;
         _pending.Value = default;
 
         if (!pending.Matches(logEntry.Category, logEntry.LogLevel, logEntry.EventId))
         {
-            ReservoirSamplingConfig options = _currentOptions;
+            BottomKLogSamplingOptions options = _currentOptions;
             MaybeFlush(options.FlushInterval);
             pending = CreateAdmission(logEntry.Category, logEntry.LogLevel, logEntry.EventId, options);
         }
@@ -116,12 +128,13 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
             logEntry.Exception,
             logEntry.Formatter(logEntry.State, logEntry.Exception));
 
-        if (!pending.Reservoir!.Insert(bufferedLogger, pending.Admission, record))
+        InsertResult result = pending.Reservoir!.Insert(bufferedLogger, pending.Admission, record, this);
+        if (result != InsertResult.Inserted)
         {
             SerializedLogRecordFactory.Return(record);
         }
 
-        return true;
+        return result != InsertResult.Disposed;
     }
 
     /// <inheritdoc/>
@@ -151,6 +164,8 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
         Flush();
         _optionsChangeToken?.Dispose();
     }
+
+    private bool IsDisposed => Volatile.Read(ref _disposed) != 0;
 
     private static bool MatchesCategory(string category, string pattern)
     {
@@ -182,7 +197,7 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
         string category,
         LogLevel logLevel,
         EventId eventId,
-        ReservoirSamplingConfig options)
+        BottomKLogSamplingOptions options)
     {
         if (!options.Enabled
             || options.RetainAllLogLevels.Contains(logLevel)
@@ -200,7 +215,7 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
         string category,
         LogLevel logLevel,
         EventId eventId,
-        ReservoirSamplingConfig options)
+        BottomKLogSamplingOptions options)
     {
         if (ShouldBypass(category, logLevel, eventId, options))
         {
@@ -208,14 +223,14 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
         }
 
         CategoryReservoir reservoir = GetCategory(category);
-        CckrAdmission admission = reservoir.Admit(eventId, options);
+        BottomKAdmission admission = reservoir.Admit(eventId, options);
         return PendingAdmission.CreateAdaptive(category, logLevel, eventId.Id, reservoir, admission);
     }
 
     private CategoryReservoir GetCategory(string category)
         => _categories.GetOrAdd(category, static _ => new CategoryReservoir());
 
-    private void OnOptionsChanged(ReservoirSamplingConfig? options, string? name)
+    private void OnOptionsChanged(BottomKLogSamplingOptions? options, string? name)
     {
         if (options is not null && string.IsNullOrEmpty(name))
         {
@@ -242,9 +257,16 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
         }
     }
 
-    private readonly struct CckrAdmission
+    private enum InsertResult
     {
-        public CckrAdmission(Admission admission, long generation)
+        Inserted,
+        Invalidated,
+        Disposed,
+    }
+
+    private readonly struct BottomKAdmission
+    {
+        public BottomKAdmission(Admission admission, long generation)
         {
             Admission = admission;
             Generation = generation;
@@ -263,7 +285,7 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
             int eventId,
             bool bypass,
             CategoryReservoir? reservoir,
-            CckrAdmission admission)
+            BottomKAdmission admission)
         {
             Category = category;
             LogLevel = logLevel;
@@ -273,7 +295,7 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
             Admission = admission;
         }
 
-        public CckrAdmission Admission { get; }
+        public BottomKAdmission Admission { get; }
 
         public bool Bypass { get; }
 
@@ -290,7 +312,7 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
             LogLevel logLevel,
             int eventId,
             CategoryReservoir reservoir,
-            CckrAdmission admission)
+            BottomKAdmission admission)
             => new(category, logLevel, eventId, false, reservoir, admission);
 
         public static PendingAdmission CreateBypass(string category, LogLevel logLevel, int eventId)
@@ -306,12 +328,12 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
     private sealed class CategoryReservoir
     {
         private readonly object _lock = new();
-        private Cckr<int, SerializedLogRecord>? _reservoir;
+        private BottomKSampler<int, SerializedLogRecord>? _reservoir;
         private IBufferedLogger? _bufferedLogger;
         private AlgorithmConfiguration _configuration;
         private long _generation;
 
-        public CckrAdmission Admit(EventId eventId, ReservoirSamplingConfig options)
+        public BottomKAdmission Admit(EventId eventId, BottomKLogSamplingOptions options)
         {
             List<SampledRecord<int, SerializedLogRecord>>? drained = null;
             IBufferedLogger? bufferedLogger = null;
@@ -339,24 +361,30 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
             }
 
             Emit(bufferedLogger, drained);
-            return new CckrAdmission(admission, generation);
+            return new BottomKAdmission(admission, generation);
         }
 
-        public bool Insert(
+        public InsertResult Insert(
             IBufferedLogger bufferedLogger,
-            CckrAdmission pending,
-            SerializedLogRecord record)
+            BottomKAdmission pending,
+            SerializedLogRecord record,
+            BottomKLogBuffer owner)
         {
             lock (_lock)
             {
+                if (owner.IsDisposed)
+                {
+                    return InsertResult.Disposed;
+                }
+
                 if (pending.Generation != _generation || pending.Admission.Kind == AdmissionKind.Skip)
                 {
-                    return false;
+                    return InsertResult.Invalidated;
                 }
 
                 _bufferedLogger = bufferedLogger;
                 _reservoir!.Insert(record.EventId.Id, pending.Admission, record);
-                return true;
+                return InsertResult.Inserted;
             }
         }
 
@@ -430,6 +458,10 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
             {
                 bufferedLogger.LogRecords(records);
             }
+            catch (Exception ex)
+            {
+                LoggingEventSource.Instance.LoggingException(ex);
+            }
             finally
             {
                 foreach (SampledRecord<int, SerializedLogRecord> sampled in drained)
@@ -442,7 +474,7 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
 
     private readonly struct AlgorithmConfiguration : IEquatable<AlgorithmConfiguration>
     {
-        public AlgorithmConfiguration(ReservoirSamplingConfig options)
+        public AlgorithmConfiguration(BottomKLogSamplingOptions options)
         {
             Capacity = options.Capacity;
             PreserveCapacity = options.PreserveCapacity;
@@ -456,10 +488,16 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
 
         public int PreserveCapacity { get; }
 
-        public UnseenWeightMode UnseenWeightMode { get; }
+        public BottomKUnseenWeightMode UnseenWeightMode { get; }
 
-        public Cckr<int, SerializedLogRecord> CreateReservoir()
-            => new(Capacity, PreserveCapacity, MinPeriodCount, UnseenWeightMode, seed: null);
+        public BottomKSampler<int, SerializedLogRecord> CreateReservoir()
+            => new(
+                Capacity,
+                PreserveCapacity,
+                MinPeriodCount,
+                UnseenWeightMode,
+                seed: null,
+                releasePayload: SerializedLogRecordFactory.Return);
 
         public bool Equals(AlgorithmConfiguration other)
             => Capacity == other.Capacity
@@ -474,18 +512,18 @@ internal sealed class CckrLogBuffer : LogBuffer, IDisposable
             => HashCode.Combine(Capacity, PreserveCapacity, MinPeriodCount, UnseenWeightMode);
     }
 
-    private sealed class FixedOptionsMonitor : IOptionsMonitor<ReservoirSamplingConfig>
+    private sealed class FixedOptionsMonitor : IOptionsMonitor<BottomKLogSamplingOptions>
     {
-        public FixedOptionsMonitor(ReservoirSamplingConfig value)
+        public FixedOptionsMonitor(BottomKLogSamplingOptions value)
         {
             CurrentValue = value;
         }
 
-        public ReservoirSamplingConfig CurrentValue { get; }
+        public BottomKLogSamplingOptions CurrentValue { get; }
 
-        public ReservoirSamplingConfig Get(string? name) => CurrentValue;
+        public BottomKLogSamplingOptions Get(string? name) => CurrentValue;
 
-        public IDisposable? OnChange(Action<ReservoirSamplingConfig, string?> listener) => null;
+        public IDisposable? OnChange(Action<BottomKLogSamplingOptions, string?> listener) => null;
     }
 }
 #endif

@@ -10,11 +10,11 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
-/// Validates CCKR configuration constraints that cannot be expressed with data annotations.
+/// Validates bottom-K configuration constraints that cannot be expressed with data annotations.
 /// </summary>
-internal sealed class ReservoirSamplingConfigCustomValidator : IValidateOptions<ReservoirSamplingConfig>
+internal sealed class BottomKLogSamplingOptionsCustomValidator : IValidateOptions<BottomKLogSamplingOptions>
 {
-    public ValidateOptionsResult Validate(string? name, ReservoirSamplingConfig options)
+    public ValidateOptionsResult Validate(string? name, BottomKLogSamplingOptions options)
     {
         ValidateOptionsResultBuilder result = new();
 
@@ -46,7 +46,7 @@ internal sealed class ReservoirSamplingConfigCustomValidator : IValidateOptions<
         {
             if (!Enum.IsDefined(level))
             {
-                result.AddError("RetainAllLogLevels must contain only defined values.", nameof(ReservoirSamplingConfig.RetainAllLogLevels));
+                result.AddError("RetainAllLogLevels must contain only defined values.", nameof(BottomKLogSamplingOptions.RetainAllLogLevels));
             }
         }
     }

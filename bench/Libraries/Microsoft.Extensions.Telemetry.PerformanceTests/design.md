@@ -8,9 +8,9 @@ BenchmarkDotNet mean time per operation is used as the CPU-cost proxy. `MemoryDi
 
 Each benchmark invocation processes either 10,000 or 20,000 logs, representing one minute of traffic at the selected rate. BenchmarkDotNet reports time and allocation for the complete one-minute batch. Divide those values by `RecordsPerMinute` when a per-log value is needed.
 
-The shared deterministic workload uses four categories and sixteen event IDs. Event frequency is intentionally skewed: event 1 accounts for 70% of records, event 2 for 15%, event 3 for 8%, and the remaining 7% is spread across events 4 through 16. This exercises category/event rule caches and gives CCKR both frequent and rare callsites.
+The shared deterministic workload uses four categories and sixteen event IDs. Event frequency is intentionally skewed: event 1 accounts for 70% of records, event 2 for 15%, event 3 for 8%, and the remaining 7% is spread across events 4 through 16. This exercises category/event rule caches and gives bottom-K sampling both frequent and rare callsites.
 
-.NET sampling benchmarks invoke each method eight times per iteration. Combined with the configured ten warmup iterations, each sampling benchmark process executes 80 warmup batches before measurement. Buffering and CCKR use one invocation per iteration so `IterationCleanup` empties retained state after every batch and each invocation continues to represent one minute of traffic.
+.NET sampling benchmarks invoke each method eight times per iteration. Combined with the configured ten warmup iterations, each sampling benchmark process executes 80 warmup batches before measurement. Buffering and bottom-K sampling use one invocation per iteration so `IterationCleanup` empties retained state after every batch and each invocation continues to represent one minute of traffic.
 
 Benchmark worker processes disable tiered compilation with `DOTNET_TieredCompilation=0`. This makes every launch use optimized JIT-generated code from the start, avoiding tier-promotion differences between launches while retaining BenchmarkDotNet's ten warmup iterations.
 
@@ -59,33 +59,33 @@ Each scenario is a separate BenchmarkDotNet parameter, so its `WithSampling` res
 
 The buffer is sized to retain all batches from a measured iteration and automatic post-flush bypass is disabled. `BufferOnly` is flushed after each benchmark iteration, outside the measurement. This avoids capacity eviction and ensures every measured iteration starts with an empty buffer.
 
-## CCKR benchmark
+## Bottom-K benchmark
 
-`CckrImpactBench` is available on the CCKR integration branch. CCKR combines the sampling decision and reservoir buffering in one pipeline, so its decision and buffer costs cannot be isolated through the public logging integration.
+`BottomKImpactBench` measures the bottom-K integration. Bottom-K combines the sampling decision and reservoir buffering in one pipeline, so its decision and buffer costs cannot be isolated through the public logging integration.
 
 - `NoSampling` is the baseline and sends every log directly to `BenchLogger`.
-- `CckrRetainAll` gives the reservoir enough capacity for the selected record count and measures admission plus buffering with no drops.
-- `CckrRetainAllAndFlush` adds emission of every retained log, making downstream provider work equivalent to the baseline.
-- `CckrDisabled` measures the options-monitor and policy-check overhead of a registered CCKR pipeline with its kill switch disabled.
-- `CckrRetainAllPolicy` measures the category-pattern bypass used for protected telemetry.
-- `CckrAdaptive` uses a representative fixed capacity of 128 per category (up to 512 records across the four-category workload) for the selected one-minute period and measures the adaptive high-volume path without flush cost.
-- `CckrAdaptiveAndFlush` includes emission of the adaptive reservoir at the period boundary.
+- `BottomKRetainAll` gives the reservoir enough capacity for the selected record count and measures admission plus buffering with no drops.
+- `BottomKRetainAllAndFlush` adds emission of every retained log, making downstream provider work equivalent to the baseline.
+- `BottomKDisabled` measures the options-monitor and policy-check overhead of a registered bottom-K pipeline with its kill switch disabled.
+- `BottomKRetainAllPolicy` measures the category-pattern bypass used for protected telemetry.
+- `BottomKAdaptive` uses a representative fixed capacity of 128 per category (up to 512 records across the four-category workload) for the selected one-minute period and measures the adaptive high-volume path without flush cost.
+- `BottomKAdaptiveAndFlush` includes emission of the adaptive reservoir at the period boundary.
 
-The novelty preserve is disabled so retained records are controlled only by the configured reservoir capacity. Automatic time-based flushing is moved beyond the benchmark duration, and iteration cleanup flushes both reservoirs outside the measurement. CCKR uses random ranks, so adaptive results should be interpreted from the full BenchmarkDotNet run rather than a single invocation.
+The novelty preserve is disabled so retained records are controlled only by the configured reservoir capacity. Automatic time-based flushing is moved beyond the benchmark duration, and iteration cleanup flushes both reservoirs outside the measurement. Bottom-K uses random ranks, so adaptive results should be interpreted from the full BenchmarkDotNet run rather than a single invocation.
 
-### CCKR log-level policy cost
+### Bottom-K log-level policy cost
 
-`CckrLogLevelPolicyBench` isolates the incremental cost of the retain-all log-level decision. Both pipelines process the same Information-only workload with the same CCKR capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline has an empty `RetainAllLogLevels` collection. The comparison scans `Error` and `Critical`, neither of which matches, so both pipelines perform equivalent CCKR admission and retain equivalent output.
+`BottomKLogLevelPolicyBench` isolates the incremental cost of the retain-all log-level decision. Both pipelines process the same Information-only workload with the same bottom-K capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline has an empty `RetainAllLogLevels` collection. The comparison scans `Error` and `Critical`, neither of which matches, so both pipelines perform equivalent bottom-K admission and retain equivalent output.
 
-The benchmark measures the full logging path. `LogLevel` is already present on `LogEntry`; reading it does not construct or parse a value. The reported delta therefore covers passing that field into CCKR and checking the two configured retain-all levels.
+The benchmark measures the full logging path. `LogLevel` is already present on `LogEntry`; reading it does not construct or parse a value. The reported delta therefore covers passing that field into bottom-K sampling and checking the two configured retain-all levels.
 
-### CCKR category policy cost
+### Bottom-K category policy cost
 
-`CckrCategoryPolicyBench` isolates the incremental cost of checking retain-all category patterns. Both pipelines use the same CCKR configuration and workload. The comparison checks two non-matching wildcard patterns, `Contoso.Security.*` and `Contoso.Audit.*`, so every record continues through the same adaptive CCKR path as the baseline.
+`BottomKCategoryPolicyBench` isolates the incremental cost of checking retain-all category patterns. Both pipelines use the same bottom-K configuration and workload. The comparison checks two non-matching wildcard patterns, `Contoso.Security.*` and `Contoso.Audit.*`, so every record continues through the same adaptive bottom-K path as the baseline.
 
-### CCKR EventId policy cost
+### Bottom-K EventId policy cost
 
-`CckrEventIdPolicyBench` isolates the incremental cost of checking retain-all EventIds. The comparison checks two non-matching identifiers, `10001` and `10002`. The workload uses EventIds 1 through 16, so every record continues through the same adaptive CCKR path as the baseline.
+`BottomKEventIdPolicyBench` isolates the incremental cost of checking retain-all EventIds. The comparison checks two non-matching identifiers, `10001` and `10002`. The workload uses EventIds 1 through 16, so every record continues through the same adaptive bottom-K path as the baseline.
 
 ## Serialized-exporter benchmark
 
@@ -97,7 +97,7 @@ Each strategy is compared with a no-sampling pipeline using the same serialized 
 - `RandomByCategory` applies the same 1% high-volume, 100% critical, and 10% fallback rules as the sampling microbenchmark.
 - `TraceRetain` exports every record from a recorded activity.
 - `TraceDrop` drops every record from an unrecorded activity.
-- `CckrOnePercent` uses a per-category reservoir sized to retain approximately 1% across all four categories and includes the required flush and weighted-record serialization in the measured operation.
+- `BottomKOnePercent` uses a per-category reservoir sized to retain approximately 1% across all four categories and includes the required flush and weighted-record serialization in the measured operation.
 
 This suite measures whether avoided formatting and serialization offset sampling overhead. The exporter retains the last serialized payload in its reusable output buffer, preserving all serialization work while keeping external I/O noise out of the results.
 
@@ -105,17 +105,17 @@ This suite measures whether avoided formatting and serialization offset sampling
 
 ## Category-cardinality benchmark
 
-`CategoryCardinalityImpactBench` is an independent serialized-exporter suite for 20,000 records and 50, 100, or 200 categories. Both random sampling and CCKR use a 1% output budget. At 20,000 records each category receives enough traffic for an integral CCKR capacity of 4, 2, or 1 respectively. This measures rule-cache, logger, per-category reservoir, flush, and serialization scaling as category cardinality grows.
+`CategoryCardinalityImpactBench` is an independent serialized-exporter suite for 20,000 records and 50, 100, or 200 categories. Both random sampling and bottom-K use a 1% output budget. At 20,000 records each category receives enough traffic for an integral bottom-K capacity of 4, 2, or 1 respectively. This measures rule-cache, logger, per-category reservoir, flush, and serialization scaling as category cardinality grows.
 
 ## Multithreaded contention benchmark
 
-`MultithreadedSamplingImpactBench` processes 20,000 records across 100 shared categories using 1, 4, or 8 workers. Worker record indices are interleaved so workers concurrently target the same category instead of operating on disjoint category ranges. It uses the lightweight provider to emphasize sampler synchronization and compares random 1% with CCKR 1%, including the CCKR flush.
+`MultithreadedSamplingImpactBench` processes 20,000 records across 100 shared categories using 1, 4, or 8 workers. Worker record indices are interleaved so workers concurrently target the same category instead of operating on disjoint category ranges. It uses the lightweight provider to emphasize sampler synchronization and compares random 1% with bottom-K 1%, including the bottom-K flush.
 
 ## Sustained GC-pressure measurement
 
-`--sustained-gc` compares random 1% sampling with CCKR under a production-shaped, two-minute run at 10,000 logs per minute. Each strategy runs in an isolated worker process after pipeline warmup and a forced-GC baseline. CCKR uses its configurable 30-second automatic flush interval, producing four sampling periods, and both strategies use the serialized exporter with output counters enabled.
+`--sustained-gc` compares random 1% sampling with bottom-K under a production-shaped, two-minute run at 10,000 logs per minute. Each strategy runs in an isolated worker process after pipeline warmup and a forced-GC baseline. Bottom-K uses its configurable 30-second automatic flush interval, producing four sampling periods, and both strategies use the serialized exporter with output counters enabled.
 
-An optional positive integer argument overrides the logging rate while retaining the two-minute duration and 30-second flush interval. A second optional argument overrides the CCKR flush interval in seconds. This supports higher-volume stress runs that generate enough allocation traffic to observe collections and compares the effect of record lifetime:
+An optional positive integer argument overrides the logging rate while retaining the two-minute duration and 30-second flush interval. A second optional argument overrides the bottom-K flush interval in seconds. This supports higher-volume stress runs that generate enough allocation traffic to observe collections and compares the effect of record lifetime:
 
 ```powershell
 dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --sustained-gc 1000000 1
@@ -123,14 +123,14 @@ dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry
 
 The diagnostic reports input and emitted volume, exporter batch callbacks, total allocated bytes, Gen0/Gen1/Gen2 collection counts, cumulative GC pause time, process CPU time, CPU time as a percentage of wall time, peak managed-memory growth, and retained managed memory after a final forced collection. The final forced collection is performed after the collection counts, pause time, and CPU time are captured, so it does not contribute to those pressure measurements. Process working-set polling is intentionally left to the separate retained-memory diagnostic because repeatedly refreshing operating-system process counters would distort CPU measurements at this logging rate.
 
-At four categories, an exact 1% CCKR budget would require 12.5 records per category per 30-second period. The integer capacity is therefore 12 records per category, or 48 of each 5,000-record period (0.96%). Actual emitted volume is reported beside random sampling's probabilistic output.
+At four categories, an exact 1% bottom-K budget would require 12.5 records per category per 30-second period. The integer capacity is therefore 12 records per category, or 48 of each 5,000-record period (0.96%). Actual emitted volume is reported beside random sampling's probabilistic output.
 
 ## Running
 
 From the repository root:
 
 ```powershell
-dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SamplingImpactBench* *BufferingImpactBench* *CckrImpactBench*
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SamplingImpactBench* *BufferingImpactBench* *BottomKImpactBench*
 ```
 
 Run the independent serialized-exporter comparison:
@@ -139,16 +139,16 @@ Run the independent serialized-exporter comparison:
 dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *SerializedExporterImpactBench*
 ```
 
-Measure the incremental CCKR log-level policy cost:
+Measure the incremental bottom-K log-level policy cost:
 
 ```powershell
-dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *CckrLogLevelPolicyBench*
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *BottomKLogLevelPolicyBench*
 ```
 
 Measure category and EventId retain-all policy costs independently:
 
 ```powershell
-dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *CckrCategoryPolicyBench* *CckrEventIdPolicyBench*
+dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *BottomKCategoryPolicyBench* *BottomKEventIdPolicyBench*
 ```
 
 Validate actual serialized output volume:
@@ -186,8 +186,8 @@ Run on an otherwise idle machine with a fixed power plan. Compare `Mean`, `Ratio
 - Results depend on provider cost. `BenchLogger` is deliberately lightweight, so dropped-path savings are conservative relative to providers that format, serialize, buffer, or export logs.
 - `BufferOnly` isolates the cost and managed allocations required to retain logs in memory.
 - `BufferAndFlush` includes deserialization and downstream provider work, so it represents the complete buffering lifecycle.
-- `CckrRetainAll` shows the combined admission and buffering overhead when sampling provides no volume reduction.
-- `CckrAdaptive` shows when dropped-log savings offset reservoir decision cost, while the `AndFlush` variants include the cost of emitting retained records.
+- `BottomKRetainAll` shows the combined admission and buffering overhead when sampling provides no volume reduction.
+- `BottomKAdaptive` shows when dropped-log savings offset reservoir decision cost, while the `AndFlush` variants include the cost of emitting retained records.
 
 ## Follow-up plan
 
@@ -201,7 +201,7 @@ Run on an otherwise idle machine with a fixed power plan. Compare `Mean`, `Ratio
 - Every sampling implementation has both a retained and discarded-log scenario.
 - Each sampling result has an equivalent no-sampling baseline.
 - Buffer insertion and buffer insertion plus flush are both compared with direct logging.
-- CCKR covers retain-all and adaptive-drop paths, both before and through flush.
+- Bottom-K covers retain-all and adaptive-drop paths, both before and through flush.
 - Every measured invocation represents either 10,000 or 20,000 logs and reports the complete one-minute batch cost.
 - Reports include time per operation, ratio, managed allocation per operation, and GC counts.
 - Benchmark setup and the post-iteration `BufferOnly` flush do not contribute to measured CPU or allocation results.

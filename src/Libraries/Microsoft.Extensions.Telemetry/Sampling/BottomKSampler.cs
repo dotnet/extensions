@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
 
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,11 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 #pragma warning disable CA5394 // Do not use insecure randomness - acceptable for the purposes of sampling
 
 /// <summary>
-/// CCKR — the Chao-Cohen-Kaplan-Reservoir adaptive log sampler.
+/// Adaptive bottom-K log sampler.
 /// </summary>
 /// <remarks>
 /// <para>
-/// CCKR is a bottom-(K+1) weighted reservoir sketch with exponential ranks (a WS-sketch, Cohen &amp;
+/// Bottom-K uses a bottom-(K+1) weighted reservoir sketch with exponential ranks (a WS-sketch, Cohen &amp;
 /// Kaplan 2007, built on the priority sampling of Duffield, Lund &amp; Thorup 2007). Across periods it
 /// feeds the previous period's per-callsite arrival counts back as inverse-frequency weights, so
 /// chatty callsites are sampled hard while rare ones are kept. A Chao1 / Good-Turing estimate (Chao
@@ -29,7 +30,7 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// </remarks>
 /// <typeparam name="TCallsite">The callsite identifier type (in production, the durable ID).</typeparam>
 /// <typeparam name="TPayload">The formatted log payload type.</typeparam>
-internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayload>
+internal sealed class BottomKSampler<TCallsite, TPayload> : ILogSampler<TCallsite, TPayload>
     where TCallsite : notnull
 {
     private const long DefaultMinPeriodCount = 32;
@@ -37,29 +38,29 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
     private readonly int _reservoirCapacity;
     private readonly int _preserveCapacity;
     private readonly long _minPeriodCount;
-    private readonly UnseenWeightMode _unseenWeightMode;
+    private readonly BottomKUnseenWeightMode _unseenWeightMode;
+    private readonly Action<TPayload>? _releasePayload;
     private readonly Random _rng;
     private readonly List<HeapEntry> _heap;
     private readonly Dictionary<TCallsite, CallsiteState> _states;
 
     private Dictionary<TCallsite, long> _freqPrev;
     private Dictionary<TCallsite, long> _freqCurr;
-    private double _samplingTau;
     private long _seqCounter;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Cckr{TCallsite, TPayload}"/> class using the
+    /// Initializes a new instance of the <see cref="BottomKSampler{TCallsite, TPayload}"/> class using the
     /// default preserve capacity (equal to <paramref name="reservoirCapacity"/>), the default Chao1
-    /// stability threshold, <see cref="UnseenWeightMode.Chao1"/>, and an OS-derived seed.
+    /// stability threshold, <see cref="BottomKUnseenWeightMode.Chao1"/>, and an OS-derived seed.
     /// </summary>
     /// <param name="reservoirCapacity">The sample size <c>T</c> per period. Must be at least 1.</param>
-    public Cckr(int reservoirCapacity)
-        : this(reservoirCapacity, reservoirCapacity, DefaultMinPeriodCount, UnseenWeightMode.Chao1, null)
+    public BottomKSampler(int reservoirCapacity)
+        : this(reservoirCapacity, reservoirCapacity, DefaultMinPeriodCount, BottomKUnseenWeightMode.Chao1, null)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Cckr{TCallsite, TPayload}"/> class with explicit
+    /// Initializes a new instance of the <see cref="BottomKSampler{TCallsite, TPayload}"/> class with explicit
     /// configuration.
     /// </summary>
     /// <param name="reservoirCapacity">The sample size <c>T</c> per period. Must be at least 1.</param>
@@ -67,21 +68,28 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
     /// <param name="minPeriodCount">The minimum prior-period arrival count below which the frozen table is discarded and the next period is treated as warmup. Must not be negative.</param>
     /// <param name="unseenWeightMode">The strategy used to weight unseen callsites.</param>
     /// <param name="seed">An optional RNG seed for deterministic behavior; <see langword="null"/> uses an OS-derived seed.</param>
-    public Cckr(int reservoirCapacity, int preserveCapacity, long minPeriodCount, UnseenWeightMode unseenWeightMode, int? seed)
+    /// <param name="releasePayload">An optional callback invoked for payloads excluded from the final sample.</param>
+    public BottomKSampler(
+        int reservoirCapacity,
+        int preserveCapacity,
+        long minPeriodCount,
+        BottomKUnseenWeightMode unseenWeightMode,
+        int? seed,
+        Action<TPayload>? releasePayload = null)
     {
         _reservoirCapacity = Throw.IfLessThan(reservoirCapacity, 1);
         _preserveCapacity = Throw.IfLessThan(preserveCapacity, 0);
         _minPeriodCount = Throw.IfLessThan(minPeriodCount, 0);
         _unseenWeightMode = unseenWeightMode;
+        _releasePayload = releasePayload;
         _rng = seed.HasValue ? new Random(seed.Value) : new Random();
-        _heap = new List<HeapEntry>(reservoirCapacity + 1);
+        _heap = new List<HeapEntry>(reservoirCapacity + 2);
         _states = new Dictionary<TCallsite, CallsiteState>(reservoirCapacity + preserveCapacity);
         _freqPrev = new Dictionary<TCallsite, long>(reservoirCapacity);
         _freqCurr = new Dictionary<TCallsite, long>(reservoirCapacity);
         _seqCounter = 0;
         ReserveLength = 0;
         Tau = double.PositiveInfinity;
-        _samplingTau = double.PositiveInfinity;
 
         // Until the first flush every callsite is "unseen" with weight 1.0, i.e. we behave as a
         // uniform reservoir.
@@ -166,9 +174,16 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
     {
         _ = Throw.IfNull(output);
 
-        double finalTau = _samplingTau;
+        double finalTau = double.PositiveInfinity;
+        if (_heap.Count > _reservoirCapacity)
+        {
+            HeapEntry excluded = HeapPopMax();
+            finalTau = excluded.Key;
+            ReleasePayload(excluded.Payload);
+        }
 
-        // (1) Drain the bottom-T heap with Horvitz-Thompson weights.
+        // (1) Drain the bottom-K heap with Horvitz-Thompson weights. When K+1 ranks were retained,
+        // the removed maximum is the first excluded rank and therefore the independent threshold.
         foreach (var entry in _heap)
         {
             double wC = WeightFor(_freqPrev, entry.Callsite, UnseenWeight);
@@ -223,7 +238,6 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
 
         _freqCurr.Clear();
         Tau = double.PositiveInfinity;
-        _samplingTau = double.PositiveInfinity;
     }
 
     /// <inheritdoc/>
@@ -263,8 +277,9 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
         }
 
         // A heap admission supplants any pre-existing preserve slot for this callsite.
-        if (state.Preserve.HasValue)
+        if (state.Preserve is { } preserve)
         {
+            ReleasePayload(preserve.Payload);
             state.Preserve = null;
             ReserveLength--;
         }
@@ -272,10 +287,12 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
         state.HeapCount++;
         HeapPush(new HeapEntry(key, callsite, payload));
 
-        if (_heap.Count > _reservoirCapacity)
+        // Retain K+1 ranks. The maximum is the first item excluded from the bottom-K sample and is
+        // kept until flush so its rank remains independent of every emitted record's own rank.
+        if (_heap.Count > _reservoirCapacity + 1)
         {
             HeapEntry evicted = HeapPopMax();
-            _samplingTau = evicted.Key;
+            ReleasePayload(evicted.Payload);
 
             // The evicted entry may be the one just pushed (when its key is the new maximum), in which
             // case the increment and decrement cancel.
@@ -287,11 +304,11 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
                     _ = _states.Remove(evicted.Callsite);
                 }
             }
-
-            // Admission uses the largest retained rank. Estimation separately uses the evicted
-            // (T+1)-th rank, which is the inclusion cutoff for the retained records.
-            Tau = _heap[0].Key;
         }
+
+        Tau = _heap.Count > _reservoirCapacity
+            ? _heap[0].Key
+            : double.PositiveInfinity;
     }
 
     private void InsertPreserve(TCallsite callsite, TPayload payload)
@@ -305,12 +322,17 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
         {
             _states[callsite] = new CallsiteState { Preserve = (payload, seq) };
             ReserveLength++;
+            return;
         }
+
+        // Ownership transfers to the sampler on Insert. A stale preserve admission can lose a race
+        // to another insertion for the same callsite, so release the payload it cannot retain.
+        ReleasePayload(payload);
     }
 
     private double ComputeUnseenWeight()
     {
-        if (_unseenWeightMode == UnseenWeightMode.RarestSeen)
+        if (_unseenWeightMode == BottomKUnseenWeightMode.RarestSeen)
         {
             // The rarest seen callsite has the smallest frequency, hence the largest weight.
             long minFrequency = 0;
@@ -364,6 +386,8 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
 
         return root;
     }
+
+    private void ReleasePayload(TPayload payload) => _releasePayload?.Invoke(payload);
 
     private void SiftDown(int start)
     {
@@ -428,3 +452,4 @@ internal sealed class Cckr<TCallsite, TPayload> : ILogSampler<TCallsite, TPayloa
         public bool IsEmpty => HeapCount == 0 && !Preserve.HasValue;
     }
 }
+#endif

@@ -28,7 +28,7 @@ public class SerializedExporterImpactBench
         RandomByCategory,
         TraceRetain,
         TraceDrop,
-        CckrOnePercent
+        BottomKOnePercent
     }
 
     [Params(10_000, 20_000)]
@@ -39,7 +39,7 @@ public class SerializedExporterImpactBench
         ExportStrategy.RandomByCategory,
         ExportStrategy.TraceRetain,
         ExportStrategy.TraceDrop,
-        ExportStrategy.CckrOnePercent)]
+        ExportStrategy.BottomKOnePercent)]
     public ExportStrategy Strategy { get; set; }
 
     [GlobalSetup]
@@ -125,8 +125,8 @@ public class SerializedExporterImpactBench
                     builder.AddTraceBasedSampler();
                     break;
 
-                case ExportStrategy.CckrOnePercent:
-                    builder.AddCckrLogSampling(options =>
+                case ExportStrategy.BottomKOnePercent:
+                    builder.AddBottomKLogSampling(options =>
                     {
                         options.Capacity = Math.Max(
                             1,

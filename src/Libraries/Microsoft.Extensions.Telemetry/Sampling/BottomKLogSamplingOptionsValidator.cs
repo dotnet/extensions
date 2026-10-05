@@ -7,10 +7,10 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
-/// Validates data annotations on <see cref="ReservoirSamplingConfig"/>.
+/// Validates data annotations on <see cref="BottomKLogSamplingOptions"/>.
 /// </summary>
 [OptionsValidator]
-internal sealed partial class ReservoirSamplingConfigValidator : IValidateOptions<ReservoirSamplingConfig>
+internal sealed partial class BottomKLogSamplingOptionsValidator : IValidateOptions<BottomKLogSamplingOptions>
 {
 }
 #endif
