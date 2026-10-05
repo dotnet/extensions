@@ -24,8 +24,6 @@ internal sealed class LogBufferingFilterRuleSelector
     private static readonly ObjectPool<List<LogBufferingFilterRule>> _rulePool =
         PoolFactory.CreateListPool<LogBufferingFilterRule>();
 
-    // Cached values must never be mutated: concurrent Select() calls may still be enumerating them
-    // even after they have been removed from the cache by InvalidateCache().
     private readonly ConcurrentDictionary<(LogLevel, EventId), LogBufferingFilterRule[]> _ruleCache = new();
 
     public static LogBufferingFilterRule[] SelectByCategory(IList<LogBufferingFilterRule> rules, string category)
