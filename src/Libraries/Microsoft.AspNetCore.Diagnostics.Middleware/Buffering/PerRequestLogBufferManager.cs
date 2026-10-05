@@ -16,17 +16,14 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 
     private readonly GlobalLogBuffer _globalBuffer;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly LogBufferingFilterRuleSelector _ruleSelector;
 
     public PerRequestLogBufferManager(
         GlobalLogBuffer globalBuffer,
         IHttpContextAccessor httpContextAccessor,
-        LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<PerRequestLogBufferingOptions> options)
     {
         _globalBuffer = globalBuffer;
         _httpContextAccessor = httpContextAccessor;
-        _ruleSelector = ruleSelector;
         Options = options;
     }
 
@@ -48,7 +45,7 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
         IncomingRequestLogBufferHolder? bufferHolder =
             httpContext.RequestServices.GetService<IncomingRequestLogBufferHolder>();
         IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
-            new IncomingRequestLogBuffer(bufferedLogger, category, _ruleSelector, Options));
+            new IncomingRequestLogBuffer(bufferedLogger, category, Options));
 
         if (buffer is null)
         {
