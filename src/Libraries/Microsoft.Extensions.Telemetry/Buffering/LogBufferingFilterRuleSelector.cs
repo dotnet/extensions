@@ -6,7 +6,6 @@
 #pragma warning disable S2302 // "nameof" should be used
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -18,13 +17,11 @@ namespace Microsoft.Extensions.Diagnostics.Buffering;
 /// <summary>
 /// Selects the best rule from the list of rules for a given log event.
 /// </summary>
-internal sealed class LogBufferingFilterRuleSelector
+internal static class LogBufferingFilterRuleSelector
 {
     private static readonly IEqualityComparer<KeyValuePair<string, object?>> _stringifyComparer = new StringifyComprarer();
     private static readonly ObjectPool<List<LogBufferingFilterRule>> _rulePool =
         PoolFactory.CreateListPool<LogBufferingFilterRule>();
-
-    private readonly ConcurrentDictionary<(LogLevel, EventId), LogBufferingFilterRule[]> _ruleCache = new();
 
     public static LogBufferingFilterRule[] SelectByCategory(IList<LogBufferingFilterRule> rules, string category)
     {
@@ -48,41 +45,18 @@ internal sealed class LogBufferingFilterRuleSelector
         }
     }
 
-    public void InvalidateCache()
-    {
-        _ruleCache.Clear();
-    }
-
-    public LogBufferingFilterRule? Select(
-        IList<LogBufferingFilterRule> rules,
+    public static LogBufferingFilterRule? Select(
+        LogBufferingFilterRule[] rules,
         LogLevel logLevel,
         EventId eventId,
         IReadOnlyList<KeyValuePair<string, object?>>? attributes)
     {
-        // 1. select rule candidates by log level and event id from the cache
-        LogBufferingFilterRule[] ruleCandidates = _ruleCache.GetOrAdd((logLevel, eventId), _ =>
-        {
-            List<LogBufferingFilterRule> candidates = _rulePool.Get();
-            foreach (LogBufferingFilterRule rule in rules)
-            {
-                if (IsMatch(rule, logLevel, eventId))
-                {
-                    candidates.Add(rule);
-                }
-            }
-
-            LogBufferingFilterRule[] result = candidates.ToArray();
-            _rulePool.Return(candidates);
-            return result;
-        });
-
-        // 2. select the best rule from the candidates by attributes
         LogBufferingFilterRule? currentBest = null;
-        foreach (LogBufferingFilterRule ruleCandidate in ruleCandidates)
+        foreach (LogBufferingFilterRule rule in rules)
         {
-            if (IsAttributesMatch(ruleCandidate, attributes) && IsBetter(currentBest, ruleCandidate))
+            if (IsMatch(rule, logLevel, eventId) && IsAttributesMatch(rule, attributes) && IsBetter(currentBest, rule))
             {
-                currentBest = ruleCandidate;
+                currentBest = rule;
             }
         }
 

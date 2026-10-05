@@ -14,21 +14,16 @@ internal sealed class GlobalLogBufferManager : GlobalLogBuffer
     internal readonly ConcurrentDictionary<string, GlobalBuffer> Buffers = [];
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly TimeProvider _timeProvider;
-    private readonly LogBufferingFilterRuleSelector _ruleSelector;
 
-    public GlobalLogBufferManager(
-        LogBufferingFilterRuleSelector ruleSelector,
-        IOptionsMonitor<GlobalLogBufferingOptions> options)
-        : this(ruleSelector, options, TimeProvider.System)
+    public GlobalLogBufferManager(IOptionsMonitor<GlobalLogBufferingOptions> options)
+        : this(options, TimeProvider.System)
     {
     }
 
     internal GlobalLogBufferManager(
-        LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<GlobalLogBufferingOptions> options,
         TimeProvider timeProvider)
     {
-        _ruleSelector = ruleSelector;
         _options = options;
         _timeProvider = timeProvider;
     }
@@ -48,15 +43,13 @@ internal sealed class GlobalLogBufferManager : GlobalLogBuffer
         GlobalBuffer buffer = Buffers.GetOrAdd(category, static (category, state) => new GlobalBuffer(
             state.bufferedLogger,
             category,
-            state._ruleSelector,
             state._options,
             state._timeProvider),
-            (bufferedLogger, _ruleSelector, _options, _timeProvider));
+            (bufferedLogger, _options, _timeProvider));
 #else
         GlobalBuffer buffer = Buffers.GetOrAdd(category, category => new GlobalBuffer(
             bufferedLogger,
             category,
-            _ruleSelector,
             _options,
             _timeProvider));
 #endif
