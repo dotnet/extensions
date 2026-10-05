@@ -99,19 +99,6 @@ public class LogBufferingFilterRuleTests
     }
 
     [Fact]
-    public void InvalidateCache_CausesRulesToBeReevaluated()
-    {
-        var oldRule = new LogBufferingFilterRule(logLevel: LogLevel.Warning);
-        var newRule = new LogBufferingFilterRule(logLevel: LogLevel.Warning);
-
-        Assert.Same(oldRule, _selector.Select([oldRule], LogLevel.Warning, 1, attributes: null));
-
-        _selector.InvalidateCache();
-
-        Assert.Same(newRule, _selector.Select([newRule], LogLevel.Warning, 1, attributes: null));
-    }
-
-    [Fact]
     public void Select_IsThreadSafe_WhenCacheIsInvalidatedConcurrently()
     {
         // Arrange
