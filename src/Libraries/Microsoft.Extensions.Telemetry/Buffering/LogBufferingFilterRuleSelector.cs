@@ -65,22 +65,17 @@ internal sealed class LogBufferingFilterRuleSelector
         LogBufferingFilterRule[] ruleCandidates = _ruleCache.GetOrAdd((logLevel, eventId), _ =>
         {
             List<LogBufferingFilterRule> candidates = _rulePool.Get();
-            try
+            foreach (LogBufferingFilterRule rule in rules)
             {
-                foreach (LogBufferingFilterRule rule in rules)
+                if (IsMatch(rule, logLevel, eventId))
                 {
-                    if (IsMatch(rule, logLevel, eventId))
-                    {
-                        candidates.Add(rule);
-                    }
+                    candidates.Add(rule);
                 }
+            }
 
-                return candidates.ToArray();
-            }
-            finally
-            {
-                _rulePool.Return(candidates);
-            }
+            LogBufferingFilterRule[] result = candidates.ToArray();
+            _rulePool.Return(candidates);
+            return result;
         });
 
         // 2. select the best rule from the candidates by attributes

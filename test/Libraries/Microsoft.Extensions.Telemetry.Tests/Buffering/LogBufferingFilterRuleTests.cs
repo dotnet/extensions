@@ -1,9 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #if NET9_0_OR_GREATER
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -99,31 +100,44 @@ public class LogBufferingFilterRuleTests
     }
 
     [Fact]
-    public void Select_IsThreadSafe_WhenCacheIsInvalidatedConcurrently()
+    public void Select_DoesNotThrow_WhenCacheIsInvalidatedDuringSelection()
     {
         // Arrange
-        // Many candidates widen the window during which Select() enumerates the cached candidates,
-        // making it likely that a concurrent InvalidateCache() call happens in the middle of the enumeration.
-        var expected = new LogBufferingFilterRule(logLevel: LogLevel.Warning, eventId: 1, attributes: [new("region", "westus2")]);
-        LogBufferingFilterRule[] rules =
-        [
-            .. Enumerable.Range(0, 100).Select(_ => new LogBufferingFilterRule(logLevel: LogLevel.Warning)),
-            expected,
-        ];
-        KeyValuePair<string, object?>[] attributes = [new("region", "westus2")];
+        LogBufferingFilterRule[] rules = [new LogBufferingFilterRule(attributes: [new("region", "westus2")])];
 
-        // Act & Assert
-        Parallel.For(0, 100_000, i =>
+        // Select() reads the log attributes while iterating over cached rules that have attributes. Invalidating the cache
+        // at that moment reproduces another request ending in the middle of Select().
+        var attributes = new AttributesWithCallback([new("region", "westus2")], onEnumerate: _selector.InvalidateCache);
+
+        // Act
+        Exception? exception = Record.Exception(() => _selector.Select(rules, LogLevel.Warning, 1, attributes));
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    private sealed class AttributesWithCallback : IReadOnlyList<KeyValuePair<string, object?>>
+    {
+        private readonly KeyValuePair<string, object?>[] _attributes;
+        private readonly Action _onEnumerate;
+
+        public AttributesWithCallback(KeyValuePair<string, object?>[] attributes, Action onEnumerate)
         {
-            if (i % 10 == 0)
-            {
-                _selector.InvalidateCache();
-            }
-            else
-            {
-                Assert.Same(expected, _selector.Select(rules, LogLevel.Warning, 1, attributes));
-            }
-        });
+            _attributes = attributes;
+            _onEnumerate = onEnumerate;
+        }
+
+        public int Count => _attributes.Length;
+
+        public KeyValuePair<string, object?> this[int index] => _attributes[index];
+
+        public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
+        {
+            _onEnumerate();
+            return ((IEnumerable<KeyValuePair<string, object?>>)_attributes).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
 #endif
