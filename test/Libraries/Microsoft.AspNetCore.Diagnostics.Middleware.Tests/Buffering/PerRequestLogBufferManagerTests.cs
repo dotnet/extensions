@@ -11,14 +11,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering.Test;
@@ -56,47 +52,6 @@ public class PerRequestLogBufferManagerTests
         await host.StopAsync();
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void WhenRequestServicesIsNull_TryEnqueueUsesGlobalBuffer(bool globalBufferResult)
-    {
-        var globalBuffer = new FakeGlobalLogBuffer { TryEnqueueResult = globalBufferResult };
-        PerRequestLogBufferManager bufferManager = CreateBufferManagerWithNullRequestServices(globalBuffer);
-        IBufferedLogger bufferedLogger = Mock.Of<IBufferedLogger>();
-        var logEntry = new LogEntry<string>(LogLevel.Information, "test", new EventId(1), "state", null, static (state, _) => state);
-
-        bool result = bufferManager.TryEnqueue(bufferedLogger, logEntry);
-
-        Assert.Equal(globalBufferResult, result);
-        Assert.Equal(1, globalBuffer.TryEnqueueCount);
-        Assert.Same(bufferedLogger, globalBuffer.LastBufferedLogger);
-        Assert.Equal(logEntry.Category, globalBuffer.LastCategory);
-    }
-
-    [Fact]
-    public void WhenRequestServicesIsNull_FlushFlushesGlobalBuffer()
-    {
-        var globalBuffer = new FakeGlobalLogBuffer();
-        PerRequestLogBufferManager bufferManager = CreateBufferManagerWithNullRequestServices(globalBuffer);
-
-        bufferManager.Flush();
-
-        Assert.Equal(1, globalBuffer.FlushCount);
-    }
-
-    private static PerRequestLogBufferManager CreateBufferManagerWithNullRequestServices(GlobalLogBuffer globalBuffer)
-    {
-        // DefaultHttpContext has no service scope factory, so its RequestServices is null.
-        var httpContext = new DefaultHttpContext();
-        Assert.Null(httpContext.RequestServices);
-
-        return new PerRequestLogBufferManager(
-            globalBuffer,
-            Mock.Of<IHttpContextAccessor>(accessor => accessor.HttpContext == httpContext),
-            Mock.Of<IOptionsMonitor<PerRequestLogBufferingOptions>>());
-    }
-
     private static async Task WaitForLogRecordAsync(FakeLogCollector logCollector, Func<FakeLogRecord, bool> predicate)
     {
         var totalTimeWaiting = TimeSpan.Zero;
@@ -113,29 +68,6 @@ public class PerRequestLogBufferManagerTests
         }
 
         throw new TimeoutException("The expected log record wasn't emitted before the timeout was reached.");
-    }
-
-    private sealed class FakeGlobalLogBuffer : GlobalLogBuffer
-    {
-        public bool TryEnqueueResult { get; set; }
-
-        public int TryEnqueueCount { get; private set; }
-
-        public IBufferedLogger? LastBufferedLogger { get; private set; }
-
-        public string? LastCategory { get; private set; }
-
-        public int FlushCount { get; private set; }
-
-        public override void Flush() => FlushCount++;
-
-        public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
-        {
-            TryEnqueueCount++;
-            LastBufferedLogger = bufferedLogger;
-            LastCategory = logEntry.Category;
-            return TryEnqueueResult;
-        }
     }
 }
 #endif

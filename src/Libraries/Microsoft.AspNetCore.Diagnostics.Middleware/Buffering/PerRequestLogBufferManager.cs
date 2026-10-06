@@ -37,8 +37,6 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
-        // RequestServices is null after the request services have been disposed, while IHttpContextAccessor
-        // can still return the HttpContext, for example when ASP.NET Core logs "Request finished".
         IServiceProvider? requestServices = _httpContextAccessor.HttpContext?.RequestServices;
         if (requestServices is null)
         {
