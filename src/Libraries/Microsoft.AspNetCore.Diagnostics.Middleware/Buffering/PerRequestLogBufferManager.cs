@@ -29,7 +29,7 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 
     public override void Flush()
     {
-        _httpContextAccessor.HttpContext?.RequestServices.GetService<IncomingRequestLogBufferHolder>()?.Flush();
+        _httpContextAccessor.HttpContext?.RequestServices?.GetService<IncomingRequestLogBufferHolder>()?.Flush();
         _globalBuffer.Flush();
     }
 
@@ -43,7 +43,7 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 
         string category = logEntry.Category;
         IncomingRequestLogBufferHolder? bufferHolder =
-            httpContext.RequestServices.GetService<IncomingRequestLogBufferHolder>();
+            httpContext.RequestServices?.GetService<IncomingRequestLogBufferHolder>();
         IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
             new IncomingRequestLogBuffer(bufferedLogger, category, Options));
 
