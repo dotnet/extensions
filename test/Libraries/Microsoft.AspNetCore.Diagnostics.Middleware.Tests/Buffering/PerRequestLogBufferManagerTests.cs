@@ -3,9 +3,9 @@
 
 #if NET9_0_OR_GREATER
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +23,6 @@ public class PerRequestLogBufferManagerTests
 {
     private const string HostingDiagnosticsCategory = "Microsoft.AspNetCore.Hosting.Diagnostics";
     private const int RequestFinishedEventId = 2;
-    private static readonly TimeSpan _logTimeout = TimeSpan.FromSeconds(5);
 
     [Fact]
     public async Task WhenRequestEnds_RequestFinishedIsLogged()
@@ -45,29 +44,16 @@ public class PerRequestLogBufferManagerTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         // "Request finished" is logged after the response has been sent.
-        await WaitForLogRecordAsync(
-            logCollector,
-            record => record.Category == HostingDiagnosticsCategory && record.Id.Id == RequestFinishedEventId);
-
-        await host.StopAsync();
-    }
-
-    private static async Task WaitForLogRecordAsync(FakeLogCollector logCollector, Func<FakeLogRecord, bool> predicate)
-    {
-        var totalTimeWaiting = TimeSpan.Zero;
-        var spinTime = TimeSpan.FromMilliseconds(50);
-        while (totalTimeWaiting < _logTimeout)
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await foreach (FakeLogRecord record in logCollector.GetLogsAsync(cts.Token))
         {
-            if (logCollector.GetSnapshot().Any(predicate))
+            if (record.Category == HostingDiagnosticsCategory && record.Id.Id == RequestFinishedEventId)
             {
-                return;
+                break;
             }
-
-            await Task.Delay(spinTime);
-            totalTimeWaiting += spinTime;
         }
 
-        throw new TimeoutException("The expected log record wasn't emitted before the timeout was reached.");
+        await host.StopAsync();
     }
 }
 #endif
