@@ -17,15 +17,12 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering.Test;
 
 public class PerRequestLogBufferManagerTests
 {
-    private const string HostingDiagnosticsCategory = "Microsoft.AspNetCore.Hosting.Diagnostics";
-    private const int RequestFinishedEventId = 2;
-
     [Fact]
     public async Task WhenRequestEnds_RequestFinishedIsLogged()
     {
         using IHost host = await FakeHost.CreateBuilder()
             .ConfigureLogging(builder => builder
-                .AddFilter(HostingDiagnosticsCategory, LogLevel.Information)
+                .AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Information)
                 .AddPerIncomingRequestBuffer(LogLevel.Debug))
             .ConfigureWebHost(builder => builder
                 .UseTestServer()
@@ -34,11 +31,10 @@ public class PerRequestLogBufferManagerTests
 
         _ = await host.GetTestServer().SendAsync(_ => { });
 
-        // "Request finished" is logged after the response has been sent.
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.Contains(
             host.Services.GetFakeLogCollector().GetLogsAsync(cts.Token),
-            record => record.Category == HostingDiagnosticsCategory && record.Id.Id == RequestFinishedEventId);
+            record => record.Category == "Microsoft.AspNetCore.Hosting.Diagnostics" && record.Id.Id == 2);
 
         await host.StopAsync();
     }
