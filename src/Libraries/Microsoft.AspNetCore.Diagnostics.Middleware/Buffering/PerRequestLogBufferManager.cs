@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #if NET9_0_OR_GREATER
 
-using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
@@ -30,22 +29,21 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 
     public override void Flush()
     {
-        IServiceProvider? requestServices = _httpContextAccessor.HttpContext?.RequestServices;
-        requestServices?.GetService<IncomingRequestLogBufferHolder>()?.Flush();
+        _httpContextAccessor.HttpContext?.RequestServices?.GetService<IncomingRequestLogBufferHolder>()?.Flush();
         _globalBuffer.Flush();
     }
 
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
-        IServiceProvider? requestServices = _httpContextAccessor.HttpContext?.RequestServices;
-        if (requestServices is null)
+        HttpContext? httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext is null)
         {
             return _globalBuffer.TryEnqueue(bufferedLogger, logEntry);
         }
 
         string category = logEntry.Category;
         IncomingRequestLogBufferHolder? bufferHolder =
-            requestServices.GetService<IncomingRequestLogBufferHolder>();
+            httpContext.RequestServices?.GetService<IncomingRequestLogBufferHolder>();
         IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
             new IncomingRequestLogBuffer(bufferedLogger, category, Options));
 
