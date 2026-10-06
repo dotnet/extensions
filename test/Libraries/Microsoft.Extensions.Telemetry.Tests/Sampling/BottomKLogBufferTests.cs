@@ -142,6 +142,7 @@ public class BottomKLogBufferTests
     }
 
     [Theory]
+    [InlineData("Contoso.Security.Component", "contoso.security.component")]
     [InlineData("Contoso.Security.Component", "contoso.security.*")]
     [InlineData("Prefix.Component.Suffix", "prefix*suffix")]
     public void RetainAllCategory_BypassesBottomKBuffer(string category, string pattern)
@@ -178,6 +179,62 @@ public class BottomKLogBufferTests
 
         Assert.True(buffer.Admit("category", LogLevel.Information, new EventId(2)));
         Assert.False(TryEnqueue(buffer, destination, new EventId(2)));
+    }
+
+    [Fact]
+    public void OptionsChange_RebuildsAllCompiledBypassPolicies()
+    {
+        var initial = new BottomKLogSamplingOptions();
+        initial.RetainAllLogLevels.Clear();
+        var monitor = new MutableOptionsMonitor(initial);
+        using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
+        var destination = new RecordingBufferedLogger();
+
+        var updated = new BottomKLogSamplingOptions
+        {
+            RetainAllLogLevels = [LogLevel.Warning],
+            RetainAllEventIds = [42],
+            RetainAllCategories = ["Exact.Protected", "Wildcard.*"],
+            SampledCategories = ["Sampled.Exact", "Sampled.*"],
+        };
+        monitor.Set(updated);
+
+        AssertBypasses(buffer, destination, "category", LogLevel.Warning, new EventId(1));
+        AssertBypasses(buffer, destination, "category", LogLevel.Information, new EventId(42));
+        AssertBypasses(buffer, destination, "exact.protected", LogLevel.Information, new EventId(1));
+        AssertBypasses(buffer, destination, "Wildcard.Component", LogLevel.Information, new EventId(1));
+        AssertBypasses(buffer, destination, "Outside.Allowlist", LogLevel.Information, new EventId(1));
+
+        var sampledEventId = new EventId(2);
+        Assert.True(buffer.Admit("sampled.exact", LogLevel.Information, sampledEventId));
+        Assert.True(TryEnqueue(
+            buffer,
+            destination,
+            "sampled.exact",
+            LogLevel.Information,
+            sampledEventId));
+
+        var replacement = new BottomKLogSamplingOptions
+        {
+            RetainAllLogLevels = [],
+            RetainAllCategories = ["Replacement.Protected"],
+        };
+        monitor.Set(replacement);
+
+        var oldCategoryEventId = new EventId(3);
+        Assert.True(buffer.Admit("Exact.Protected", LogLevel.Information, oldCategoryEventId));
+        Assert.True(TryEnqueue(
+            buffer,
+            destination,
+            "Exact.Protected",
+            LogLevel.Information,
+            oldCategoryEventId));
+        AssertBypasses(
+            buffer,
+            destination,
+            "replacement.protected",
+            LogLevel.Information,
+            new EventId(4));
     }
 
     [Fact]
@@ -371,16 +428,35 @@ public class BottomKLogBufferTests
         BottomKLogBuffer buffer,
         IBufferedLogger destination,
         EventId eventId)
+        => TryEnqueue(buffer, destination, "category", LogLevel.Information, eventId);
+
+    private static bool TryEnqueue(
+        BottomKLogBuffer buffer,
+        IBufferedLogger destination,
+        string category,
+        LogLevel logLevel,
+        EventId eventId)
     {
         var entry = new LogEntry<IReadOnlyList<KeyValuePair<string, object?>>>(
-            LogLevel.Information,
-            "category",
+            logLevel,
+            category,
             eventId,
             [new("{OriginalFormat}", "message")],
             null,
             _formatter);
 
         return buffer.TryEnqueue(destination, entry);
+    }
+
+    private static void AssertBypasses(
+        BottomKLogBuffer buffer,
+        IBufferedLogger destination,
+        string category,
+        LogLevel logLevel,
+        EventId eventId)
+    {
+        Assert.True(buffer.Admit(category, logLevel, eventId));
+        Assert.False(TryEnqueue(buffer, destination, category, logLevel, eventId));
     }
 
     private static void AssertBypasses(

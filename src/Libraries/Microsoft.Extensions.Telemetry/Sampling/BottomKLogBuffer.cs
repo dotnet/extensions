@@ -31,7 +31,7 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
     private readonly ThreadLocal<PendingAdmission> _pending = new();
     private readonly object _flushClock = new();
 
-    private volatile BottomKLogSamplingOptions _currentOptions;
+    private volatile BottomKLogSamplingPolicy _currentPolicy;
     private DateTimeOffset _lastFlush;
     private int _disposed;
 
@@ -39,7 +39,7 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
     {
         _ = Throw.IfNull(options);
         _timeProvider = Throw.IfNull(timeProvider);
-        _currentOptions = Throw.IfMemberNull(options, options.CurrentValue);
+        _currentPolicy = new BottomKLogSamplingPolicy(Throw.IfMemberNull(options, options.CurrentValue));
         _optionsChangeToken = options.OnChange(OnOptionsChanged);
         _lastFlush = timeProvider.GetUtcNow();
     }
@@ -65,10 +65,10 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
             return true;
         }
 
-        BottomKLogSamplingOptions options = _currentOptions;
-        MaybeFlush(options.FlushInterval);
+        BottomKLogSamplingPolicy policy = _currentPolicy;
+        MaybeFlush(policy.Options.FlushInterval);
 
-        PendingAdmission pending = CreateAdmission(category, logLevel, eventId, options);
+        PendingAdmission pending = CreateAdmission(category, logLevel, eventId, policy);
         _pending.Value = pending;
 
         return pending.Bypass || pending.Admission.Admission.Kind != AdmissionKind.Skip;
@@ -97,9 +97,9 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
 
         if (!pending.Matches(logEntry.Category, logEntry.LogLevel, logEntry.EventId))
         {
-            BottomKLogSamplingOptions options = _currentOptions;
-            MaybeFlush(options.FlushInterval);
-            pending = CreateAdmission(logEntry.Category, logEntry.LogLevel, logEntry.EventId, options);
+            BottomKLogSamplingPolicy policy = _currentPolicy;
+            MaybeFlush(policy.Options.FlushInterval);
+            pending = CreateAdmission(logEntry.Category, logEntry.LogLevel, logEntry.EventId, policy);
         }
 
         if (pending.Bypass)
@@ -167,63 +167,19 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
 
     private bool IsDisposed => Volatile.Read(ref _disposed) != 0;
 
-    private static bool MatchesCategory(string category, string pattern)
-    {
-        int wildcard = pattern.IndexOf("*", StringComparison.Ordinal);
-        if (wildcard < 0)
-        {
-            return string.Equals(category, pattern, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return category.Length >= pattern.Length - 1
-            && category.AsSpan().StartsWith(pattern.AsSpan(0, wildcard), StringComparison.OrdinalIgnoreCase)
-            && category.AsSpan().EndsWith(pattern.AsSpan(wildcard + 1), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool MatchesAnyCategory(string category, IList<string> patterns)
-    {
-        for (int i = 0; i < patterns.Count; i++)
-        {
-            if (MatchesCategory(category, patterns[i]))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool ShouldBypass(
-        string category,
-        LogLevel logLevel,
-        EventId eventId,
-        BottomKLogSamplingOptions options)
-    {
-        if (!options.Enabled
-            || options.RetainAllLogLevels.Contains(logLevel)
-            || options.RetainAllEventIds.Contains(eventId.Id)
-            || MatchesAnyCategory(category, options.RetainAllCategories))
-        {
-            return true;
-        }
-
-        return options.SampledCategories.Count > 0
-            && !MatchesAnyCategory(category, options.SampledCategories);
-    }
-
     private PendingAdmission CreateAdmission(
         string category,
         LogLevel logLevel,
         EventId eventId,
-        BottomKLogSamplingOptions options)
+        BottomKLogSamplingPolicy policy)
     {
-        if (ShouldBypass(category, logLevel, eventId, options))
+        if (policy.ShouldBypass(category, logLevel, eventId))
         {
             return PendingAdmission.CreateBypass(category, logLevel, eventId.Id);
         }
 
         CategoryReservoir reservoir = GetCategory(category);
-        BottomKAdmission admission = reservoir.Admit(eventId, options);
+        BottomKAdmission admission = reservoir.Admit(eventId, policy.Options);
         return PendingAdmission.CreateAdaptive(category, logLevel, eventId.Id, reservoir, admission);
     }
 
@@ -234,7 +190,7 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
     {
         if (options is not null && string.IsNullOrEmpty(name))
         {
-            _currentOptions = options;
+            _currentPolicy = new BottomKLogSamplingPolicy(options);
         }
     }
 

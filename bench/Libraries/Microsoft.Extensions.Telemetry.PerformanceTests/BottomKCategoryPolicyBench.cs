@@ -19,11 +19,17 @@ public class BottomKCategoryPolicyBench
     private const int AdaptiveCapacity = 128;
 
     private ServiceProvider _withoutCategoryPolicyServices = null!;
-    private ServiceProvider _withCategoryPolicyServices = null!;
+    private ServiceProvider _withTwoCategoryPoliciesServices = null!;
+    private ServiceProvider _withHundredCategoryPoliciesServices = null!;
+    private ServiceProvider _withHundredExactCategoriesServices = null!;
     private ILogger[] _withoutCategoryPolicyLoggers = null!;
-    private ILogger[] _withCategoryPolicyLoggers = null!;
+    private ILogger[] _withTwoCategoryPoliciesLoggers = null!;
+    private ILogger[] _withHundredCategoryPoliciesLoggers = null!;
+    private ILogger[] _withHundredExactCategoriesLoggers = null!;
     private LogBuffer _withoutCategoryPolicyBuffer = null!;
-    private LogBuffer _withCategoryPolicyBuffer = null!;
+    private LogBuffer _withTwoCategoryPoliciesBuffer = null!;
+    private LogBuffer _withHundredCategoryPoliciesBuffer = null!;
+    private LogBuffer _withHundredExactCategoriesBuffer = null!;
 
     [Params(10_000, 20_000)]
     public int RecordsPerMinute { get; set; }
@@ -31,18 +37,26 @@ public class BottomKCategoryPolicyBench
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _withoutCategoryPolicyServices = CreateServices(retainProtectedCategories: false);
-        _withCategoryPolicyServices = CreateServices(retainProtectedCategories: true);
+        _withoutCategoryPolicyServices = CreateServices(categoryPolicyCount: 0);
+        _withTwoCategoryPoliciesServices = CreateServices(categoryPolicyCount: 2);
+        _withHundredCategoryPoliciesServices = CreateServices(categoryPolicyCount: 100);
+        _withHundredExactCategoriesServices = CreateServices(categoryPolicyCount: 100, useWildcards: false);
         _withoutCategoryPolicyLoggers = CreateLoggers(_withoutCategoryPolicyServices);
-        _withCategoryPolicyLoggers = CreateLoggers(_withCategoryPolicyServices);
+        _withTwoCategoryPoliciesLoggers = CreateLoggers(_withTwoCategoryPoliciesServices);
+        _withHundredCategoryPoliciesLoggers = CreateLoggers(_withHundredCategoryPoliciesServices);
+        _withHundredExactCategoriesLoggers = CreateLoggers(_withHundredExactCategoriesServices);
         _withoutCategoryPolicyBuffer = _withoutCategoryPolicyServices.GetRequiredService<LogBuffer>();
-        _withCategoryPolicyBuffer = _withCategoryPolicyServices.GetRequiredService<LogBuffer>();
+        _withTwoCategoryPoliciesBuffer = _withTwoCategoryPoliciesServices.GetRequiredService<LogBuffer>();
+        _withHundredCategoryPoliciesBuffer = _withHundredCategoryPoliciesServices.GetRequiredService<LogBuffer>();
+        _withHundredExactCategoriesBuffer = _withHundredExactCategoriesServices.GetRequiredService<LogBuffer>();
     }
 
     [GlobalCleanup]
     public void GlobalCleanup()
     {
-        _withCategoryPolicyServices.Dispose();
+        _withHundredExactCategoriesServices.Dispose();
+        _withHundredCategoryPoliciesServices.Dispose();
+        _withTwoCategoryPoliciesServices.Dispose();
         _withoutCategoryPolicyServices.Dispose();
     }
 
@@ -50,7 +64,9 @@ public class BottomKCategoryPolicyBench
     public void FlushBuffers()
     {
         _withoutCategoryPolicyBuffer.Flush();
-        _withCategoryPolicyBuffer.Flush();
+        _withTwoCategoryPoliciesBuffer.Flush();
+        _withHundredCategoryPoliciesBuffer.Flush();
+        _withHundredExactCategoriesBuffer.Flush();
     }
 
     [Benchmark(Baseline = true)]
@@ -60,12 +76,24 @@ public class BottomKCategoryPolicyBench
     }
 
     [Benchmark]
-    public void BottomKWithCategoryPolicyMiss()
+    public void BottomKWithTwoCategoryPolicyMisses()
     {
-        LoggingBenchmarkWorkload.LogBatch(_withCategoryPolicyLoggers, RecordsPerMinute);
+        LoggingBenchmarkWorkload.LogBatch(_withTwoCategoryPoliciesLoggers, RecordsPerMinute);
     }
 
-    private static ServiceProvider CreateServices(bool retainProtectedCategories)
+    [Benchmark]
+    public void BottomKWithHundredCategoryPolicyMisses()
+    {
+        LoggingBenchmarkWorkload.LogBatch(_withHundredCategoryPoliciesLoggers, RecordsPerMinute);
+    }
+
+    [Benchmark]
+    public void BottomKWithHundredExactCategoryMisses()
+    {
+        LoggingBenchmarkWorkload.LogBatch(_withHundredExactCategoriesLoggers, RecordsPerMinute);
+    }
+
+    private static ServiceProvider CreateServices(int categoryPolicyCount, bool useWildcards = true)
     {
         var services = new ServiceCollection();
 
@@ -79,10 +107,12 @@ public class BottomKCategoryPolicyBench
                 options.FlushInterval = TimeSpan.FromDays(1);
                 options.RetainAllLogLevels.Clear();
 
-                if (retainProtectedCategories)
+                for (int i = 0; i < categoryPolicyCount; i++)
                 {
-                    options.RetainAllCategories.Add("Contoso.Security.*");
-                    options.RetainAllCategories.Add("Contoso.Audit.*");
+                    options.RetainAllCategories.Add(
+                        useWildcards
+                            ? $"Contoso.Protected{i:D3}.*"
+                            : $"Contoso.Protected{i:D3}.Component");
                 }
             });
         });

@@ -81,7 +81,9 @@ The benchmark measures the full logging path. `LogLevel` is already present on `
 
 ### Bottom-K category policy cost
 
-`BottomKCategoryPolicyBench` isolates the incremental cost of checking retain-all category patterns. Both pipelines use the same bottom-K configuration and workload. The comparison checks two non-matching wildcard patterns, `Contoso.Security.*` and `Contoso.Audit.*`, so every record continues through the same adaptive bottom-K path as the baseline.
+`BottomKCategoryPolicyBench` isolates the incremental cost of checking retain-all category policies. All pipelines use the same bottom-K configuration and workload. The comparisons check either two or 100 non-matching wildcard patterns, or 100 non-matching exact categories, so every record continues through the same adaptive bottom-K path as the zero-policy baseline. Exact categories use a case-insensitive frozen set; wildcard patterns use a linear scan.
+
+On .NET 10.0.12 in the Hyper-V Windows 11 benchmark VM, 100 wildcard misses increased 10,000 records from 4.000 ms to 27.305 ms and 20,000 records from 6.840 ms to 54.508 ms. That is 2.331–2.383 microseconds per log, or 23.3–23.8 nanoseconds per non-matching wildcard evaluation. In contrast, 100 exact-category misses took 3.750 ms and 6.535 ms respectively; their confidence intervals overlap the zero-policy baselines, so the frozen-set lookup added no measurable CPU or allocation cost.
 
 ### Bottom-K EventId policy cost
 

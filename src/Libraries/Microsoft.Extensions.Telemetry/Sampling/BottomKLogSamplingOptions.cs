@@ -62,7 +62,8 @@ public sealed class BottomKLogSamplingOptions
     /// Gets or sets category patterns that bypass bottom-K sampling and are emitted normally.
     /// </summary>
     /// <remarks>
-    /// Matching is case-insensitive. A pattern can contain one <c>*</c> wildcard.
+    /// Matching is case-insensitive. Exact category names use constant-time lookup.
+    /// A pattern can contain one <c>*</c> wildcard; wildcard patterns are evaluated sequentially.
     /// </remarks>
     [Required]
     public IList<string> RetainAllCategories { get; set; } = [];
@@ -72,7 +73,8 @@ public sealed class BottomKLogSamplingOptions
     /// </summary>
     /// <remarks>
     /// An empty collection applies bottom-K sampling to every category not covered by a retain-all policy.
-    /// Matching is case-insensitive. A pattern can contain one <c>*</c> wildcard.
+    /// Matching is case-insensitive. Exact category names use constant-time lookup.
+    /// A pattern can contain one <c>*</c> wildcard; wildcard patterns are evaluated sequentially.
     /// </remarks>
     [Required]
     public IList<string> SampledCategories { get; set; } = [];
