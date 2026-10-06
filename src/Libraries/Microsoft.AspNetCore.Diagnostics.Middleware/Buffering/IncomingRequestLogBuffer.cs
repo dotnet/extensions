@@ -16,19 +16,17 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 
-internal sealed class IncomingRequestLogBuffer : IDisposable
+internal sealed class IncomingRequestLogBuffer
 {
     private const int MaxBatchSize = 256;
     private static readonly ObjectPool<List<DeserializedLogRecord>> _recordsToEmitListPool =
         PoolFactory.CreateListPoolWithCapacity<DeserializedLogRecord>(MaxBatchSize);
 
     private readonly IBufferedLogger _bufferedLogger;
-    private readonly LogBufferingFilterRuleSelector _ruleSelector;
     private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly LogBufferingFilterRule[] _filterRules;
     private readonly Lock _bufferSwapLock = new();
-    private volatile bool _disposed;
     private ConcurrentQueue<SerializedLogRecord> _activeBuffer = new();
     private ConcurrentQueue<SerializedLogRecord> _standbyBuffer = new();
     private int _activeBufferSize;
@@ -37,11 +35,9 @@ internal sealed class IncomingRequestLogBuffer : IDisposable
     public IncomingRequestLogBuffer(
         IBufferedLogger bufferedLogger,
         string category,
-        LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<PerRequestLogBufferingOptions> options)
     {
         _bufferedLogger = bufferedLogger;
-        _ruleSelector = ruleSelector;
         _options = options;
         _filterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), category);
     }
@@ -63,7 +59,7 @@ internal sealed class IncomingRequestLogBuffer : IDisposable
                 $"Unsupported type of log state detected: {typeof(TState)}, expected IReadOnlyList<KeyValuePair<string, object?>>");
         }
 
-        if (_ruleSelector.Select(_filterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
+        if (LogBufferingFilterRuleSelector.Select(_filterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
         {
             // buffering is not enabled for this log entry,
             // return false to indicate that the log entry should be logged normally.
@@ -137,18 +133,6 @@ internal sealed class IncomingRequestLogBuffer : IDisposable
                 _recordsToEmitListPool.Return(recordsToEmit);
             }
         }
-    }
-
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-
-        _ruleSelector.InvalidateCache();
     }
 
     private void TrimExcessRecords()

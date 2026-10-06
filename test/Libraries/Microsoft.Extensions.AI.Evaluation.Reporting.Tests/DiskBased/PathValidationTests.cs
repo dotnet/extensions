@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias Reporting;
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 using Xunit;
+using PathValidation = Reporting::Microsoft.Extensions.AI.Evaluation.Reporting.Utilities.PathValidation;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Tests;
 

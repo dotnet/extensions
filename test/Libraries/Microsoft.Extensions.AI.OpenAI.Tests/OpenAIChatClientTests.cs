@@ -1515,8 +1515,13 @@ public class OpenAIChatClientTests
     public Task DataContentMessage_Image_AdditionalProperty_StringDetail_NonStreaming()
         => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(ChatImageDetailLevel.High);
 
-    private static async Task DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(object detailValue)
+    [Fact]
+    public Task DataContentMessage_Image_AdditionalProperty_InvalidDetail_NonStreaming()
+        => DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(42, expectedDetail: null);
+
+    private static async Task DataContentMessage_Image_AdditionalPropertyDetail_NonStreaming(object detailValue, string? expectedDetail = "high")
     {
+        string detailProperty = expectedDetail is not null ? $"\"detail\": \"{expectedDetail}\"," : string.Empty;
         string input = $$"""
             {
               "messages": [
@@ -1530,7 +1535,7 @@ public class OpenAIChatClientTests
                     {
                       "type": "image_url",
                       "image_url": {
-                        "detail": "high",
+                        {{detailProperty}}
                         "url": "{{ImageDataUri.GetImageDataUri()}}"
                       }
                     }

@@ -15,6 +15,7 @@ using Azure.Storage.Files.DataLake;
 using Azure.Storage.Files.DataLake.Models;
 using Azure.Storage.Files.DataLake.Specialized;
 using Microsoft.Extensions.AI.Evaluation.Reporting.JsonSerialization;
+using Microsoft.Extensions.AI.Evaluation.Reporting.Utilities;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI.Evaluation.Reporting.Storage;
@@ -80,12 +81,19 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
         (string path, _) = GetResultPath(executionName, scenarioName);
         DataLakeDirectoryClient subClient = client.GetSubDirectoryClient(path);
 
+        List<string> iterationNames = [];
+
 #pragma warning disable S3254 // Default parameter value (for 'recursive') should not be passed as argument.
         await foreach (PathItem item in
             subClient.GetPathsAsync(recursive: false, cancellationToken: cancellationToken).ConfigureAwait(false))
 #pragma warning restore S3254
         {
-            yield return StripExtension(GetLastSegmentFromPath(item.Name));
+            iterationNames.Add(StripExtension(GetLastSegmentFromPath(item.Name)));
+        }
+
+        foreach (string iterationName in iterationNames.OrderBy(name => name, IterationNameComparer.Default))
+        {
+            yield return iterationName;
         }
     }
 
@@ -189,6 +197,10 @@ public sealed class AzureStorageResultStore(DataLakeDirectoryClient client) : IE
         string? scenarioName = null,
         string? iterationName = null)
     {
+        PathValidation.ValidatePathSegment(executionName, nameof(executionName));
+        PathValidation.ValidatePathSegment(scenarioName, nameof(scenarioName));
+        PathValidation.ValidatePathSegment(iterationName, nameof(iterationName));
+
         if (executionName is null)
         {
             return ($"{ResultsRootPrefix}/", isDir: true);
