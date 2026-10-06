@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #if NET9_0_OR_GREATER
 
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
@@ -29,21 +30,24 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 
     public override void Flush()
     {
-        _httpContextAccessor.HttpContext?.RequestServices.GetService<IncomingRequestLogBufferHolder>()?.Flush();
+        IServiceProvider? requestServices = _httpContextAccessor.HttpContext?.RequestServices;
+        requestServices?.GetService<IncomingRequestLogBufferHolder>()?.Flush();
         _globalBuffer.Flush();
     }
 
     public override bool TryEnqueue<TState>(IBufferedLogger bufferedLogger, in LogEntry<TState> logEntry)
     {
-        HttpContext? httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext is null)
+        // RequestServices is null after the request services have been disposed, while IHttpContextAccessor
+        // can still return the HttpContext, for example when ASP.NET Core logs "Request finished".
+        IServiceProvider? requestServices = _httpContextAccessor.HttpContext?.RequestServices;
+        if (requestServices is null)
         {
             return _globalBuffer.TryEnqueue(bufferedLogger, logEntry);
         }
 
         string category = logEntry.Category;
         IncomingRequestLogBufferHolder? bufferHolder =
-            httpContext.RequestServices.GetService<IncomingRequestLogBufferHolder>();
+            requestServices.GetService<IncomingRequestLogBufferHolder>();
         IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
             new IncomingRequestLogBuffer(bufferedLogger, category, Options));
 
