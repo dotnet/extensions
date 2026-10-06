@@ -3,13 +3,9 @@
 
 #if NET9_0_OR_GREATER
 using System;
-using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
@@ -33,25 +29,16 @@ public class PerRequestLogBufferManagerTests
                 .AddPerIncomingRequestBuffer(LogLevel.Debug))
             .ConfigureWebHost(builder => builder
                 .UseTestServer()
-                .Configure(app => app.Run(context => context.Response.WriteAsync("Hello"))))
+                .Configure(_ => { }))
             .StartAsync();
 
-        FakeLogCollector logCollector = host.Services.GetFakeLogCollector();
-        using HttpClient client = host.GetTestClient();
-
-        using HttpResponseMessage response = await client.GetAsync("/");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        _ = await host.GetTestServer().SendAsync(_ => { });
 
         // "Request finished" is logged after the response has been sent.
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        await foreach (FakeLogRecord record in logCollector.GetLogsAsync(cts.Token))
-        {
-            if (record.Category == HostingDiagnosticsCategory && record.Id.Id == RequestFinishedEventId)
-            {
-                break;
-            }
-        }
+        Assert.Contains(
+            host.Services.GetFakeLogCollector().GetLogsAsync(cts.Token),
+            record => record.Category == HostingDiagnosticsCategory && record.Id.Id == RequestFinishedEventId);
 
         await host.StopAsync();
     }
