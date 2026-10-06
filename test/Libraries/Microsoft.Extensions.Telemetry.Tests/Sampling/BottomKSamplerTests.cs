@@ -13,6 +13,102 @@ namespace Microsoft.Extensions.Telemetry.Sampling;
 public class BottomKSamplerTests
 {
     [Fact]
+    public void Chao1UnseenWeight_HandlesDegenerateAndObservedDistributions()
+    {
+        Assert.Equal(1.0, ChaoEstimator.Chao1UnseenWeight([]));
+        Assert.Equal(1.0, ChaoEstimator.Chao1UnseenWeight([0]));
+        Assert.Equal(1.0, ChaoEstimator.Chao1UnseenWeight([2]));
+        Assert.Equal(1.0, ChaoEstimator.Chao1UnseenWeight([1]));
+        Assert.Equal(0.25, ChaoEstimator.Chao1UnseenWeight([1, 1]), 12);
+        Assert.Equal(1.0 / 3.0, ChaoEstimator.Chao1UnseenWeight([1, 2]), 12);
+    }
+
+    [Fact]
+    public void Admission_ImplementsValueEquality()
+    {
+        Admission first = Admission.Admit(1.5);
+        Admission same = Admission.Admit(1.5);
+        Admission different = Admission.Admit(2.5);
+        object boxed = same;
+        object otherType = "other";
+
+        Assert.True(first == same);
+        Assert.False(first != same);
+        Assert.True(first != different);
+        Assert.True(first.Equals(boxed));
+        Assert.False(first.Equals(Admission.Skip));
+        Assert.False(first.Equals(otherType));
+        Assert.Equal(first.GetHashCode(), same.GetHashCode());
+    }
+
+    [Fact]
+    public void SampledRecord_ImplementsValueEquality()
+    {
+        var first = new SampledRecord<int, string>(1, "payload", 2.0);
+        var same = new SampledRecord<int, string>(1, "payload", 2.0);
+        var differentCallsite = new SampledRecord<int, string>(2, "payload", 2.0);
+        var differentPayload = new SampledRecord<int, string>(1, "other", 2.0);
+        var differentCount = new SampledRecord<int, string>(1, "payload", 3.0);
+        object boxed = same;
+        object otherType = "other";
+
+        Assert.True(first == same);
+        Assert.False(first != same);
+        Assert.True(first != differentCallsite);
+        Assert.True(first != differentPayload);
+        Assert.True(first != differentCount);
+        Assert.True(first.Equals(boxed));
+        Assert.False(first.Equals(otherType));
+        Assert.Equal(first.GetHashCode(), same.GetHashCode());
+    }
+
+    [Fact]
+    public void DefaultConstructor_UsesDefaultConfiguration()
+    {
+        var sampler = new BottomKSampler<int, int>(1);
+
+        Add(sampler, 1, 1);
+
+        Assert.Equal(0, sampler.FrozenCallsites);
+        Assert.Equal(1.0, sampler.UnseenWeight);
+        Assert.Single(sampler.Flush());
+        Assert.Equal(0, sampler.FrozenCallsites);
+    }
+
+    [Fact]
+    public void Insert_RejectsSkipAdmission()
+    {
+        var sampler = new BottomKSampler<int, int>(1);
+
+        Assert.Throws<ArgumentException>(() => sampler.Insert(1, Admission.Skip, 1));
+    }
+
+    [Fact]
+    public void Flush_WithSmallThreshold_UsesStableExponentialCalculation()
+    {
+        var sampler = new BottomKSampler<int, int>(1, 0, 0, BottomKUnseenWeightMode.RarestSeen, 42);
+        sampler.Insert(1, Admission.Admit(1e-7), 1);
+        sampler.Insert(1, Admission.Admit(2e-7), 2);
+
+        SampledRecord<int, int> record = Assert.Single(sampler.Flush());
+
+        Assert.True(double.IsFinite(record.SamplingCount));
+        Assert.True(record.SamplingCount > 1.0);
+    }
+
+    [Fact]
+    public void Chao1Mode_UsesEstimatorAfterPeriodFlush()
+    {
+        var sampler = new BottomKSampler<int, int>(4, 0, 0, BottomKUnseenWeightMode.Chao1, 42);
+        Add(sampler, 1, 1);
+        Add(sampler, 2, 2);
+
+        _ = sampler.Flush();
+
+        Assert.Equal(0.25, sampler.UnseenWeight, 12);
+    }
+
+    [Fact]
     public void Flush_UsesFirstExcludedRankForSamplingCount()
     {
         const int Seed = 42;

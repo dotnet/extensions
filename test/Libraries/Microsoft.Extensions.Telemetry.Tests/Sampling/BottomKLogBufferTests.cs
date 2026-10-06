@@ -52,6 +52,35 @@ public class BottomKLogBufferTests
     }
 
     [Fact]
+    public void Flush_BeforeFirstAdmission_DoesNothing()
+    {
+        using var buffer = CreateBuffer(new TestTimeProvider());
+        var destination = new RecordingBufferedLogger();
+
+        buffer.Flush();
+
+        Assert.Empty(destination.Records);
+    }
+
+    [Fact]
+    public void TryEnqueue_WithUnsupportedState_Throws()
+    {
+        using var buffer = CreateBuffer(new TestTimeProvider());
+        var destination = new RecordingBufferedLogger();
+        var eventId = new EventId(1);
+        Assert.True(buffer.Admit("category", eventId));
+        var entry = new LogEntry<string>(
+            LogLevel.Information,
+            "category",
+            eventId,
+            "unsupported",
+            null,
+            static (state, _) => state);
+
+        Assert.Throws<InvalidOperationException>(() => buffer.TryEnqueue(destination, entry));
+    }
+
+    [Fact]
     public void Flush_AddsSamplingCountBeforeOriginalFormat()
     {
         var destination = new RecordingBufferedLogger();

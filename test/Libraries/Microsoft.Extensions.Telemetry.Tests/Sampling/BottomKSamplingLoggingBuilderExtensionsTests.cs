@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
@@ -82,6 +83,54 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
             provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>();
 
         Assert.Throws<OptionsValidationException>(() => options.CurrentValue);
+    }
+
+    [Fact]
+    public void CustomValidator_RejectsEveryInvalidPolicyShape()
+    {
+        var options = new BottomKLogSamplingOptions
+        {
+            FlushInterval = TimeSpan.Zero,
+            UnseenWeightMode = (BottomKUnseenWeightMode)int.MaxValue,
+            RetainAllLogLevels = [(LogLevel)int.MaxValue],
+            RetainAllCategories = ["", "one*two*three"],
+            SampledCategories = [" "],
+        };
+        var validator = new BottomKLogSamplingOptionsCustomValidator();
+
+        ValidateOptionsResult result = validator.Validate(null, options);
+
+        Assert.True(result.Failed);
+        Assert.Equal(6, result.Failures.Count());
+    }
+
+    [Fact]
+    public void CustomValidator_AllowsNullCollectionsForDataAnnotationValidator()
+    {
+        var options = new BottomKLogSamplingOptions
+        {
+            RetainAllLogLevels = null!,
+            RetainAllCategories = null!,
+            SampledCategories = null!,
+        };
+        var validator = new BottomKLogSamplingOptionsCustomValidator();
+
+        Assert.True(validator.Validate(null, options).Succeeded);
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_WhenCalledTwice_IsIdempotent()
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
+        {
+            builder.AddBottomKLogSampling();
+            builder.AddBottomKLogSampling();
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        Assert.IsType<BottomKLoggingSampler>(provider.GetRequiredService<LoggingSampler>());
     }
 
     [Fact]
