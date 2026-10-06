@@ -49,6 +49,7 @@ public static class BottomKSamplingLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
+        _ = EnsureBottomKCompatible(builder);
         _ = builder.Services.Configure(configure);
 
         return builder.AddBottomKLogSamplingCore();
@@ -67,6 +68,7 @@ public static class BottomKSamplingLoggingBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
+        _ = EnsureBottomKCompatible(builder);
         _ = builder.Services.Configure<BottomKLogSamplingOptions>(section);
 
         return builder.AddBottomKLogSamplingCore();
@@ -74,20 +76,9 @@ public static class BottomKSamplingLoggingBuilderExtensions
 
     private static ILoggingBuilder AddBottomKLogSamplingCore(this ILoggingBuilder builder)
     {
-        bool bottomKRegistered = builder.Services.Any(descriptor =>
-            descriptor.ServiceType == typeof(BottomKLogBuffer));
-        bool logBufferRegistered = builder.Services.Any(descriptor =>
-            descriptor.ServiceType == typeof(LogBuffer));
-
-        if (bottomKRegistered)
+        if (EnsureBottomKCompatible(builder))
         {
             return builder;
-        }
-
-        if (logBufferRegistered)
-        {
-            Throw.InvalidOperationException(
-                "Bottom-K log sampling cannot be combined with another log buffer in the same logging pipeline.");
         }
 
         _ = builder.Services
@@ -100,6 +91,32 @@ public static class BottomKSamplingLoggingBuilderExtensions
         builder.Services.TryAddSingleton<LogBuffer>(sp => sp.GetRequiredService<BottomKLogBuffer>());
 
         return builder.AddSampler<BottomKLoggingSampler>();
+    }
+
+    private static bool EnsureBottomKCompatible(ILoggingBuilder builder)
+    {
+        bool bottomKRegistered = builder.Services.Any(descriptor =>
+            !descriptor.IsKeyedService && descriptor.ServiceType == typeof(BottomKLogBuffer));
+        if (bottomKRegistered)
+        {
+            return true;
+        }
+
+        if (builder.Services.Any(descriptor =>
+            !descriptor.IsKeyedService && descriptor.ServiceType == typeof(LogBuffer)))
+        {
+            Throw.InvalidOperationException(
+                "Bottom-K log sampling cannot be combined with another log buffer in the same logging pipeline.");
+        }
+
+        if (builder.Services.Any(descriptor =>
+            !descriptor.IsKeyedService && descriptor.ServiceType == typeof(LoggingSampler)))
+        {
+            Throw.InvalidOperationException(
+                "Bottom-K log sampling cannot be combined with another logging sampler in the same logging pipeline.");
+        }
+
+        return false;
     }
 }
 #endif

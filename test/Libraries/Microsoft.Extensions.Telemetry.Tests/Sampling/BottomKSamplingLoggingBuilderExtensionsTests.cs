@@ -149,6 +149,96 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
     }
 
     [Fact]
+    public void AddBottomKLogSampling_WhenAnotherSamplerIsRegistered_Throws()
+    {
+        var services = new ServiceCollection();
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            services.AddLogging(builder =>
+            {
+                builder.AddTraceBasedSampler();
+                builder.AddBottomKLogSampling();
+            }));
+
+        Assert.Contains("another logging sampler", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_WhenKeyedSamplerIsRegistered_Succeeds()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton<LoggingSampler, StubSampler>("key");
+
+        services.AddLogging(builder => builder.AddBottomKLogSampling());
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        Assert.IsType<BottomKLoggingSampler>(provider.GetRequiredService<LoggingSampler>());
+        Assert.IsType<StubSampler>(provider.GetRequiredKeyedService<LoggingSampler>("key"));
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_WhenRejected_DoesNotRegisterOptions()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<LoggingSampler, StubSampler>();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            services.AddLogging(builder =>
+                builder.AddBottomKLogSampling(options => options.Capacity = 17)));
+
+        Assert.DoesNotContain(
+            services,
+            descriptor => descriptor.ServiceType == typeof(IConfigureOptions<BottomKLogSamplingOptions>));
+    }
+
+    [Fact]
+    public void AddSamplerType_WhenBottomKIsRegistered_Throws()
+    {
+        var services = new ServiceCollection();
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            services.AddLogging(builder =>
+            {
+                builder.AddBottomKLogSampling();
+                builder.AddSampler<StubSampler>();
+            }));
+
+        Assert.Contains("cannot be combined", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AddSamplerInstance_WhenBottomKIsRegistered_Throws()
+    {
+        var services = new ServiceCollection();
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            services.AddLogging(builder =>
+            {
+                builder.AddBottomKLogSampling();
+                builder.AddSampler(new StubSampler());
+            }));
+
+        Assert.Contains("cannot be combined", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AddRandomSampler_WhenBottomKIsRegistered_DoesNotRegisterOptions()
+    {
+        var services = new ServiceCollection();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            services.AddLogging(builder =>
+            {
+                builder.AddBottomKLogSampling();
+                builder.AddRandomProbabilisticSampler(options => options.Rules.Clear());
+            }));
+
+        Assert.DoesNotContain(
+            services,
+            descriptor => descriptor.ServiceType == typeof(IConfigureOptions<RandomProbabilisticSamplerOptions>));
+    }
+
+    [Fact]
     public void AddGlobalBuffer_WhenBottomKIsRegistered_Throws()
     {
         var services = new ServiceCollection();
@@ -172,6 +262,11 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
         public override bool TryEnqueue<TState>(
             IBufferedLogger bufferedLogger,
             in LogEntry<TState> logEntry) => false;
+    }
+
+    private sealed class StubSampler : LoggingSampler
+    {
+        public override bool ShouldSample<TState>(in LogEntry<TState> logEntry) => true;
     }
 }
 #endif
