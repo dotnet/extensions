@@ -74,9 +74,9 @@ public static class BottomKSamplingLoggingBuilderExtensions
 
     private static ILoggingBuilder AddBottomKLogSamplingCore(this ILoggingBuilder builder)
     {
-        bool bottomKRegistered = builder.Services.Any(static descriptor =>
+        bool bottomKRegistered = builder.Services.Any(descriptor =>
             descriptor.ServiceType == typeof(BottomKLogBuffer));
-        bool logBufferRegistered = builder.Services.Any(static descriptor =>
+        bool logBufferRegistered = builder.Services.Any(descriptor =>
             descriptor.ServiceType == typeof(LogBuffer));
 
         if (bottomKRegistered)
@@ -94,10 +94,10 @@ public static class BottomKSamplingLoggingBuilderExtensions
             .AddOptionsWithValidateOnStart<BottomKLogSamplingOptions, BottomKLogSamplingOptionsValidator>()
             .Services.AddOptionsWithValidateOnStart<BottomKLogSamplingOptions, BottomKLogSamplingOptionsCustomValidator>();
 
-        builder.Services.TryAddSingleton<BottomKLogBuffer>(static services => new BottomKLogBuffer(
+        builder.Services.TryAddSingleton<BottomKLogBuffer>(services => new BottomKLogBuffer(
             services.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>(),
             TimeProvider.System));
-        builder.Services.TryAddSingleton<LogBuffer>(static sp => sp.GetRequiredService<BottomKLogBuffer>());
+        builder.Services.TryAddSingleton<LogBuffer>(sp => sp.GetRequiredService<BottomKLogBuffer>());
 
         return builder.AddSampler<BottomKLoggingSampler>();
     }

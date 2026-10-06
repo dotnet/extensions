@@ -108,11 +108,11 @@ public static class PerIncomingRequestLoggingBuilderExtensions
 
     private static ILoggingBuilder AddPerRequestBufferManager(this ILoggingBuilder builder)
     {
-        bool globalBufferRegistered = builder.Services.Any(static descriptor =>
+        bool globalBufferRegistered = builder.Services.Any(descriptor =>
             descriptor.ServiceType == typeof(GlobalLogBuffer));
-        bool perRequestBufferRegistered = builder.Services.Any(static descriptor =>
+        bool perRequestBufferRegistered = builder.Services.Any(descriptor =>
             descriptor.ServiceType == typeof(PerRequestLogBuffer));
-        bool logBufferRegistered = builder.Services.Any(static descriptor =>
+        bool logBufferRegistered = builder.Services.Any(descriptor =>
             descriptor.ServiceType == typeof(LogBuffer));
 
         if (logBufferRegistered && !globalBufferRegistered && !perRequestBufferRegistered)
