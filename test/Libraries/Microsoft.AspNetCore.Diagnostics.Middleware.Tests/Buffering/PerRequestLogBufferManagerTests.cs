@@ -23,12 +23,14 @@ public class PerRequestLogBufferManagerTests
                 .AddPerIncomingRequestBuffer(LogLevel.Information))
             .BuildServiceProvider();
         services.GetRequiredService<IHttpContextAccessor>().HttpContext = new DefaultHttpContext();
+        ILogger logger = services.GetRequiredService<ILogger<PerRequestLogBufferManagerTests>>();
+        PerRequestLogBuffer buffer = services.GetRequiredService<PerRequestLogBuffer>();
         FakeLogCollector logCollector = services.GetFakeLogCollector();
 
-        services.GetRequiredService<ILogger<PerRequestLogBufferManagerTests>>().LogInformation("test");
+        Assert.Null(Record.Exception(() => logger.LogInformation("test")));
         Assert.Empty(logCollector.GetSnapshot());
 
-        services.GetRequiredService<PerRequestLogBuffer>().Flush();
+        Assert.Null(Record.Exception(buffer.Flush));
         Assert.Equal("test", Assert.Single(logCollector.GetSnapshot()).Message);
     }
 }
