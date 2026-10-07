@@ -60,12 +60,11 @@ public class BottomKImpactBench
         _baselineServices.Dispose();
     }
 
-    [IterationCleanup]
-    public void FlushBuffers()
-    {
-        _retainAllBuffer.Flush();
-        _adaptiveBuffer.Flush();
-    }
+    [IterationCleanup(Target = nameof(BottomKRetainAll))]
+    public void FlushRetainAllBuffer() => _retainAllBuffer.Flush();
+
+    [IterationCleanup(Target = nameof(BottomKAdaptive))]
+    public void FlushAdaptiveBuffer() => _adaptiveBuffer.Flush();
 
     [Benchmark(Baseline = true)]
     public void NoSampling()

@@ -137,7 +137,9 @@ internal static class RetainedMemoryMeasurement
                     break;
 
                 case Pipeline.BottomKRetainAll:
-                    AddBottomK(builder, capacity: recordCount);
+                    AddBottomK(
+                        builder,
+                        capacity: recordCount / LoggingBenchmarkWorkload.CategoryCount);
                     break;
             }
         });

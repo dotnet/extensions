@@ -71,12 +71,6 @@ public class SerializedExporterImpactBench
         _baselineServices.Dispose();
     }
 
-    [IterationCleanup]
-    public void FlushBuffer()
-    {
-        _strategyBuffer?.Flush();
-    }
-
     [Benchmark(Baseline = true)]
     public void NoSampling()
     {
