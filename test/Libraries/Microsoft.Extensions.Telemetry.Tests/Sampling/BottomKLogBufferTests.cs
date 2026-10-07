@@ -102,6 +102,35 @@ public class BottomKLogBufferTests
     }
 
     [Fact]
+    public void Flush_ReplacesUserSuppliedSamplingCount()
+    {
+        var destination = new RecordingBufferedLogger();
+        using var buffer = CreateBuffer(new TestTimeProvider());
+
+        Enqueue(
+            buffer,
+            destination,
+            [
+                new("property", 42),
+                new("sampling.count", -1.0),
+                new("sampling.count", "ambiguous"),
+                new("{OriginalFormat}", "message {property}"),
+            ]);
+        buffer.Flush();
+
+        BufferedLogRecord record = Assert.Single(destination.Records);
+        Assert.Collection(
+            record.Attributes,
+            attribute => Assert.Equal("property", attribute.Key),
+            attribute =>
+            {
+                Assert.Equal("sampling.count", attribute.Key);
+                Assert.True(Assert.IsType<double>(attribute.Value) >= 1.0);
+            },
+            attribute => Assert.Equal(new("{OriginalFormat}", "message {property}"), attribute));
+    }
+
+    [Fact]
     public void LoggingPipeline_PreservesEnrichmentAndSupportsOrdinaryProvider()
     {
         using var provider = new CapturingProvider();

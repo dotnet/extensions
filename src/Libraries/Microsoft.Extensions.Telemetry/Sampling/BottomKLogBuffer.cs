@@ -25,6 +25,9 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "The thread-local values do not own disposable resources and remain available for shutdown-time logging.")]
 internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdownLogBuffer
 {
+    private const string OriginalFormatAttributeName = "{OriginalFormat}";
+    private const string SamplingCountAttributeName = "sampling.count";
+
     private readonly ConcurrentDictionary<string, CategoryReservoir> _categories = new(StringComparer.Ordinal);
     private readonly IDisposable? _optionsChangeToken;
     private readonly TimeProvider _timeProvider;
@@ -382,7 +385,7 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
                 int originalFormatIndex = serialized.Attributes.Count;
                 for (int i = 0; i < serialized.Attributes.Count; i++)
                 {
-                    if (string.Equals(serialized.Attributes[i].Key, "{OriginalFormat}", StringComparison.Ordinal))
+                    if (string.Equals(serialized.Attributes[i].Key, OriginalFormatAttributeName, StringComparison.Ordinal))
                     {
                         originalFormatIndex = i;
                         break;
@@ -391,14 +394,20 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
 
                 for (int i = 0; i < originalFormatIndex; i++)
                 {
-                    attributes.Add(serialized.Attributes[i]);
+                    if (!string.Equals(serialized.Attributes[i].Key, SamplingCountAttributeName, StringComparison.Ordinal))
+                    {
+                        attributes.Add(serialized.Attributes[i]);
+                    }
                 }
 
-                attributes.Add(new KeyValuePair<string, object?>("sampling.count", sampled.SamplingCount));
+                attributes.Add(new KeyValuePair<string, object?>(SamplingCountAttributeName, sampled.SamplingCount));
 
                 for (int i = originalFormatIndex; i < serialized.Attributes.Count; i++)
                 {
-                    attributes.Add(serialized.Attributes[i]);
+                    if (!string.Equals(serialized.Attributes[i].Key, SamplingCountAttributeName, StringComparison.Ordinal))
+                    {
+                        attributes.Add(serialized.Attributes[i]);
+                    }
                 }
 
                 records.Add(new DeserializedLogRecord(
