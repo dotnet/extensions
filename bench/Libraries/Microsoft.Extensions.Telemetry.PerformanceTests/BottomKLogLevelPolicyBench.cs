@@ -77,13 +77,7 @@ public class BottomKLogLevelPolicyBench
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;
                 options.FlushInterval = TimeSpan.FromDays(1);
-                options.RetainAllLogLevels.Clear();
-
-                if (retainProtectedLevels)
-                {
-                    options.RetainAllLogLevels.Add(LogLevel.Error);
-                    options.RetainAllLogLevels.Add(LogLevel.Critical);
-                }
+                options.RetainAllLogLevel = retainProtectedLevels ? LogLevel.Error : LogLevel.None;
             });
         });
 

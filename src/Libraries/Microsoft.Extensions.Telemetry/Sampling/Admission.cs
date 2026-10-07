@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// <summary>
 /// The result of an admission attempt. For an <see cref="AdmissionKind.Admit"/> outcome it also
 /// carries the EXP rank that must be handed back verbatim to
-/// <see cref="ILogSampler{TCallsite, TPayload}.Insert"/> so the sampler can order its heap.
+/// <see cref="BottomKSampler{TCallsite, TPayload}.Insert"/> so the sampler can order its heap.
 /// </summary>
 internal readonly struct Admission : IEquatable<Admission>
 {

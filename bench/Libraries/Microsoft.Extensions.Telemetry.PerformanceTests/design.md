@@ -75,7 +75,7 @@ The novelty preserve is disabled so retained records are controlled only by the 
 
 ### Bottom-K log-level policy cost
 
-`BottomKLogLevelPolicyBench` isolates the incremental cost of the retain-all log-level decision. Both pipelines process the same Information-only workload with the same bottom-K capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline has an empty `RetainAllLogLevels` collection. The comparison scans `Error` and `Critical`, neither of which matches, so both pipelines perform equivalent bottom-K admission and retain equivalent output.
+`BottomKLogLevelPolicyBench` isolates the incremental cost of the retain-all log-level decision. Both pipelines process the same Information-only workload with the same bottom-K capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline sets `RetainAllLogLevel` to `None`. The comparison uses an `Error` threshold, which does not match, so both pipelines perform equivalent bottom-K admission and retain equivalent output.
 
 The benchmark measures the full logging path. `LogLevel` is already present on `LogEntry`; reading it does not construct or parse a value. The reported delta therefore covers passing that field into bottom-K sampling and checking the two configured retain-all levels.
 

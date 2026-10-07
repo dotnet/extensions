@@ -92,7 +92,7 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
         {
             FlushInterval = TimeSpan.Zero,
             UnseenWeightMode = (BottomKUnseenWeightMode)int.MaxValue,
-            RetainAllLogLevels = [(LogLevel)int.MaxValue],
+            RetainAllLogLevel = (LogLevel)int.MaxValue,
             RetainAllCategories = ["", "one*two*three"],
             SampledCategories = [" "],
         };
@@ -109,7 +109,6 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
     {
         var options = new BottomKLogSamplingOptions
         {
-            RetainAllLogLevels = null!,
             RetainAllCategories = null!,
             SampledCategories = null!,
         };

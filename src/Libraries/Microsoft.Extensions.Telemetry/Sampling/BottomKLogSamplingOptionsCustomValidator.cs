@@ -28,27 +28,15 @@ internal sealed class BottomKLogSamplingOptionsCustomValidator : IValidateOption
             result.AddError("UnseenWeightMode must be a defined value.", nameof(options.UnseenWeightMode));
         }
 
-        ValidateLogLevels(options.RetainAllLogLevels, result);
+        if (!Enum.IsDefined(options.RetainAllLogLevel))
+        {
+            result.AddError("RetainAllLogLevel must be a defined value.", nameof(options.RetainAllLogLevel));
+        }
+
         ValidateCategoryPatterns(options.RetainAllCategories, nameof(options.RetainAllCategories), result);
         ValidateCategoryPatterns(options.SampledCategories, nameof(options.SampledCategories), result);
 
         return result.Build();
-    }
-
-    private static void ValidateLogLevels(IList<LogLevel>? levels, ValidateOptionsResultBuilder result)
-    {
-        if (levels is null)
-        {
-            return;
-        }
-
-        foreach (LogLevel level in levels)
-        {
-            if (!Enum.IsDefined(level))
-            {
-                result.AddError("RetainAllLogLevels must contain only defined values.", nameof(BottomKLogSamplingOptions.RetainAllLogLevels));
-            }
-        }
     }
 
     private static void ValidateCategoryPatterns(

@@ -105,7 +105,7 @@ public class BottomKCategoryPolicyBench
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;
                 options.FlushInterval = TimeSpan.FromDays(1);
-                options.RetainAllLogLevels.Clear();
+                options.RetainAllLogLevel = LogLevel.None;
 
                 for (int i = 0; i < categoryPolicyCount; i++)
                 {

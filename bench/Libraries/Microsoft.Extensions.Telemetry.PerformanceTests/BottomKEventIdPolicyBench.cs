@@ -77,7 +77,7 @@ public class BottomKEventIdPolicyBench
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;
                 options.FlushInterval = TimeSpan.FromDays(1);
-                options.RetainAllLogLevels.Clear();
+                options.RetainAllLogLevel = LogLevel.None;
 
                 if (retainProtectedEventIds)
                 {

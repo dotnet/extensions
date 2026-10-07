@@ -11,13 +11,11 @@ internal sealed class BottomKLogSamplingPolicy
 {
     private readonly BottomKCategoryMatcher _retainAllCategories;
     private readonly FrozenSet<int> _retainAllEventIds;
-    private readonly FrozenSet<LogLevel> _retainAllLogLevels;
     private readonly BottomKCategoryMatcher _sampledCategories;
 
     public BottomKLogSamplingPolicy(BottomKLogSamplingOptions options)
     {
         Options = options;
-        _retainAllLogLevels = options.RetainAllLogLevels.ToFrozenSet();
         _retainAllEventIds = options.RetainAllEventIds.ToFrozenSet();
         _retainAllCategories = new BottomKCategoryMatcher(options.RetainAllCategories);
         _sampledCategories = new BottomKCategoryMatcher(options.SampledCategories);
@@ -28,7 +26,7 @@ internal sealed class BottomKLogSamplingPolicy
     public bool ShouldBypass(string category, LogLevel logLevel, EventId eventId)
     {
         if (!Options.Enabled
-            || _retainAllLogLevels.Contains(logLevel)
+            || logLevel >= Options.RetainAllLogLevel
             || _retainAllEventIds.Contains(eventId.Id)
             || _retainAllCategories.Matches(category))
         {

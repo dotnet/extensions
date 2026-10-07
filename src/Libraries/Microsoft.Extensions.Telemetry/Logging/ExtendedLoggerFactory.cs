@@ -120,16 +120,9 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
             _redactionOptionsChangeTokenRegistration?.Dispose();
 
 #if NET9_0_OR_GREATER
-            try
+            if (_logBuffer is IFlushOnShutdownLogBuffer)
             {
-                if (_logBuffer is IFlushOnShutdownLogBuffer)
-                {
-                    _logBuffer.Flush();
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingEventSource.Instance.LoggingException(ex);
+                _logBuffer.Flush();
             }
 #endif
 

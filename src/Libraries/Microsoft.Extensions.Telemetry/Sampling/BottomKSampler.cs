@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// </remarks>
 /// <typeparam name="TCallsite">The callsite identifier type (in production, the durable ID).</typeparam>
 /// <typeparam name="TPayload">The formatted log payload type.</typeparam>
-internal sealed class BottomKSampler<TCallsite, TPayload> : ILogSampler<TCallsite, TPayload>
+internal sealed class BottomKSampler<TCallsite, TPayload>
     where TCallsite : notnull
 {
     private const long DefaultMinPeriodCount = 32;

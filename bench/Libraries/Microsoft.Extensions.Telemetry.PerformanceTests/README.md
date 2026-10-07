@@ -99,3 +99,87 @@ WarmupCount=10
 |      ClassicCodeGen_ValueTypes | NewWi(...)pling [27] | 173.94 ns | 0.709 ns | 1.039 ns | 174.08 ns | 0.0429 |     360 B |
 |         ModernCodeGen_RefTypes | NewWi(...)pling [27] | 150.95 ns | 0.723 ns | 1.082 ns | 150.75 ns | 0.0038 |      32 B |
 |       ModernCodeGen_ValueTypes | NewWi(...)pling [27] | 165.48 ns | 0.387 ns | 0.579 ns | 165.53 ns | 0.0238 |     200 B |
+
+## 2026 Bottom-K sampling results
+
+These results cover the Bottom-K implementation and benchmark suites described in
+[design.md](design.md). Runs used Windows 11 under Hyper-V, .NET 10 x64 RyuJIT AVX2,
+two launches, ten warmup iterations, and fifteen measured iterations. Tiered compilation
+was disabled. Treat the figures as directional because virtualization can affect timing.
+
+Some saved artifacts use the implementation's earlier `Cckr` name. Those rows correspond
+to the Bottom-K implementation in this project.
+
+### Serialized exporter
+
+This is the most representative CPU and allocation comparison because the provider formats
+and serializes retained logs to UTF-8 JSON. Bottom-K and random sampling both target 1%
+retention. Times and allocations are for the complete input batch.
+
+| Strategy | Input logs | Mean | Allocated | Ratio to no sampling |
+| --- | ---: | ---: | ---: | ---: |
+| No sampling | 10,000 | 9.695 ms | 2,805.66 KB | 1.00 |
+| Random 1% | 10,000 | 3.069 ms | 959.35 KB | 0.31 |
+| Bottom-K 1% | 10,000 | 2.077 ms | 809.68 KB | 0.21 |
+| No sampling | 20,000 | 19.623 ms | 5,618.16 KB | 1.00 |
+| Random 1% | 20,000 | 5.878 ms | 1,923.91 KB | 0.30 |
+| Bottom-K 1% | 20,000 | 4.239 ms | 1,639.69 KB | 0.22 |
+
+At 20,000 logs, Bottom-K was 28% faster than random 1% sampling and allocated
+approximately 15% less managed memory. Both sampling strategies were substantially cheaper
+than serializing every log.
+
+### Category cardinality
+
+This suite processes 20,000 logs at 1% retention while varying the number of categories.
+
+| Categories | Strategy | Mean | Allocated |
+| ---: | --- | ---: | ---: |
+| 50 | Random 1% | 6.637 ms | 1.88 MB |
+| 50 | Bottom-K 1% | 4.281 ms | 1.62 MB |
+| 100 | Random 1% | 5.756 ms | 1.88 MB |
+| 100 | Bottom-K 1% | 4.054 ms | 1.63 MB |
+| 200 | Random 1% | 5.793 ms | 1.88 MB |
+| 200 | Bottom-K 1% | 4.071 ms | 1.67 MB |
+
+Bottom-K remained stable from 50 through 200 categories. Its allocation increased slightly
+because it maintains one bounded reservoir per category.
+
+### Retained memory
+
+Each scenario ran in a fresh worker process. `Retained managed` is live managed memory after
+a forced full collection; `Peak managed` is the largest observed managed-heap increase while
+processing the batch.
+
+| Pipeline | Input logs | Retained managed | Peak managed |
+| --- | ---: | ---: | ---: |
+| No sampling | 10,000 | ~0 MiB | 0.52 MiB |
+| Random 1% | 10,000 | ~0 MiB | 1.05 MiB |
+| Global buffer | 10,000 | 3.26 MiB | 5.64 MiB |
+| Bottom-K adaptive | 10,000 | 0.20 MiB | 1.36 MiB |
+| Bottom-K retain all | 10,000 | 8.42 MiB | 9.70 MiB |
+| No sampling | 20,000 | ~0 MiB | 0.84 MiB |
+| Random 1% | 20,000 | ~0 MiB | 2.09 MiB |
+| Global buffer | 20,000 | 6.52 MiB | 10.77 MiB |
+| Bottom-K adaptive | 20,000 | 0.20 MiB | 2.16 MiB |
+| Bottom-K retain all | 20,000 | 17.11 MiB | 19.58 MiB |
+
+Adaptive Bottom-K retained approximately 0.20 MiB at both traffic volumes because its sample
+capacity was fixed. Retain-all configurations intentionally scale with input volume and are
+included only to expose the upper-bound buffering cost.
+
+### Category-policy cost
+
+The following run used .NET 10.0.12. Each row processes the complete input batch and all
+patterns miss, so output volume remains equivalent.
+
+| Policy | 10,000 logs | 20,000 logs |
+| --- | ---: | ---: |
+| No category policy | 3.879 ms | 6.423 ms |
+| Two wildcard misses | 4.806 ms | 7.737 ms |
+| 100 wildcard misses | 27.766 ms | 54.854 ms |
+| 100 exact misses | 4.124 ms | 6.973 ms |
+
+Exact category names use a case-insensitive frozen set and therefore remain effectively
+constant-time. Wildcard patterns are checked sequentially; use them selectively for specific
+namespace families.

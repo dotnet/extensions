@@ -130,7 +130,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Logging.LogLevel> Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.RetainAllLogLevels { get; set; }",
+          "Member": "Microsoft.Extensions.Logging.LogLevel Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.RetainAllLogLevel { get; set; }",
           "Stage": "Experimental"
         },
         {

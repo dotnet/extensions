@@ -164,7 +164,7 @@ public class BottomKLogBufferTests
     public void RetainAllEventId_BypassesBottomKBuffer()
     {
         var options = new BottomKLogSamplingOptions();
-        options.RetainAllLogLevels.Clear();
+        options.RetainAllLogLevel = LogLevel.None;
         options.RetainAllEventIds.Add(42);
 
         AssertBypasses(options, "category", LogLevel.Information, new EventId(42));
@@ -177,7 +177,7 @@ public class BottomKLogBufferTests
     public void RetainAllCategory_BypassesBottomKBuffer(string category, string pattern)
     {
         var options = new BottomKLogSamplingOptions();
-        options.RetainAllLogLevels.Clear();
+        options.RetainAllLogLevel = LogLevel.None;
         options.RetainAllCategories.Add(pattern);
 
         AssertBypasses(options, category, LogLevel.Information, new EventId(1));
@@ -187,7 +187,7 @@ public class BottomKLogBufferTests
     public void CategoryOutsideSampledAllowlist_BypassesBottomKBuffer()
     {
         var options = new BottomKLogSamplingOptions();
-        options.RetainAllLogLevels.Clear();
+        options.RetainAllLogLevel = LogLevel.None;
         options.SampledCategories.Add("Sampled.*");
 
         AssertBypasses(options, "Retained.Category", LogLevel.Information, new EventId(1));
@@ -197,7 +197,7 @@ public class BottomKLogBufferTests
     public void OptionsChange_AppliesPolicyToNextAdmission()
     {
         var initial = new BottomKLogSamplingOptions();
-        initial.RetainAllLogLevels.Clear();
+        initial.RetainAllLogLevel = LogLevel.None;
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
@@ -214,14 +214,14 @@ public class BottomKLogBufferTests
     public void OptionsChange_RebuildsAllCompiledBypassPolicies()
     {
         var initial = new BottomKLogSamplingOptions();
-        initial.RetainAllLogLevels.Clear();
+        initial.RetainAllLogLevel = LogLevel.None;
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
 
         var updated = new BottomKLogSamplingOptions
         {
-            RetainAllLogLevels = [LogLevel.Warning],
+            RetainAllLogLevel = LogLevel.Warning,
             RetainAllEventIds = [42],
             RetainAllCategories = ["Exact.Protected", "Wildcard.*"],
             SampledCategories = ["Sampled.Exact", "Sampled.*"],
@@ -245,7 +245,7 @@ public class BottomKLogBufferTests
 
         var replacement = new BottomKLogSamplingOptions
         {
-            RetainAllLogLevels = [],
+            RetainAllLogLevel = LogLevel.None,
             RetainAllCategories = ["Replacement.Protected"],
         };
         monitor.Set(replacement);
@@ -274,7 +274,7 @@ public class BottomKLogBufferTests
             Capacity = 1,
             PreserveCapacity = 0,
         };
-        initial.RetainAllLogLevels.Clear();
+        initial.RetainAllLogLevel = LogLevel.None;
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
@@ -285,7 +285,7 @@ public class BottomKLogBufferTests
             Capacity = 2,
             PreserveCapacity = 0,
         };
-        updated.RetainAllLogLevels.Clear();
+        updated.RetainAllLogLevel = LogLevel.None;
         monitor.Set(updated);
         _ = buffer.Admit("category", LogLevel.Information, new EventId(2));
 
@@ -300,7 +300,7 @@ public class BottomKLogBufferTests
             Capacity = 1,
             PreserveCapacity = 0,
         };
-        initial.RetainAllLogLevels.Clear();
+        initial.RetainAllLogLevel = LogLevel.None;
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
@@ -321,7 +321,7 @@ public class BottomKLogBufferTests
             Capacity = 2,
             PreserveCapacity = 0,
         };
-        updated.RetainAllLogLevels.Clear();
+        updated.RetainAllLogLevel = LogLevel.None;
         monitor.Set(updated);
         _ = buffer.Admit("category", LogLevel.Information, new EventId(2));
         continueInsertion.Set();

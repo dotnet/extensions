@@ -53,10 +53,9 @@ public sealed class BottomKLogSamplingOptions
     public BottomKUnseenWeightMode UnseenWeightMode { get; set; } = BottomKUnseenWeightMode.Chao1;
 
     /// <summary>
-    /// Gets or sets the log levels that bypass bottom-K sampling and are emitted normally.
+    /// Gets or sets the minimum log level that bypasses bottom-K sampling and is emitted normally.
     /// </summary>
-    [Required]
-    public IList<LogLevel> RetainAllLogLevels { get; set; } = [LogLevel.Error, LogLevel.Critical];
+    public LogLevel RetainAllLogLevel { get; set; } = LogLevel.Error;
 
     /// <summary>
     /// Gets or sets category patterns that bypass bottom-K sampling and are emitted normally.

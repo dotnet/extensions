@@ -414,10 +414,6 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
             {
                 bufferedLogger.LogRecords(records);
             }
-            catch (Exception ex)
-            {
-                LoggingEventSource.Instance.LoggingException(ex);
-            }
             finally
             {
                 foreach (SampledRecord<int, SerializedLogRecord> sampled in drained)
