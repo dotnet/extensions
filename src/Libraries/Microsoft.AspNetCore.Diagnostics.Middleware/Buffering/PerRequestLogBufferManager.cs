@@ -5,6 +5,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -16,15 +17,18 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
 
     private readonly GlobalLogBuffer _globalBuffer;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IExternalScopeProvider _scopeProvider;
 
     public PerRequestLogBufferManager(
         GlobalLogBuffer globalBuffer,
         IHttpContextAccessor httpContextAccessor,
-        IOptionsMonitor<PerRequestLogBufferingOptions> options)
+        IOptionsMonitor<PerRequestLogBufferingOptions> options,
+        IExternalScopeProvider scopeProvider)
     {
         _globalBuffer = globalBuffer;
         _httpContextAccessor = httpContextAccessor;
         Options = options;
+        _scopeProvider = scopeProvider;
     }
 
     public override void Flush()
@@ -45,7 +49,7 @@ internal sealed class PerRequestLogBufferManager : PerRequestLogBuffer
         IncomingRequestLogBufferHolder? bufferHolder =
             httpContext.RequestServices?.GetService<IncomingRequestLogBufferHolder>();
         IncomingRequestLogBuffer? buffer = bufferHolder?.GetOrAdd(category, _ =>
-            new IncomingRequestLogBuffer(bufferedLogger, category, Options));
+            new IncomingRequestLogBuffer(bufferedLogger, category, Options, _scopeProvider));
 
         if (buffer is null)
         {
