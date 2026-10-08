@@ -1976,6 +1976,50 @@ public class OpenAIChatClientTests
         Assert.Equal("9.8 is larger.", string.Concat(updates.Select(u => u.Text)));
     }
 
+    [Fact]
+    public async Task Streaming_NullDeltaContentFilterChunk_ContinuesToUsage()
+    {
+        const string Input = """
+            {
+                "messages":[{"role":"user","content":"Hello"}],
+                "model":"example-model",
+                "stream":true,
+                "stream_options":{"include_usage":true}
+            }
+            """;
+
+        const string Output = """
+            data: {"id":"chatcmpl-example","object":"chat.completion.chunk","created":0,"model":"example-model","choices":[{"index":0,"delta":{"role":"assistant","content":"OK"},"finish_reason":null}]}
+
+            data: {"id":"chatcmpl-example","object":"chat.completion.chunk","created":0,"model":"example-model","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+            data: {"choices":[{"content_filter_offsets":{"check_offset":2,"start_offset":0,"end_offset":2},"content_filter_results":{"hate":{"filtered":false,"severity":"safe"}},"finish_reason":null,"index":0}],"created":0,"id":"","model":"","object":""}
+
+            data: {"id":"chatcmpl-example","object":"chat.completion.chunk","created":0,"model":"example-model","choices":[],"usage":{"completion_tokens":1,"prompt_tokens":1,"total_tokens":2}}
+
+            data: [DONE]
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "example-model");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (ChatResponseUpdate update in client.GetStreamingResponseAsync("Hello"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("OK", string.Concat(updates.Select(u => u.Text)));
+        Assert.Contains(updates, u => u.FinishReason == ChatFinishReason.Stop);
+
+        UsageContent usage = updates.SelectMany(u => u.Contents).OfType<UsageContent>().Single();
+        Assert.Equal(1, usage.Details.InputTokenCount);
+        Assert.Equal(1, usage.Details.OutputTokenCount);
+        Assert.Equal(2, usage.Details.TotalTokenCount);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
