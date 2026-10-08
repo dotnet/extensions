@@ -185,6 +185,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "bool Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.IncludeScopes { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "int Microsoft.AspNetCore.Diagnostics.Buffering.PerRequestLogBufferingOptions.MaxLogRecordSizeInBytes { get; set; }",
           "Stage": "Stable"
         },

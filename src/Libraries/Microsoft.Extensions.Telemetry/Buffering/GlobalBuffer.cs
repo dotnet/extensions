@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -25,8 +26,8 @@ internal sealed class GlobalBuffer : IDisposable
 
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly IBufferedLogger _bufferedLogger;
+    private readonly IExternalScopeProvider _scopeProvider;
     private readonly TimeProvider _timeProvider;
-    private readonly LogBufferingFilterRuleSelector _ruleSelector;
     private readonly IDisposable? _optionsChangeTokenRegistration;
     private readonly string _category;
     private readonly Lock _bufferSwapLock = new();
@@ -42,15 +43,15 @@ internal sealed class GlobalBuffer : IDisposable
     public GlobalBuffer(
         IBufferedLogger bufferedLogger,
         string category,
-        LogBufferingFilterRuleSelector ruleSelector,
         IOptionsMonitor<GlobalLogBufferingOptions> options,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IExternalScopeProvider scopeProvider)
     {
         _options = Throw.IfNull(options);
         _timeProvider = timeProvider;
         _bufferedLogger = bufferedLogger;
+        _scopeProvider = scopeProvider;
         _category = Throw.IfNullOrEmpty(category);
-        _ruleSelector = Throw.IfNull(ruleSelector);
         LastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), _category);
         _optionsChangeTokenRegistration = options.OnChange(OnOptionsChanged);
     }
@@ -84,7 +85,7 @@ internal sealed class GlobalBuffer : IDisposable
                 $"Unsupported type of log state detected: {typeof(TState)}, expected IReadOnlyList<KeyValuePair<string, object?>>");
         }
 
-        if (_ruleSelector.Select(LastKnownGoodFilterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
+        if (LogBufferingFilterRuleSelector.Select(LastKnownGoodFilterRules, logEntry.LogLevel, logEntry.EventId, attributes) is null)
         {
             // buffering is not enabled for this log entry,
             // return false to indicate that the log entry should be logged normally.
@@ -97,7 +98,8 @@ internal sealed class GlobalBuffer : IDisposable
             _timeProvider.GetUtcNow(),
             attributes,
             logEntry.Exception,
-            logEntry.Formatter(logEntry.State, logEntry.Exception));
+            logEntry.Formatter(logEntry.State, logEntry.Exception),
+            _options.CurrentValue.IncludeScopes ? _scopeProvider : null);
 
         if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
         {
@@ -169,8 +171,6 @@ internal sealed class GlobalBuffer : IDisposable
         {
             LastKnownGoodFilterRules = LogBufferingFilterRuleSelector.SelectByCategory(updatedOptions.Rules.ToArray(), _category);
         }
-
-        _ruleSelector.InvalidateCache();
     }
 
     private void TrimExcessRecords()
