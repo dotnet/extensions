@@ -273,6 +273,38 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
+    public async Task StreamingResponse_ModelId_IgnoresEmptyChunks()
+    {
+        const string Output = """
+            data: {"id":"","object":"chat.completion.chunk","created":0,"model":"","choices":[],"prompt_filter_results":[]}
+
+            data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":1727889370,"model":"gpt-4o-mini-2024-07-18","choices":[{"index":0,"delta":{"role":"assistant","content":"Hello!"},"finish_reason":null}]}
+
+            data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":1727889370,"model":"","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+            data: [DONE]
+
+            """;
+
+        using VerbatimHttpHandler handler = new(new HttpHandlerExpectedInput(), Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("hello"))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal(3, updates.Count);
+        Assert.Null(updates[0].ModelId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", updates[1].ModelId);
+        Assert.Equal("gpt-4o-mini-2024-07-18", updates[2].ModelId);
+        Assert.Equal("Hello!", updates[1].Text);
+        Assert.Equal(ChatFinishReason.Stop, updates[2].FinishReason);
+    }
+
+    [Fact]
     public async Task ChatOptions_StrictRespected()
     {
         const string Input = """
