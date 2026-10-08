@@ -368,7 +368,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
             finishReason ??= update.FinishReason is OpenAI.Chat.ChatFinishReason reason ? FromOpenAIFinishReason(reason) : null;
             responseId ??= update.CompletionId;
             createdAt ??= update.CreatedAt;
-            modelId ??= update.Model;
+            modelId ??= string.IsNullOrEmpty(update.Model) ? null : update.Model;
 
             // Record the service tier and system fingerprint each once if not yet recorded.
             OpenAIClientExtensions.AddOpenAIResponseAttributes(
