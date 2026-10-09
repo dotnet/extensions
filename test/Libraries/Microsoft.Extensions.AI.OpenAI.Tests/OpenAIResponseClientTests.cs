@@ -6892,8 +6892,10 @@ public class OpenAIResponseClientTests
         Assert.Equal("Final", Encoding.UTF8.GetString(image.Data.ToArray()));
     }
 
-    [Fact]
-    public async Task HostedImageGenerationTool_StreamingAndNonStreaming_ProduceSameImageContents()
+    [Theory]
+    [InlineData("""{"type":"image_generation_call","id":"img_call_same1","status":"completed","result":"RmluYWw="}""")]
+    [InlineData("""{"type":"image_generation_call","id":"img_call_same1","status":"failed"}""")]
+    public async Task HostedImageGenerationTool_StreamingAndNonStreaming_ProduceSameImageContents(string imageGenerationCall)
     {
         const string NonStreamingInput = """
             {
@@ -6920,21 +6922,14 @@ public class OpenAIResponseClientTests
             }
             """;
 
-        const string NonStreamingOutput = """
+        string nonStreamingOutput = $$"""
             {
               "id": "resp_same1",
               "object": "response",
               "created_at": 1741891428,
               "status": "completed",
               "model": "gpt-4o-2024-11-20",
-              "output": [
-                {
-                  "type": "image_generation_call",
-                  "id": "img_call_same1",
-                  "status": "completed",
-                  "result": "RmluYWw="
-                }
-              ],
+              "output": [{{imageGenerationCall}}],
               "usage": {
                 "input_tokens": 15,
                 "output_tokens": 0,
@@ -6969,7 +6964,7 @@ public class OpenAIResponseClientTests
             }
             """;
 
-        const string StreamingOutput = """
+        string streamingOutput = $$$$"""
             event: response.created
             data: {"type":"response.created","response":{"id":"resp_same1","object":"response","created_at":1741891428,"status":"in_progress","model":"gpt-4o-2024-11-20","output":[]}}
 
@@ -6980,10 +6975,10 @@ public class OpenAIResponseClientTests
             data: {"type":"response.image_generation_call.in_progress","item_id":"img_call_same1","output_index":0}
 
             event: response.output_item.done
-            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"image_generation_call","id":"img_call_same1","status":"completed","result":"RmluYWw="}}
+            data: {"type":"response.output_item.done","output_index":0,"item":{{{{imageGenerationCall}}}}}
 
             event: response.completed
-            data: {"type":"response.completed","response":{"id":"resp_same1","object":"response","created_at":1741891428,"status":"completed","model":"gpt-4o-2024-11-20","output":[{"type":"image_generation_call","id":"img_call_same1","status":"completed","result":"RmluYWw="}],"usage":{"input_tokens":15,"output_tokens":0,"total_tokens":15}}}
+            data: {"type":"response.completed","response":{"id":"resp_same1","object":"response","created_at":1741891428,"status":"completed","model":"gpt-4o-2024-11-20","output":[{{{{imageGenerationCall}}}}],"usage":{"input_tokens":15,"output_tokens":0,"total_tokens":15}}}
 
 
             """;
@@ -6994,7 +6989,7 @@ public class OpenAIResponseClientTests
         };
 
         ChatResponse nonStreamingResponse;
-        using (VerbatimHttpHandler handler = new(NonStreamingInput, NonStreamingOutput))
+        using (VerbatimHttpHandler handler = new(NonStreamingInput, nonStreamingOutput))
         using (HttpClient httpClient = new(handler))
         using (IChatClient client = CreateResponseClient(httpClient, "gpt-4o"))
         {
@@ -7002,7 +6997,7 @@ public class OpenAIResponseClientTests
         }
 
         ChatResponse streamingResponse;
-        using (VerbatimHttpHandler handler = new(StreamingInput, StreamingOutput))
+        using (VerbatimHttpHandler handler = new(StreamingInput, streamingOutput))
         using (HttpClient httpClient = new(handler))
         using (IChatClient client = CreateResponseClient(httpClient, "gpt-4o"))
         {
@@ -7014,7 +7009,8 @@ public class OpenAIResponseClientTests
         var streamingContents = streamingResponse.Messages.SelectMany(m => m.Contents)
             .Where(c => c is ImageGenerationToolCallContent or ImageGenerationToolResultContent).ToList();
 
-        // Both paths should produce a tool call followed by a tool result carrying the same final image.
+        // Both paths should produce a tool call followed by a tool result carrying the same final image,
+        // including when the completed item carries no image bytes.
         Assert.Equal(nonStreamingContents.Select(c => c.GetType()), streamingContents.Select(c => c.GetType()));
         Assert.Equal(
             nonStreamingContents.OfType<ImageGenerationToolCallContent>().Single().CallId,

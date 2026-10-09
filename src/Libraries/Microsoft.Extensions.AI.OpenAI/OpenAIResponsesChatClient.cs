@@ -608,8 +608,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // The ImageGenerationToolCallContent has already been yielded as part of in-progress updates,
                         // but any partial images yielded along the way are lower-quality intermediate renders rather than
                         // deltas of the final image. Yield the final image here; coalescing will replace the partial
-                        // results with this one, since they share the same CallId.
-                        case ImageGenerationCallResponseItem { ImageResultBytes: not null } imageGenItem:
+                        // results with this one, since they share the same CallId. This mirrors the non-streaming path,
+                        // which produces a result for every ImageGenerationCallResponseItem.
+                        case ImageGenerationCallResponseItem imageGenItem:
                             yield return CreateUpdate(CreateImageGenerationResultContent(imageGenItem, options));
                             break;
 
