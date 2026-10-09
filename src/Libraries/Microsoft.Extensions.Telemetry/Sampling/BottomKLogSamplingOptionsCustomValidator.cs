@@ -1,0 +1,68 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+#if NET9_0_OR_GREATER
+
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace Microsoft.Extensions.Diagnostics.Sampling;
+
+/// <summary>
+/// Validates bottom-K configuration constraints that cannot be expressed with data annotations.
+/// </summary>
+internal sealed class BottomKLogSamplingOptionsCustomValidator : IValidateOptions<BottomKLogSamplingOptions>
+{
+    public ValidateOptionsResult Validate(string? name, BottomKLogSamplingOptions options)
+    {
+        ValidateOptionsResultBuilder result = new();
+
+        if (options.FlushInterval <= TimeSpan.Zero)
+        {
+            result.AddError("FlushInterval must be greater than zero.", nameof(options.FlushInterval));
+        }
+
+        if (!Enum.IsDefined(options.UnseenWeightMode))
+        {
+            result.AddError("UnseenWeightMode must be a defined value.", nameof(options.UnseenWeightMode));
+        }
+
+        if (!Enum.IsDefined(options.RetainAllLogLevel))
+        {
+            result.AddError("RetainAllLogLevel must be a defined value.", nameof(options.RetainAllLogLevel));
+        }
+
+        ValidateCategoryPatterns(options.RetainAllCategories, nameof(options.RetainAllCategories), result);
+        ValidateCategoryPatterns(options.SampledCategories, nameof(options.SampledCategories), result);
+
+        return result.Build();
+    }
+
+    private static void ValidateCategoryPatterns(
+        IList<string>? patterns,
+        string memberName,
+        ValidateOptionsResultBuilder result)
+    {
+        if (patterns is null)
+        {
+            return;
+        }
+
+        foreach (string pattern in patterns)
+        {
+            if (string.IsNullOrWhiteSpace(pattern))
+            {
+                result.AddError("Category patterns cannot be empty.", memberName);
+                continue;
+            }
+
+            int wildcard = pattern.IndexOf("*", StringComparison.Ordinal);
+            if (wildcard >= 0 && pattern.IndexOf("*", wildcard + 1, StringComparison.Ordinal) >= 0)
+            {
+                result.AddError("Only one wildcard character is allowed in a category pattern.", memberName);
+            }
+        }
+    }
+}
+#endif

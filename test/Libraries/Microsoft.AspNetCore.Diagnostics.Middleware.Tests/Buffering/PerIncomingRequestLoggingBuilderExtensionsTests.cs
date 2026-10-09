@@ -24,6 +24,21 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 public class PerIncomingRequestLoggingBuilderExtensionsTests
 {
     [Fact]
+    public void AddPerIncomingRequestBuffer_WhenBottomKIsRegistered_Throws()
+    {
+        var serviceCollection = new ServiceCollection();
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            serviceCollection.AddLogging(builder =>
+            {
+                builder.AddBottomKLogSampling();
+                builder.AddPerIncomingRequestBuffer();
+            }));
+
+        Assert.Contains("another log buffer", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void WhenLogLevelProvided_RegistersInDI()
     {
         var serviceCollection = new ServiceCollection();

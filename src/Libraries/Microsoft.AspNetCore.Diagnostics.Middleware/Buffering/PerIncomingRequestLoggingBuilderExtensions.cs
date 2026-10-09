@@ -3,6 +3,7 @@
 #if NET9_0_OR_GREATER
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Diagnostics.Buffering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -111,6 +112,19 @@ public static class PerIncomingRequestLoggingBuilderExtensions
 
     private static ILoggingBuilder AddPerRequestBufferManager(this ILoggingBuilder builder)
     {
+        bool globalBufferRegistered = builder.Services.Any(descriptor =>
+            descriptor.ServiceType == typeof(GlobalLogBuffer));
+        bool perRequestBufferRegistered = builder.Services.Any(descriptor =>
+            descriptor.ServiceType == typeof(PerRequestLogBuffer));
+        bool logBufferRegistered = builder.Services.Any(descriptor =>
+            descriptor.ServiceType == typeof(LogBuffer));
+
+        if (logBufferRegistered && !globalBufferRegistered && !perRequestBufferRegistered)
+        {
+            Throw.InvalidOperationException(
+                "Per-request log buffering cannot be combined with another log buffer in the same logging pipeline.");
+        }
+
         builder.Services.TryAddScoped<IncomingRequestLogBufferHolder>();
         builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         builder.Services.TryAddSingleton(sp =>
