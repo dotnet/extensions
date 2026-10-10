@@ -17,13 +17,18 @@ internal static class ToolChanges
     /// every tool whose first change in <paramref name="messages"/> is a <see cref="ToolAdditionContent"/>, since the history
     /// introduces those tools where they were added.
     /// </summary>
+    /// <remarks>
+    /// <paramref name="messages"/> is replaced with a list when it has to be scanned, so that the caller can enumerate it again.
+    /// </remarks>
     /// <returns><paramref name="options"/> itself when no tool needs removing; otherwise a clone with the remaining tools.</returns>
-    public static ChatOptions? WithoutIntroducedTools(ChatOptions? options, IEnumerable<ChatMessage> messages)
+    public static ChatOptions? WithoutIntroducedTools(ref IEnumerable<ChatMessage> messages, ChatOptions? options)
     {
         if (options?.Tools is not { Count: > 0 } tools)
         {
             return options;
         }
+
+        messages = AsList(messages);
 
         HashSet<string>? seen = null;
         HashSet<string>? introduced = null;
@@ -65,10 +70,16 @@ internal static class ToolChanges
     /// <remarks>
     /// A tool whose last change is a removal is left out of the tools. A tool whose last change is an addition is kept, or added
     /// from its declaration when <see cref="ChatOptions.Tools"/> doesn't have a tool of that name. A message that held only tool
-    /// changes is left out of the history.
+    /// changes is left out of the history. <paramref name="messages"/> is replaced with a list, so that the caller can enumerate
+    /// it again.
     /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="ChatOptions.ToolMode"/> requires a function whose last change in <paramref name="messages"/> is a removal.
+    /// </exception>
     public static void ApplyToTools(ref IEnumerable<ChatMessage> messages, ref ChatOptions? options)
     {
+        messages = AsList(messages);
+
         Dictionary<string, AIFunctionDeclaration?>? finalState = null;
         foreach (ChatMessage message in messages)
         {
@@ -90,6 +101,13 @@ internal static class ToolChanges
         if (finalState is null)
         {
             return;
+        }
+
+        if (options?.ToolMode is RequiredChatToolMode { RequiredFunctionName: { } requiredName } &&
+            finalState.TryGetValue(requiredName, out AIFunctionDeclaration? requiredState) && requiredState is null)
+        {
+            throw new InvalidOperationException(
+                $"The tool mode requires the function '{requiredName}', but a {nameof(ToolRemovalContent)} in the history removes it.");
         }
 
         List<AITool> tools = [];
@@ -134,4 +152,8 @@ internal static class ToolChanges
 
         messages = stripped;
     }
+
+    /// <summary>Gets <paramref name="messages"/> as a list, so that a sequence that can only be enumerated once is enumerated once.</summary>
+    private static IList<ChatMessage> AsList(IEnumerable<ChatMessage> messages) =>
+        messages as IList<ChatMessage> ?? [.. messages];
 }

@@ -22,10 +22,10 @@ namespace Microsoft.Extensions.AI;
 /// </para>
 /// <para>
 /// The content only describes the tool to the model. To have the tool invoked by a component such as
-/// <c>FunctionInvokingChatClient</c>, also add the invocable function to <see cref="ChatOptions.Tools"/>. A chat client
-/// that supports positional tool changes leaves a tool whose first change in the history is a
-/// <see cref="ToolAdditionContent"/> out of the tool definitions at the start of the request. A chat client
-/// that doesn't applies the changes in the history to the tool definitions it sends instead.
+/// <c>FunctionInvokingChatClient</c>, also add the invocable function to <see cref="ChatOptions.Tools"/>. When a tool's
+/// first change in the history is a <see cref="ToolAdditionContent"/>, a chat client that supports positional tool changes
+/// leaves the tool out of the tool definitions at the start of the request. A chat client without that support instead
+/// applies the changes in the history to the tool definitions it sends.
 /// </para>
 /// <para>
 /// Keep the content in the history unchanged for as long as the conversation continues. Its definition, rather than

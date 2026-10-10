@@ -107,7 +107,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
         // Convert the inputs into what ResponsesClient expects.
         // Tools that the history introduces with a ToolAdditionContent are sent at that position as an additional_tools item.
-        var openAIOptions = AsCreateResponseOptions(ToolChanges.WithoutIntroducedTools(options, messages), out string? openAIConversationId);
+        var openAIOptions = AsCreateResponseOptions(ToolChanges.WithoutIntroducedTools(ref messages, options), out string? openAIConversationId);
 
         // Provided continuation token signals that an existing background response should be fetched.
         if (GetContinuationToken(messages, options) is { } token)
@@ -331,7 +331,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         OpenAIClientExtensions.AddOpenAIApiType(OpenAIClientExtensions.OpenAIApiTypeResponses);
 
         // Tools that the history introduces with a ToolAdditionContent are sent at that position as an additional_tools item.
-        var openAIOptions = AsCreateResponseOptions(ToolChanges.WithoutIntroducedTools(options, messages), out string? openAIConversationId);
+        var openAIOptions = AsCreateResponseOptions(ToolChanges.WithoutIntroducedTools(ref messages, options), out string? openAIConversationId);
         openAIOptions.StreamingEnabled = true;
 
         // Provided continuation token signals that an existing background response should be fetched.

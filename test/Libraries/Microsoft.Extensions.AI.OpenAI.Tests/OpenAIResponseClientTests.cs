@@ -9103,8 +9103,10 @@ public class OpenAIResponseClientTests
         Assert.Equal("production", ((JsonElement)coalesced.Arguments["env"]!).GetString());
     }
 
-    [Fact]
-    public async Task ToolAdditionContent_SentAsAdditionalToolsItem_NonStreaming()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToolAdditionContent_SentAsAdditionalToolsItem_NonStreaming(bool enumerateOnce)
     {
         const string Input = """
             {
@@ -9183,12 +9185,14 @@ public class OpenAIResponseClientTests
         var replyToUser = AIFunctionFactory.Create((string text) => text, "ReplyToUser", "Replies to the user.");
 
         // ReplyToUser is in Tools so that it can be invoked, but the history introduces it, so it isn't declared up front.
-        // The removal of GetWeather has no Responses API form and isn't sent.
-        var response = await client.GetResponseAsync(
+        // The removal of GetWeather has no Responses API form and isn't sent, so GetWeather stays declared up front.
+        List<ChatMessage> messages =
         [
             new(ChatRole.User, "Summarize the report."),
-            new(ChatRole.System, [new TextContent("The user sent a message."), new ToolAdditionContent(replyToUser), new ToolRemovalContent("GetForecast")]),
-        ], new()
+            new(ChatRole.System, [new TextContent("The user sent a message."), new ToolAdditionContent(replyToUser), new ToolRemovalContent("GetWeather")]),
+        ];
+
+        var response = await client.GetResponseAsync(enumerateOnce ? new EnumeratedOnceEnumerable<ChatMessage>(messages) : messages, new()
         {
             Tools = [getWeather, replyToUser],
             AdditionalProperties = new() { ["strict"] = true },
@@ -9196,5 +9200,92 @@ public class OpenAIResponseClientTests
 
         Assert.NotNull(response);
         Assert.Equal("Hello!", response.Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToolAdditionContent_SentAsAdditionalToolsItem_Streaming(bool enumerateOnce)
+    {
+        const string Input = """
+            {
+                "model": "gpt-4o-mini",
+                "input": [
+                    {
+                        "type": "message",
+                        "role": "user",
+                        "content": [{ "type": "input_text", "text": "Summarize the report." }]
+                    },
+                    {
+                        "type": "additional_tools",
+                        "role": "developer",
+                        "tools": [
+                            {
+                                "type": "function",
+                                "name": "ReplyToUser",
+                                "description": "Replies to the user.",
+                                "parameters": {
+                                    "type": "object",
+                                    "required": ["text"],
+                                    "properties": { "text": { "type": "string" } },
+                                    "additionalProperties": false
+                                },
+                                "strict": true
+                            }
+                        ]
+                    }
+                ],
+                "tools": [
+                    {
+                        "type": "function",
+                        "name": "GetWeather",
+                        "description": "Gets the weather.",
+                        "parameters": {
+                            "type": "object",
+                            "required": [],
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "strict": true
+                    }
+                ],
+                "stream": true
+            }
+            """;
+
+        const string Output = """
+            event: response.output_text.delta
+            data: {"type":"response.output_text.delta","item_id":"msg_001","output_index":0,"content_index":0,"delta":"Hello!"}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Hello!","annotations":[]}]}]}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var getWeather = AIFunctionFactory.Create(() => 42, "GetWeather", "Gets the weather.");
+        var replyToUser = AIFunctionFactory.Create((string text) => text, "ReplyToUser", "Replies to the user.");
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "Summarize the report."),
+            new(ChatRole.System, [new ToolAdditionContent(replyToUser)]),
+        ];
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync(enumerateOnce ? new EnumeratedOnceEnumerable<ChatMessage>(messages) : messages, new()
+        {
+            Tools = [getWeather, replyToUser],
+            AdditionalProperties = new() { ["strict"] = true },
+        }))
+        {
+            updates.Add(update);
+        }
+
+        Assert.Equal("Hello!", updates.ToChatResponse().Text);
     }
 }
