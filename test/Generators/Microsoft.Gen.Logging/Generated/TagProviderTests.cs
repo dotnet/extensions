@@ -335,10 +335,10 @@ public class TagProviderTests
         {
             ["param1.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["param1.MyStringProperty"] = classToLog.MyStringProperty,
-            ["param1.AnotherStringProperty"] = classToLog.AnotherStringProperty,
+            ["{OriginalFormat}"] = "No params.",
+            ["param1.AnotherStringProperty.NestedTagProvider"] = classToLog.AnotherStringProperty,
             ["param2.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
-            ["param2.Custom_property_name"] = classToLog.MyStringProperty,
-            ["{OriginalFormat}"] = "No params."
+            ["param2.Custom_property_name"] = classToLog.MyStringProperty
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
