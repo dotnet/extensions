@@ -1260,6 +1260,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             ReasoningEffort.Medium => ResponseReasoningEffortLevel.Medium,
             ReasoningEffort.High => ResponseReasoningEffortLevel.High,
             ReasoningEffort.ExtraHigh => new ResponseReasoningEffortLevel("xhigh"),
+            ReasoningEffort.Max => new ResponseReasoningEffortLevel("max"),
             _ => (ResponseReasoningEffortLevel?)null,
         };
 
