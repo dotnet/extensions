@@ -663,12 +663,18 @@ public class HttpParserTests
             "/a/part1.part2.part3.json", httpParser.ParseRoute("/a/{token}.{format}"), redactionMode, parametersToRedact, ref httpRouteParameters));
         ValidateRouteParameter(httpRouteParameters[0], "token", $"{redactedPrefix}part1.part2.part3", isRedacted);
         ValidateRouteParameter(httpRouteParameters[1], "format", "json", false);
+
+        Assert.True(httpParser.TryExtractParameters(
+            "/c/json.secret.ZIP", httpParser.ParseRoute("/c/{format}.{token}.zip"), redactionMode, parametersToRedact, ref httpRouteParameters));
+        ValidateRouteParameter(httpRouteParameters[0], "format", "json", false);
+        ValidateRouteParameter(httpRouteParameters[1], "token", $"{redactedPrefix}secret", isRedacted);
     }
 
     [Theory]
     [InlineData("{token}.{format}", "part1.part2.part3.json", "token", "part1.part2.part3")]
     [InlineData("{format}.{token}", "json.secret", "format", "json")]
     [InlineData("{token}.json", "part1.part2.json", "token", "part1.part2")]
+    [InlineData("{token}.json", "part1.part2.JSON", "token", "part1.part2")]
     [InlineData("{token}.{format}.zip", "part1.part2.json.zip", "token", "part1.part2")]
     [InlineData("{token}.json/{format}", "part1.part2.json/xml", "token", "part1.part2")]
     [InlineData("{token}.{format}/rest", "part1.part2.json/rest", "token", "part1.part2")]

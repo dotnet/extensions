@@ -496,6 +496,7 @@ public class HttpRouteFormatterTests
     [InlineData("/a/{token}.{format}", "/a/part1.part2.part3.json", "a/[REDACTED].json")]
     [InlineData("/a/{token}.{format}.zip", "/a/part1.part2.json.zip", "a/[REDACTED].json.zip")]
     [InlineData("/a/{token}.json/{format}", "/a/part1.part2.json/xml", "a/[REDACTED].json/xml")]
+    [InlineData("/a/{token}.{format}.zip", "/a/part1.part2.json.ZIP", "a/[REDACTED].json.zip")]
     public void Format_ParameterValueContainsFollowingLiteral_RedactsWholeValue(string httpRoute, string httpPath, string expectedPath)
     {
         HttpRouteFormatter httpFormatter = CreateHttpRouteFormatter("[REDACTED]");
