@@ -71,7 +71,9 @@ public abstract class HybridSearchEmbeddingGenerationTests<TKey>(HybridSearchEmb
                         IndexKind = DefaultIndexKind
                     }
                 ],
+#pragma warning disable CA2000 // Don't actually need to dispose FakeEmbeddingGenerator
                 EmbeddingGenerator = new FakeEmbeddingGenerator()
+#pragma warning restore CA2000
             };
 
         protected override List<Record> BuildTestData() =>
