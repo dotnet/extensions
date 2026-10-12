@@ -155,8 +155,9 @@ internal sealed class HttpRouteParser : IHttpRouteParser
     }
 
     // Returns the length of the value of the parameter segments[index] (httpPath starts at the value) when the parameter
-    // is followed by literals in the same path segment, e.g. "{token}.{format}". Like ASP.NET Core routing, the literals
-    // are matched from right to left, so "a.b.json" gives token "a.b". Returns -1 when not applicable or not matched.
+    // is followed by literals in the same path segment. Like ASP.NET Core routing, the literals are matched from right
+    // to left, e.g. route "{token}.{format}" with path "a.b.json" gives token = "a.b" and format = "json".
+    // Returns -1 when not applicable or not matched.
     internal static int GetParameterLength(ReadOnlySpan<char> httpPath, Segment[] segments, int index)
     {
         var last = index + 1;
