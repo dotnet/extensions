@@ -638,6 +638,33 @@ public class HttpParserTests
         ValidateRouteSegment(routeSegments.Segments[5], ("url:regex(^(web|shared*)$)", true, "url", "", start, end, true));
     }
 
+    [Theory]
+    [CombinatorialData]
+    public void TryExtractParameters_ParameterValueContainsFollowingLiteral_ReturnsCorrectParameters(HttpRouteParameterRedactionMode redactionMode)
+    {
+        bool isRedacted = redactionMode != HttpRouteParameterRedactionMode.None;
+        string redactedPrefix = isRedacted ? "Redacted:" : string.Empty;
+
+        HttpRouteParser httpParser = CreateHttpRouteParser();
+        Dictionary<string, DataClassification> parametersToRedact = new()
+        {
+            { "token", FakeTaxonomy.PrivateData },
+            { "format", DataClassification.None },
+        };
+
+        var httpRouteParameters = new HttpRouteParameter[2];
+
+        Assert.True(httpParser.TryExtractParameters(
+            "/b/json.secret", httpParser.ParseRoute("/b/{format}.{token}"), redactionMode, parametersToRedact, ref httpRouteParameters));
+        ValidateRouteParameter(httpRouteParameters[0], "format", "json", false);
+        ValidateRouteParameter(httpRouteParameters[1], "token", $"{redactedPrefix}secret", isRedacted);
+
+        Assert.True(httpParser.TryExtractParameters(
+            "/a/part1.part2.part3.json", httpParser.ParseRoute("/a/{token}.{format}"), redactionMode, parametersToRedact, ref httpRouteParameters));
+        ValidateRouteParameter(httpRouteParameters[0], "token", $"{redactedPrefix}part1.part2.part3", isRedacted);
+        ValidateRouteParameter(httpRouteParameters[1], "format", "json", false);
+    }
+
     [Fact]
     public void AddHttpRouteProcessor_ParserAndFormatterInstanceAdded()
     {
