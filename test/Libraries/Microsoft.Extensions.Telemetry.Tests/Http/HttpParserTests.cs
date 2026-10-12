@@ -665,6 +665,28 @@ public class HttpParserTests
         ValidateRouteParameter(httpRouteParameters[1], "format", "json", false);
     }
 
+    [Theory]
+    [InlineData("{token}.{format}", "part1.part2.part3.json", "token", 17)]
+    [InlineData("{format}.{token}", "json.secret", "format", 4)]
+    [InlineData("{token}.json", "part1.part2.json", "token", 11)]
+    [InlineData("{token}.{format}.zip", "part1.part2.json.zip", "token", 11)]
+    [InlineData("{token}.json/{format}", "part1.part2.json/xml", "token", 11)]
+    [InlineData("{token}.{format}/rest", "part1.part2.json/rest", "token", 11)]
+    [InlineData("{a}.{b}.{c}", "p.q.r.s", "a", 3)]
+    [InlineData("{a}.{b}.{c}", "r.s", "b", 1)]
+    [InlineData("{token}.{format}", "json", "format", -1)] // Last segment.
+    [InlineData("{a}{b}", "xy", "a", -1)] // Followed by a parameter.
+    [InlineData("{id}/rest", "5/rest", "id", -1)] // Followed by a new path segment.
+    [InlineData("{token}.{format}", "abc", "token", -1)] // Literal not found.
+    [InlineData("{id}.{format?}", "5", "id", -1)] // No room for the literal and the following value.
+    public void GetParameterLength_ReturnsLengthOfParameterValue(string httpRoute, string httpPath, string parameterName, int expectedLength)
+    {
+        var segments = CreateHttpRouteParser().ParseRoute(httpRoute).Segments;
+        var index = Array.FindIndex(segments, segment => segment.ParamName == parameterName);
+
+        Assert.Equal(expectedLength, HttpRouteParser.GetParameterLength(httpPath.AsSpan(), segments, index));
+    }
+
     [Fact]
     public void AddHttpRouteProcessor_ParserAndFormatterInstanceAdded()
     {
