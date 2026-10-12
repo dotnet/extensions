@@ -684,10 +684,12 @@ public class HttpParserTests
         Assert.Equal(expectedValue, length >= 0 ? httpPath.Substring(0, length) : null);
     }
 
+    // -1 means the helper doesn't apply or the literals don't match, and the callers use their existing logic,
+    // e.g. "{id}/rest" with "5/rest" still gives id = "5".
     [Theory]
     [InlineData("{token}.{format}", "json", "format")] // Last segment.
     [InlineData("{a}{b}", "xy", "a")] // Followed by a parameter.
-    [InlineData("{id}/rest", "5/rest", "id")] // Followed by a new path segment.
+    [InlineData("{id}/rest", "5/rest", "id")] // The parameter is the whole path segment.
     [InlineData("{token}.{format}", "abc", "token")] // Literal not found.
     [InlineData("{id}.{format?}", "5", "id")] // No room for the literal and the following value.
     public void GetParameterLength_NotApplicableOrNotMatched_ReturnsMinusOne(string httpRoute, string httpPath, string parameterName)
