@@ -3,79 +3,39 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.DocumentExtraction;
 
-/// <summary>Represents an optical character recognition (OCR) / document-parsing client.</summary>
+/// <summary>
+/// Produces provider-neutral page observations from a document stream.
+/// </summary>
 /// <remarks>
-/// <para>
-/// An <see cref="IDocumentExtractionClient"/> transcribes a document or image into structured output: text,
-/// per-page content, tables, layout blocks with bounding regions, and confidence. It is the
-/// capability sibling to <see cref="Microsoft.Extensions.AI.IChatClient"/>, <c>IEmbeddingGenerator</c>, and
-/// <c>ISpeechToTextClient</c> for the document-extraction problem.
-/// </para>
-/// <para>
-/// The contract is independent of <see cref="Microsoft.Extensions.AI.IChatClient"/>. Most OCR / document-AI engines are not
-/// chat models: they emit structured output (tables, bounding regions, confidence, reading order)
-/// that does not map onto a chat response. An implementation may wrap a vision-capable
-/// <see cref="Microsoft.Extensions.AI.IChatClient"/> as the lowest-fidelity, transcription-only path, but the interface does
-/// not require one.
-/// </para>
-/// <para>
-/// Unless otherwise specified, all members of <see cref="IDocumentExtractionClient"/> are thread-safe for concurrent
-/// use. Implementations might mutate the <see cref="DocumentExtractionOptions"/> supplied to <see cref="ExtractAsync"/>
-/// and <see cref="ExtractPagesAsync"/>; consumers should avoid sharing a single options instance across
-/// concurrent invocations when that is a concern. The document stream passed to these methods is not
-/// disposed by the implementation.
-/// </para>
+/// Implementations do not own or dispose the source stream. They must honor the supplied cancellation token
+/// and dispose any provider resources when the returned async enumerator is disposed.
 /// </remarks>
-[Experimental(DiagnosticIds.Experiments.DocumentExtraction, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IDocumentExtractionClient : IDisposable
 {
-    /// <summary>Runs OCR / document parsing over a document stream and returns structured output.</summary>
-    /// <param name="document">The document or image content to parse.</param>
-    /// <param name="mediaType">The media type of <paramref name="document"/>, for example <c>application/pdf</c> or <c>image/png</c>.</param>
-    /// <param name="options">The OCR options to configure the request.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The structured OCR result.</returns>
-    Task<DocumentExtractionResult> ExtractAsync(
+    /// <summary>
+    /// Streams extracted pages.
+    /// </summary>
+    /// <param name="document">The source document stream, which remains owned by the caller.</param>
+    /// <param name="identifier">The identifier for the eventual Documents document.</param>
+    /// <param name="mediaType">The source media type.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The extracted pages.</returns>
+    IAsyncEnumerable<DocumentExtractionPage> ExtractPagesAsync(
         Stream document,
+        string identifier,
         string mediaType,
-        DocumentExtractionOptions? options = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Runs OCR / document parsing over a document stream and streams back structured output as it is produced.</summary>
-    /// <param name="document">The document or image content to parse.</param>
-    /// <param name="mediaType">The media type of <paramref name="document"/>, for example <c>application/pdf</c> or <c>image/png</c>.</param>
-    /// <param name="options">The OCR options to configure the request.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The structured OCR updates representing the streamed output.</returns>
-    /// <remarks>
-    /// Engines that produce pages incrementally (for example, while polling a long-running operation such as
-    /// Azure Document Intelligence) can yield each page as it completes, letting a consumer begin processing
-    /// early pages before later pages finish. Synchronous engines may yield a single terminal update. Use
-    /// <see cref="DocumentExtractionPageResultExtensions.ToDocumentExtractionResultAsync"/> to reassemble the stream into an
-    /// <see cref="DocumentExtractionResult"/>.
-    /// </remarks>
-    IAsyncEnumerable<DocumentExtractionPageResult> ExtractPagesAsync(
-        Stream document,
-        string mediaType,
-        DocumentExtractionOptions? options = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>Asks the <see cref="IDocumentExtractionClient"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
-    /// <param name="serviceType">The type of object being requested.</param>
-    /// <param name="serviceKey">An optional key that can be used to help identify the target service.</param>
-    /// <returns>The found object, otherwise <see langword="null"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="serviceType"/> is <see langword="null"/>.</exception>
-    /// <remarks>
-    /// The purpose of this method is to allow for the retrieval of strongly typed services that might be
-    /// provided by the <see cref="IDocumentExtractionClient"/>, including itself or any services it might be wrapping.
-    /// </remarks>
+    /// <summary>
+    /// Gets an optional service exposed by this client.
+    /// </summary>
+    /// <param name="serviceType">The requested service type.</param>
+    /// <param name="serviceKey">An optional service key.</param>
+    /// <returns>The service, or <see langword="null"/>.</returns>
     object? GetService(Type serviceType, object? serviceKey = null);
 }

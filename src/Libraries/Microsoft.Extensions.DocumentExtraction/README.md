@@ -1,35 +1,37 @@
 # Microsoft.Extensions.DocumentExtraction
 
-.NET developers need to turn documents such as scanned images and PDFs into structured, AI-ready content, recovering text along with layout, tables, figures, and coordinates in a provider-neutral way. The `Microsoft.Extensions.DocumentExtraction` libraries provide a unified approach for representing document-extraction components, complementing `Microsoft.Extensions.DataIngestion` (extraction pulls content out of documents; ingestion feeds that content into a retrieval pipeline).
+These experimental packages define the extraction-side waist for the neutral
+`Microsoft.Extensions.Documents.Abstractions` model.
 
-## The packages
+`Microsoft.Extensions.DocumentExtraction.Abstractions` contains a streaming
+`IDocumentExtractionClient`, page and observation contracts, and
+`DocumentExtractionDocumentBuilder`. The builder accepts pages in any arrival
+order, sorts them and their observations during explicit finalization, rejects
+duplicate page numbers and provider observation identifiers, preserves equal
+text from different observations, and preserves opaque page/evidence references
+without asserting grounding. It maps tables, images, and unknown/list/barcode
+extensions into the existing `Documents` element types. `DocumentArtifact`
+instances are transferred to the finalized `DocumentExtractionResult` and are
+disposed when the result is disposed or finalization fails.
 
-The [Microsoft.Extensions.DocumentExtraction.Abstractions](https://www.nuget.org/packages/Microsoft.Extensions.DocumentExtraction.Abstractions) package provides the core exchange types, including [`IDocumentExtractionClient`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.documentextraction.idocumentextractionclient), [`DocumentExtractionResult`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.documentextraction.documentextractionresult), [`DocumentPage`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.documentextraction.documentpage), and the reading-order [`DocumentElement`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.documentextraction.documentelement) model (blocks, tables, and images with bounding regions and confidence). Any .NET library that provides a document-extraction engine can implement these abstractions to enable seamless integration with consuming code.
+`Microsoft.Extensions.DocumentExtraction` contains the optional
+`DocumentExtractionClientBuilder`, dependency-injection registration, delegation,
+and lifecycle logging middleware. Logging is intentionally limited to lifecycle,
+page-number, and observation-count fields; source content, evidence values,
+artifacts, credentials, and raw provider payloads are never serialized or
+logged.
 
-The [Microsoft.Extensions.DocumentExtraction](https://www.nuget.org/packages/Microsoft.Extensions.DocumentExtraction) package has an implicit dependency on the `Microsoft.Extensions.DocumentExtraction.Abstractions` package. This package enables you to easily integrate components such as logging, telemetry, and options configuration into your applications using familiar dependency injection and builder patterns. For example, it provides [`DocumentExtractionClientBuilder`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.documentextraction.documentextractionclientbuilder) and the `AddDocumentExtractionClient` service-collection extensions, along with logging and OpenTelemetry delegating clients that can be composed into a client pipeline.
+The packages do not include provider clients, provider SDKs, AI dependencies,
+MEDI/DataIngestion integration, source fetching, or package publication.
 
-## Which package to reference
+The selected baseline is builder/DI/delegation/lifecycle logging, not the old
+options-configuration or OpenTelemetry middleware. Public APIs use experimental
+diagnostic `MEDE0001`; the shared Documents dependency uses `EXTEXP0019`.
+Production targets are net10.0, net9.0, net8.0, net462, and netstandard2.0.
 
-Libraries that provide implementations of the abstractions typically reference only `Microsoft.Extensions.DocumentExtraction.Abstractions`.
-
-To also have access to higher-level utilities for working with document-extraction clients, reference the `Microsoft.Extensions.DocumentExtraction` package instead (which itself references `Microsoft.Extensions.DocumentExtraction.Abstractions`). Most consuming applications and services should reference the `Microsoft.Extensions.DocumentExtraction` package along with a library that provides a concrete implementation of the abstractions.
-
-## Install the package
-
-From the command-line:
-
-```console
-dotnet add package Microsoft.Extensions.DocumentExtraction --prerelease
-```
-
-Or directly in the C# project file:
-
-```xml
-<ItemGroup>
-  <PackageReference Include="Microsoft.Extensions.DocumentExtraction" Version="[CURRENTVERSION]" />
-</ItemGroup>
-```
-
-## Feedback & Contributing
-
-We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
+PR #7588 temporarily includes the Documents prerequisite from PR #7835
+(`ff1b5ac49b655209383dea3054e597b9e6387f4f`). After that prerequisite merges,
+reconcile with main while preserving this PR's history and incorporating any
+reviewed Documents API changes. Local development candidates are provisional,
+not API-approved or published packages, and do not establish provider acceptance
+or MEDI end-to-end compatibility.

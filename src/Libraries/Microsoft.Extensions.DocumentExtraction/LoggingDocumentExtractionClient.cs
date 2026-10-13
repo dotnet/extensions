@@ -3,213 +3,105 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DocumentExtraction;
 
-/// <summary>A delegating OCR client that logs OCR operations to an <see cref="ILogger"/>.</summary>
-/// <remarks>
-/// <para>
-/// The provided implementation of <see cref="IDocumentExtractionClient"/> is thread-safe for concurrent use so long as the
-/// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
-/// </para>
-/// <para>
-/// When the employed <see cref="ILogger"/> enables <see cref="Logging.LogLevel.Trace"/>, the contents of
-/// options and results are logged. These may contain sensitive application data.
-/// <see cref="Logging.LogLevel.Trace"/> is disabled by default and should never be enabled in a production environment.
-/// Options and results are not logged at other logging levels.
-/// </para>
-/// </remarks>
-[Experimental(DiagnosticIds.Experiments.DocumentExtraction, UrlFormat = DiagnosticIds.UrlFormat)]
+/// <summary>
+/// Logs extraction lifecycle events without logging source content, evidence values, artifacts, or provider state.
+/// </summary>
 public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtractionClient
 {
-    /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
 
-    /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization of state written to the logger.</summary>
-    private JsonSerializerOptions _jsonSerializerOptions;
-
-    /// <summary>Initializes a new instance of the <see cref="LoggingDocumentExtractionClient"/> class.</summary>
-    /// <param name="innerClient">The underlying <see cref="IDocumentExtractionClient"/>.</param>
-    /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LoggingDocumentExtractionClient"/> class.
+    /// </summary>
     public LoggingDocumentExtractionClient(IDocumentExtractionClient innerClient, ILogger logger)
         : base(innerClient)
     {
         _logger = Throw.IfNull(logger);
-        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
 
-    /// <summary>Gets or sets JSON serialization options to use when serializing logging data.</summary>
-    public JsonSerializerOptions JsonSerializerOptions
-    {
-        get => _jsonSerializerOptions;
-        set => _jsonSerializerOptions = Throw.IfNull(value);
-    }
-
-    /// <inheritdoc/>
-    public override async Task<DocumentExtractionResult> ExtractAsync(
-        Stream document,
+    /// <inheritdoc />
+    public override async IAsyncEnumerable<DocumentExtractionPage> ExtractPagesAsync(
+        System.IO.Stream document,
+        string identifier,
         string mediaType,
-        DocumentExtractionOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            if (_logger.IsEnabled(LogLevel.Trace))
-            {
-                LogInvokedSensitive(nameof(ExtractAsync), mediaType, AsJson(options), AsJson(this.GetService<DocumentExtractionClientMetadata>()));
-            }
-            else
-            {
-                LogInvoked(nameof(ExtractAsync));
-            }
-        }
-
-        try
-        {
-            var result = await base.ExtractAsync(document, mediaType, options, cancellationToken);
-
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                if (_logger.IsEnabled(LogLevel.Trace))
-                {
-                    LogCompletedSensitive(nameof(ExtractAsync), AsJson(result));
-                }
-                else
-                {
-                    LogCompleted(nameof(ExtractAsync));
-                }
-            }
-
-            return result;
-        }
-        catch (OperationCanceledException)
-        {
-            LogInvocationCanceled(nameof(ExtractAsync));
-            throw;
-        }
-        catch (Exception ex)
-        {
-            LogInvocationFailed(nameof(ExtractAsync), ex);
-            throw;
-        }
-    }
-
-    /// <inheritdoc/>
-    public override async IAsyncEnumerable<DocumentExtractionPageResult> ExtractPagesAsync(
-        Stream document,
-        string mediaType,
-        DocumentExtractionOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            if (_logger.IsEnabled(LogLevel.Trace))
-            {
-                LogInvokedSensitive(nameof(ExtractPagesAsync), mediaType, AsJson(options), AsJson(this.GetService<DocumentExtractionClientMetadata>()));
-            }
-            else
-            {
-                LogInvoked(nameof(ExtractPagesAsync));
-            }
-        }
+        LogInvoked();
 
-        IAsyncEnumerator<DocumentExtractionPageResult> e;
+        IAsyncEnumerator<DocumentExtractionPage>? enumerator = null;
         try
         {
-            e = base.ExtractPagesAsync(document, mediaType, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            enumerator = base.ExtractPagesAsync(document, identifier, mediaType, cancellationToken)
+                .GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            LogInvocationCanceled(nameof(ExtractPagesAsync));
+            LogCanceled();
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            LogInvocationFailed(nameof(ExtractPagesAsync), ex);
+            LogFailed();
             throw;
         }
 
         try
         {
-            DocumentExtractionPageResult? update = null;
             while (true)
             {
+                bool hasNext;
                 try
                 {
-                    if (!await e.MoveNextAsync())
-                    {
-                        break;
-                    }
-
-                    update = e.Current;
+                    hasNext = await enumerator.MoveNextAsync().ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
-                    LogInvocationCanceled(nameof(ExtractPagesAsync));
+                    LogCanceled();
                     throw;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    LogInvocationFailed(nameof(ExtractPagesAsync), ex);
+                    LogFailed();
                     throw;
                 }
 
-                if (_logger.IsEnabled(LogLevel.Debug))
+                if (!hasNext)
                 {
-                    if (_logger.IsEnabled(LogLevel.Trace))
-                    {
-                        LogStreamingUpdateSensitive(AsJson(update));
-                    }
-                    else
-                    {
-                        LogStreamingUpdate();
-                    }
+                    break;
                 }
 
-                yield return update;
+                DocumentExtractionPage page = enumerator.Current;
+                LogPageReceived(page.PageNumber, page.Observations.Count);
+                yield return page;
             }
 
-            LogCompleted(nameof(ExtractPagesAsync));
+            LogCompleted();
         }
         finally
         {
-            await e.DisposeAsync();
+            await enumerator.DisposeAsync().ConfigureAwait(false);
         }
     }
 
-    private string AsJson<T>(T value) => TelemetryHelpers.AsJson(value, _jsonSerializerOptions);
+    [LoggerMessage(LogLevel.Debug, "Document extraction invoked.")]
+    private partial void LogInvoked();
 
-    [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
-    private partial void LogInvoked(string methodName);
+    [LoggerMessage(LogLevel.Debug, "Document extraction received page {PageNumber} with {ObservationCount} observations.")]
+    private partial void LogPageReceived(int pageNumber, int observationCount);
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: MediaType: {MediaType}. Options: {DocumentExtractionOptions}. Metadata: {DocumentExtractionClientMetadata}.")]
-    private partial void LogInvokedSensitive(string methodName, string mediaType, string documentExtractionOptions, string documentExtractionClientMetadata);
+    [LoggerMessage(LogLevel.Debug, "Document extraction completed.")]
+    private partial void LogCompleted();
 
-    [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
-    private partial void LogCompleted(string methodName);
+    [LoggerMessage(LogLevel.Debug, "Document extraction canceled.")]
+    private partial void LogCanceled();
 
-    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {DocumentExtractionResult}.")]
-    private partial void LogCompletedSensitive(string methodName, string documentExtractionResult);
-
-    [LoggerMessage(LogLevel.Debug, "ExtractPagesAsync received update.")]
-    private partial void LogStreamingUpdate();
-
-    [LoggerMessage(LogLevel.Trace, "ExtractPagesAsync received update: {DocumentExtractionPageResult}")]
-    private partial void LogStreamingUpdateSensitive(string documentExtractionPageResult);
-
-    [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
-    private partial void LogInvocationCanceled(string methodName);
-
-    [LoggerMessage(LogLevel.Error, "{MethodName} failed.")]
-    private partial void LogInvocationFailed(string methodName, Exception error);
+    [LoggerMessage(LogLevel.Error, "Document extraction failed.")]
+    private partial void LogFailed();
 }
