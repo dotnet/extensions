@@ -80,6 +80,8 @@ internal sealed partial class Emitter : EmitterBase
         var stateName = PickUniqueName("state", lm.Parameters.Select(p => p.ParameterName));
 
         OutLn($"var {stateName} = {LoggerMessageHelperType}.ThreadLocalState;");
+        OutLn("try");
+        OutOpenBrace();
         GenTagWrites(lm, stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags);
 
         OutLn();
@@ -140,8 +142,11 @@ internal sealed partial class Emitter : EmitterBase
         OutCloseBraceWithExtra(");");
         Unindent();
 
-        OutLn();
+        OutCloseBrace();
+        OutLn("finally");
+        OutOpenBrace();
         OutLn($"{stateName}.Clear();");
+        OutCloseBrace();
         OutCloseBrace();
 
         /// <summary>

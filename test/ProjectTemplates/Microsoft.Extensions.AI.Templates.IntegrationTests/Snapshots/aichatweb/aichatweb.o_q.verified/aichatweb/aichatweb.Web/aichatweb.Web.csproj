@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="{VERSION}" />
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="{VERSION}" />
     <PackageReference Include="Aspire.Qdrant.Client" Version="{VERSION}" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="{VERSION}" />
+    <PackageReference Include="CommunityToolkit.VectorData.Qdrant" Version="{VERSION}" />
   </ItemGroup>
 
   <ItemGroup>

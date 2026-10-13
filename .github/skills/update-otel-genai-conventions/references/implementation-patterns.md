@@ -4,6 +4,19 @@ Code patterns for common convention update change types. Use these as templates 
 
 > **Reuse before adding.** Before applying any of the patterns below, search the touched libraries (`Common/`, `TelemetryHelpers.cs`, `OpenTelemetryLog.cs`, and sibling OpenTelemetry* client files) for an existing helper, method, or internal type that already does the same thing. Reuse or extend it instead of adding a parallel implementation. If the same logic will be needed in two or more places, factor it into `Common/` from the start rather than duplicating it per file. The same rule applies to parallel internal types — when a sibling client already defines a type with the same shape, unify under a single shared definition. See [review-checklist.md §3](review-checklist.md#3-code-deduplication) for what reviewers look for.
 
+## Area placement guidance
+
+The new conventions repo ([`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai)) hosts multiple areas. Pick the right dotnet/extensions location based on the upstream area of the change — its `model/<area>/` registry path for `gen-ai`, `mcp`, `openai`, and `aws-bedrock`, or its `docs/gen-ai/<provider>.md` page for `anthropic` and `azure-ai-inference` (which have no `model/` registry today):
+
+| Upstream area | dotnet/extensions location | Notes |
+|---|---|---|
+| `gen-ai`, `gen-ai/agent` | `src/Libraries/Microsoft.Extensions.AI/` (e.g. `OpenTelemetryChatClient.cs`, `OpenTelemetryConsts.cs` under `GenAI.*`) | Generic gen-ai instrumentation — the bulk of historical work. |
+| `mcp` | No instrumentation today — forward-looking | If MCP changes appear, classify as 🟢 *No client exists* and flag for follow-up. Do not add `MCP.*` constants speculatively. |
+| `openai` | `src/Libraries/Microsoft.Extensions.AI.OpenAI/` (e.g. `OpenAIClientExtensions.cs` for `openai.api.type` mapping). Tests in `test/Libraries/Microsoft.Extensions.AI.OpenAI.Tests/`. | Keep `OpenTelemetryChatClient` provider-agnostic; provider-specific attributes belong in the provider package. |
+| `anthropic` | Out of scope for `dotnet/extensions` today. Implications land in [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp). | If you're using this skill in that repo, follow the target repo's own constants/file layout. See [SKILL.md §Cross-repo applicability](../SKILL.md#cross-repo-applicability). |
+| `aws-bedrock` | Out of scope for `dotnet/extensions` today. Implications land in the `BedrockRuntime` service library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net). | If you're using this skill in that repo, follow the target repo's own constants/file layout. See [SKILL.md §Cross-repo applicability](../SKILL.md#cross-repo-applicability). |
+| `azure-ai-inference` | Corresponding provider package, if/when one exists in this repo | Currently no provider package for this in this repo — classify as 🟢 *No client exists* until one is added. |
+
 ## Pattern 1: Adding a New Constant
 
 Location: `src/Libraries/Microsoft.Extensions.AI/OpenTelemetryConsts.cs`
@@ -129,18 +142,32 @@ if (_logger is not null)
 
 ## Pattern 6: Updating Version References
 
-When bumping the convention version (e.g. v1.39 → v1.40), update the doc comment in all matched OpenTelemetry* client files:
+When bumping the convention version (e.g. an upcoming GenAI version bump), update the doc comment in all matched OpenTelemetry* client files. The wording is in the middle of a one-time migration to reflect the standalone GenAI repo — see [file-inventory.md §Version References](file-inventory.md#version-references) for full guidance.
+
+**Pre-migration wording** (carried over from when conventions lived in core `semantic-conventions`):
 
 ```csharp
-// Before:
 /// Semantic Conventions for Generative AI systems v1.39,
-// After:
-/// Semantic Conventions for Generative AI systems v1.40,
 ```
 
-Find all occurrences:
+**Target wording** (after migration to the standalone repo, using a GenAI-namespaced version `vX.Y.Z` taken from the `changelog.d/` fragment snapshot you audited — not from `versions.env`'s `SEMCONV_VERSION`, which is the core semconv dependency):
+
+```csharp
+/// GenAI Semantic Conventions vX.Y.Z,
+```
+
+The next convention-update PR should migrate every matched file from the pre-migration wording to the target wording in one shot. Do not leave files in a half-migrated state.
+
+Find all occurrences using a regex that matches both wordings during the transition:
+
 ```bash
-grep -rn "Semantic Conventions for Generative AI systems v" src/Libraries/Microsoft.Extensions.AI/
+grep -rEn "Semantic Conventions for Generative AI systems v|GenAI Semantic Conventions v" src/Libraries/Microsoft.Extensions.AI/
+```
+
+After the migration is complete, simplify to:
+
+```bash
+grep -rn "GenAI Semantic Conventions v" src/Libraries/Microsoft.Extensions.AI/
 ```
 
 ## Pattern 7: Modifying Message Serialization

@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="${PackageVersion:Aspire.Hosting.AppHost}" />
-    <PackageReference Include="MessagePack" Version="${PackageVersion:MessagePack}" />
 <!--#if (IsQdrant)
     <PackageReference Include="Aspire.Hosting.Qdrant" Version="${PackageVersion:Aspire.Hosting.Qdrant}" />
 #elif (IsAzureAISearch)

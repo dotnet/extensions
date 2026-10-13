@@ -47,7 +47,22 @@ public sealed class ToolApprovalRequestContent : InputRequestContent
     /// tool call can be invoked.
     /// </remarks>
     [Experimental(DiagnosticIds.Experiments.AIApprovalsInvocationRequired, UrlFormat = DiagnosticIds.UrlFormat)]
-    public bool RequiresConfirmation { get; set; } = true;
+    [JsonIgnore]
+    public bool RequiresConfirmation
+    {
+        get => RequiresConfirmationCore;
+        set => RequiresConfirmationCore = value;
+    }
+
+    // Including public, experimental properties leaks them into the source-generated
+    // JSON metadata of any consumer, also forcing that consumer to suppress the
+    // experimental diagnostic. The public property is annotated with [JsonIgnore] and
+    // it routes its value through this internal property. The internal property is
+    // annotated with [JsonInclude] and a [JsonPropertyName] to match the public
+    // property's name, making it available in the default serialization options.
+    [JsonInclude]
+    [JsonPropertyName("requiresConfirmation")]
+    internal bool RequiresConfirmationCore { get; set; } = true;
 
     /// <summary>
     /// Creates a <see cref="ToolApprovalResponseContent"/> indicating whether the tool call is approved or rejected.

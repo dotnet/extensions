@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,8 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
+    private const string DataClassificationType = "global::Microsoft.Extensions.Compliance.Classification.DataClassification";
+    private const string GlobalNamespacePrefix = "global::";
     private const string LoggerMessageHelperType = "global::Microsoft.Extensions.Logging.LoggerMessageHelper";
 
     private readonly StringBuilderPool _sbPool = new();
@@ -112,11 +115,14 @@ internal sealed partial class Emitter : EmitterBase
         _classificationMap.Clear();
         foreach (var classificationAttr in classificationAttrs)
         {
-            var fieldName = PickUniqueName($"_{EncodeTypeName(classificationAttr)}", lt.AllMembers);
+            var fieldTypeName = classificationAttr.StartsWith(GlobalNamespacePrefix, StringComparison.Ordinal)
+                ? classificationAttr.Substring(GlobalNamespacePrefix.Length)
+                : classificationAttr;
+            var fieldName = PickUniqueName($"_{EncodeTypeName(fieldTypeName)}", lt.AllMembers);
             _classificationMap.Add(classificationAttr, fieldName);
 
             OutGeneratedCodeAttribute();
-            OutLn($"private static readonly Microsoft.Extensions.Compliance.Classification.DataClassification {fieldName} = new {classificationAttr}().Classification;");
+            OutLn($"private static readonly {DataClassificationType} {fieldName} = new {classificationAttr}().Classification;");
             OutLn();
         }
     }

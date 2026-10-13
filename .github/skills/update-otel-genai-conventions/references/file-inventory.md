@@ -60,14 +60,61 @@ To discover any additional test files: `dir test\Libraries\Microsoft.Extensions.
 
 The semantic conventions version is referenced in a doc comment in specific OpenTelemetry* instrumentation client files. When bumping the version, update all files that match the grep below — not all OpenTelemetry* files contain the version reference.
 
-The reference looks like:
+### Current wording (pre-migration)
+
+The reference today still reads (carried over from when conventions lived in the core `open-telemetry/semantic-conventions` repo):
 
 ```csharp
 /// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.XX,
 /// defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 ```
 
-Find all occurrences with:
+### Target wording (post-migration)
+
+After the GenAI conventions moved to [`open-telemetry/semantic-conventions-genai`](https://github.com/open-telemetry/semantic-conventions-genai), the doc comment should call out the standalone repo and use a GenAI-namespaced version (`vX.Y.Z`). Until `semantic-conventions-genai` publishes a release or schema URL, take that version from the `changelog.d/` fragment snapshot you audited — not from `versions.env` (whose `SEMCONV_VERSION` is the core semconv dependency, not the GenAI version):
+
+```csharp
+/// This class provides an implementation of the GenAI Semantic Conventions vX.Y.Z,
+/// defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 ```
-grep -rn "Semantic Conventions for Generative AI systems v" src/Libraries/Microsoft.Extensions.AI/
+
+The `<see href>` URL is kept for now: the published page at `https://opentelemetry.io/docs/specs/semconv/gen-ai/` currently resolves only to a "Moved" stub that points at `semantic-conventions-genai` and no longer renders the spec. Leave the URL in place until OpenTelemetry publishes a canonical URL for the conventions (the `semantic-conventions-genai` `README.md` `## Schema URL` section is `TODO`), then retarget it. Do not use that page as the spec source — read `docs/gen-ai/` and `model/<area>/` in `semantic-conventions-genai` instead.
+
+### Wording migration
+
+This wording change is a **one-time edit** that should ride along with the
+**next convention-update PR** (not a separate cosmetic PR). Until that
+update lands, both wordings may coexist transiently in the codebase.
+
+### Finding occurrences during the transition
+
+Use a regex that matches both wordings:
+
+```bash
+grep -rEn "Semantic Conventions for Generative AI systems v|GenAI Semantic Conventions v" src/Libraries/Microsoft.Extensions.AI/
 ```
+
+Once every file has been migrated to the target wording, the regex can be
+simplified back to a single literal:
+
+```bash
+grep -rn "GenAI Semantic Conventions v" src/Libraries/Microsoft.Extensions.AI/
+```
+
+## Provider-specific instrumentation
+
+The new conventions repo also covers provider-specific areas (`openai`,
+`anthropic`, `aws-bedrock`, `azure-ai-inference`). Provider-specific
+attributes like `openai.*` belong in the **provider package**, not in
+`Microsoft.Extensions.AI`:
+
+| Upstream area | dotnet/extensions location |
+|---|---|
+| `openai` | `src/Libraries/Microsoft.Extensions.AI.OpenAI/` (e.g. `OpenAIClientExtensions.cs` for `openai.api.type` mapping) |
+| `anthropic` | Out of scope for `dotnet/extensions` today — implications land in [`anthropics/anthropic-sdk-csharp`](https://github.com/anthropics/anthropic-sdk-csharp). See [SKILL.md §Cross-repo applicability](../SKILL.md#cross-repo-applicability). |
+| `aws-bedrock` | Out of scope for `dotnet/extensions` today — implications land in the `BedrockRuntime` service library of [`aws/aws-sdk-net`](https://github.com/aws/aws-sdk-net). See [SKILL.md §Cross-repo applicability](../SKILL.md#cross-repo-applicability). |
+| `azure-ai-inference` | Corresponding provider package, if/when one exists in this repo; otherwise out of scope |
+| `mcp` | No instrumentation today — flag as a watch-list item if MCP changes appear |
+
+Tests for provider-specific attributes live alongside the provider package
+(e.g. `test/Libraries/Microsoft.Extensions.AI.OpenAI.Tests/`).

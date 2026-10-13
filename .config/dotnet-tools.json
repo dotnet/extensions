@@ -3,25 +3,25 @@
   "isRoot": true,
   "tools": {
     "dotnet-coverage": {
-      "version": "18.8.0",
+      "version": "18.11.2",
       "commands": [
         "dotnet-coverage"
       ]
     },
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.5.10",
+      "version": "5.5.11",
       "commands": [
         "reportgenerator"
       ]
     },
     "microsoft.visualstudio.slngen.tool": {
-      "version": "12.0.32",
+      "version": "12.0.53",
       "commands": [
         "slngen"
       ]
     },
     "PowerShell": {
-      "version": "7.6.2",
+      "version": "7.6.6",
       "commands": [
         "pwsh"
       ]

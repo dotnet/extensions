@@ -32,6 +32,12 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 internal sealed class OpenAIResponsesChatClient : IChatClient
 {
+    // AdditionalProperties key used to roundtrip a reasoning item's service-assigned id. Unlike
+    // RawRepresentation, AdditionalProperties survives both content coalescing and JSON serialization of the
+    // chat history, so the id is available when reconstructing the reasoning item for a subsequent request.
+    // Stateless (store=false) resume of encrypted reasoning requires this id or the service rejects the item.
+    private const string ReasoningItemIdKey = "reasoningItemId";
+
     // These delegate instances are used to call the internal overloads of CreateResponseAsync and CreateResponseStreamingAsync that accept
     // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
 
@@ -198,11 +204,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case ReasoningResponseItem reasoningItem:
-                    message.Contents.Add(new TextReasoningContent(reasoningItem.GetSummaryText())
-                    {
-                        ProtectedData = reasoningItem.EncryptedContent,
-                        RawRepresentation = outputItem,
-                    });
+                    message.Contents.Add(CreateReasoningContent(reasoningItem.GetSummaryText(), reasoningItem.EncryptedContent, reasoningItem.Id, outputItem));
                     break;
 
                 case FunctionCallResponseItem functionCall:
@@ -475,11 +477,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     break;
 
                 case StreamingResponseReasoningSummaryTextDeltaUpdate reasoningSummaryTextDeltaUpdate:
-                    yield return CreateUpdate(new TextReasoningContent(reasoningSummaryTextDeltaUpdate.Delta));
+                    yield return CreateUpdate(CreateReasoningContent(reasoningSummaryTextDeltaUpdate.Delta, protectedData: null, reasoningSummaryTextDeltaUpdate.ItemId));
                     break;
 
                 case StreamingResponseReasoningTextDeltaUpdate reasoningTextDeltaUpdate:
-                    yield return CreateUpdate(new TextReasoningContent(reasoningTextDeltaUpdate.Delta));
+                    yield return CreateUpdate(CreateReasoningContent(reasoningTextDeltaUpdate.Delta, protectedData: null, reasoningTextDeltaUpdate.ItemId));
                     break;
 
                 case StreamingResponseImageGenerationCallInProgressUpdate imageGenInProgress:
@@ -595,9 +597,21 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         // so that it can be coalesced with the streamed text deltas and roundtripped.
                         // Since we may have already yielded reasoning deltas, we explicitly avoid setting
                         // the RawRepresentation here to avoid duplication, as when roundtripping that
-                        // raw representation will be preferred.
+                        // raw representation will be preferred. The reasoning item's id is stashed in
+                        // AdditionalProperties (which survives coalescing and serialization, unlike
+                        // RawRepresentation) so that it can be sent back on a subsequent request; stateless
+                        // (store=false) resume of encrypted reasoning is rejected by the service without it.
                         case ReasoningResponseItem rri when rri.EncryptedContent is { Length: > 0 } encryptedContent:
-                            yield return CreateUpdate(new TextReasoningContent(null) { ProtectedData = encryptedContent });
+                            yield return CreateUpdate(CreateReasoningContent(text: null, protectedData: encryptedContent, itemId: rri.Id));
+                            break;
+
+                        // The ImageGenerationToolCallContent has already been yielded as part of in-progress updates,
+                        // but any partial images yielded along the way are lower-quality intermediate renders rather than
+                        // deltas of the final image. Yield the final image here; coalescing will replace the partial
+                        // results with this one, since they share the same CallId. This mirrors the non-streaming path,
+                        // which produces a result for every ImageGenerationCallResponseItem.
+                        case ImageGenerationCallResponseItem imageGenItem:
+                            yield return CreateUpdate(CreateImageGenerationResultContent(imageGenItem, options));
                             break;
 
                         // For ResponseItems where we've already yielded partial deltas for the whole content,
@@ -775,6 +789,9 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             "image/png" => ImageGenerationToolOutputFileFormat.Png,
                             "image/jpeg" => ImageGenerationToolOutputFileFormat.Jpeg,
                             "image/webp" => ImageGenerationToolOutputFileFormat.Webp,
+
+                            // The SDK defines nullable and non-nullable op_Implicit conversions from string. Force a nullable result so
+                            // null does not bind to the non-nullable conversion, which throws ArgumentNullException.
                             _ => (ImageGenerationToolOutputFileFormat?)null,
                         } :
                         null,
@@ -822,11 +839,11 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                 switch (mcpTool.ApprovalMode)
                 {
                     case HostedMcpServerToolAlwaysRequireApprovalMode:
-                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval);
+                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(DefaultMcpToolCallApprovalPolicy.AlwaysRequireApproval);
                         break;
 
                     case HostedMcpServerToolNeverRequireApprovalMode:
-                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval);
+                        responsesMcpTool.ToolCallApprovalPolicy = new McpToolCallApprovalPolicy(DefaultMcpToolCallApprovalPolicy.NeverRequireApproval);
                         break;
 
                     case HostedMcpServerToolRequireSpecificApprovalMode specificMode:
@@ -916,6 +933,24 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             MessageRole.User => ChatRole.User,
             _ => ChatRole.Assistant,
         };
+
+    /// <summary>Creates a <see cref="TextReasoningContent"/>, stashing the reasoning item's id (when available)
+    /// in <see cref="AIContent.AdditionalProperties"/> so it roundtrips back to the service.</summary>
+    private static TextReasoningContent CreateReasoningContent(string? text, string? protectedData, string? itemId, object? rawRepresentation = null)
+    {
+        TextReasoningContent content = new(text)
+        {
+            ProtectedData = protectedData,
+            RawRepresentation = rawRepresentation,
+        };
+
+        if (!string.IsNullOrEmpty(itemId))
+        {
+            (content.AdditionalProperties ??= [])[ReasoningItemIdKey] = itemId;
+        }
+
+        return content;
+    }
 
     /// <summary>Creates a <see cref="ChatFinishReason"/> from a <see cref="ResponseIncompleteStatusReason"/>.</summary>
     private static ChatFinishReason? AsFinishReason(ResponseIncompleteStatusReason? statusReason) =>
@@ -1523,10 +1558,29 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             break;
 
                         case TextReasoningContent reasoningContent:
-                            yield return new ReasoningResponseItem(reasoningContent.Text)
+                            ReasoningResponseItem reasoningResponseItem = new(reasoningContent.Text)
                             {
                                 EncryptedContent = reasoningContent.ProtectedData,
                             };
+
+                            // Restore the reasoning item's id (stashed in AdditionalProperties on the way in)
+                            // so that encrypted reasoning roundtrips in stateless (store=false) scenarios,
+                            // where the service rejects a reasoning item that is missing its id. The value may
+                            // be a string (in-process) or a JsonElement (after the history has been serialized
+                            // and rehydrated, e.g. a persisted human-in-the-loop approval session).
+                            if (reasoningContent.AdditionalProperties?.TryGetValue(ReasoningItemIdKey, out object? reasoningItemIdValue) is true)
+                            {
+                                string? reasoningItemId =
+                                    reasoningItemIdValue as string ??
+                                    (reasoningItemIdValue is JsonElement { ValueKind: JsonValueKind.String } jsonElement ? jsonElement.GetString() : null);
+
+                                if (!string.IsNullOrEmpty(reasoningItemId))
+                                {
+                                    reasoningResponseItem.Id = reasoningItemId;
+                                }
+                            }
+
+                            yield return reasoningResponseItem;
                             break;
 
                         case McpServerToolCallContent mstcc:
@@ -1922,16 +1976,20 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
     private static void AddImageGenerationContents(ImageGenerationCallResponseItem outputItem, CreateResponseOptions? options, IList<AIContent> contents)
     {
+        contents.Add(new ImageGenerationToolCallContent(outputItem.Id));
+        contents.Add(CreateImageGenerationResultContent(outputItem, options));
+    }
+
+    private static ImageGenerationToolResultContent CreateImageGenerationResultContent(ImageGenerationCallResponseItem outputItem, CreateResponseOptions? options)
+    {
         var imageGenTool = options?.Tools.OfType<ImageGenerationTool>().FirstOrDefault();
         string outputFormat = imageGenTool?.OutputFileFormat?.ToString() ?? "png";
 
-        contents.Add(new ImageGenerationToolCallContent(outputItem.Id));
-
-        contents.Add(new ImageGenerationToolResultContent(outputItem.Id)
+        return new ImageGenerationToolResultContent(outputItem.Id)
         {
             RawRepresentation = outputItem,
             Outputs = [new DataContent(outputItem.ImageResultBytes, $"image/{outputFormat}")]
-        });
+        };
     }
 
     private static ImageGenerationToolResultContent GetImageGenerationResult(StreamingResponseImageGenerationCallPartialImageUpdate update, CreateResponseOptions? options)
@@ -2016,7 +2074,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
             {
                 string detailString => new ResponseImageDetailLevel(detailString),
                 ResponseImageDetailLevel detail => detail,
-                _ => null
+
+                // The SDK defines nullable and non-nullable op_Implicit conversions from string. Force a nullable result so
+                // null does not bind to the non-nullable conversion, which throws ArgumentNullException.
+                _ => (ResponseImageDetailLevel?)null
             };
         }
 
