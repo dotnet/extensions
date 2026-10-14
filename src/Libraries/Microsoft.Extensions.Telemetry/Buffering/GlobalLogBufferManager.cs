@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -14,18 +15,21 @@ internal sealed class GlobalLogBufferManager : GlobalLogBuffer
     internal readonly ConcurrentDictionary<string, GlobalBuffer> Buffers = [];
     private readonly IOptionsMonitor<GlobalLogBufferingOptions> _options;
     private readonly TimeProvider _timeProvider;
+    private readonly IExternalScopeProvider _scopeProvider;
 
-    public GlobalLogBufferManager(IOptionsMonitor<GlobalLogBufferingOptions> options)
-        : this(options, TimeProvider.System)
+    public GlobalLogBufferManager(IOptionsMonitor<GlobalLogBufferingOptions> options, IExternalScopeProvider scopeProvider)
+        : this(options, TimeProvider.System, scopeProvider)
     {
     }
 
     internal GlobalLogBufferManager(
         IOptionsMonitor<GlobalLogBufferingOptions> options,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IExternalScopeProvider scopeProvider)
     {
         _options = options;
         _timeProvider = timeProvider;
+        _scopeProvider = scopeProvider;
     }
 
     public override void Flush()
@@ -44,14 +48,16 @@ internal sealed class GlobalLogBufferManager : GlobalLogBuffer
             state.bufferedLogger,
             category,
             state._options,
-            state._timeProvider),
-            (bufferedLogger, _options, _timeProvider));
+            state._timeProvider,
+            state._scopeProvider),
+            (bufferedLogger, _options, _timeProvider, _scopeProvider));
 #else
         GlobalBuffer buffer = Buffers.GetOrAdd(category, category => new GlobalBuffer(
             bufferedLogger,
             category,
             _options,
-            _timeProvider));
+            _timeProvider,
+            _scopeProvider));
 #endif
         return buffer.TryEnqueue(logEntry);
     }

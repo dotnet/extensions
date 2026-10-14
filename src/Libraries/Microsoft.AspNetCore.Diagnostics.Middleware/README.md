@@ -74,6 +74,8 @@ public class MyService
 Per-request buffering is especially useful for capturing all logs related to a specific HTTP request and making decisions about them collectively based on request outcomes.
 Per-request buffering is tightly coupled with [Global Buffering](https://github.com/dotnet/extensions/blob/main/src/Libraries/Microsoft.Extensions.Telemetry/README.md#log-buffering). If a log entry is supposed to be buffered to a per-request buffer, but there is no active HTTP context, it will be buffered to the global buffer instead. If buffer flush is triggered, the per-request buffer will be flushed first, followed by the global buffer.
 
+To preserve logging scopes in buffered log records, set the experimental `IncludeScopes` option, which adds the scopes' name/value pairs to the records' attributes.
+
 ### Tracking HTTP Request Latency
 
 These components enable tracking and reporting the latency of HTTP request processing.
