@@ -291,20 +291,25 @@ internal sealed class Parser
         {
             foreach (var arg in attribute.NamedArguments)
             {
-                if (arg.Value.Kind == TypedConstantKind.Primitive &&
-                    arg.Key is "MetricName" or "Name")
+                if (arg.Value.Kind != TypedConstantKind.Primitive)
                 {
-                    metricNameFromAttribute = (arg.Value.Value ?? string.Empty).ToString().Replace("\\\\", "\\");
+                    continue;
                 }
-                else if (arg.Value.Kind == TypedConstantKind.Primitive &&
-                    arg.Key is "Unit")
+
+                var value = (arg.Value.Value ?? string.Empty).ToString();
+                switch (arg.Key)
                 {
-                    metricUnitFromAttribute = (arg.Value.Value ?? string.Empty).ToString();
-                }
-                else if (arg.Value.Kind == TypedConstantKind.Primitive &&
-                    arg.Key is "Description")
-                {
-                    metricDescriptionFromAttribute = (arg.Value.Value ?? string.Empty).ToString();
+                    case "MetricName" or "Name":
+                        metricNameFromAttribute = value.Replace("\\\\", "\\");
+                        break;
+
+                    case "Unit":
+                        metricUnitFromAttribute = value;
+                        break;
+
+                    case "Description":
+                        metricDescriptionFromAttribute = value;
+                        break;
                 }
             }
         }
