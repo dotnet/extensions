@@ -17,7 +17,6 @@ namespace Microsoft.Gen.Logging.Parsing;
 
 internal sealed partial class Parser
 {
-    // Same as LoggerMessageRateLimiter.MaxPermitLimit.
     private const int MaxRateLimitPermitLimit = (1 << 24) - 1;
 
     // ITypeParameterSymbol.AllowsRefLikeType was added in Roslyn 4.9 (C# 13). Access via a compiled
