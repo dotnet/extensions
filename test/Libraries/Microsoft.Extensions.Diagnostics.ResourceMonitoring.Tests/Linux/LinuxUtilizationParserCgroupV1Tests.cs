@@ -42,6 +42,7 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
         Assert.Throws<NotSupportedException>(() => parser.GetCgroupCpuUsageInNanosecondsV2());
         Assert.Throws<NotSupportedException>(() => parser.GetCgroupLimitV2());
         Assert.Throws<NotSupportedException>(() => parser.GetCgroupRequestCpuV2());
+        Assert.Throws<NotSupportedException>(() => parser.GetCgroupCpuUserAndSystemTimeInNanosecondsV2());
     }
 
     [Fact]

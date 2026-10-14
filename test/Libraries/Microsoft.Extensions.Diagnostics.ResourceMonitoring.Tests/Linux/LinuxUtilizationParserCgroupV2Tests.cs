@@ -42,6 +42,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUserAndSystemTimeInNanosecondsV2());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpu());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpuV2());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupPeriodsIntervalInMicroSecondsV2());
@@ -615,5 +616,81 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         await Task.WhenAll(tasks);
 
         Assert.True(true);
+    }
+
+    [Theory]
+    [InlineData("0::/", "/sys/fs/cgroup/cpu.stat", "usage_usec 2000000\nuser_usec 1500000\nsystem_usec 500000\nnr_periods 10\nnr_throttled 0\nthrottled_usec 0")]
+    [InlineData("0::/fakeslice", "/sys/fs/cgroup/fakeslice/cpu.stat", "usage_usec 2000000\nuser_usec 1500000\nsystem_usec 500000\nnr_periods 10\nnr_throttled 0\nthrottled_usec 0")]
+    [InlineData("0::/fakeslice", "/sys/fs/cgroup/fakeslice/cpu.stat", "usage_usec 2000000\nuser_usec 1500000\nsystem_usec 500000")]
+    public void Reads_CpuUserAndSystemTimeFromSlices_When_Valid_Input(string slicepath, string cpuStatPath, string content)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/self/cgroup"), slicepath },
+            { new FileInfo(cpuStatPath), content }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var (userNanoseconds, systemNanoseconds) = p.GetCgroupCpuUserAndSystemTimeInNanosecondsV2();
+
+        Assert.Equal(1_500_000_000, userNanoseconds);
+        Assert.Equal(500_000_000, systemNanoseconds);
+    }
+
+    [Theory]
+    [InlineData("", "Expected to find 'user_usec'")]
+    [InlineData("usage_usec 2000000\nsystem_usec 500000\nnr_periods 10", "Expected to find 'user_usec'")]
+    [InlineData("usage_usec 2000000\nuser_usec 1500000\nnr_periods 10", "Expected to find 'system_usec'")]
+    [InlineData("usage_usec 2000000\nuser_usec abc\nsystem_usec 500000", "Could not get user_usec")]
+    [InlineData("usage_usec 2000000\nuser_usec -1500000\nsystem_usec 500000", "Could not get user_usec")]
+    [InlineData("usage_usec 2000000\nuser_usec 1500000\nsystem_usec -1", "Could not get system_usec")]
+    [InlineData("usage_usec 2000000\nuser_usec 1500000\nsystem_usec", "Could not get system_usec")]
+    public void Throws_When_CpuUserAndSystemTime_Has_Invalid_Content(string content, string expectedMessage)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), content }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var exception = Assert.Throws<InvalidOperationException>(() => p.GetCgroupCpuUserAndSystemTimeInNanosecondsV2());
+
+        Assert.Contains(expectedMessage, exception.Message);
+    }
+
+    [Fact]
+    public void Reads_CpuUserAndSystemTime_From_ProcStat_When_CpuStat_Does_Not_Exist()
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
+            { new FileInfo("/proc/stat"), "cpu  2569530 36700 245693 4860924 82283 0 4360 0 0 0" }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var (userNanoseconds, systemNanoseconds) = p.GetCgroupCpuUserAndSystemTimeInNanosecondsV2();
+
+        // user + nice = 2606230 ticks and system = 245693 ticks, with 100 ticks per second.
+        Assert.Equal(26_062_300_000_000, userNanoseconds);
+        Assert.Equal(2_456_930_000_000, systemNanoseconds);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("2569530 36700 245693 4860924 82283 0 4360 0 0 0")]
+    [InlineData("cpu  2569530 36700")]
+    [InlineData("cpu  2569530 36700 abc")]
+    public void Throws_When_CpuStat_Does_Not_Exist_And_ProcStat_Is_Invalid(string content)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
+            { new FileInfo("/proc/stat"), content }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+
+        Assert.Throws<InvalidOperationException>(() => p.GetCgroupCpuUserAndSystemTimeInNanosecondsV2());
     }
 }

@@ -556,6 +556,19 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         return 0;
     }
 
+    public (long userNanoseconds, long systemNanoseconds) GetCgroupCpuUserAndSystemTimeInNanosecondsV2()
+    {
+        FileInfo cpuStatFile = new(GetCgroupPath(CpuStat));
+
+        // If the file doesn't exist, we assume that the system is a Host and we read the CPU time from /proc/stat.
+        if (!_fileSystem.Exists(cpuStatFile))
+        {
+            return GetHostCpuUserAndSystemTimeInNanoseconds();
+        }
+
+        return ParseCpuUserAndSystemTimeFromFile(_fileSystem, cpuStatFile);
+    }
+
     private static (long cpuUsageNanoseconds, long nrPeriods) ParseCpuUsageFromFile(IFileSystem fileSystem, FileInfo cpuUsageFile)
     {
         // The values we are interested in start with these prefixes
@@ -599,6 +612,49 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         // In cgroup v2, the Units are microseconds for usage_usec.
         // We multiply by 1000 to convert to nanoseconds to keep the common calculation logic.
         return (microseconds * Thousand, periods);
+    }
+
+    private static (long userNanoseconds, long systemNanoseconds) ParseCpuUserAndSystemTimeFromFile(IFileSystem fileSystem, FileInfo cpuStatFile)
+    {
+        // The values we are interested in start with these prefixes
+        const string UserUsec = "user_usec";
+        const string SystemUsec = "system_usec";
+
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        fileSystem.ReadAll(cpuStatFile, bufferWriter.Buffer);
+        ReadOnlySpan<char> content = bufferWriter.Buffer.WrittenSpan;
+
+        // Parse user_usec
+        int userIndex = content.IndexOf(UserUsec);
+        if (userIndex == -1)
+        {
+            Throw.InvalidOperationException($"Could not parse '{cpuStatFile}'. Expected to find 'user_usec' but it was not present in the file content.");
+        }
+
+        _ = GetNextNumber(content.Slice(userIndex + UserUsec.Length), out long userMicroseconds);
+
+        if (userMicroseconds == -1)
+        {
+            Throw.InvalidOperationException($"Could not get user_usec from '{cpuStatFile}'. Expected positive number, but got '{new string(content.Slice(userIndex))}'.");
+        }
+
+        // Parse system_usec
+        int systemIndex = content.IndexOf(SystemUsec);
+        if (systemIndex == -1)
+        {
+            Throw.InvalidOperationException($"Could not parse '{cpuStatFile}'. Expected to find 'system_usec' but it was not present in the file content.");
+        }
+
+        _ = GetNextNumber(content.Slice(systemIndex + SystemUsec.Length), out long systemMicroseconds);
+
+        if (systemMicroseconds == -1)
+        {
+            Throw.InvalidOperationException($"Could not get system_usec from '{cpuStatFile}'. Expected positive number, but got '{new string(content.Slice(systemIndex))}'.");
+        }
+
+        // In cgroup v2, the Units are microseconds for user_usec and system_usec.
+        // We multiply by 1000 to convert to nanoseconds.
+        return (userMicroseconds * Thousand, systemMicroseconds * Thousand);
     }
 
     /// <remarks>
@@ -861,5 +917,43 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         }
 
         return memoryUsage;
+    }
+
+    private (long userNanoseconds, long systemNanoseconds) GetHostCpuUserAndSystemTimeInNanoseconds()
+    {
+        const string StartingTokens = "cpu ";
+        const int NanosecondsInSecond = 1_000_000_000;
+
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadFirstLine(_procStat, bufferWriter.Buffer);
+
+        ReadOnlySpan<char> stat = bufferWriter.Buffer.WrittenSpan;
+
+        if (!stat.StartsWith(StartingTokens))
+        {
+            Throw.InvalidOperationException($"Expected proc/stat to start with '{StartingTokens}' but it was '{new string(stat)}'.");
+        }
+
+        stat = stat.Slice(StartingTokens.Length);
+
+        // The first three values are the time spent in user mode, in user mode with low priority (nice) and in system mode, in USER_HZ units.
+        Span<long> values = stackalloc long[3];
+        for (int i = 0; i < values.Length; i++)
+        {
+            int next = GetNextNumber(stat, out values[i]);
+
+            if (values[i] == -1)
+            {
+                Throw.InvalidOperationException(
+                    $"'{_procStat}' should contain whitespace separated values according to POSIX. We've failed trying to get {i}th value. File content: '{new string(stat)}'.");
+            }
+
+            stat = next == -1 ? ReadOnlySpan<char>.Empty : stat.Slice(next);
+        }
+
+        long userTicks = values[0] + values[1];
+        long systemTicks = values[2];
+
+        return ((long)(userTicks / (double)_userHz * NanosecondsInSecond), (long)(systemTicks / (double)_userHz * NanosecondsInSecond));
     }
 }

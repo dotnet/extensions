@@ -31,6 +31,14 @@ internal interface ILinuxUtilizationParser
     (long cpuUsageNanoseconds, long elapsedPeriods) GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2();
 
     /// <summary>
+    /// For CgroupV2 only and experimental. Reads the user_usec and system_usec fields of the file cpu.stat based on /proc/self/cgroup, which is part of the cgroup v2 CPU controller.
+    /// They contain the cumulative CPU time consumed by the cgroup from its actual slice in user mode and in system mode.
+    /// If the file doesn't exist, the host values are read from /proc/stat instead (user and nice time as user time, system time as system time).
+    /// </summary>
+    /// <returns>The cumulative user and system CPU time in nanoseconds.</returns>
+    (long userNanoseconds, long systemNanoseconds) GetCgroupCpuUserAndSystemTimeInNanosecondsV2();
+
+    /// <summary>
     /// Reads the file /sys/fs/cgroup/cpu.max, which is part of the cgroup v2 CPU controller.
     /// It is used to set the maximum amount of CPU time that can be used by a cgroup.
     /// The file contains two fields, separated by a space.
