@@ -251,4 +251,188 @@ public class DocumentTableCellCollectionTests
 
         Assert.Equal(version, document.Version);
     }
+
+    [Fact]
+    public void MergedCells_PreserveAnchorSpansRolesAndDistinctCoveredPositions()
+    {
+        using Document document = new("merged");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 3, 3);
+        DocumentTableCell anchor = new(new DocumentTextElement(DocumentTextKind.Paragraph, "MERGED_A"), 2, 2, "header");
+        DocumentTableCell ordinary = new(new DocumentTextElement(DocumentTextKind.Paragraph, "B"));
+        table.Cells[0, 0] = anchor;
+        table.Cells[2, 0] = ordinary;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+
+        Assert.Equal(2, anchor.RowSpan);
+        Assert.Equal(2, anchor.ColumnSpan);
+        Assert.Equal("header", anchor.Kind);
+        Assert.False(table.Cells.IsCovered(0, 0));
+        foreach ((int row, int column) in new[] { (0, 1), (1, 0), (1, 1) })
+        {
+            Assert.Null(table.Cells[row, column]);
+            Assert.True(table.Cells.IsCovered(row, column));
+            Assert.Same(anchor, table.Cells.GetCoveringCell(row, column));
+        }
+
+        Assert.Null(table.Cells[2, 2]);
+        Assert.False(table.Cells.IsCovered(2, 2));
+        Assert.Null(table.Cells.GetCoveringCell(2, 2));
+        Assert.Equal(new DocumentTableCell?[] { anchor, null, null, null, null, null, ordinary, null, null }, table.Cells.ToArray());
+        Assert.Equal(new[] { "s0/e0/c0,0", "s0/e0/c2,0" }, table.Cells.Where(cell => cell is not null).Select(cell => cell!.Address));
+        Assert.Equal("s0/e0/c0,0", anchor.Content!.Address);
+    }
+
+    [Fact]
+    public void MergedCells_OverlapCoveredEditsAndReuseRejectWithoutMutation()
+    {
+        using Document document = new("invalid-merged");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 3, 3);
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "MERGED_A");
+        DocumentAnnotationTestData.CountingStream stream = new(new byte[] { 1, 2, 3 });
+        using DocumentArtifact artifact = new("application/octet-stream", stream);
+        text.Artifacts.Add(artifact);
+        DocumentTableCell anchor = new(text, 2, 2);
+        table.Cells[0, 0] = anchor;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        long version = document.Version;
+        DocumentTableCell?[] before = table.Cells.ToArray();
+        DocumentTableCell overlap = new(2, 1);
+        DocumentTableCell candidate = new();
+
+        Assert.Throws<InvalidOperationException>(() => table.Cells[0, 1] = candidate);
+        Assert.Throws<InvalidOperationException>(() => table.Cells[1, 1] = null);
+        Assert.Throws<InvalidOperationException>(() => table.Cells.SetContent(1, 0, null));
+        table.Cells[2, 2] = candidate;
+        long afterCandidate = document.Version;
+        Assert.Throws<InvalidOperationException>(() => table.Cells[1, 2] = overlap);
+        Assert.Throws<InvalidOperationException>(() => table.Cells[2, 1] = candidate);
+        Assert.Equal(afterCandidate, document.Version);
+        Assert.Null(overlap.Address);
+        Assert.Equal("s0/e0/c2,2", candidate.Address);
+        table.Cells[2, 2] = null;
+        Assert.Equal(before, table.Cells.ToArray());
+        Assert.Equal(version + 2, document.Version);
+        Assert.Equal("s0/e0/c0,0", text.Address);
+        Assert.Equal(new byte[] { 1, 2, 3 }, stream.ToArray());
+        Assert.Equal(0, stream.DisposeCount);
+
+        table.Cells[0, 0] = null;
+        Assert.False(table.Cells.IsCovered(1, 1));
+        Assert.Null(table.Cells.GetCoveringCell(1, 1));
+        Assert.Null(anchor.Address);
+        Assert.Null(text.Address);
+        document.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+    }
+
+    [Theory]
+    [InlineData(2, 1)]
+    [InlineData(1, 2)]
+    public void MergedCells_OutOfBoundsSpanRejectsWithoutTakingOwnership(int rowSpan, int columnSpan)
+    {
+        using Document document = new("bounds");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 3, 3);
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        DocumentTableCell candidate = new(rowSpan, columnSpan);
+        long version = document.Version;
+
+        Assert.Throws<ArgumentException>("cell", () => table.Cells[2, 2] = candidate);
+        Assert.Null(candidate.Address);
+        Assert.Null(table.Cells[2, 2]);
+        Assert.Equal(version, document.Version);
+        table.Cells[0, 0] = candidate;
+        Assert.Equal("s0/e0/c0,0", candidate.Address);
+        Assert.Equal(version + 1, document.Version);
+    }
+
+    [Fact]
+    public void MergedCells_ProspectiveSpanCrossingCoveredSlotOnlyRejectsWithoutMutation()
+    {
+        using Document document = new("covered-slot-overlap");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 3, 3);
+        DocumentTextElement anchorText = new(DocumentTextKind.Paragraph, "MERGED_A", "merged anchor");
+        DocumentTableCell anchor = new(anchorText, 2, 2);
+        table.Cells[1, 1] = anchor;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        DocumentAnnotationTestData.CountingStream stream = new(new byte[] { 61, 62, 63 });
+        using DocumentArtifact artifact = new("application/octet-stream", stream);
+        DocumentTextElement candidateText = new(DocumentTextKind.Paragraph, "candidate **value**", "candidate value");
+        candidateText.Artifacts.Add(artifact);
+        DocumentTableCell candidate = new(candidateText, 2, 1);
+        long version = document.Version;
+        DocumentTableCell?[] before = table.Cells.ToArray();
+        const string Projection = "<table><tr><td></td><td></td><td></td></tr>" +
+            "<tr><td></td><td rowspan=\"2\" colspan=\"2\">MERGED_A</td></tr><tr><td></td></tr></table>";
+
+        // Candidate occupies (0,2) and (1,2), never the existing anchor at (1,1).
+        Assert.Null(table.Cells[0, 2]);
+        Assert.False(table.Cells.IsCovered(0, 2));
+        Assert.Null(table.Cells.GetCoveringCell(0, 2));
+        Assert.Null(table.Cells[1, 2]);
+        Assert.True(table.Cells.IsCovered(1, 2));
+        Assert.Same(anchor, table.Cells.GetCoveringCell(1, 2));
+        Assert.Equal(Projection, document.ToMarkdown());
+
+        Assert.Throws<InvalidOperationException>(() => table.Cells[0, 2] = candidate);
+
+        Assert.Equal(before, table.Cells.ToArray());
+        Assert.Equal(version, document.Version);
+        for (int row = 0; row < 3; row++)
+        {
+            for (int column = 0; column < 3; column++)
+            {
+                bool inAnchor = row >= 1 && column >= 1;
+                Assert.Equal(inAnchor && (row != 1 || column != 1), table.Cells.IsCovered(row, column));
+                Assert.Same(inAnchor ? anchor : null, table.Cells.GetCoveringCell(row, column));
+            }
+        }
+
+        Assert.Same(anchor, table.Cells[1, 1]);
+        Assert.Equal("s0/e0/c1,1", anchor.Address);
+        Assert.Equal("s0/e0/c1,1", anchorText.Address);
+        Assert.Null(candidate.Address);
+        Assert.Null(candidateText.Address);
+        Assert.False(artifact.IsDocumentOwned);
+        Assert.Empty(document.Artifacts);
+        Assert.Equal(new byte[] { 61, 62, 63 }, stream.ToArray());
+        Assert.Equal(0, stream.DisposeCount);
+        Assert.Equal(Projection, document.ToMarkdown());
+
+        // Success in another attached table proves rejection took neither cell nor content ownership.
+        using Document other = new("candidate-owner");
+        DocumentSection otherSection = new("");
+        DocumentTableElement otherTable = new("", 2, 1);
+        otherSection.Elements.Add(otherTable);
+        other.Sections.Add(otherSection);
+        long otherVersion = other.Version;
+        otherTable.Cells[0, 0] = candidate;
+        Assert.Same(candidate, otherTable.Cells[0, 0]);
+        Assert.Equal("s0/e0/c0,0", candidate.Address);
+        Assert.Equal("s0/e0/c0,0", candidateText.Address);
+        Assert.Same(candidate, otherTable.Cells.GetCoveringCell(1, 0));
+        Assert.True(otherTable.Cells.IsCovered(1, 0));
+        Assert.Equal(otherVersion + 1, other.Version);
+        Assert.True(artifact.IsDocumentOwned);
+        Assert.Same(artifact, Assert.Single(other.Artifacts));
+        Assert.Equal("<table><tr><td rowspan=\"2\" colspan=\"1\">candidate **value**</td></tr><tr></tr></table>", other.ToMarkdown());
+        Assert.Equal("candidate value", candidateText.Text);
+        Assert.Equal(version, document.Version);
+        Assert.Equal(before, table.Cells.ToArray());
+
+        document.Dispose();
+        Assert.Equal(0, stream.DisposeCount);
+        Assert.Equal(new byte[] { 61, 62, 63 }, stream.ToArray());
+        other.Dispose();
+        other.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.False(stream.CanRead);
+    }
 }

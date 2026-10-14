@@ -94,4 +94,28 @@ public class DocumentTableElementTests
         Assert.Equal("stored table", table.GetMarkdown());
         Assert.Equal("| semantic cell |", table.ToMarkdown());
     }
+
+    [Fact]
+    public void MergedCells_ProjectAnchorContentExactlyOnceWithRolesAndHtmlEscaping()
+    {
+        DocumentTableElement table = new("stored table", 3, 3);
+        DocumentTableCell anchor = new(new DocumentTextElement(DocumentTextKind.Paragraph, "MERGED_A<&"), 2, 2, "columnHeader");
+        table.Cells[0, 0] = anchor;
+        table.Cells[2, 0] = new DocumentTableCell(new DocumentTextElement(DocumentTextKind.Paragraph, "B"), kind: "rowHeader");
+        DocumentTableCell empty = new(kind: "vendor\"role");
+        table.Cells[2, 2] = empty;
+        DocumentTableCell?[] before = table.Cells.ToArray();
+
+        Assert.Equal(
+            "<table><tr><th rowspan=\"2\" colspan=\"2\" data-kind=\"columnHeader\">MERGED_A&lt;&amp;</th><td></td></tr>" +
+            "<tr><td></td></tr><tr><th rowspan=\"1\" colspan=\"1\" data-kind=\"rowHeader\">B</th><td></td>" +
+            "<td rowspan=\"1\" colspan=\"1\" data-kind=\"vendor&quot;role\"></td></tr></table>",
+            table.ToMarkdown());
+        Assert.Equal(before, table.Cells.ToArray());
+        Assert.Same(anchor, table.Cells.GetCoveringCell(1, 1));
+        Assert.Null(table.Cells[1, 1]);
+        Assert.False(table.Cells.IsCovered(2, 2));
+        Assert.Null(empty.Content);
+        Assert.Equal("stored table", table.GetMarkdown());
+    }
 }

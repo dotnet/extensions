@@ -70,4 +70,54 @@ public class DocumentTableCellTests
             "content",
             () => new DocumentTableCell(null!));
     }
+
+    [Fact]
+    public void EmptyCell_PreservesGeometryAndConfidenceWithoutText()
+    {
+        using Document document = new("empty-cell");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 3, 3);
+        DocumentTableCell empty = new();
+        DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
+        empty.Annotations.Add(new DocumentAnnotation("empty-layout",
+            regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) },
+            confidence: new DocumentConfidence(0.73, "provider-reported symbol certainty", 0, 1)));
+        table.Cells[2, 2] = empty;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        long version = document.Version;
+
+        Assert.Null(empty.Content);
+        Assert.Equal("s0/e0/c2,2", empty.Address);
+        Assert.Equal(2, empty.RowIndex);
+        Assert.Equal(2, empty.ColumnIndex);
+        Assert.Equal(1, empty.RowSpan);
+        Assert.Equal(1, empty.ColumnSpan);
+        Assert.False(table.Cells.IsCovered(2, 2));
+        Assert.Same(empty, table.Cells.GetCoveringCell(2, 2));
+        Assert.Null(table.Cells.GetCoveringCell(1, 2));
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), empty.Annotations[0].Regions[0].Polygon);
+        Assert.Equal(0.73, empty.Annotations[0].Confidence!.Value);
+        Assert.Equal("provider-reported symbol certainty", empty.Annotations[0].Confidence!.Kind);
+        Assert.Same(page, Assert.Single(document.SourcePages));
+        Assert.Equal($"|  |  |  |{Environment.NewLine}|  |  |  |{Environment.NewLine}|  |  |  |", document.ToMarkdown());
+        empty.Annotations.Add(new DocumentAnnotation("additional"));
+        Assert.Equal(version, document.Version);
+        Assert.Equal(2, empty.Annotations.Count);
+    }
+
+    [Theory]
+    [InlineData(0, 1, "rowSpan")]
+    [InlineData(-1, 1, "rowSpan")]
+    [InlineData(1, 0, "columnSpan")]
+    [InlineData(1, -1, "columnSpan")]
+    public void Constructors_RejectNonPositiveSpans(int rowSpan, int columnSpan, string parameter)
+    {
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "content");
+        Assert.Throws<ArgumentOutOfRangeException>(parameter, () => new DocumentTableCell(rowSpan, columnSpan));
+        Assert.Throws<ArgumentOutOfRangeException>(parameter, () => new DocumentTableCell(text, rowSpan, columnSpan));
+        Assert.Null(text.Address);
+        Assert.Null(text.ParentSection);
+        Assert.Equal("content", text.ToMarkdown());
+    }
 }

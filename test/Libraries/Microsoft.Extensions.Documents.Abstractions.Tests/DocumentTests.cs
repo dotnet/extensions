@@ -694,4 +694,420 @@ public class DocumentTests
 
         Assert.Equal(before + 1, document.Version);
     }
+
+    [Fact]
+    public void DocumentTraversal_PreservesOriginIdentityAcrossHierarchyChanges()
+    {
+        using Document document = new("origin");
+        DocumentSourceOutput output = new("operation-A");
+        DocumentSourcePage page7 = DocumentAnnotationTestData.PdfPage(output);
+        DocumentSourcePage page2 = new("urn:frame:page2", 2, sourceOutput: output);
+        DocumentTextElement text7 = new(DocumentTextKind.Paragraph, "same text");
+        DocumentTextElement text2 = new(DocumentTextKind.Paragraph, "same text");
+        DocumentRegion region = new(page7, DocumentAnnotationTestData.Polygon());
+        text7.Annotations.Add(new DocumentAnnotation("layout", regions: new[] { region }));
+        text2.Annotations.Add(new DocumentAnnotation("layout",
+            regions: new[] { new DocumentRegion(page2, DocumentAnnotationTestData.Polygon()) }));
+        DocumentSection first = new("");
+        DocumentSection second = new("");
+        first.Elements.Add(text7);
+        second.Elements.Add(text2);
+        document.Sections.Add(first);
+        document.Sections.Add(second);
+        Assert.Equal("s0/e0", text7.Address);
+        Assert.Equal(new[] { page7, page2 }, document.SourcePages);
+
+        first.Elements.Remove(text7);
+        second.Elements.Insert(0, text7);
+
+        Assert.Equal("s1/e0", text7.Address);
+        Assert.Equal("s1/e1", text2.Address);
+        Assert.Equal(new[] { text7, text2 }, document.EnumerateContent());
+        Assert.Equal(new[] { 7, 2 }, document.SourcePages.Select(page => page.PageNumber));
+        Assert.Same(page7, text7.Annotations[0].Regions[0].Page);
+        Assert.Equal("urn:frame:pdf-A", region.Page.Identifier);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), region.Polygon);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+    }
+
+    [Fact]
+    public void BlankPage_PreservesSourceFrameWithoutFabricatedSemanticContent()
+    {
+        using Document document = new("blank", "");
+        DocumentSourceOutput output = new("blank-operation");
+        DocumentSourcePage page = new("urn:frame:blank-page2", 2, new DocumentPageDimensions(200, 100),
+            DocumentCoordinateUnit.Point, DocumentCoordinateOrigin.BottomLeft, output);
+        document.AddSourcePage(page);
+        document.Sections.Add(new DocumentSection(""));
+
+        Assert.Equal("", document.GetMarkdown());
+        Assert.Equal("", document.ToMarkdown());
+        Assert.Empty(document.EnumerateContent());
+        Assert.Same(page, Assert.Single(document.SourcePages));
+        Assert.Equal(2, page.PageNumber);
+        Assert.Equal("urn:frame:blank-page2", page.Identifier);
+        Assert.Equal(new DocumentPageDimensions(200, 100), page.Dimensions);
+        Assert.Equal(DocumentCoordinateUnit.Point, page.CoordinateUnit);
+        Assert.Equal(DocumentCoordinateOrigin.BottomLeft, page.CoordinateOrigin);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Equal(DocumentRawContentStatus.Unavailable, output.ContentStatus);
+        Assert.Empty(document.Artifacts);
+    }
+
+    [Fact]
+    public void DocumentRawOutput_MultiplePagesShareOneBodyWithoutSemanticLeakage()
+    {
+        using Document document = new("shared-body", "visible");
+        DocumentAnnotationTestData.CountingStream stream = new(DocumentAnnotationTestData.OriginalBytes());
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        using DocumentArtifact artifact = new("application/json", stream);
+        DocumentSourceOutput output = new("operation-A", native, artifact);
+        DocumentSourcePage page7 = DocumentAnnotationTestData.PdfPage(output);
+        DocumentSourcePage page2 = new("frame-2", 2, sourceOutput: output);
+        document.AddSourcePage(page7);
+        document.AddSourcePage(page2);
+        document.AddSourcePage(page7);
+        document.AddSourceOutput(output);
+
+        Assert.Equal(new[] { page7, page2 }, document.SourcePages);
+        Assert.Same(output, page7.SourceOutput);
+        Assert.Same(page7.SourceOutput, page2.SourceOutput);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Same(artifact, Assert.Single(document.Artifacts));
+        Assert.Same(stream, page2.SourceOutput!.GetRawContent()!.Content);
+        Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), stream.ToArray());
+        Assert.Equal("visible", document.GetMarkdown());
+        Assert.Equal("visible", document.ToMarkdown());
+        Assert.Empty(document.EnumerateContent());
+        Assert.Equal(0, document.Version);
+        document.Dispose();
+        document.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+    }
+
+    [Fact]
+    public void DocumentAnnotations_AreConsumableWithoutExtractionResult()
+    {
+        using Document document = new("shared-annotations");
+        DocumentSection section = new("");
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible **text**", "visible text");
+        section.Elements.Add(text);
+        document.Sections.Add(section);
+        var payload = new { target = text.LocalId, nested = new { unknown = new object[] { 3, "x" } }, vendorFlag = "kept" };
+        DocumentSourceOutput output = new("operation", providerName: "synthetic", modelId: "engine:v1");
+        DocumentSourcePage page = DocumentAnnotationTestData.PdfPage(output);
+        long version = document.Version;
+        document.Annotations.Add(new DocumentAnnotation("vendor-extra", payload, "caption",
+            new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) }, sourceOutput: output));
+
+        DocumentAnnotation observed = Assert.Single(document.Annotations);
+        Assert.Same(payload, observed.Value);
+        Assert.Equal(text.LocalId, payload.target);
+        Assert.Equal(new object[] { 3, "x" }, payload.nested.unknown);
+        Assert.Equal("kept", payload.vendorFlag);
+        Assert.Equal("caption", observed.Role);
+        Assert.Same(page, Assert.Single(document.SourcePages));
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Equal("engine:v1", observed.SourceOutput!.ModelId);
+        Assert.Equal(version, document.Version);
+        Assert.Same(text, Assert.Single(document.EnumerateContent()));
+        Assert.Equal("visible **text**", document.ToMarkdown());
+        Assert.Equal("visible text", text.Text);
+    }
+
+    [Fact]
+    public void NestedAnnotations_RegisterBeforeAndAfterAttachmentWithoutSemanticVersionChanges()
+    {
+        using Document document = new("nested");
+        DocumentSourceOutput output = new("operation");
+        DocumentSourcePage page7 = DocumentAnnotationTestData.PdfPage(output);
+        DocumentSourcePage page2 = new("frame-2", 2, sourceOutput: output);
+        DocumentSection root = new("");
+        DocumentSection nested = new("");
+        DocumentTableElement table = new("", 2, 2);
+        DocumentTableCell empty = new();
+        empty.Annotations.Add(new DocumentAnnotation("before-cell",
+            regions: new[] { new DocumentRegion(page7, DocumentAnnotationTestData.Polygon()) }));
+        table.Cells[1, 1] = empty;
+        nested.Elements.Add(table);
+        root.Elements.Add(nested);
+        document.Sections.Add(root);
+        long version = document.Version;
+
+        DocumentAnnotation after = new("after-element",
+            regions: new[] { new DocumentRegion(page2, DocumentAnnotationTestData.Polygon()) });
+        nested.Annotations.Add(after);
+        empty.Annotations.Add(after);
+        table.Annotations.Add(after);
+        document.Annotations.Add(after);
+        document.AddSourcePage(page7);
+        document.AddSourceOutput(output);
+
+        Assert.Equal(new[] { page7, page2 }, document.SourcePages);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Equal(version, document.Version);
+        Assert.Equal("s0/e0/e0/c1,1", empty.Address);
+        Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
+        Assert.Same(table, Assert.Single(document.EnumerateContent()));
+        nested.Annotations[0] = new DocumentAnnotation("replacement");
+        empty.Annotations.RemoveAt(1);
+        table.Annotations.Clear();
+        Assert.Equal(version, document.Version);
+        Assert.Equal(new[] { page7, page2 }, document.SourcePages);
+        table.Cells.SetContent(0, 0, new DocumentTextElement(DocumentTextKind.Paragraph, "real mutation"));
+        Assert.Equal(version + 1, document.Version);
+        Assert.Equal($"| real mutation |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
+    }
+
+    [Fact]
+    public void SourceRegistries_RejectIdentityConflictsAndAllowFrameNamesAcrossOperations()
+    {
+        using Document document = new("identities");
+        DocumentSourceOutput first = new("operation-A");
+        DocumentSourceOutput second = new("operation-B");
+        DocumentSourcePage firstPage = new("same-frame", 7, sourceOutput: first);
+        DocumentSourcePage secondPage = new("same-frame", 7, sourceOutput: second);
+        document.AddSourcePage(firstPage);
+        document.AddSourcePage(secondPage);
+        long version = document.Version;
+        Assert.Throws<InvalidOperationException>(() => document.AddSourceOutput(new DocumentSourceOutput("operation-A")));
+        Assert.Throws<InvalidOperationException>(() => document.AddSourcePage(new DocumentSourcePage("same-frame", 2, sourceOutput: first)));
+        DocumentAnnotation conflicting = new("conflict", sourceOutput: new DocumentSourceOutput("operation-C"),
+            regions: new[] { new DocumentRegion(new DocumentSourcePage("same-frame", 7, sourceOutput: first), DocumentAnnotationTestData.Polygon()) });
+        Assert.Throws<InvalidOperationException>(() => document.Annotations.Add(conflicting));
+
+        Assert.Empty(document.Annotations);
+        Assert.Equal(new[] { first, second }, document.SourceOutputs);
+        Assert.Equal(new[] { firstPage, secondPage }, document.SourcePages);
+        Assert.Equal(version, document.Version);
+        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<DocumentSourcePage>)document.SourcePages).Clear());
+        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<DocumentSourceOutput>)document.SourceOutputs).Clear());
+    }
+
+    [Fact]
+    public void RawArtifactOwnership_RejectsSecondDocumentWithoutDisposingBorrowedObjects()
+    {
+        using Document owner = new("owner");
+        using Document other = new("other");
+        DocumentAnnotationTestData.CountingStream stream = new(DocumentAnnotationTestData.OriginalBytes());
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        using DocumentArtifact artifact = new("application/json", stream);
+        DocumentSourceOutput output = new("operation", native, artifact);
+        owner.AddSourceOutput(output);
+
+        Assert.Throws<InvalidOperationException>(() => other.AddSourceOutput(output));
+        Assert.Empty(other.SourceOutputs);
+        Assert.Empty(other.Artifacts);
+        Assert.Same(output, Assert.Single(owner.SourceOutputs));
+        Assert.Equal(0, stream.DisposeCount);
+        Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), stream.ToArray());
+        other.Dispose();
+        Assert.Equal(0, stream.DisposeCount);
+        owner.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+    }
+
+    [Fact]
+    public void DisposedDocument_RejectsSupplementalRegistrationsAndAnnotationEdits()
+    {
+        using Document document = new("disposed");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 1, 1);
+        DocumentTableCell cell = new();
+        DocumentAnnotation original = new("original");
+        document.Annotations.Add(original);
+        section.Annotations.Add(original);
+        cell.Annotations.Add(original);
+        table.Cells[0, 0] = cell;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        long version = document.Version;
+        document.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => document.AddSourceOutput(new DocumentSourceOutput("new")));
+        Assert.Throws<ObjectDisposedException>(() => document.AddSourcePage(DocumentAnnotationTestData.PdfPage()));
+        Assert.Throws<ObjectDisposedException>(() => document.Annotations.Add(new DocumentAnnotation("new")));
+        Assert.Throws<ObjectDisposedException>(() => section.Annotations[0] = new DocumentAnnotation("new"));
+        Assert.Throws<ObjectDisposedException>(() => cell.Annotations.RemoveAt(0));
+        Assert.Throws<ObjectDisposedException>(() => cell.Annotations.Clear());
+        Assert.Same(original, Assert.Single(document.Annotations));
+        Assert.Same(original, Assert.Single(section.Annotations));
+        Assert.Same(original, Assert.Single(cell.Annotations));
+        Assert.Empty(document.SourcePages);
+        Assert.Empty(document.SourceOutputs);
+        Assert.Equal(version, document.Version);
+    }
+
+    [Fact]
+    public void AttachedElementAndCell_RejectConflictingAnnotationsWithoutPartialRegistration()
+    {
+        using Document document = new("conflicting-annotations");
+        DocumentSourceOutput output = new("operation-A");
+        DocumentSourcePage page = DocumentAnnotationTestData.PdfPage(output);
+        DocumentAnnotation original = new("original", regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) });
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 1, 2);
+        DocumentTableCell cell = new();
+        cell.Annotations.Add(original);
+        table.Cells[0, 0] = cell;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        section.Annotations.Add(original);
+        DocumentAnnotation conflict = new("conflict", sourceOutput: new DocumentSourceOutput("new-operation"),
+            regions: new[] { new DocumentRegion(new DocumentSourcePage(page.Identifier, 7, sourceOutput: output), DocumentAnnotationTestData.Polygon()) });
+        long version = document.Version;
+
+        Assert.Throws<InvalidOperationException>(() => section.Annotations.Add(conflict));
+        Assert.Throws<InvalidOperationException>(() => cell.Annotations[0] = conflict);
+        DocumentTableCell rejected = new();
+        rejected.Annotations.Add(conflict);
+        Assert.Throws<InvalidOperationException>(() => table.Cells[0, 1] = rejected);
+        Assert.Null(rejected.Address);
+        Assert.Null(table.Cells[0, 1]);
+        Assert.Same(original, Assert.Single(section.Annotations));
+        Assert.Same(original, Assert.Single(cell.Annotations));
+        Assert.Same(page, Assert.Single(document.SourcePages));
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Equal(version, document.Version);
+        Assert.Equal("|  |  |", document.ToMarkdown());
+        Assert.Throws<ArgumentNullException>(() => section.Annotations.Add(null!));
+        Assert.Throws<ArgumentNullException>(() => cell.Annotations[0] = null!);
+        Assert.Equal(version, document.Version);
+    }
+
+    [Fact]
+    public void AnnotatedEmptyCell_RegistersOwnedRawOutputWhenInsertedIntoAttachedTable()
+    {
+        using Document document = new("late-cell");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 2, 2);
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        DocumentAnnotationTestData.CountingStream stream = new(DocumentAnnotationTestData.OriginalBytes());
+        using DocumentArtifact artifact = new("application/json", stream);
+        DocumentSourceOutput output = new("operation", native, artifact);
+        DocumentSourcePage page = DocumentAnnotationTestData.PdfPage(output);
+        DocumentTableCell cell = new();
+        cell.Annotations.Add(new DocumentAnnotation("layout",
+            regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) }));
+        long version = document.Version;
+        table.Cells[1, 0] = cell;
+
+        Assert.Equal(version + 1, document.Version);
+        Assert.Null(cell.Content);
+        Assert.Equal("s0/e0/c1,0", cell.Address);
+        Assert.Same(page, Assert.Single(document.SourcePages));
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Same(artifact, Assert.Single(document.Artifacts));
+        Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), stream.ToArray());
+        Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
+        document.Dispose();
+        document.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+    }
+
+    [Fact]
+    public void LateAnnotations_EachOwnerImmediatelyRegistersDistinctSourcesWithoutSemanticMutation()
+    {
+        using Document document = new("late-distinct-sources");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 1, 1);
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible **value**", "visible value");
+        DocumentTableCell cell = new(text);
+        table.Cells[0, 0] = cell;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        long version = document.Version;
+
+        DocumentAnnotationTestData.CountingStream documentStream = new(new byte[] { 11, 12, 13 });
+        DocumentAnnotationTestData.CountingStream elementStream = new(new byte[] { 21, 22, 23 });
+        DocumentAnnotationTestData.CountingStream cellStream = new(new byte[] { 31, 32, 33 });
+        using DocumentArtifact documentArtifact = new("application/octet-stream", documentStream);
+        using DocumentArtifact elementArtifact = new("application/octet-stream", elementStream);
+        using DocumentArtifact cellArtifact = new("application/octet-stream", cellStream);
+        using DocumentAnnotationTestData.BorrowedNative documentNative = new();
+        using DocumentAnnotationTestData.BorrowedNative elementNative = new();
+        using DocumentAnnotationTestData.BorrowedNative cellNative = new();
+        DocumentSourceOutput[] outputs =
+        [
+            new("document-operation", documentNative, documentArtifact),
+            new("element-operation", elementNative, elementArtifact),
+            new("cell-operation", cellNative, cellArtifact)
+        ];
+        DocumentSourcePage[] pages =
+        [
+            new("document-frame", 7, sourceOutput: outputs[0]),
+            new("element-frame", 2, sourceOutput: outputs[1]),
+            new("cell-frame", 9, sourceOutput: outputs[2])
+        ];
+        DocumentArtifact[] artifacts = [documentArtifact, elementArtifact, cellArtifact];
+        DocumentAnnotationTestData.CountingStream[] streams = [documentStream, elementStream, cellStream];
+        DocumentAnnotationTestData.BorrowedNative[] natives = [documentNative, elementNative, cellNative];
+        byte[][] expectedBytes = [new byte[] { 11, 12, 13 }, new byte[] { 21, 22, 23 }, new byte[] { 31, 32, 33 }];
+        var owners = new[] { document.Annotations, text.Annotations, cell.Annotations };
+
+        Assert.Empty(document.SourcePages);
+        Assert.Empty(document.SourceOutputs);
+        Assert.Empty(document.Artifacts);
+        for (int index = 0; index < owners.Length; index++)
+        {
+            // No explicit AddSource* calls: each owner must perform its own late registration.
+            Assert.DoesNotContain(pages[index], document.SourcePages);
+            Assert.DoesNotContain(outputs[index], document.SourceOutputs);
+            Assert.DoesNotContain(artifacts[index], document.Artifacts);
+            Assert.False(artifacts[index].IsDocumentOwned);
+            DocumentAnnotation annotation = new($"owner-{index}",
+                regions: new[] { new DocumentRegion(pages[index], DocumentAnnotationTestData.Polygon()) },
+                sourceOutput: outputs[index]);
+            owners[index].Add(annotation);
+
+            Assert.Same(annotation, Assert.Single(owners[index]));
+            Assert.Equal(index + 1, document.SourcePages.Count);
+            Assert.Equal(index + 1, document.SourceOutputs.Count);
+            Assert.Equal(index + 1, document.Artifacts.Count);
+            for (int registered = 0; registered <= index; registered++)
+            {
+                Assert.Same(pages[registered], document.SourcePages[registered]);
+                Assert.Same(outputs[registered], document.SourceOutputs[registered]);
+                Assert.Same(outputs[registered], document.SourcePages[registered].SourceOutput);
+                Assert.Contains(artifacts[registered], document.Artifacts);
+                Assert.True(artifacts[registered].IsDocumentOwned);
+                Assert.Same(artifacts[registered], outputs[registered].GetRawContent());
+                Assert.Same(streams[registered], outputs[registered].GetRawContent()!.Content);
+                Assert.Same(natives[registered], outputs[registered].GetRawRepresentation());
+                Assert.Equal(expectedBytes[registered], streams[registered].ToArray());
+                Assert.Equal(0, streams[registered].DisposeCount);
+                Assert.Equal(0, natives[registered].DisposeCount);
+            }
+
+            Assert.Equal(version, document.Version);
+            Assert.Equal("| visible **value** |", document.ToMarkdown());
+            Assert.Equal("visible value", text.Text);
+            Assert.Equal("s0/e0/c0,0", text.Address);
+            Assert.Same(table, Assert.Single(document.EnumerateContent()));
+        }
+
+        foreach (var owner in owners)
+        {
+            owner.Clear();
+            Assert.Equal(version, document.Version);
+            Assert.Equal(pages, document.SourcePages);
+            Assert.Equal(outputs, document.SourceOutputs);
+            Assert.Equal("| visible **value** |", document.ToMarkdown());
+        }
+
+        document.Dispose();
+        document.Dispose();
+        for (int index = 0; index < streams.Length; index++)
+        {
+            Assert.Equal(1, streams[index].DisposeCount);
+            Assert.False(streams[index].CanRead);
+            Assert.Equal(0, natives[index].DisposeCount);
+        }
+    }
+
 }

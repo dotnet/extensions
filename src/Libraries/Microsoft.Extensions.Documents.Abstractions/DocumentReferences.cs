@@ -95,6 +95,11 @@ public sealed class DocumentArtifact : IDisposable
     /// </summary>
     public bool IsDisposed => _disposed;
 
+    /// <summary>
+    /// Gets a value indicating whether this artifact's lifetime has been transferred to a document.
+    /// </summary>
+    public bool IsDocumentOwned => _document is not null;
+
     /// <inheritdoc/>
     public void Dispose()
     {
