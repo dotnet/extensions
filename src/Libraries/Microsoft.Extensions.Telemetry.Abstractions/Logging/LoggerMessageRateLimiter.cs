@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Logging;
 /// Limits how many log records a logging method emits.
 /// </summary>
 /// <remarks>
-/// This type is used by logging methods generated for the <see cref="LogRateLimitAttribute"/> and isn't intended to be used directly.
+/// This type is used by logging methods generated for the <see cref="RateLimitAttribute"/> and isn't intended to be used directly.
 /// It behaves like a sliding window rate limiter without a queue.
 /// </remarks>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]

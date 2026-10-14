@@ -401,10 +401,10 @@ internal sealed partial class Parser
 
             var keepMethod = true;
 
-            var rateLimitAttr = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogRateLimitAttribute, methodSymbol);
+            var rateLimitAttr = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.RateLimitAttribute, methodSymbol);
             if (rateLimitAttr is not null)
             {
-                var (permitLimit, windowMilliseconds, segmentsPerWindow) = AttributeProcessors.ExtractLogRateLimitAttributeValues(rateLimitAttr);
+                var (permitLimit, windowMilliseconds, segmentsPerWindow) = AttributeProcessors.ExtractRateLimitAttributeValues(rateLimitAttr);
 
 #pragma warning disable S1067 // Expressions should not be too complex
                 if (permitLimit < 1

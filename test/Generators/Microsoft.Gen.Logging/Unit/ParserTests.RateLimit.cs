@@ -17,13 +17,13 @@ namespace Microsoft.Gen.Logging.Test;
 public partial class ParserTests
 {
     [Theory]
-    [InlineData("LogRateLimit(0)")]
-    [InlineData("LogRateLimit(-1)")]
-    [InlineData("LogRateLimit(16777216)")]
-    [InlineData("LogRateLimit(1, WindowMilliseconds = 0)")]
-    [InlineData("LogRateLimit(1, SegmentsPerWindow = 0)")]
-    [InlineData("LogRateLimit(1, WindowMilliseconds = 10, SegmentsPerWindow = 11)")]
-    public async Task LogRateLimit_InvalidValues(string attribute)
+    [InlineData("RateLimit(0)")]
+    [InlineData("RateLimit(-1)")]
+    [InlineData("RateLimit(16777216)")]
+    [InlineData("RateLimit(1, WindowMilliseconds = 0)")]
+    [InlineData("RateLimit(1, SegmentsPerWindow = 0)")]
+    [InlineData("RateLimit(1, WindowMilliseconds = 10, SegmentsPerWindow = 11)")]
+    public async Task RateLimit_InvalidValues(string attribute)
     {
         string source = @$"
             partial class C
@@ -37,10 +37,10 @@ public partial class ParserTests
     }
 
     [Theory]
-    [InlineData("LogRateLimit(1)")]
-    [InlineData("LogRateLimit(16777215, WindowMilliseconds = 1, SegmentsPerWindow = 1)")]
-    [InlineData("LogRateLimit(5, WindowMilliseconds = 60000, SegmentsPerWindow = 60000)")]
-    public async Task LogRateLimit_ValidValues(string attribute)
+    [InlineData("RateLimit(1)")]
+    [InlineData("RateLimit(16777215, WindowMilliseconds = 1, SegmentsPerWindow = 1)")]
+    [InlineData("RateLimit(5, WindowMilliseconds = 60000, SegmentsPerWindow = 60000)")]
+    public async Task RateLimit_ValidValues(string attribute)
     {
         string source = @$"
             partial class C
@@ -54,13 +54,13 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task LogRateLimit_TwoMeterParameters()
+    public async Task RateLimit_TwoMeterParameters()
     {
         const string Source = @"
             partial class C
             {
                 [LoggerMessage(0, LogLevel.Debug, ""M0"")]
-                [LogRateLimit(1)]
+                [RateLimit(1)]
                 static partial void M0(ILogger logger, System.Diagnostics.Metrics.Meter meter1, System.Diagnostics.Metrics.Meter /*0+*/meter2/*-0*/);
             }";
 
@@ -68,13 +68,13 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task LogRateLimit_MeterInTemplate()
+    public async Task RateLimit_MeterInTemplate()
     {
         const string Source = @"
             partial class C
             {
                 [LoggerMessage(0, LogLevel.Debug, ""M0 {meter}"")]
-                [LogRateLimit(1)]
+                [RateLimit(1)]
                 static partial void M0(ILogger logger, System.Diagnostics.Metrics.Meter /*0+*/meter/*-0*/);
             }";
 
@@ -82,7 +82,7 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task LogRateLimit_MeterWithoutRateLimitIsOrdinaryParameter()
+    public async Task RateLimit_MeterWithoutRateLimitIsOrdinaryParameter()
     {
         const string Source = @"
             partial class C
@@ -95,13 +95,13 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task LogRateLimit_OnlyMeterAndLoggerIsEmptyLoggingMethod()
+    public async Task RateLimit_OnlyMeterAndLoggerIsEmptyLoggingMethod()
     {
         const string Source = @"
             partial class C
             {
                 [LoggerMessage(Level = LogLevel.Debug)]
-                [LogRateLimit(1)]
+                [RateLimit(1)]
                 static partial void /*0+*/M0/*-0*/(ILogger logger, System.Diagnostics.Metrics.Meter meter);
             }";
 
@@ -109,7 +109,7 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task LogRateLimit_GeneratedCode()
+    public async Task RateLimit_GeneratedCode()
     {
         const string Source = @"
             namespace Test
@@ -122,11 +122,11 @@ public partial class ParserTests
                     private int _M0RateLimiter;
 
                     [LoggerMessage(0, LogLevel.Error, ""M0"")]
-                    [LogRateLimit(5, WindowMilliseconds = 2000, SegmentsPerWindow = 4)]
+                    [RateLimit(5, WindowMilliseconds = 2000, SegmentsPerWindow = 4)]
                     static partial void M0(ILogger logger);
 
                     [LoggerMessage(1, LogLevel.Error, ""M1"", SkipEnabledCheck = true, EventName = ""Event1"")]
-                    [LogRateLimit(1)]
+                    [RateLimit(1)]
                     static partial void M1(ILogger logger, Meter? meter);
 
                     [LoggerMessage(2, LogLevel.Error, ""M2"")]

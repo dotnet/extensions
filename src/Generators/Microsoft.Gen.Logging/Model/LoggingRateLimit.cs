@@ -4,7 +4,7 @@
 namespace Microsoft.Gen.Logging.Model;
 
 /// <summary>
-/// The rate limit of a logging method, from the LogRateLimit attribute.
+/// The rate limit of a logging method, from the RateLimit attribute.
 /// </summary>
 internal sealed class LoggingRateLimit
 {

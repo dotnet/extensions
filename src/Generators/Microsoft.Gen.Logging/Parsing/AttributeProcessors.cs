@@ -195,7 +195,7 @@ internal static class AttributeProcessors
     public static string ExtractTagNameAttributeValues(AttributeData attr)
         => attr.ConstructorArguments[0].Value as string ?? string.Empty;
 
-    public static (int permitLimit, int windowMilliseconds, int segmentsPerWindow) ExtractLogRateLimitAttributeValues(AttributeData attr)
+    public static (int permitLimit, int windowMilliseconds, int segmentsPerWindow) ExtractRateLimitAttributeValues(AttributeData attr)
     {
         int permitLimit = attr.ConstructorArguments[0].Value is int p ? p : 0;
         int windowMilliseconds = DefaultRateLimitWindowMilliseconds;

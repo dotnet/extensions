@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
 
-public class LogRateLimitTests
+public class RateLimitTests
 {
     private const string DroppedCounterName = "logging.rate_limiting.dropped";
     private const string EventNameTag = "logging.rate_limiting.event_name";

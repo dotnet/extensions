@@ -695,30 +695,6 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Logging.LogRateLimitAttribute : System.Attribute",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Logging.LogRateLimitAttribute.LogRateLimitAttribute(int permitLimit);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "int Microsoft.Extensions.Logging.LogRateLimitAttribute.PermitLimit { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int Microsoft.Extensions.Logging.LogRateLimitAttribute.SegmentsPerWindow { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int Microsoft.Extensions.Logging.LogRateLimitAttribute.WindowMilliseconds { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "readonly struct Microsoft.Extensions.Diagnostics.Latency.Measure : System.IEquatable<Microsoft.Extensions.Diagnostics.Latency.Measure>",
       "Stage": "Stable",
       "Methods": [
@@ -803,6 +779,30 @@
         {
           "Member": "Microsoft.Extensions.Diagnostics.Buffering.PerRequestLogBuffer.PerRequestLogBuffer();",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Logging.RateLimitAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.RateLimitAttribute.RateLimitAttribute(int permitLimit);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Logging.RateLimitAttribute.PermitLimit { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.RateLimitAttribute.SegmentsPerWindow { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.RateLimitAttribute.WindowMilliseconds { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },

@@ -30,20 +30,20 @@ namespace Microsoft.Extensions.Logging;
 /// <example>
 /// <code language="csharp">
 /// [LoggerMessage(0, LogLevel.Error, "Error querying the database {hostName}")]
-/// [LogRateLimit(5, SegmentsPerWindow = 4)] // At most 5 per second; the window moves every 250 milliseconds.
+/// [RateLimit(5, SegmentsPerWindow = 4)] // At most 5 per second; the window moves every 250 milliseconds.
 /// public static partial void DatabaseError(ILogger logger, Exception exception, string hostName);
 /// </code>
 /// </example>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 [AttributeUsage(AttributeTargets.Method)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
-public sealed class LogRateLimitAttribute : Attribute
+public sealed class RateLimitAttribute : Attribute
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="LogRateLimitAttribute"/> class.
+    /// Initializes a new instance of the <see cref="RateLimitAttribute"/> class.
     /// </summary>
     /// <param name="permitLimit">The maximum number of log records the logging method emits per window.</param>
-    public LogRateLimitAttribute(int permitLimit)
+    public RateLimitAttribute(int permitLimit)
     {
         PermitLimit = permitLimit;
     }

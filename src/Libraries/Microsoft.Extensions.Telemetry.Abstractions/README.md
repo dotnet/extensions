@@ -52,15 +52,15 @@ public static partial void LogMyCustomTagName(
     [TagName("my.custom.tagname")] string name);
 ```
 
-The experimental `LogRateLimit` attribute limits how many log records a logging method emits within a time window. This protects the logging pipeline when a method is called very often, for example when a database is down and every request logs the same error. It works with any `ILogger` and needs no configuration in the application.
+The experimental `RateLimit` attribute limits how many log records a logging method emits within a time window. This protects the logging pipeline when a method is called very often, for example when a database is down and every request logs the same error. It works with any `ILogger` and needs no configuration in the application.
 
 ```csharp
 [LoggerMessage(0, LogLevel.Error, "Error querying the database {hostName}")]
-[LogRateLimit(5)] // At most 5 log records per second.
+[RateLimit(5)] // At most 5 log records per second.
 internal static partial void DatabaseError(ILogger logger, Exception exception, string hostName);
 
 [LoggerMessage(1, LogLevel.Warning, "Cache miss for {key}")]
-[LogRateLimit(100, WindowMilliseconds = 60_000, SegmentsPerWindow = 6)] // At most 100 per minute; the window moves every 10 seconds.
+[RateLimit(100, WindowMilliseconds = 60_000, SegmentsPerWindow = 6)] // At most 100 per minute; the window moves every 10 seconds.
 internal static partial void CacheMiss(ILogger logger, string key);
 ```
 
@@ -70,7 +70,7 @@ To count the dropped log records, add a `Meter` parameter to the logging method.
 
 ```csharp
 [LoggerMessage(0, LogLevel.Error, "Error querying the database {hostName}")]
-[LogRateLimit(5)]
+[RateLimit(5)]
 internal static partial void DatabaseError(ILogger logger, Meter? meter, Exception exception, string hostName);
 ```
 

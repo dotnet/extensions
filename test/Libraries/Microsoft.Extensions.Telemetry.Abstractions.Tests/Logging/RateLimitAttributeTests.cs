@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test;
 
-public class LogRateLimitAttributeTests
+public class RateLimitAttributeTests
 {
     [Fact]
     public void HasDefaults()
     {
-        var attribute = new LogRateLimitAttribute(5);
+        var attribute = new RateLimitAttribute(5);
 
         Assert.Equal(5, attribute.PermitLimit);
         Assert.Equal(1000, attribute.WindowMilliseconds);
@@ -20,7 +20,7 @@ public class LogRateLimitAttributeTests
     [Fact]
     public void SetsProperties()
     {
-        var attribute = new LogRateLimitAttribute(100)
+        var attribute = new RateLimitAttribute(100)
         {
             WindowMilliseconds = 60_000,
             SegmentsPerWindow = 6,
