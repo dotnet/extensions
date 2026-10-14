@@ -28,25 +28,29 @@ public abstract class DocumentExtractionObservation
     /// <param name="pageReferences">Optional opaque source-page references.</param>
     /// <param name="evidence">Optional opaque evidence associations.</param>
     /// <param name="artifacts">Optional document-owned artifacts.</param>
+    /// <param name="annotations">Optional source layout and structured producer information.</param>
     protected DocumentExtractionObservation(
         string providerId,
         int order,
         string markdown,
         IReadOnlyList<DocumentPageReference>? pageReferences = null,
         IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
-        IReadOnlyList<DocumentArtifact>? artifacts = null)
+        IReadOnlyList<DocumentArtifact>? artifacts = null,
+        IReadOnlyList<DocumentAnnotation>? annotations = null)
     {
         ProviderId = Throw.IfNullOrEmpty(providerId);
         _ = Throw.IfLessThan(order, 0, nameof(order));
         Order = order;
-        Markdown = Throw.IfNullOrEmpty(markdown);
+        Markdown = Throw.IfNull(markdown);
         PageReferences = Copy(pageReferences);
         Evidence = Copy(evidence);
         Artifacts = Copy(artifacts);
+        Annotations = Copy(annotations);
 
         if (PageReferences.Any(static item => item is null) ||
             Evidence.Any(static item => item is null) ||
-            Artifacts.Any(static item => item is null))
+            Artifacts.Any(static item => item is null) ||
+            Annotations.Any(static item => item is null))
         {
             Throw.ArgumentException(nameof(pageReferences), "Association collections cannot contain null entries.");
         }
@@ -82,6 +86,9 @@ public abstract class DocumentExtractionObservation
     /// </summary>
     public IReadOnlyList<DocumentArtifact> Artifacts { get; }
 
+    /// <summary>Gets structured source layout and supplementary producer information.</summary>
+    public IReadOnlyList<DocumentAnnotation> Annotations { get; }
+
     internal static IReadOnlyList<T> Copy<T>(IEnumerable<T>? values)
         => new ReadOnlyCollection<T>((values ?? Array.Empty<T>()).ToArray());
 
@@ -102,6 +109,15 @@ public abstract class DocumentExtractionObservation
         foreach (DocumentExtractionEvidence evidence in Evidence)
         {
             element.Evidence.Add(evidence.Reference);
+            if (evidence.Role is not null)
+            {
+                element.Annotations.Add(new DocumentAnnotation(evidence.Reference.Kind ?? "evidence", evidence.Reference.Value, evidence.Role));
+            }
+        }
+
+        foreach (DocumentAnnotation annotation in Annotations)
+        {
+            element.Annotations.Add(annotation);
         }
 
         foreach (DocumentArtifact artifact in Artifacts)
@@ -128,8 +144,9 @@ public sealed class DocumentExtractionText : DocumentExtractionObservation
         int? headerLevel = null,
         IReadOnlyList<DocumentPageReference>? pageReferences = null,
         IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
-        IReadOnlyList<DocumentArtifact>? artifacts = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts)
+        IReadOnlyList<DocumentArtifact>? artifacts = null,
+        IReadOnlyList<DocumentAnnotation>? annotations = null)
+        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
     {
         if (kind == DocumentTextKind.Header && headerLevel is not null && (headerLevel < 1 || headerLevel > 10))
         {
@@ -185,8 +202,9 @@ public sealed class DocumentExtractionImage : DocumentExtractionObservation
         string? alternativeText = null,
         IReadOnlyList<DocumentPageReference>? pageReferences = null,
         IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
-        IReadOnlyList<DocumentArtifact>? artifacts = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts)
+        IReadOnlyList<DocumentArtifact>? artifacts = null,
+        IReadOnlyList<DocumentAnnotation>? annotations = null)
+        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
     {
         Text = text;
         Content = content;
@@ -237,8 +255,9 @@ public sealed class DocumentExtractionTable : DocumentExtractionObservation
         IReadOnlyList<DocumentExtractionTableCell>? cells = null,
         IReadOnlyList<DocumentPageReference>? pageReferences = null,
         IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
-        IReadOnlyList<DocumentArtifact>? artifacts = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts)
+        IReadOnlyList<DocumentArtifact>? artifacts = null,
+        IReadOnlyList<DocumentAnnotation>? annotations = null)
+        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
     {
         _ = Throw.IfLessThan(rowCount, 0, nameof(rowCount));
         _ = Throw.IfLessThan(columnCount, 0, nameof(columnCount));
@@ -281,11 +300,14 @@ public sealed class DocumentExtractionExtension : DocumentExtractionObservation
         string? text = null,
         IReadOnlyList<DocumentPageReference>? pageReferences = null,
         IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
-        IReadOnlyList<DocumentArtifact>? artifacts = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts)
+        IReadOnlyList<DocumentArtifact>? artifacts = null,
+        IReadOnlyList<DocumentAnnotation>? annotations = null,
+        object? value = null)
+        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
     {
         Type = Throw.IfNullOrEmpty(type);
         Text = text;
+        Value = value;
     }
 
     /// <summary>Gets the opaque extension type name.</summary>
@@ -294,9 +316,12 @@ public sealed class DocumentExtractionExtension : DocumentExtractionObservation
     /// <summary>Gets optional provider-supplied text associated with the extension.</summary>
     public string? Text { get; }
 
+    /// <summary>Gets structured extension data without converting it to Markdown.</summary>
+    public object? Value { get; }
+
     internal override DocumentElement ToDocumentElement()
     {
-        DocumentExtensionElement element = new(Type, Markdown)
+        DocumentExtensionElement element = new(Type, Markdown, Value)
         {
             Text = Text
         };

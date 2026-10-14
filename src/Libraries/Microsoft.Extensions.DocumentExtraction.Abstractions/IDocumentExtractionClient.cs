@@ -23,12 +23,14 @@ public interface IDocumentExtractionClient : IDisposable
     /// <param name="document">The source document stream, which remains owned by the caller.</param>
     /// <param name="identifier">The identifier for the eventual Documents document.</param>
     /// <param name="mediaType">The source media type.</param>
+    /// <param name="options">Optional per-call overrides. Providers must reject unsupported explicit settings.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The extracted pages.</returns>
     IAsyncEnumerable<DocumentExtractionPage> ExtractPagesAsync(
         Stream document,
         string identifier,
         string mediaType,
+        DocumentExtractionOptions? options = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

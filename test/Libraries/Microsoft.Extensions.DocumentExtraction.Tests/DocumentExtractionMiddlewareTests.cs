@@ -61,7 +61,7 @@ public sealed class DocumentExtractionMiddlewareTests
                 source,
                 "document",
                 "application/pdf",
-                cancellationSource.Token))
+                cancellationToken: cancellationSource.Token))
             {
                 cancellationSource.Cancel();
             }
@@ -172,6 +172,7 @@ public sealed class DocumentExtractionMiddlewareTests
             Stream document,
             string identifier,
             string mediaType,
+            DocumentExtractionOptions? options = null,
             CancellationToken cancellationToken = default)
         {
             ReceivedToken = cancellationToken;
@@ -236,6 +237,94 @@ public sealed class DocumentExtractionMiddlewareTests
             }
 
             base.Dispose(disposing);
+        }
+    }
+
+    [Fact]
+    public async Task LoggingMiddleware_RawBearingPageLogsOnlyExactLifecycleWithoutInspectingNative()
+    {
+        using MemoryStream source = new([42]);
+        using MemoryStream body = new(System.Text.Encoding.UTF8.GetBytes(
+            "{\"unknown\":{\"z\":[3,1]},\"marker\":\"RAW_BODY_ONLY_91\"}"));
+        using DocumentArtifact artifact = new("application/json", body);
+        using LoggingNative native = new();
+        DocumentSourceOutput output = new("raw-operation", native, artifact);
+        DocumentExtractionPage page = new(7,
+            [new DocumentExtractionText("provider", 0, DocumentTextKind.Paragraph, "visible **text**", "visible text",
+                annotations: [new DocumentAnnotation("vendor", sourceOutput: output, rawRepresentation: native)])],
+            sourceOutputs: [output]);
+        using RawLoggingClient inner = new(page);
+        FakeLogCollector collector = new();
+        using LoggingDocumentExtractionClient client = new(inner, new FakeLogger(collector));
+        using DocumentExtractionResult result = await client.ExtractAsync(source, "secret/path", "application/pdf");
+
+        Assert.Equal(new[]
+        {
+            "Document extraction invoked.",
+            "Document extraction received page 7 with 1 observations.",
+            "Document extraction completed."
+        }, collector.GetSnapshot().Select(static entry => entry.Message));
+        Assert.All(collector.GetSnapshot(), static entry => Assert.Null(entry.Exception));
+        Assert.All(collector.GetSnapshot(), static entry =>
+        {
+            Assert.NotNull(entry.StructuredState);
+            string state = string.Join("|", entry.StructuredState.Select(static pair => pair.Key + "=" + pair.Value));
+            Assert.DoesNotContain("RAW_BODY_ONLY_91", state);
+            Assert.DoesNotContain("NATIVE_ONLY_92", state);
+            Assert.DoesNotContain("secret/path", state);
+            Assert.DoesNotContain("visible text", state);
+        });
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Same(native, output.GetRawRepresentation());
+        Assert.Equal("visible **text**", result.Document.ToMarkdown());
+        Assert.Equal(0, native.ToStringCount);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(1, inner.CleanupCount);
+        result.Dispose();
+        Assert.False(body.CanRead);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(42, source.ReadByte());
+    }
+
+    private sealed class RawLoggingClient(DocumentExtractionPage page) : IDocumentExtractionClient
+    {
+        internal int CleanupCount { get; private set; }
+
+        public IAsyncEnumerable<DocumentExtractionPage> ExtractPagesAsync(
+            Stream document, string identifier, string mediaType, DocumentExtractionOptions? options = null, CancellationToken cancellationToken = default)
+            => Pages();
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
+        public void Dispose()
+        {
+        }
+
+        private async IAsyncEnumerable<DocumentExtractionPage> Pages()
+        {
+            try
+            {
+                yield return page;
+                await Task.CompletedTask;
+            }
+            finally
+            {
+                CleanupCount++;
+            }
+        }
+    }
+
+    private sealed class LoggingNative : IDisposable
+    {
+        internal int DisposeCount { get; private set; }
+        internal int ToStringCount { get; private set; }
+
+        public void Dispose() => DisposeCount++;
+
+        public override string ToString()
+        {
+            ToStringCount++;
+            return "NATIVE_ONLY_92";
         }
     }
 }

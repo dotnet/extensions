@@ -54,7 +54,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string identifier, string mediaType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "override System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> Microsoft.Extensions.DocumentExtraction.LoggingDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string identifier, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]

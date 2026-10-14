@@ -18,7 +18,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string identifier, string mediaType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string identifier, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
@@ -38,7 +38,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientExtensions.ExtractAsync(this Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient client, System.IO.Stream document, string identifier, string mediaType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.DocumentExtractionClientExtensions.ExtractAsync(this Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient client, System.IO.Stream document, string identifier, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]
@@ -48,7 +48,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionDocumentBuilder.DocumentExtractionDocumentBuilder(string identifier);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionDocumentBuilder.DocumentExtractionDocumentBuilder(string identifier, bool captureRawOutput = true);",
           "Stage": "Experimental"
         },
         {
@@ -96,7 +96,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionExtension.DocumentExtractionExtension(string providerId, int order, string type, string markdown, string? text = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionExtension.DocumentExtractionExtension(string providerId, int order, string type, string markdown, string? text = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null, object? value = null);",
           "Stage": "Experimental"
         }
       ],
@@ -108,6 +108,10 @@
         {
           "Member": "string Microsoft.Extensions.DocumentExtraction.DocumentExtractionExtension.Type { get; }",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.DocumentExtraction.DocumentExtractionExtension.Value { get; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -116,7 +120,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionImage.DocumentExtractionImage(string providerId, int order, string markdown, string? text = null, System.ReadOnlyMemory<byte>? content = null, string? mediaType = null, System.Uri? source = null, string? alternativeText = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionImage.DocumentExtractionImage(string providerId, int order, string markdown, string? text = null, System.ReadOnlyMemory<byte>? content = null, string? mediaType = null, System.Uri? source = null, string? alternativeText = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
           "Stage": "Experimental"
         }
       ],
@@ -148,11 +152,15 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.DocumentExtractionObservation(string providerId, int order, string markdown, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.DocumentExtractionObservation(string providerId, int order, string markdown, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Annotations { get; }",
+          "Stage": "Experimental"
+        },
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Artifacts { get; }",
           "Stage": "Experimental"
@@ -180,15 +188,47 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage",
+      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.DocumentExtractionPage(int pageNumber, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation> observations, string? markdown = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.DocumentExtractionOptions();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.Clone();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, object?> Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.AdditionalProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.CaptureRawOutput { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.ModelId { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.DocumentExtractionPage(int pageNumber, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation> observations, string? markdown = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, Microsoft.Extensions.Documents.DocumentSourcePage? sourcePage = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceOutput>? sourceOutputs = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.Annotations { get; }",
+          "Stage": "Experimental"
+        },
         {
           "Member": "string? Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.Markdown { get; }",
           "Stage": "Experimental"
@@ -204,6 +244,14 @@
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.PageReferences { get; }",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceOutput> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.SourceOutputs { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Documents.DocumentSourcePage? Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.SourcePage { get; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -212,11 +260,15 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResult(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier);",
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResult(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier, bool captureRawOutput = true);",
           "Stage": "Experimental"
         },
         {
           "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResultAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResultAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier, bool captureRawOutput, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]
@@ -250,7 +302,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTable.DocumentExtractionTable(string providerId, int order, string markdown, int rowCount, int columnCount, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell>? cells = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTable.DocumentExtractionTable(string providerId, int order, string markdown, int rowCount, int columnCount, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell>? cells = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
           "Stage": "Experimental"
         }
       ],
@@ -274,21 +326,37 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.DocumentExtractionTableCell(int row, int column, Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation content);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.DocumentExtractionTableCell(int row, int column, Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation? content, int rowSpan = 1, int columnSpan = 1, string? kind = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation> Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Annotations { get; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "int Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Column { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Content { get; }",
+          "Member": "int Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.ColumnSpan { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation? Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Content { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Kind { get; }",
           "Stage": "Experimental"
         },
         {
           "Member": "int Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Row { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.RowSpan { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -298,7 +366,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionText.DocumentExtractionText(string providerId, int order, Microsoft.Extensions.Documents.DocumentTextKind kind, string markdown, string? text = null, int? headerLevel = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionText.DocumentExtractionText(string providerId, int order, Microsoft.Extensions.Documents.DocumentTextKind kind, string markdown, string? text = null, int? headerLevel = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
           "Stage": "Experimental"
         }
       ],
@@ -322,7 +390,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string identifier, string mediaType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient.ExtractPagesAsync(System.IO.Stream document, string identifier, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {

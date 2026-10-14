@@ -22,13 +22,16 @@ public static class DocumentExtractionClientExtensions
         Stream document,
         string identifier,
         string mediaType,
+        DocumentExtractionOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(document);
         _ = Throw.IfNullOrEmpty(identifier);
         _ = Throw.IfNullOrEmpty(mediaType);
-        return client.ExtractPagesAsync(document, identifier, mediaType, cancellationToken)
-            .ToDocumentExtractionResultAsync(identifier, cancellationToken);
+        DocumentExtractionOptions? request = options?.Clone();
+        bool captureRawOutput = request?.CaptureRawOutput ?? true;
+        return client.ExtractPagesAsync(document, identifier, mediaType, request, cancellationToken)
+            .ToDocumentExtractionResultAsync(identifier, captureRawOutput, cancellationToken);
     }
 }

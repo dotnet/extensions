@@ -33,8 +33,9 @@ public class DelegatingDocumentExtractionClient : IDocumentExtractionClient
         Stream document,
         string identifier,
         string mediaType,
+        DocumentExtractionOptions? options = null,
         CancellationToken cancellationToken = default)
-        => InnerClient.ExtractPagesAsync(document, identifier, mediaType, cancellationToken);
+        => InnerClient.ExtractPagesAsync(document, identifier, mediaType, options, cancellationToken);
 
     /// <inheritdoc />
     public virtual object? GetService(Type serviceType, object? serviceKey = null)

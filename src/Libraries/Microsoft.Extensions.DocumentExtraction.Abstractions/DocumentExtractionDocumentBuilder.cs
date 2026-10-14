@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.DocumentExtraction;
 public sealed class DocumentExtractionDocumentBuilder : IDisposable
 {
     private readonly List<DocumentExtractionPage> _pages = [];
+    private readonly bool _captureRawOutput;
     private bool _finalized;
     private bool _disposed;
 
@@ -27,9 +28,11 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
     /// Initializes a new instance of the <see cref="DocumentExtractionDocumentBuilder"/> class.
     /// </summary>
     /// <param name="identifier">The identifier for the resulting Documents document.</param>
-    public DocumentExtractionDocumentBuilder(string identifier)
+    /// <param name="captureRawOutput">Whether raw output retention is enabled for this request.</param>
+    public DocumentExtractionDocumentBuilder(string identifier, bool captureRawOutput = true)
     {
         Identifier = Throw.IfNullOrEmpty(identifier);
+        _captureRawOutput = captureRawOutput;
     }
 
     /// <summary>Gets the identifier for the resulting document.</summary>
@@ -66,17 +69,40 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
             }
 
             ValidatePages(pages);
+            if (!_captureRawOutput &&
+                (pages.SelectMany(EnumerateSources).Any(static source =>
+                    source.NativeStatus == DocumentRawContentStatus.Retained || source.ContentStatus == DocumentRawContentStatus.Retained) ||
+                 pages.SelectMany(EnumerateAnnotations).Any(static annotation => annotation.GetRawRepresentation() is not null)))
+            {
+                Throw.ArgumentException(nameof(pages), "The provider returned raw output despite the per-call capture opt-out.");
+            }
+
             document = new Document(Identifier);
             HashSet<string> providerIds = new(StringComparer.Ordinal);
 
             foreach (DocumentExtractionPage page in pages)
             {
-                if (page.Observations.Count == 0)
+                foreach (DocumentSourceOutput source in page.SourceOutputs)
                 {
-                    continue;
+                    document.AddSourceOutput(source);
                 }
 
-                DocumentSection section = new(page.Markdown ?? "page");
+                if (page.SourcePage is { } frame)
+                {
+                    document.AddSourcePage(frame);
+                }
+
+                DocumentSection section = new(page.Markdown ?? string.Empty);
+                foreach (DocumentPageReference reference in page.PageReferences)
+                {
+                    section.PageReferences.Add(reference);
+                }
+
+                foreach (DocumentAnnotation annotation in page.Annotations)
+                {
+                    section.Annotations.Add(annotation);
+                }
+
                 foreach (DocumentExtractionObservation observation in page.Observations
                     .Select((item, index) => (item, index))
                     .OrderBy(static pair => pair.item.Order)
@@ -88,6 +114,11 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
                 }
 
                 document.Sections.Add(section);
+            }
+
+            if (pages.TrueForAll(static page => page.Markdown is not null))
+            {
+                document.StoredMarkdown = string.Join(Environment.NewLine + Environment.NewLine, pages.Select(static page => page.Markdown));
             }
 
             DocumentExtractionResult result = new(document, pages);
@@ -143,8 +174,15 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
                     Throw.ArgumentException(nameof(observation), "Table cells must have unique addresses within the table.");
                 }
 
-                DocumentElement content = BuildElement(cell.Content, pageReferences, providerIds);
-                ((DocumentTableElement)element).Cells.SetContent(cell.Row, cell.Column, content);
+                DocumentTableCell sharedCell = cell.Content is { } observationContent
+                    ? new DocumentTableCell(BuildElement(observationContent, pageReferences, providerIds), cell.RowSpan, cell.ColumnSpan, cell.Kind)
+                    : new DocumentTableCell(cell.RowSpan, cell.ColumnSpan, cell.Kind);
+                foreach (DocumentAnnotation annotation in cell.Annotations)
+                {
+                    sharedCell.Annotations.Add(annotation);
+                }
+
+                ((DocumentTableElement)element).Cells[cell.Row, cell.Column] = sharedCell;
             }
         }
 
@@ -175,14 +213,24 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
     private static bool CollectArtifacts(IEnumerable<DocumentExtractionPage> pages, HashSet<DocumentArtifact> artifacts)
     {
         bool unique = true;
+        HashSet<DocumentArtifact> semanticArtifacts = [];
         foreach (DocumentExtractionPage page in pages)
         {
             foreach (DocumentExtractionObservation observation in page.Observations)
             {
-                unique &= CollectArtifacts(observation, artifacts);
+                unique &= CollectArtifacts(observation, semanticArtifacts);
+            }
+
+            foreach (DocumentSourceOutput source in EnumerateSources(page))
+            {
+                if (source.GetRawContent() is { } content)
+                {
+                    _ = artifacts.Add(content);
+                }
             }
         }
 
+        artifacts.UnionWith(semanticArtifacts);
         return unique;
     }
 
@@ -198,18 +246,96 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
         {
             foreach (DocumentExtractionTableCell cell in table.Cells)
             {
-                unique &= CollectArtifacts(cell.Content, artifacts);
+                if (cell.Content is { } content)
+                {
+                    unique &= CollectArtifacts(content, artifacts);
+                }
             }
         }
 
         return unique;
     }
 
+    private static IEnumerable<DocumentAnnotation> EnumerateAnnotations(DocumentExtractionPage page)
+    {
+        foreach (DocumentAnnotation annotation in page.Annotations)
+        {
+            yield return annotation;
+        }
+
+        foreach (DocumentExtractionObservation observation in page.Observations)
+        {
+            foreach (DocumentAnnotation annotation in EnumerateAnnotations(observation))
+            {
+                yield return annotation;
+            }
+        }
+    }
+
+    private static IEnumerable<DocumentAnnotation> EnumerateAnnotations(DocumentExtractionObservation observation)
+    {
+        foreach (DocumentAnnotation annotation in observation.Annotations)
+        {
+            yield return annotation;
+        }
+
+        if (observation is DocumentExtractionTable table)
+        {
+            foreach (DocumentExtractionTableCell cell in table.Cells)
+            {
+                foreach (DocumentAnnotation annotation in cell.Annotations)
+                {
+                    yield return annotation;
+                }
+
+                if (cell.Content is { } content)
+                {
+                    foreach (DocumentAnnotation annotation in EnumerateAnnotations(content))
+                    {
+                        yield return annotation;
+                    }
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<DocumentSourceOutput> EnumerateSources(DocumentExtractionPage page)
+    {
+        foreach (DocumentSourceOutput source in page.SourceOutputs)
+        {
+            yield return source;
+        }
+
+        if (page.SourcePage?.SourceOutput is { } output)
+        {
+            yield return output;
+        }
+
+        foreach (DocumentAnnotation annotation in EnumerateAnnotations(page))
+        {
+            if (annotation.SourceOutput is { } source)
+            {
+                yield return source;
+            }
+
+            foreach (DocumentRegion region in annotation.Regions)
+            {
+                if (region.Page.SourceOutput is { } regionSource)
+                {
+                    yield return regionSource;
+                }
+            }
+        }
+    }
+
     private static void DisposeUnattachedArtifacts(IEnumerable<DocumentArtifact> artifacts)
     {
         foreach (DocumentArtifact artifact in artifacts)
         {
-            artifact.Dispose();
+            if (!artifact.IsDocumentOwned)
+            {
+                artifact.Dispose();
+            }
         }
     }
 

@@ -19,10 +19,11 @@ public static class DocumentExtractionPageResultExtensions
     /// <returns>The finalized extraction result.</returns>
     public static DocumentExtractionResult ToDocumentExtractionResult(
         this IEnumerable<DocumentExtractionPage> pages,
-        string identifier)
+        string identifier,
+        bool captureRawOutput = true)
     {
         _ = Throw.IfNull(pages);
-        using DocumentExtractionDocumentBuilder builder = new(identifier);
+        using DocumentExtractionDocumentBuilder builder = new(identifier, captureRawOutput);
         foreach (DocumentExtractionPage page in pages)
         {
             builder.AddPage(page);
@@ -39,17 +40,27 @@ public static class DocumentExtractionPageResultExtensions
         this IAsyncEnumerable<DocumentExtractionPage> pages,
         string identifier,
         CancellationToken cancellationToken = default)
+        => ToDocumentExtractionResultAsync(pages, identifier, true, cancellationToken);
+
+    /// <summary>Finalizes an asynchronous sequence using the selected raw-output retention policy.</summary>
+    /// <returns>The finalized result.</returns>
+    public static Task<DocumentExtractionResult> ToDocumentExtractionResultAsync(
+        this IAsyncEnumerable<DocumentExtractionPage> pages,
+        string identifier,
+        bool captureRawOutput,
+        CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(pages);
         _ = Throw.IfNullOrEmpty(identifier);
-        return BuildAsync(pages, identifier, cancellationToken);
+        return BuildAsync(pages, identifier, captureRawOutput, cancellationToken);
 
         static async Task<DocumentExtractionResult> BuildAsync(
             IAsyncEnumerable<DocumentExtractionPage> pages,
             string identifier,
+            bool captureRawOutput,
             CancellationToken cancellationToken)
         {
-            using DocumentExtractionDocumentBuilder builder = new(identifier);
+            using DocumentExtractionDocumentBuilder builder = new(identifier, captureRawOutput);
             cancellationToken.ThrowIfCancellationRequested();
             await foreach (DocumentExtractionPage page in pages
                 .WithCancellation(cancellationToken)

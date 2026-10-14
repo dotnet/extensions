@@ -31,6 +31,7 @@ public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtract
         System.IO.Stream document,
         string identifier,
         string mediaType,
+        DocumentExtractionOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         LogInvoked();
@@ -38,7 +39,7 @@ public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtract
         IAsyncEnumerator<DocumentExtractionPage>? enumerator = null;
         try
         {
-            enumerator = base.ExtractPagesAsync(document, identifier, mediaType, cancellationToken)
+            enumerator = base.ExtractPagesAsync(document, identifier, mediaType, options, cancellationToken)
                 .GetAsyncEnumerator(cancellationToken);
         }
         catch (OperationCanceledException)
