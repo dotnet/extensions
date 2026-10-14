@@ -278,7 +278,7 @@ internal sealed class Parser
         return false;
     }
 
-    private (string metricName, string metricUnit, HashSet<string> tagNames, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
+    private (string metricName, string metricUnit, string metricDescription, HashSet<string> tagNames, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
         AttributeData attribute,
         SemanticModel semanticModel)
     {
@@ -286,6 +286,7 @@ internal sealed class Parser
         var tagDescriptionMap = new Dictionary<string, string>();
         string metricNameFromAttribute = string.Empty;
         string metricUnitFromAttribute = string.Empty;
+        string metricDescriptionFromAttribute = string.Empty;
         if (!attribute.NamedArguments.IsDefaultOrEmpty)
         {
             foreach (var arg in attribute.NamedArguments)
@@ -299,6 +300,11 @@ internal sealed class Parser
                     arg.Key is "Unit")
                 {
                     metricUnitFromAttribute = (arg.Value.Value ?? string.Empty).ToString();
+                }
+                else if (arg.Value.Kind == TypedConstantKind.Primitive &&
+                    arg.Key is "Description")
+                {
+                    metricDescriptionFromAttribute = (arg.Value.Value ?? string.Empty).ToString();
                 }
             }
         }
@@ -340,7 +346,7 @@ internal sealed class Parser
             }
         }
 
-        return (metricNameFromAttribute, metricUnitFromAttribute, tagHashSet, tagDescriptionMap);
+        return (metricNameFromAttribute, metricUnitFromAttribute, metricDescriptionFromAttribute, tagHashSet, tagDescriptionMap);
     }
 
     private string GetSymbolXmlCommentSummary(ISymbol symbol)
@@ -439,7 +445,8 @@ internal sealed class Parser
         else
         {
             var parameters = ExtractAttributeParameters(methodAttribute, semanticModel);
-            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.MetricUnitFromAttribute, strongTypeAttrParams.TagHashSet, strongTypeAttrParams.TagDescriptionDictionary) = parameters;
+            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.MetricUnitFromAttribute, strongTypeAttrParams.MetricDescriptionFromAttribute,
+                strongTypeAttrParams.TagHashSet, strongTypeAttrParams.TagDescriptionDictionary) = parameters;
         }
 
         string metricNameFromMethod = methodSymbol.ReturnType.Name;
@@ -449,6 +456,7 @@ internal sealed class Parser
             Name = methodSymbol.Name,
             MetricName = string.IsNullOrWhiteSpace(strongTypeAttrParams.MetricNameFromAttribute) ? metricNameFromMethod : strongTypeAttrParams.MetricNameFromAttribute,
             MetricUnit = strongTypeAttrParams.MetricUnitFromAttribute,
+            MetricDescription = strongTypeAttrParams.MetricDescriptionFromAttribute,
             InstrumentKind = instrumentKind,
             GenericType = genericType.ToDisplayString(_genericTypeSymbolFormat),
             TagKeys = strongTypeAttrParams.TagHashSet,
@@ -615,7 +623,7 @@ internal sealed class Parser
     {
         var strongTypeAttributeParameters = new StrongTypeAttributeParameters();
 
-        // Extract "Name" and "Unit" values from the named arguments, if present, and assign them to the corresponding properties.
+        // Extract "Name", "Unit" and "Description" values from the named arguments, if present, and assign them to the corresponding properties.
         foreach (var namedArgument in namedArguments)
         {
             if (namedArgument.Key == "Name" && namedArgument.Value.Value is { } nameValue)
@@ -625,6 +633,10 @@ internal sealed class Parser
             else if (namedArgument.Key == "Unit" && namedArgument.Value.Value is { } unitValue)
             {
                 strongTypeAttributeParameters.MetricUnitFromAttribute = unitValue.ToString();
+            }
+            else if (namedArgument.Key == "Description" && namedArgument.Value.Value is { } descriptionValue)
+            {
+                strongTypeAttributeParameters.MetricDescriptionFromAttribute = descriptionValue.ToString();
             }
         }
 
