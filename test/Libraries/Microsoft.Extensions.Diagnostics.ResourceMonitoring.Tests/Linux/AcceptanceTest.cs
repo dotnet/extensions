@@ -412,7 +412,7 @@ public sealed class AcceptanceTest
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice"},
             { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1020000\nuser_usec 800000\nsystem_usec 220000\nnr_periods 50"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1020000\nnr_periods 50"},
             { new FileInfo("/sys/fs/cgroup/memory.max"), "1048576" },
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
@@ -467,7 +467,7 @@ public sealed class AcceptanceTest
         listener.RecordObservableInstruments();
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
-        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120800\nuser_usec 880000\nsystem_usec 240800\nnr_periods 56");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120800\nnr_periods 56");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.current"), "524298");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 10");
 
@@ -476,8 +476,8 @@ public sealed class AcceptanceTest
 
         Assert.Equal(42, Math.Round(cpuLimitFromGauge * 100));
         Assert.Equal(84, Math.Round(cpuRequestFromGauge * 100));
-        Assert.Equal(0.88, cpuUserTime);
-        Assert.Equal(0.2408, cpuKernelTime);
+        Assert.Equal(112, Math.Round(cpuUserTime * 100));
+        Assert.Equal(81, Math.Round(cpuKernelTime * 100));
 
         return Task.CompletedTask;
     }

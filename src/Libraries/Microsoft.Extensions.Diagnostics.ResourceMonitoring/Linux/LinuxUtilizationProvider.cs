@@ -349,10 +349,14 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     private IEnumerable<Measurement<double>> GetCpuTime()
     {
-        if (TryGetValueWithRetry(_parser.GetCgroupCpuUserAndSystemTimeInNanosecondsV2, out (long userNanoseconds, long systemNanoseconds) cpuTime))
+        if (TryGetValueWithRetry(_parser.GetHostCpuUsageInNanoseconds, out long systemCpuTime))
         {
-            yield return new Measurement<double>(cpuTime.userNanoseconds / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
-            yield return new Measurement<double>(cpuTime.systemNanoseconds / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
+            yield return new Measurement<double>(systemCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
+        }
+
+        if (TryGetValueWithRetry(() => _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2().cpuUsageNanoseconds, out long userCpuTime))
+        {
+            yield return new Measurement<double>(userCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
         }
     }
 }

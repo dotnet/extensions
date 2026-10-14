@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
@@ -247,7 +248,7 @@ public sealed class LinuxUtilizationProviderTests
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 102312\nuser_usec 72312\nsystem_usec 30000\nnr_periods 50"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "20000 100000"},
@@ -292,7 +293,7 @@ public sealed class LinuxUtilizationProviderTests
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime);
-        Assert.Equal(new[] { 0.072312, 0.03 }, samples.Where(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime).Select(i => i.value));
+        Assert.Equal(new[] { 0.8, 0.102312 }, samples.Where(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime).Select(i => i.value));
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
         Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
@@ -610,7 +611,7 @@ public sealed class LinuxUtilizationProviderTests
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "2097152" },
             { new FileInfo("/proc/stat"), "cpu 100 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 200000\nuser_usec 150000\nsystem_usec 50000\nnr_periods 100"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 200000\nnr_periods 100"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 2048 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-3"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "200000 100000"},
@@ -683,7 +684,7 @@ public sealed class LinuxUtilizationProviderTests
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "2097152" },
             { new FileInfo("/proc/stat"), "cpu 100 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 200000\nuser_usec 150000\nsystem_usec 50000\nnr_periods 100"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 200000\nnr_periods 100"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 2048 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-3"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "200000 100000"},
@@ -738,20 +739,19 @@ public sealed class LinuxUtilizationProviderTests
     }
 
     [Fact]
-    public void Provider_WithCalculationV2_ReportsContainerCpuTime_AsCounterInSeconds()
+    public void Provider_WithCalculationV2_ReportsContainerCpuTimeInSeconds()
     {
         var options = Options.Options.Create(new ResourceMonitoringOptions { UseLinuxCalculationV2 = true });
-        using var meter = new Meter(nameof(Provider_WithCalculationV2_ReportsContainerCpuTime_AsCounterInSeconds));
+        using var meter = new Meter(nameof(Provider_WithCalculationV2_ReportsContainerCpuTimeInSeconds));
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
 
-        var cpuStatFile = new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat");
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "2097152" },
-            { new FileInfo("/proc/stat"), "cpu 100 10 10 10 10 10 10 10 10 10"},
-            { cpuStatFile, "usage_usec 2000000\nuser_usec 1500000\nsystem_usec 500000\nnr_periods 10\nnr_throttled 0\nthrottled_usec 0"},
+            { new FileInfo("/proc/stat"), "cpu 1000 0 500 8000 0 0 0 0 0 0"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1500000\nnr_periods 10"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 2048 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-3"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "200000 100000"},
@@ -764,50 +764,21 @@ public sealed class LinuxUtilizationProviderTests
         var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
         var fakeTime = new FakeTimeProvider(DateTimeOffset.UtcNow);
         _ = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, new FakeLogger<LinuxUtilizationProvider>(), fakeTime);
+        using var cpuTime = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerCpuTime, fakeTime);
 
-        Instrument? cpuTimeInstrument = null;
-        using var listener = new MeterListener
-        {
-            InstrumentPublished = (instrument, listener) =>
-            {
-                if (ReferenceEquals(meter, instrument.Meter) && instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime)
-                {
-                    cpuTimeInstrument = instrument;
-                    listener.EnableMeasurementEvents(instrument);
-                }
-            }
-        };
+        var instrument = Assert.IsType<ObservableCounter<double>>(cpuTime.Instrument);
+        Assert.Equal("s", instrument.Unit);
+        Assert.Equal("CPU time used by the container.", instrument.Description);
 
-        var samples = new List<(double value, KeyValuePair<string, object?>[] tags)>();
-        listener.SetMeasurementEventCallback<double>((instrument, value, tags, _) =>
-        {
-            if (ReferenceEquals(cpuTimeInstrument, instrument))
-            {
-                samples.Add((value, tags.ToArray()));
-            }
-        });
+        cpuTime.RecordObservableInstruments();
+        AssertCpuTime(cpuTime, expectedUser: 1.5, expectedSystem: 95);
 
-        listener.Start();
-        listener.RecordObservableInstruments();
-
-        var counter = Assert.IsType<ObservableCounter<double>>(cpuTimeInstrument);
-        Assert.Equal("s", counter.Unit);
-        Assert.Equal("CPU time used by the container.", counter.Description);
-        Assert.Collection(
-            samples,
-            sample => AssertCpuTimeSample(sample, "user", 1.5),
-            sample => AssertCpuTimeSample(sample, "system", 0.5));
-
-        // The values are the cumulative CPU time from cpu.stat, not a rate.
-        fileSystem.ReplaceFileContent(cpuStatFile, "usage_usec 3000000\nuser_usec 2250000\nsystem_usec 750000\nnr_periods 20\nnr_throttled 0\nthrottled_usec 0");
+        // The values are cumulative CPU time, not a rate:
+        fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu 1100 0 600 8300 0 0 0 0 0 0");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 2250000\nnr_periods 20");
         fakeTime.Advance(TimeSpan.FromSeconds(10));
-        samples.Clear();
-        listener.RecordObservableInstruments();
-
-        Assert.Collection(
-            samples,
-            sample => AssertCpuTimeSample(sample, "user", 2.25),
-            sample => AssertCpuTimeSample(sample, "system", 0.75));
+        cpuTime.RecordObservableInstruments();
+        AssertCpuTime(cpuTime, expectedUser: 2.25, expectedSystem: 100);
     }
 
     [Fact]
@@ -818,13 +789,13 @@ public sealed class LinuxUtilizationProviderTests
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
 
-        var cpuStatFile = new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat");
+        var cpuStat = new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat");
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice" },
             { new FileInfo("/sys/fs/cgroup/memory.max"), "2097152" },
             { new FileInfo("/proc/stat"), "cpu 100 10 10 10 10 10 10 10 10 10"},
-            { cpuStatFile, "usage_usec 1000000\nuser_usec 800000\nsystem_usec 200000\nnr_periods 10"},
+            { cpuStat, "usage_usec 1000000\nnr_periods 10"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 2048 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-3"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "200000 100000"},
@@ -837,61 +808,33 @@ public sealed class LinuxUtilizationProviderTests
         var resourceQuotaProvider = new LinuxResourceQuotaProvider(parser, options);
         var fakeTime = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, new FakeLogger<LinuxUtilizationProvider>(), fakeTime);
+        using var cpuTime = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerCpuTime, fakeTime);
+        using var cpuLimitUtilization = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerCpuLimitUtilization, fakeTime);
+        using var cpuRequestUtilization = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerCpuRequestUtilization, fakeTime);
 
-        using var cpuTimeListener = new MeterListener
-        {
-            InstrumentPublished = (instrument, listener) =>
-            {
-                if (ReferenceEquals(meter, instrument.Meter) && instrument.Name == ResourceUtilizationInstruments.ContainerCpuTime)
-                {
-                    listener.EnableMeasurementEvents(instrument);
-                }
-            }
-        };
-
-        var cpuTimeSamples = new List<double>();
-        cpuTimeListener.SetMeasurementEventCallback<double>((_, value, _, _) => cpuTimeSamples.Add(value));
-        cpuTimeListener.Start();
-
-        using var cpuUtilizationListener = new MeterListener
-        {
-            InstrumentPublished = (instrument, listener) =>
-            {
-                if (ReferenceEquals(meter, instrument.Meter) &&
-                    (instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization ||
-                     instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization))
-                {
-                    listener.EnableMeasurementEvents(instrument);
-                }
-            }
-        };
-
-        var cpuUtilizationSamples = new Dictionary<string, double>();
-        cpuUtilizationListener.SetMeasurementEventCallback<double>((instrument, value, _, _) => cpuUtilizationSamples[instrument.Name] = value);
-        cpuUtilizationListener.Start();
-
-        // Only container.cpu.time is observed while the container uses 1 core (100 ms in 1 period of 100 ms)...
-        fileSystem.ReplaceFileContent(cpuStatFile, "usage_usec 1100000\nuser_usec 880000\nsystem_usec 220000\nnr_periods 11");
+        // Only container.cpu.time is observed while the container uses 1 core (100 ms in 1 period of 100 ms):
+        fileSystem.ReplaceFileContent(cpuStat, "usage_usec 1100000\nnr_periods 11");
         fakeTime.Advance(TimeSpan.FromSeconds(10));
-        cpuTimeListener.RecordObservableInstruments();
-        Assert.Equal(new[] { 0.88, 0.22 }, cpuTimeSamples);
+        cpuTime.RecordObservableInstruments();
 
-        // ...and then the container uses 0.25 cores (100 ms in 4 periods of 100 ms).
-        fileSystem.ReplaceFileContent(cpuStatFile, "usage_usec 1200000\nuser_usec 960000\nsystem_usec 240000\nnr_periods 15");
+        // Then the container uses 0.25 cores (100 ms in 4 periods of 100 ms):
+        fileSystem.ReplaceFileContent(cpuStat, "usage_usec 1200000\nnr_periods 15");
         fakeTime.Advance(TimeSpan.FromSeconds(10));
-        cpuUtilizationListener.RecordObservableInstruments();
+        cpuLimitUtilization.RecordObservableInstruments();
+        cpuRequestUtilization.RecordObservableInstruments();
 
-        // The CPU utilization covers the whole time since the provider was created (200 ms in 5 periods of 100 ms = 0.4 cores),
-        // because observing container.cpu.time doesn't consume the CPU usage used by the utilization instruments.
+        // The utilization covers the whole time since the provider was created (200 ms in 5 periods of 100 ms = 0.4 cores),
+        // because observing container.cpu.time doesn't change the state used to calculate it:
         const double CoresUsed = 0.4;
-        Assert.Equal(2, cpuUtilizationSamples.Count);
-        Assert.Equal(CoresUsed / provider.Resources.MaximumCpuUnits, cpuUtilizationSamples[ResourceUtilizationInstruments.ContainerCpuLimitUtilization]);
-        Assert.Equal(CoresUsed / provider.Resources.GuaranteedCpuUnits, cpuUtilizationSamples[ResourceUtilizationInstruments.ContainerCpuRequestUtilization]);
+        Assert.Equal(CoresUsed / provider.Resources.MaximumCpuUnits, Assert.Single(cpuLimitUtilization.GetMeasurementSnapshot()).Value);
+        Assert.Equal(CoresUsed / provider.Resources.GuaranteedCpuUnits, Assert.Single(cpuRequestUtilization.GetMeasurementSnapshot()).Value);
     }
 
-    private static void AssertCpuTimeSample((double value, KeyValuePair<string, object?>[] tags) sample, string expectedCpuMode, double expectedSeconds)
+    private static void AssertCpuTime(MetricCollector<double> cpuTime, double expectedUser, double expectedSystem)
     {
-        Assert.Equal(expectedSeconds, sample.value);
-        Assert.Equal(new KeyValuePair<string, object?>("cpu.mode", expectedCpuMode), Assert.Single(sample.tags));
+        var measurements = cpuTime.GetMeasurementSnapshot(clear: true);
+        Assert.Equal(2, measurements.Count);
+        Assert.Equal(expectedUser, Assert.Single(measurements, m => m.MatchesTags(new KeyValuePair<string, object?>("cpu.mode", "user"))).Value);
+        Assert.Equal(expectedSystem, Assert.Single(measurements, m => m.MatchesTags(new KeyValuePair<string, object?>("cpu.mode", "system"))).Value);
     }
 }
