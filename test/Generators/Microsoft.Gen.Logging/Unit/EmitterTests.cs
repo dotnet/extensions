@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Numerics;
 using System.Reflection;
@@ -45,6 +46,7 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(IRedactorProvider))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,
                 Assembly.GetAssembly(typeof(BigInteger))!,
+                Assembly.GetAssembly(typeof(Meter))!,
                 Assembly.GetAssembly(typeof(ObjectToLog))!
             },
             sources,

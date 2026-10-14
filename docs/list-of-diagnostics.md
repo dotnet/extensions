@@ -99,6 +99,8 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN037` | Logging method contains malformed format strings |
 | `LOGGEN038` | Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field |
 | `LOGGEN039` | Logging method parameters can't have the "params" or "scoped" modifier |
+| `LOGGEN040` | Logging method has an invalid rate limit |
+| `LOGGEN041` | Invalid Meter parameter in a rate-limited logging method |
 
 # Metrics
 

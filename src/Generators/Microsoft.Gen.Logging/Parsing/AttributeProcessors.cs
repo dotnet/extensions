@@ -15,6 +15,9 @@ internal static class AttributeProcessors
     private const string SkipNullProperties = "SkipNullProperties";
     private const string OmitReferenceName = "OmitReferenceName";
     private const string Transitive = "Transitive";
+    private const string WindowMillisecondsProperty = "WindowMilliseconds";
+    private const string SegmentsPerWindowProperty = "SegmentsPerWindow";
+    private const int DefaultRateLimitWindowMilliseconds = 1000;
 
     private const int LogLevelError = 4;
     private const int LogLevelCritical = 5;
@@ -191,4 +194,41 @@ internal static class AttributeProcessors
 
     public static string ExtractTagNameAttributeValues(AttributeData attr)
         => attr.ConstructorArguments[0].Value as string ?? string.Empty;
+
+    public static (int permitLimit, int windowMilliseconds, int segmentsPerWindow) ExtractLogRateLimitAttributeValues(AttributeData attr)
+    {
+        int permitLimit = attr.ConstructorArguments[0].Value is int p ? p : 0;
+        int windowMilliseconds = DefaultRateLimitWindowMilliseconds;
+        int segmentsPerWindow = 1;
+
+        foreach (var a in attr.NamedArguments)
+        {
+            if (a.Value.Value is int v)
+            {
+                if (a.Key == WindowMillisecondsProperty)
+                {
+                    windowMilliseconds = v;
+                }
+                else if (a.Key == SegmentsPerWindowProperty)
+                {
+                    segmentsPerWindow = v;
+                }
+            }
+        }
+
+        return (permitLimit, windowMilliseconds, segmentsPerWindow);
+    }
+
+    public static bool IsSkipEnabledCheckSet(AttributeData attr)
+    {
+        foreach (var a in attr.NamedArguments)
+        {
+            if (a.Key == SkipEnabledCheckProperty)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

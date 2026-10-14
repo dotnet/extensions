@@ -17,6 +17,9 @@ namespace Microsoft.Gen.Logging.Parsing;
 
 internal sealed partial class Parser
 {
+    // Same as LoggerMessageRateLimiter.MaxPermitLimit.
+    private const int MaxRateLimitPermitLimit = (1 << 24) - 1;
+
     // ITypeParameterSymbol.AllowsRefLikeType was added in Roslyn 4.9 (C# 13). Access via a compiled
     // delegate so the same source file compiles against all supported Roslyn versions, while
     // avoiding the per-call overhead of PropertyInfo.GetValue boxing.
@@ -186,6 +189,11 @@ internal sealed partial class Parser
                             Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.ParameterName);
                             forceAsTemplateParam = true;
                         }
+                        else if (lp.IsMeter && parameterInTemplate)
+                        {
+                            Diag(DiagDescriptors.InvalidMeterParameter, paramSymbol.GetLocation(), lp.ParameterName);
+                            forceAsTemplateParam = true;
+                        }
                         else if (lp.IsNormalParameter && !parameterInTemplate && !loggingProperties && !string.IsNullOrEmpty(lm.Message))
                         {
                             Diag(DiagDescriptors.ParameterHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.ParameterName);
@@ -260,7 +268,7 @@ internal sealed partial class Parser
                         if (keepMethod &&
                             string.IsNullOrWhiteSpace(lm.Message) &&
                             !lm.EventId.HasValue &&
-                            lm.Parameters.TrueForAll(static x => x.IsLogger || x.IsLogLevel))
+                            lm.Parameters.TrueForAll(static x => x.IsLogger || x.IsLogLevel || x.IsMeter))
                         {
                             if (!_failedMethod)
                             {
@@ -393,6 +401,42 @@ internal sealed partial class Parser
             };
 
             var keepMethod = true;
+
+            var rateLimitAttr = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogRateLimitAttribute, methodSymbol);
+            if (rateLimitAttr is not null)
+            {
+                var (permitLimit, windowMilliseconds, segmentsPerWindow) = AttributeProcessors.ExtractLogRateLimitAttributeValues(rateLimitAttr);
+
+#pragma warning disable S1067 // Expressions should not be too complex
+                if (permitLimit < 1
+                    || permitLimit > MaxRateLimitPermitLimit
+                    || windowMilliseconds < 1
+                    || segmentsPerWindow < 1
+                    || segmentsPerWindow > windowMilliseconds)
+#pragma warning restore S1067 // Expressions should not be too complex
+                {
+                    Diag(
+                        DiagDescriptors.InvalidRateLimit,
+                        rateLimitAttr.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation(),
+                        methodSymbol.Name);
+                }
+                else
+                {
+                    lm.RateLimit = new LoggingRateLimit
+                    {
+                        PermitLimit = permitLimit,
+                        WindowMilliseconds = windowMilliseconds,
+                        SegmentsPerWindow = segmentsPerWindow,
+                    };
+
+                    // A disabled logger must not use up the limit, so rate-limited methods check IsEnabled
+                    // unless the developer explicitly asked to skip it.
+                    if (!AttributeProcessors.IsSkipEnabledCheckSet(attr))
+                    {
+                        lm.SkipEnabledCheck = false;
+                    }
+                }
+            }
 
             if (!TemplateProcessor.ExtractTemplates(message, lm.Templates))
             {
@@ -661,6 +705,11 @@ internal sealed partial class Parser
             IsLogger = !parsingState.FoundLogger && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ILoggerSymbol, _compilation),
             IsException = !parsingState.FoundException && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ExceptionSymbol, _compilation),
             IsLogLevel = !parsingState.FoundLogLevel && SymbolEqualityComparer.Default.Equals(paramTypeSymbol, symbols.LogLevelSymbol),
+
+            // A Meter parameter has a special meaning only for rate-limited methods; elsewhere it stays an ordinary parameter.
+            IsMeter = lm.RateLimit is not null
+                && symbols.MeterSymbol is not null
+                && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.MeterSymbol, _compilation),
             IsEnumerable = extractedType.IsEnumerable(symbols),
             ImplementsIConvertible = paramTypeSymbol.ImplementsIConvertible(symbols),
             ImplementsIFormattable = paramTypeSymbol.ImplementsIFormattable(symbols),
@@ -668,9 +717,15 @@ internal sealed partial class Parser
             HasCustomToString = paramTypeSymbol.HasCustomToString(),
         };
 
+        if (lp.IsMeter && parsingState.FoundMeter)
+        {
+            Diag(DiagDescriptors.InvalidMeterParameter, paramSymbol.GetLocation(), paramName);
+        }
+
         parsingState.FoundLogger |= lp.IsLogger;
         parsingState.FoundException |= lp.IsException;
         parsingState.FoundLogLevel |= lp.IsLogLevel;
+        parsingState.FoundMeter |= lp.IsMeter;
 
         return lp;
     }
@@ -830,5 +885,6 @@ internal sealed partial class Parser
     private record struct MethodParsingState(
         bool FoundLogger,
         bool FoundException,
-        bool FoundLogLevel);
+        bool FoundLogLevel,
+        bool FoundMeter);
 }

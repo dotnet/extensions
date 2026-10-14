@@ -24,4 +24,6 @@ internal sealed record class SymbolHolder(
     INamedTypeSymbol FormatProviderSymbol,
     INamedTypeSymbol? SpanFormattableSymbol,
     INamedTypeSymbol? DataClassificationAttribute,
-    INamedTypeSymbol? NoDataClassificationAttribute);
+    INamedTypeSymbol? NoDataClassificationAttribute,
+    INamedTypeSymbol? LogRateLimitAttribute = null,
+    INamedTypeSymbol? MeterSymbol = null);

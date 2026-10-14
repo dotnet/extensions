@@ -52,6 +52,28 @@ public static partial void LogMyCustomTagName(
     [TagName("my.custom.tagname")] string name);
 ```
 
+The experimental `LogRateLimit` attribute limits how many log records a logging method emits within a time window. This protects the logging pipeline when a method is called very often, for example when a database is down and every request logs the same error. It works with any `ILogger` and needs no configuration in the application.
+
+```csharp
+[LoggerMessage(0, LogLevel.Error, "Error querying the database {hostName}")]
+[LogRateLimit(5)] // At most 5 log records per second.
+internal static partial void DatabaseError(ILogger logger, Exception exception, string hostName);
+
+[LoggerMessage(1, LogLevel.Warning, "Cache miss for {key}")]
+[LogRateLimit(100, WindowMilliseconds = 60_000, SegmentsPerWindow = 6)] // At most 100 per minute; the window moves every 10 seconds.
+internal static partial void CacheMiss(ILogger logger, string key);
+```
+
+The limit behaves like a sliding window rate limiter without a queue. The window is split into `SegmentsPerWindow` equal segments, and calls above `PermitLimit` within the last window are dropped. With the default of one segment, the count resets once per window. The limit is shared by all callers of the method in the process, and it's checked right after `ILogger.IsEnabled`, before any other work is done for the log record.
+
+To count the dropped log records, add a `Meter` parameter to the logging method. Each dropped call increments the `logging.rate_limiting.dropped` counter on that meter, tagged with the method's event name in `logging.rate_limiting.event_name`:
+
+```csharp
+[LoggerMessage(0, LogLevel.Error, "Error querying the database {hostName}")]
+[LogRateLimit(5)]
+internal static partial void DatabaseError(ILogger logger, Meter? meter, Exception exception, string hostName);
+```
+
 ### Log Enrichment
 
 Logging data can be enriched by adding custom log enrichers to the service collection. This can be done using specific implementations or generic types.

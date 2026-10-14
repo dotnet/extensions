@@ -537,6 +537,24 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.Logging.LoggerMessageRateLimiter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggerMessageRateLimiter.LoggerMessageRateLimiter(int permitLimit, int windowMilliseconds, int segmentsPerWindow, string eventName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LoggerMessageRateLimiter.TryAcquire();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LoggerMessageRateLimiter.TryAcquire(System.Diagnostics.Metrics.Meter? meter);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Logging.LoggerMessageState : Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector",
       "Stage": "Stable",
       "Methods": [
@@ -673,6 +691,30 @@
         {
           "Member": "Microsoft.Extensions.Logging.LogPropertyIgnoreAttribute.LogPropertyIgnoreAttribute();",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Logging.LogRateLimitAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LogRateLimitAttribute.LogRateLimitAttribute(int permitLimit);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Logging.LogRateLimitAttribute.PermitLimit { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.LogRateLimitAttribute.SegmentsPerWindow { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.LogRateLimitAttribute.WindowMilliseconds { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },

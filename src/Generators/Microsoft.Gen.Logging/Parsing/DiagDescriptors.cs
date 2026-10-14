@@ -264,4 +264,16 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.LoggingMethodParameterParamsTitle,
         messageFormat: Resources.LoggingMethodParameterParamsMessage,
         category: Category);
+
+    public static DiagnosticDescriptor InvalidRateLimit { get; } = Make(
+        id: DiagnosticIds.LoggerMessage.LOGGEN040,
+        title: Resources.InvalidRateLimitTitle,
+        messageFormat: Resources.InvalidRateLimitMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor InvalidMeterParameter { get; } = Make(
+        id: DiagnosticIds.LoggerMessage.LOGGEN041,
+        title: Resources.InvalidMeterParameterTitle,
+        messageFormat: Resources.InvalidMeterParameterMessage,
+        category: Category);
 }

@@ -20,6 +20,7 @@ internal sealed class LoggingMethodParameter
     public bool IsLogger;
     public bool IsException;
     public bool IsLogLevel;
+    public bool IsMeter;
     public bool IsEnumerable;
     public bool IsNullable;
     public bool IsReference;
@@ -43,7 +44,7 @@ internal sealed class LoggingMethodParameter
 
     // A parameter flagged as 'normal' is not going to be taken care of specially as an argument to ILogger.Log
     // but instead is supposed to be taken as a normal parameter.
-    public bool IsNormalParameter => !IsLogger && !IsException && !IsLogLevel;
+    public bool IsNormalParameter => !IsLogger && !IsException && !IsLogLevel && !IsMeter;
 
     public bool HasDataClassification => ClassificationAttributeTypes.Count > 0;
     public bool HasProperties => Properties.Count > 0;
