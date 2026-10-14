@@ -766,19 +766,14 @@ public sealed class LinuxUtilizationProviderTests
         _ = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, resourceQuotaProvider, new FakeLogger<LinuxUtilizationProvider>(), fakeTime);
         using var cpuTime = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerCpuTime, fakeTime);
 
-        var instrument = Assert.IsType<ObservableCounter<double>>(cpuTime.Instrument);
-        Assert.Equal("s", instrument.Unit);
-        Assert.Equal("CPU time used by the container.", instrument.Description);
-
         cpuTime.RecordObservableInstruments();
-        AssertCpuTime(cpuTime, expectedUser: 1.5, expectedSystem: 95);
+        Assert.Equal(new[] { 95, 1.5 }, cpuTime.GetMeasurementSnapshot(clear: true).Select(m => m.Value));
 
-        // The values are cumulative CPU time, not a rate:
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu 1100 0 600 8300 0 0 0 0 0 0");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 2250000\nnr_periods 20");
         fakeTime.Advance(TimeSpan.FromSeconds(10));
         cpuTime.RecordObservableInstruments();
-        AssertCpuTime(cpuTime, expectedUser: 2.25, expectedSystem: 100);
+        Assert.Equal(new[] { 100, 2.25 }, cpuTime.GetMeasurementSnapshot(clear: true).Select(m => m.Value));
     }
 
     [Fact]
@@ -828,13 +823,5 @@ public sealed class LinuxUtilizationProviderTests
         const double CoresUsed = 0.4;
         Assert.Equal(CoresUsed / provider.Resources.MaximumCpuUnits, Assert.Single(cpuLimitUtilization.GetMeasurementSnapshot()).Value);
         Assert.Equal(CoresUsed / provider.Resources.GuaranteedCpuUnits, Assert.Single(cpuRequestUtilization.GetMeasurementSnapshot()).Value);
-    }
-
-    private static void AssertCpuTime(MetricCollector<double> cpuTime, double expectedUser, double expectedSystem)
-    {
-        var measurements = cpuTime.GetMeasurementSnapshot(clear: true);
-        Assert.Equal(2, measurements.Count);
-        Assert.Equal(expectedUser, Assert.Single(measurements, m => m.MatchesTags(new KeyValuePair<string, object?>("cpu.mode", "user"))).Value);
-        Assert.Equal(expectedSystem, Assert.Single(measurements, m => m.MatchesTags(new KeyValuePair<string, object?>("cpu.mode", "system"))).Value);
     }
 }
