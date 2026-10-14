@@ -97,7 +97,6 @@ public sealed class LoggerMessageRateLimiter
         long segment = GetCurrentSegment();
         long state = Volatile.Read(ref _state);
 
-        // A rejected call only reads shared state, so it stays cheap when a log storm hits the limit.
         if (GetSegment(state) == segment && GetSum(state) >= _permitLimit)
         {
             return false;
