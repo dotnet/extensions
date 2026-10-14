@@ -106,4 +106,46 @@ public class DocumentImageElementTests
         Assert.Equal(version + 1, document.Version);
     }
 
+    [Fact]
+    public void ImageOnlyContent_PreservesBytesSourceDescriptionAndOwnedLifetime()
+    {
+        using Document document = new("image-only", "");
+        byte[] bytes = [0x89, 0x50, 0x4E, 0x47, 0x01, 0x02];
+        DocumentAnnotationTestData.CountingStream stream = new(bytes);
+        Uri source = new("urn:image:page7");
+        using DocumentArtifact artifact = new("image/png", stream, source);
+        DocumentImageElement image = new("")
+        {
+            Content = bytes,
+            MediaType = "image/png",
+            Source = source,
+            AlternativeText = "diagram only"
+        };
+        image.Artifacts.Add(artifact);
+        DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
+        image.Annotations.Add(new DocumentAnnotation("page-image",
+            regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) }));
+        DocumentSection section = new("");
+        section.Elements.Add(image);
+        document.Sections.Add(section);
+
+        Assert.Equal(bytes, image.Content!.Value.ToArray());
+        Assert.Equal(bytes, stream.ToArray());
+        Assert.Equal("image/png", image.MediaType);
+        Assert.Same(source, image.Source);
+        Assert.Same(source, artifact.Source);
+        Assert.Equal("diagram only", image.AlternativeText);
+        Assert.Null(image.Text);
+        Assert.Equal("", image.GetMarkdown());
+        Assert.Equal("", document.GetMarkdown());
+        Assert.Equal("![diagram only](urn:image:page7)", document.ToMarkdown());
+        Assert.Same(image, Assert.Single(document.EnumerateContent()));
+        Assert.Same(page, Assert.Single(document.SourcePages));
+        document.Dispose();
+        document.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.True(artifact.IsDisposed);
+        Assert.Equal(bytes, image.Content.Value.ToArray());
+    }
+
 }

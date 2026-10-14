@@ -16,6 +16,8 @@ public sealed class Document : IDisposable
 {
     private readonly HashSet<DocumentArtifact> _artifacts = new();
     private readonly Dictionary<string, object?> _metadata = new(StringComparer.Ordinal);
+    private readonly List<DocumentSourceOutput> _sourceOutputs = [];
+    private readonly List<DocumentSourcePage> _sourcePages = [];
     private string? _markdown;
     private bool _disposed;
     private long _version;
@@ -30,6 +32,9 @@ public sealed class Document : IDisposable
         Identifier = Throw.IfNullOrEmpty(identifier);
         _markdown = markdown;
         Sections = new DocumentSectionCollection(this);
+        Annotations = new DocumentAnnotationCollection(() => this);
+        SourceOutputs = _sourceOutputs.AsReadOnly();
+        SourcePages = _sourcePages.AsReadOnly();
     }
 
     /// <summary>
@@ -73,6 +78,48 @@ public sealed class Document : IDisposable
     /// Gets the opaque evidence references associated with the document.
     /// </summary>
     public IList<DocumentEvidenceReference> Evidence { get; } = new List<DocumentEvidenceReference>();
+
+    /// <summary>Gets supplementary structured information, excluded from semantic projection.</summary>
+    public IList<DocumentAnnotation> Annotations { get; }
+
+    /// <summary>Gets registered source operations, with explicit break-glass access.</summary>
+    public IReadOnlyList<DocumentSourceOutput> SourceOutputs { get; }
+
+    /// <summary>Gets registered source frames, independently of assembled section order.</summary>
+    public IReadOnlyList<DocumentSourcePage> SourcePages { get; }
+
+    /// <summary>Registers a source operation and transfers ownership of its original-content artifact.</summary>
+    public void AddSourceOutput(DocumentSourceOutput sourceOutput)
+    {
+        ThrowIfDisposed();
+        ValidateSourceOutput(Throw.IfNull(sourceOutput), _sourceOutputs);
+        if (!_sourceOutputs.Contains(sourceOutput))
+        {
+            if (sourceOutput.GetRawContent() is { } content)
+            {
+                RegisterArtifact(content);
+            }
+
+            _sourceOutputs.Add(sourceOutput);
+        }
+    }
+
+    /// <summary>Registers a source frame and its source operation, when supplied.</summary>
+    public void AddSourcePage(DocumentSourcePage page)
+    {
+        ThrowIfDisposed();
+        ValidateSourcePage(Throw.IfNull(page), _sourcePages);
+        if (page.SourceOutput is { } output)
+        {
+            ValidateSourceOutput(output, _sourceOutputs);
+            AddSourceOutput(output);
+        }
+
+        if (!_sourcePages.Contains(page))
+        {
+            _sourcePages.Add(page);
+        }
+    }
 
     /// <summary>
     /// Gets the version of the in-memory document hierarchy.
@@ -146,6 +193,48 @@ public sealed class Document : IDisposable
         }
     }
 
+    internal static IEnumerable<DocumentAnnotation> EnumerateAnnotations(DocumentElement element)
+    {
+        foreach (DocumentAnnotation annotation in element.Annotations)
+        {
+            yield return annotation;
+        }
+
+        if (element is DocumentSection section)
+        {
+            foreach (DocumentElement child in section.Elements)
+            {
+                foreach (DocumentAnnotation annotation in EnumerateAnnotations(child))
+                {
+                    yield return annotation;
+                }
+            }
+        }
+        else if (element is DocumentTableElement table)
+        {
+            foreach (DocumentTableCell? cell in table.Cells)
+            {
+                if (cell is null)
+                {
+                    continue;
+                }
+
+                foreach (DocumentAnnotation annotation in cell.Annotations)
+                {
+                    yield return annotation;
+                }
+
+                if (cell.Content is { } content)
+                {
+                    foreach (DocumentAnnotation annotation in EnumerateAnnotations(content))
+                    {
+                        yield return annotation;
+                    }
+                }
+            }
+        }
+    }
+
     internal void ThrowIfDisposed()
     {
         if (_disposed)
@@ -162,9 +251,102 @@ public sealed class Document : IDisposable
 
     internal void RegisterArtifacts(DocumentElement element)
     {
+        foreach (DocumentAnnotation annotation in element.Annotations)
+        {
+            RegisterAnnotation(annotation);
+        }
+
+        if (element is DocumentTableElement table)
+        {
+            foreach (DocumentTableCell? cell in table.Cells)
+            {
+                if (cell is not null)
+                {
+                    foreach (DocumentAnnotation annotation in cell.Annotations)
+                    {
+                        RegisterAnnotation(annotation);
+                    }
+                }
+            }
+        }
+
         foreach (DocumentArtifact artifact in element.Artifacts)
         {
             RegisterArtifact(artifact);
+        }
+    }
+
+    internal void RegisterAnnotation(DocumentAnnotation annotation)
+    {
+        List<DocumentSourceOutput> outputs = new(_sourceOutputs);
+        List<DocumentSourcePage> pages = new(_sourcePages);
+        ValidateAnnotation(annotation, outputs, pages);
+
+        foreach (DocumentSourceOutput source in outputs)
+        {
+            AddSourceOutput(source);
+        }
+
+        foreach (DocumentSourcePage page in pages)
+        {
+            AddSourcePage(page);
+        }
+    }
+
+    internal void ValidateAnnotations(IEnumerable<DocumentAnnotation> annotations)
+    {
+        List<DocumentSourceOutput> outputs = new(_sourceOutputs);
+        List<DocumentSourcePage> pages = new(_sourcePages);
+        foreach (DocumentAnnotation annotation in annotations)
+        {
+            ValidateAnnotation(annotation, outputs, pages);
+        }
+    }
+
+    private static void ValidateSourcePage(DocumentSourcePage page, IEnumerable<DocumentSourcePage> pages)
+    {
+        if (pages.Any(item => item.Identifier == page.Identifier &&
+            item.SourceOutput?.Identifier == page.SourceOutput?.Identifier && !ReferenceEquals(item, page)))
+        {
+            throw new InvalidOperationException("A source frame identifier must identify one frame instance within its operation.");
+        }
+    }
+
+    private void ValidateAnnotation(
+        DocumentAnnotation annotation,
+        List<DocumentSourceOutput> outputs,
+        List<DocumentSourcePage> pages)
+    {
+        if (annotation.SourceOutput is { } output)
+        {
+            ValidateSourceOutput(output, outputs);
+            outputs.Add(output);
+        }
+
+        foreach (DocumentRegion region in annotation.Regions)
+        {
+            ValidateSourcePage(region.Page, pages);
+            pages.Add(region.Page);
+            if (region.Page.SourceOutput is { } source)
+            {
+                ValidateSourceOutput(source, outputs);
+                outputs.Add(source);
+            }
+        }
+    }
+
+    private void ValidateSourceOutput(DocumentSourceOutput source, IEnumerable<DocumentSourceOutput> outputs)
+    {
+        if (outputs.Any(item => item.Identifier == source.Identifier && !ReferenceEquals(item, source)))
+        {
+            throw new InvalidOperationException("A source operation identifier must identify one output instance.");
+        }
+
+        if (source.GetRawContent() is { } content &&
+            (content.IsDisposed || !content.Content.CanRead ||
+             (content.OwningDocument is not null && !ReferenceEquals(content.OwningDocument, this))))
+        {
+            throw new InvalidOperationException("Original content is disposed or owned by another document.");
         }
     }
 

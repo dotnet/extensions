@@ -297,10 +297,126 @@ public class DocumentElementTests
     }
 
     [Fact]
-    public void Constructor_RejectsEmptyMarkdown()
+    public void Constructor_AllowsEmptyMarkdown()
     {
-        Assert.Throws<ArgumentException>(
+        using Document document = new("empty-constructor");
+        DocumentSection section = new("");
+        DocumentTextElement element = new(DocumentTextKind.Paragraph, "");
+        Assert.Equal("", element.StoredMarkdown);
+        Assert.Equal("", element.ToMarkdown());
+        Assert.Null(element.Text);
+        Assert.Null(element.ParentSection);
+        Assert.Null(element.Address);
+        document.Sections.Add(section);
+        section.Elements.Add(element);
+        long version = document.Version;
+
+        Assert.Same(section, element.ParentSection);
+        Assert.Equal("s0/e0", element.Address);
+        Assert.Equal("", document.ToMarkdown());
+        element.StoredMarkdown = "";
+        Assert.Equal(version, document.Version);
+    }
+
+    [Fact]
+    public void Constructor_RejectsNullMarkdown()
+    {
+        Assert.Throws<ArgumentNullException>(
             "markdown",
-            () => new DocumentTextElement(DocumentTextKind.Paragraph, ""));
+            () => new DocumentTextElement(DocumentTextKind.Paragraph, null!));
+    }
+
+    [Fact]
+    public void Associations_PreserveAbsentAndPartialGeometryWithoutFabrication()
+    {
+        using Document document = new("partial");
+        DocumentSection section = new("");
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible", "visible");
+        DocumentSourcePage dimensionsOnly = new("dimensions-only", 7, new DocumentPageDimensions(200, 100));
+        DocumentSourcePage polygonOnly = new("polygon-only", 2);
+        DocumentRegion region = new(polygonOnly, DocumentAnnotationTestData.Polygon());
+        text.Annotations.Add(new DocumentAnnotation("absent"));
+        text.Annotations.Add(new DocumentAnnotation("polygon-only", regions: new[] { region }));
+        section.Elements.Add(text);
+        document.Sections.Add(section);
+        document.AddSourcePage(dimensionsOnly);
+
+        Assert.Empty(text.Annotations[0].Regions);
+        Assert.Null(text.Annotations[0].Confidence);
+        Assert.Null(text.Annotations[0].SourceOutput);
+        Assert.Null(text.Annotations[0].Role);
+        Assert.Null(polygonOnly.Dimensions);
+        Assert.Null(polygonOnly.CoordinateUnit);
+        Assert.Null(polygonOnly.CoordinateOrigin);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), region.Polygon);
+        Assert.Equal(new DocumentPageDimensions(200, 100), dimensionsOnly.Dimensions);
+        Assert.Null(dimensionsOnly.CoordinateUnit);
+        Assert.Null(dimensionsOnly.CoordinateOrigin);
+        Assert.Equal(new[] { polygonOnly, dimensionsOnly }, document.SourcePages);
+        Assert.Empty(document.SourceOutputs);
+        Assert.Equal("visible", document.ToMarkdown());
+        Assert.Equal("visible", text.Text);
+    }
+
+    [Fact]
+    public void EmptyStoredMarkdown_IsSemanticAndNullAssignmentDoesNotMutate()
+    {
+        using Document document = new("empty");
+        DocumentSection section = new("");
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "");
+        section.Elements.Add(text);
+        document.Sections.Add(section);
+        long version = document.Version;
+        Assert.Equal("", document.ToMarkdown());
+        Assert.Null(text.Text);
+
+        text.StoredMarkdown = "temporary";
+        text.StoredMarkdown = "";
+        Assert.Equal(version + 2, document.Version);
+        Assert.Equal("", text.GetMarkdown());
+        Assert.Equal("", document.ToMarkdown());
+        Assert.Throws<ArgumentNullException>("value", () => text.StoredMarkdown = null!);
+        Assert.Equal(version + 2, document.Version);
+        Assert.Equal("", text.StoredMarkdown);
+    }
+
+    [Fact]
+    public void Projections_ExcludeRawBodyAndNativeMarkers()
+    {
+        using Document document = new("projections", "stored document");
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        using DocumentArtifact artifact = new("application/json", new MemoryStream(DocumentAnnotationTestData.OriginalBytes()));
+        DocumentSourceOutput output = new("operation", native, artifact);
+        DocumentSection section = new("stored section");
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible **text**", "visible text");
+        DocumentImageElement image = new("") { Source = new Uri("urn:image:page7"), AlternativeText = "diagram only" };
+        DocumentExtensionElement extension = new("vendor-extra", "extension");
+        DocumentElement[] elements = [section, text, image, extension];
+        foreach (DocumentElement element in elements)
+        {
+            element.Annotations.Add(new DocumentAnnotation("native", sourceOutput: output, rawRepresentation: native));
+        }
+
+        section.Elements.Add(text);
+        section.Elements.Add(image);
+        section.Elements.Add(extension);
+        document.Sections.Add(section);
+
+        Assert.Equal($"visible **text**{Environment.NewLine}![diagram only](urn:image:page7){Environment.NewLine}extension", document.ToMarkdown());
+        Assert.Equal("stored document", document.GetMarkdown());
+        Assert.Equal("stored section", section.GetMarkdown());
+        Assert.Equal("", image.GetMarkdown());
+        Assert.Equal("visible text", text.Text);
+        Assert.Null(image.Text);
+        Assert.Null(extension.Text);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Same(native, text.Annotations[0].GetRawRepresentation());
+        Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), ((MemoryStream)output.GetRawContent()!.Content).ToArray());
+        Assert.DoesNotContain(native.Marker, document.ToMarkdown(), StringComparison.Ordinal);
+        Assert.DoesNotContain("RAW_BODY_ONLY_91", document.ToMarkdown(), StringComparison.Ordinal);
+        Assert.DoesNotContain(typeof(DocumentSourceOutput).GetProperties(), property => property.Name is "RawRepresentation" or "RawContent");
+        Assert.DoesNotContain(typeof(DocumentAnnotation).GetProperties(), property => property.Name == "RawRepresentation");
+        document.Dispose();
+        Assert.Equal(0, native.DisposeCount);
     }
 }

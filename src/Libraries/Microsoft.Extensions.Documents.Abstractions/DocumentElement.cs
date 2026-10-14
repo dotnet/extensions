@@ -26,8 +26,9 @@ public abstract class DocumentElement
     /// <param name="markdown">The stored markdown representation of the element.</param>
     protected DocumentElement(string markdown)
     {
-        _markdown = Throw.IfNullOrEmpty(markdown);
+        _markdown = Throw.IfNull(markdown);
         Artifacts = new DocumentArtifactCollection(this);
+        Annotations = new DocumentAnnotationCollection(() => _document);
     }
 
     /// <summary>
@@ -64,7 +65,7 @@ public abstract class DocumentElement
         get => _markdown;
         set
         {
-            string markdown = Throw.IfNullOrEmpty(value);
+            string markdown = Throw.IfNull(value);
             if (!string.Equals(_markdown, markdown, StringComparison.Ordinal))
             {
                 _markdown = markdown;
@@ -111,6 +112,9 @@ public abstract class DocumentElement
     /// Gets the opaque evidence references associated with this element.
     /// </summary>
     public IList<DocumentEvidenceReference> Evidence { get; } = new List<DocumentEvidenceReference>();
+
+    /// <summary>Gets optional source layout and structured annotations, excluded from Markdown projection.</summary>
+    public IList<DocumentAnnotation> Annotations { get; }
 
     /// <summary>
     /// Gets the artifacts associated with this element.
@@ -191,13 +195,14 @@ public abstract class DocumentElement
             {
                 foreach (DocumentTableCell? cell in detachedTable.Cells)
                 {
-                    cell?.Content.SetDocument(null);
+                    cell?.Content?.SetDocument(null);
                 }
             }
 
             return;
         }
 
+        document.ValidateAnnotations(Document.EnumerateAnnotations(this));
         _document = document;
 
         try
@@ -215,7 +220,7 @@ public abstract class DocumentElement
             {
                 foreach (DocumentTableCell? cell in table.Cells)
                 {
-                    cell?.Content.SetDocument(document);
+                    cell?.Content?.SetDocument(document);
                 }
             }
         }
@@ -247,7 +252,7 @@ public abstract class DocumentElement
         {
             foreach (DocumentTableCell? cell in table.Cells)
             {
-                if (cell is not null && cell.Content.Contains(element))
+                if (cell?.Content is { } content && content.Contains(element))
                 {
                     return true;
                 }
