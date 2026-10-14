@@ -120,4 +120,95 @@ public class DocumentTableCellTests
         Assert.Null(text.ParentSection);
         Assert.Equal("content", text.ToMarkdown());
     }
+
+    [Fact]
+    public void CellFrames_ResolveMultipleCoordinateSystemsAfterTableReparenting()
+    {
+        using Document document = new("multi-frame-cell");
+        DocumentSourceOutput output = new("operation-A");
+        DocumentSourcePage pdf = DocumentAnnotationTestData.PdfPage(output);
+        DocumentSourcePage raster = new("raster-frame", 7, new DocumentPageDimensions(400, 200),
+            DocumentCoordinateUnit.Pixel, DocumentCoordinateOrigin.TopLeft, output);
+        DocumentPoint[] rasterPolygon =
+        [
+            new(20.5, 159), new(81.5, 163.5), new(89, 79.75), new(25.75, 82.5), new(17, 129.5)
+        ];
+        DocumentTableCell empty = new();
+        empty.Annotations.Add(new DocumentAnnotation("dual-layout", role: "vendor-empty",
+            regions: new[]
+            {
+                new DocumentRegion(pdf, DocumentAnnotationTestData.Polygon()),
+                new DocumentRegion(raster, rasterPolygon)
+            }));
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "lO0  ??", "lO0  ??");
+        DocumentTableCell ordinary = new(text);
+        text.Annotations.Add(new DocumentAnnotation("opaque-score",
+            confidence: new DocumentConfidence(-12.5, "vendor unknown margin")));
+        DocumentTableElement table = new("stored table", 1, 3);
+        table.Cells[0, 1] = empty;
+        table.Cells[0, 2] = ordinary;
+        DocumentSection first = new("");
+        DocumentSection second = new("");
+        first.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "first"));
+        second.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "second"));
+        first.Elements.Add(table);
+        document.Sections.Add(first);
+        document.Sections.Add(second);
+        long version = document.Version;
+
+        Assert.Equal("s0/e1/c0,1", empty.Address);
+        Assert.Equal("s0/e1/c0,2", text.Address);
+        Assert.Equal($"first{Environment.NewLine}|  |  | lO0  ?? |{Environment.NewLine}second", document.ToMarkdown());
+        Assert.Equal(new[] { pdf, raster }, document.SourcePages);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+
+        Assert.True(first.Elements.Remove(table));
+        Assert.Null(table.Address);
+        Assert.Null(empty.Address);
+        Assert.Null(text.Address);
+        Assert.Equal(new[] { pdf, raster }, document.SourcePages);
+        second.Elements.Add(table);
+
+        Assert.Equal(version + 2, document.Version);
+        Assert.Equal("s1/e1", table.Address);
+        Assert.Equal("s1/e1/c0,1", empty.Address);
+        Assert.Equal("s1/e1/c0,2", ordinary.Address);
+        Assert.Equal("s1/e1/c0,2", text.Address);
+        Assert.Null(empty.Content);
+        Assert.Same(empty, table.Cells.GetCoveringCell(0, 1));
+        Assert.False(table.Cells.IsCovered(0, 1));
+        Assert.Null(table.Cells.GetCoveringCell(0, 0));
+        Assert.Equal(new[] { pdf, raster }, document.SourcePages);
+        DocumentAnnotation layout = Assert.Single(table.Cells.GetCoveringCell(0, 1)!.Annotations);
+        Assert.Equal("dual-layout", layout.Kind);
+        Assert.Equal("vendor-empty", layout.Role);
+        Assert.Null(layout.Confidence);
+        Assert.Equal(2, layout.Regions.Count);
+        Assert.Same(document.SourcePages[0], layout.Regions[0].Page);
+        Assert.Same(document.SourcePages[1], layout.Regions[1].Page);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), layout.Regions[0].Polygon);
+        Assert.Equal(rasterPolygon, layout.Regions[1].Polygon);
+        Assert.Equal(7, layout.Regions[0].Page.PageNumber);
+        Assert.Equal(7, layout.Regions[1].Page.PageNumber);
+        Assert.Equal(new DocumentPageDimensions(200, 100), layout.Regions[0].Page.Dimensions);
+        Assert.Equal(new DocumentPageDimensions(400, 200), layout.Regions[1].Page.Dimensions);
+        Assert.Equal(DocumentCoordinateUnit.Point, layout.Regions[0].Page.CoordinateUnit);
+        Assert.Equal(DocumentCoordinateOrigin.BottomLeft, layout.Regions[0].Page.CoordinateOrigin);
+        Assert.Equal(DocumentCoordinateUnit.Pixel, layout.Regions[1].Page.CoordinateUnit);
+        Assert.Equal(DocumentCoordinateOrigin.TopLeft, layout.Regions[1].Page.CoordinateOrigin);
+        Assert.Same(output, layout.Regions[0].Page.SourceOutput);
+        Assert.Same(output, layout.Regions[1].Page.SourceOutput);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        DocumentAnnotation score = Assert.Single(table.Cells.GetCoveringCell(0, 2)!.Content!.Annotations);
+        Assert.Empty(score.Regions);
+        Assert.Equal(-12.5, score.Confidence!.Value);
+        Assert.Equal("vendor unknown margin", score.Confidence.Kind);
+        Assert.Null(score.Confidence.Minimum);
+        Assert.Null(score.Confidence.Maximum);
+        Assert.Equal("lO0  ??", text.Text);
+        Assert.Equal("lO0  ??", text.GetMarkdown());
+        Assert.Equal("stored table", table.GetMarkdown());
+        Assert.Equal($"first{Environment.NewLine}second{Environment.NewLine}|  |  | lO0  ?? |", document.ToMarkdown());
+        Assert.Equal(version + 2, document.Version);
+    }
 }
