@@ -164,7 +164,6 @@ public sealed class LoggerMessageRateLimiter
             long elapsed = (segment - storedSegment) & SegmentMask;
             if (elapsed != 0 && elapsed < HalfSegmentRange)
             {
-                // The window moved forward: the calls counted in the segments that left it no longer count.
                 if (elapsed >= _segmentCounts.Length)
                 {
                     Array.Clear(_segmentCounts, 0, _segmentCounts.Length);
