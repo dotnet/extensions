@@ -151,6 +151,18 @@ public class TelemetryHealthChecksPublisherTests
         Assert.Throws<ArgumentException>(() => new TelemetryHealthCheckPublisher(metrics, logger, Options.Options.Create<TelemetryHealthCheckPublisherOptions>(null!)));
     }
 
+    [Fact]
+    public void Counters_HaveUnits()
+    {
+        using var meter = new Meter(nameof(Counters_HaveUnits));
+        _ = GetMockedMetrics(meter);
+        using var healthReportCollector = new MetricCollector<long>(meter, HealthReportMetricName);
+        using var unhealthyHealthCheckCollector = new MetricCollector<long>(meter, UnhealthyHealthCheckMetricName);
+
+        Assert.Equal("{report}", healthReportCollector.Instrument?.Unit);
+        Assert.Equal("{unhealthy_check}", unhealthyHealthCheckCollector.Instrument?.Unit);
+    }
+
     private static long GetValue(IReadOnlyCollection<CollectedMeasurement<long>> counters, string healthy, string status)
     {
         foreach (var counter in counters)

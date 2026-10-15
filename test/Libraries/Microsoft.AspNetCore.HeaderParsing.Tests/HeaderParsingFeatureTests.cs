@@ -225,6 +225,18 @@ public sealed class HeaderParsingFeatureTests
             cacheAccessesMetricCollector.Instrument?.Description);
     }
 
+    [Fact]
+    public void Counters_have_units()
+    {
+        using var meter = new Meter(nameof(Counters_have_units));
+        _ = GetMockedMetrics(meter);
+        using var parseErrorsCollector = new MetricCollector<long>(meter, "aspnetcore.header_parsing.parse_errors");
+        using var cacheAccessesCollector = new MetricCollector<long>(meter, "aspnetcore.header_parsing.cache_accesses");
+
+        Assert.Equal("{parse_error}", parseErrorsCollector.Instrument?.Unit);
+        Assert.Equal("{cache_access}", cacheAccessesCollector.Instrument?.Unit);
+    }
+
     private static HeaderParsingMetrics GetMockedMetrics(Meter meter)
     {
         var meterFactoryMock = new Mock<IMeterFactory>();
