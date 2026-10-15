@@ -12,10 +12,6 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
 
-// NOTE: This implementation reuses thread local tag joiners to avoid allocations. A logging call made on a thread while
-//       another one is in progress on that thread (e.g., by a logger provider, an enricher, or a redactor) gets a joiner
-//       of its own, so it doesn't disturb the call in progress.
-//
 // NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
 //       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occurred is recorded in
 //       the event log instead. The idea is that failures in the telemetry stack should not lead to failures in the

@@ -7,10 +7,7 @@ namespace Microsoft.Extensions.Logging;
 
 internal sealed partial class ExtendedLogger : ILogger
 {
-    // A logging call takes the joiner out of the current thread's slot and puts it back once it's done with it. This way,
-    // a logging call made on the same thread while another one is in progress (e.g., by a logger provider) creates a joiner
-    // of its own instead of overwriting and clearing the one in use. If a logging call throws before it puts its joiner back,
-    // the next call simply creates a new one.
+    // A joiner is removed from its slot while in use, so a nested logging call on the same thread doesn't reuse it.
     [ThreadStatic]
     private static ModernTagJoiner? _modernJoiner;
 

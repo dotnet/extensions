@@ -22,8 +22,8 @@ public static class LoggerMessageHelper
     /// Gets a thread-local instance of this type.
     /// </summary>
     /// <remarks>
-    /// If the current thread's instance is still in use, for example by a logging call that's in progress when a logger
-    /// provider emits another log record on the same thread, a new instance is returned so the call in progress isn't disturbed.
+    /// If the current thread's instance is in use, a new instance is returned so that nested logging calls on the same
+    /// thread don't share it.
     /// </remarks>
     [field: ThreadStatic]
     public static LoggerMessageState ThreadLocalState
@@ -33,7 +33,6 @@ public static class LoggerMessageHelper
             var state = field;
             if (state is null || state.IsInUse)
             {
-                // The instance in use stays with the call using it (which clears it when done) and the new one takes its place.
                 state = new();
                 field = state;
             }
