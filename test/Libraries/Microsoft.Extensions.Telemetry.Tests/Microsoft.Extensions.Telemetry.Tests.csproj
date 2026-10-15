@@ -10,6 +10,7 @@
     <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>
     <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
     <InjectSharedThrow>false</InjectSharedThrow>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
   </PropertyGroup>
 
   <ItemGroup>

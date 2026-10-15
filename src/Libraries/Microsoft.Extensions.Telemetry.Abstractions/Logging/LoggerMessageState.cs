@@ -112,6 +112,11 @@ public sealed partial class LoggerMessageState
     }
 
     /// <summary>
+    /// Gets a value indicating whether this instance holds anything that <see cref="Clear"/> resets.
+    /// </summary>
+    internal bool IsInUse => TagsCount != 0 || ClassifiedTagsCount != 0 || !string.IsNullOrEmpty(TagNamePrefix);
+
+    /// <summary>
     /// Gets the number of unclassified tags currently in this instance.
     /// </summary>
     public int TagsCount { get; private set; }

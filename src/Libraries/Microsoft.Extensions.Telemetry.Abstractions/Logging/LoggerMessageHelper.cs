@@ -21,8 +21,26 @@ public static class LoggerMessageHelper
     /// <summary>
     /// Gets a thread-local instance of this type.
     /// </summary>
+    /// <remarks>
+    /// If the current thread's instance is still in use, for example by a logging call that's in progress when a logger
+    /// provider emits another log record on the same thread, a new instance is returned so the call in progress isn't disturbed.
+    /// </remarks>
     [field: ThreadStatic]
-    public static LoggerMessageState ThreadLocalState => field ??= new();
+    public static LoggerMessageState ThreadLocalState
+    {
+        get
+        {
+            var state = field;
+            if (state is null || state.IsInUse)
+            {
+                // The instance in use stays with the call using it (which clears it when done) and the new one takes its place.
+                state = new();
+                field = state;
+            }
+
+            return state;
+        }
+    }
 
     /// <summary>
     /// Enumerates an enumerable into a string.
