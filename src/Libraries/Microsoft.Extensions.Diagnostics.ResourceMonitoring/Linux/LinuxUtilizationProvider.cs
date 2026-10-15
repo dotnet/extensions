@@ -105,10 +105,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                 observeValues: () => GetMeasurementWithRetry(() => CpuUtilizationRequest(_cpuRequest)),
                 unit: "1");
 
-            _ = meter.CreateObservableGauge(
+            _ = meter.CreateObservableCounter(
                 name: ResourceUtilizationInstruments.ContainerCpuTime,
                 observeValues: GetCpuTime,
-                unit: "1");
+                unit: "s",
+                description: "CPU time used by the container.");
         }
         else
         {
@@ -353,9 +354,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             yield return new Measurement<double>(systemCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "system")]);
         }
 
-        if (TryGetValueWithRetry(CpuUtilizationV2, out double userCpuTime))
+        if (TryGetValueWithRetry(() => _parser.GetCgroupCpuUsageInNanosecondsAndCpuPeriodsV2().cpuUsageNanoseconds, out long userCpuTime))
         {
-            yield return new Measurement<double>(userCpuTime, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
+            yield return new Measurement<double>(userCpuTime / NanosecondsInSecond, [new KeyValuePair<string, object?>("cpu.mode", "user")]);
         }
     }
 }
