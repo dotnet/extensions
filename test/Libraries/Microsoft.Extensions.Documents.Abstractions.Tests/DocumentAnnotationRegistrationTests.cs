@@ -8,6 +8,109 @@ namespace Microsoft.Extensions.Documents.Tests;
 
 public class DocumentAnnotationRegistrationTests
 {
+    [Theory]
+    [InlineData("root")]
+    [InlineData("element")]
+    [InlineData("cell")]
+    public void RejectedAttachment_OrdinaryForeignArtifactDoesNotTransferEarlierRegistrations(string route)
+    {
+        using Document foreign = new("foreign");
+        using Document destination = new("destination");
+        using Document recovered = new("recovered");
+        DocumentSection foreignSection = new("");
+        foreign.Sections.Add(foreignSection);
+        DocumentAnnotationTestData.CountingStream foreignStream = new(new byte[] { 1 });
+        using DocumentArtifact foreignArtifact = new("text/plain", foreignStream);
+        foreignSection.Artifacts.Add(foreignArtifact);
+        DocumentAnnotationTestData.CountingStream localStream = new(new byte[] { 2 });
+        using DocumentArtifact localArtifact = new("text/plain", localStream);
+        DocumentAnnotationTestData.CountingStream rawStream = new(new byte[] { 3 });
+        using DocumentArtifact rawArtifact = new("application/json", rawStream);
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        DocumentSourceOutput output = new("candidate-output", native, rawArtifact);
+        DocumentSourcePage page = new("candidate-page", 1, sourceOutput: output);
+        DocumentAnnotation annotation = new("layout", regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) });
+        DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
+        first.Artifacts.Add(localArtifact);
+        first.Annotations.Add(annotation);
+        DocumentTextElement last = new(DocumentTextKind.Paragraph, "last");
+        last.Artifacts.Add(foreignArtifact);
+        DocumentTableElement nested = new("", 1, 2);
+        nested.Cells.SetContent(0, 0, first);
+        nested.Cells.SetContent(0, 1, last);
+        DocumentSection candidate = new("");
+        candidate.Elements.Add(nested);
+        DocumentSection host = new("host");
+        destination.Sections.Add(host);
+        DocumentTableElement table = new("", 2, 2);
+        host.Elements.Add(table);
+        DocumentTableCell old = new(new DocumentTextElement(DocumentTextKind.Paragraph, "old"), 2, 2);
+        table.Cells[0, 0] = old;
+        DocumentTableCell cell = new(nested, 2, 2);
+        cell.Annotations.Add(annotation);
+        if (route == "cell")
+        {
+            candidate.Elements.Remove(nested);
+        }
+
+        long version = destination.Version;
+        System.Action attach = route switch
+        {
+            "root" => () => destination.Sections[0] = candidate,
+            "element" => () => host.Elements[0] = candidate,
+            _ => () => table.Cells[0, 0] = cell
+        };
+        Assert.Throws<System.InvalidOperationException>(attach);
+
+        Assert.Equal(version, destination.Version);
+        Assert.Same(host, Assert.Single(destination.Sections));
+        Assert.Same(table, Assert.Single(host.Elements));
+        Assert.Same(old, table.Cells[0, 0]);
+        Assert.Same(old, table.Cells.GetCoveringCell(1, 1));
+        Assert.Equal("s0/e0/c0,0", old.Content!.Address);
+        Assert.Empty(destination.Artifacts);
+        Assert.Empty(destination.SourceOutputs);
+        Assert.Empty(destination.SourcePages);
+        Assert.Null(candidate.Address);
+        Assert.Null(candidate.ParentSection);
+        Assert.Null(nested.Address);
+        Assert.Null(first.Address);
+        Assert.Null(last.Address);
+        Assert.False(localArtifact.IsDocumentOwned);
+        Assert.False(rawArtifact.IsDocumentOwned);
+        Assert.True(foreignArtifact.IsDocumentOwned);
+        Assert.Same(foreignArtifact, Assert.Single(foreign.Artifacts));
+
+        // Repair the explicit foreign reference, then retry the same candidate in another document.
+        last.Artifacts.Clear();
+        if (route == "cell")
+        {
+            DocumentTableElement retryTable = new("", 2, 2);
+            retryTable.Cells[0, 0] = cell;
+            candidate.Elements.Add(retryTable);
+        }
+
+        recovered.Sections.Add(candidate);
+        Assert.Equal("s0", candidate.Address);
+        Assert.Equal(route == "cell" ? "s0/e0/c0,0/c0,0" : "s0/e0/c0,0", first.Address);
+        Assert.Same(output, Assert.Single(recovered.SourceOutputs));
+        Assert.Same(page, Assert.Single(recovered.SourcePages));
+        Assert.Equal(2, recovered.Artifacts.Count);
+        Assert.Contains(localArtifact, recovered.Artifacts);
+        Assert.Contains(rawArtifact, recovered.Artifacts);
+        destination.Dispose();
+        Assert.Equal(0, localStream.DisposeCount);
+        Assert.Equal(0, rawStream.DisposeCount);
+        Assert.Equal(0, foreignStream.DisposeCount);
+        recovered.Dispose();
+        Assert.Equal(1, localStream.DisposeCount);
+        Assert.Equal(1, rawStream.DisposeCount);
+        Assert.Equal(0, foreignStream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+        foreign.Dispose();
+        Assert.Equal(1, foreignStream.DisposeCount);
+    }
+
     [Fact]
     public void NestedTableAttachment_RecursivelyRegistersCellContentAnnotationsAndOwnedRawOutputs()
     {

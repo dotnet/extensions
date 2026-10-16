@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Documents;
 using Microsoft.Shared.Diagnostics;
 
@@ -52,6 +54,8 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
     /// Finalizes the accumulated observations.
     /// </summary>
     /// <returns>The finalized extraction result.</returns>
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
+        Justification = "Success transfers document ownership to the result; failure disposes it in finally and reports cleanup errors.")]
     public DocumentExtractionResult Build()
     {
         ThrowIfUnavailable();
@@ -60,6 +64,7 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
         List<DocumentExtractionPage> pages = _pages.OrderBy(static page => page.PageNumber).ToList();
         HashSet<DocumentArtifact> artifacts = [];
         Document? document = null;
+        List<Exception> failures = [];
 
         try
         {
@@ -125,18 +130,34 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
             document = null;
             return result;
         }
-        catch
+        catch (Exception failure)
         {
-            DisposeUnattachedArtifacts(artifacts);
-            throw;
+            failures.Add(failure);
+            DisposeUnattachedArtifacts(artifacts, failures);
         }
         finally
         {
-            document?.Dispose();
+            try
+            {
+                document?.Dispose();
+            }
+            catch (Exception cleanupFailure)
+            {
+                failures.Add(cleanupFailure);
+            }
         }
+
+        if (failures.Count == 1)
+        {
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        }
+
+        throw new AggregateException(failures);
     }
 
     /// <inheritdoc />
+    [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Report stream cleanup failures only after attempting every pending artifact.")]
+    [SuppressMessage("Blocker Code Smell", "S3877:Exceptions should not be thrown from unexpected methods", Justification = "Report stream cleanup failures only after attempting every pending artifact.")]
     public void Dispose()
     {
         if (_disposed)
@@ -149,7 +170,12 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
         {
             HashSet<DocumentArtifact> artifacts = [];
             _ = CollectArtifacts(_pages, artifacts);
-            DisposeUnattachedArtifacts(artifacts);
+            List<Exception> failures = [];
+            DisposeUnattachedArtifacts(artifacts, failures);
+            if (failures.Count > 0)
+            {
+                throw new AggregateException(failures);
+            }
         }
     }
 
@@ -328,13 +354,20 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
         }
     }
 
-    private static void DisposeUnattachedArtifacts(IEnumerable<DocumentArtifact> artifacts)
+    private static void DisposeUnattachedArtifacts(IEnumerable<DocumentArtifact> artifacts, List<Exception> failures)
     {
         foreach (DocumentArtifact artifact in artifacts)
         {
             if (!artifact.IsDocumentOwned)
             {
-                artifact.Dispose();
+                try
+                {
+                    artifact.Dispose();
+                }
+                catch (Exception failure)
+                {
+                    failures.Add(failure);
+                }
             }
         }
     }

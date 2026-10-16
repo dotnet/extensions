@@ -435,4 +435,137 @@ public class DocumentTableCellCollectionTests
         Assert.Equal(1, stream.DisposeCount);
         Assert.False(stream.CanRead);
     }
+
+    [Fact]
+    public void MergedAnchorReplacement_ReleasesCoveredSlotsAndRetainsRegisteredRawOwnership()
+    {
+        using Document document = new("replacement-lifetime");
+        DocumentAnnotationTestData.CountingStream stream = new(DocumentAnnotationTestData.OriginalBytes());
+        using DocumentArtifact artifact = new("application/json", stream);
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        DocumentSourceOutput output = new("operation-A", native, artifact);
+        DocumentSourcePage frame = DocumentAnnotationTestData.PdfPage(output);
+        DocumentTextElement oldText = new(DocumentTextKind.Paragraph, "lO0? &", "lO0? &");
+        DocumentTableCell oldAnchor = new(oldText, 2, 2, "rowHeader");
+        oldAnchor.Annotations.Add(new DocumentAnnotation("layout",
+            regions: new[] { new DocumentRegion(frame, DocumentAnnotationTestData.Polygon()) }));
+        DocumentTableElement table = new("stored table", 4, 4);
+        table.Cells[0, 0] = oldAnchor;
+        DocumentSection section = new("");
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        long version = document.Version;
+        Assert.Same(oldAnchor, table.Cells.GetCoveringCell(1, 1));
+        Assert.True(table.Cells.IsCovered(1, 1));
+        Assert.True(artifact.IsDocumentOwned);
+
+        DocumentTextElement replacementText = new(DocumentTextKind.Paragraph, "replacement?", "replacement?");
+        DocumentTableCell replacement = new(replacementText);
+        table.Cells[0, 0] = replacement;
+
+        Assert.Equal(version + 1, document.Version);
+        Assert.Same(replacement, table.Cells.GetCoveringCell(0, 0));
+        Assert.Null(oldAnchor.Address);
+        Assert.Null(oldText.Address);
+        Assert.Equal("s0/e0/c0,0", replacement.Address);
+        Assert.Equal("s0/e0/c0,0", replacementText.Address);
+        foreach ((int row, int column) in new[] { (0, 1), (1, 0), (1, 1) })
+        {
+            Assert.Null(table.Cells[row, column]);
+            Assert.Null(table.Cells.GetCoveringCell(row, column));
+            Assert.False(table.Cells.IsCovered(row, column));
+        }
+
+        Assert.Equal(
+            $"| replacement? |  |  |  |{Environment.NewLine}|  |  |  |  |{Environment.NewLine}" +
+            $"|  |  |  |  |{Environment.NewLine}|  |  |  |  |",
+            document.ToMarkdown());
+        Assert.Same(frame, Assert.Single(document.SourcePages));
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Same(artifact, Assert.Single(document.Artifacts));
+        Assert.True(artifact.IsDocumentOwned);
+        Assert.Equal(0, stream.DisposeCount);
+        Assert.True(stream.CanRead);
+        Assert.Equal(123, output.GetRawContent()!.Content.ReadByte());
+        Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), stream.ToArray());
+
+        DocumentTableCell empty = new();
+        table.Cells[0, 1] = empty;
+        Assert.Equal(version + 2, document.Version);
+        Assert.Equal("s0/e0/c0,1", empty.Address);
+        Assert.Same(empty, table.Cells.GetCoveringCell(0, 1));
+        Assert.False(table.Cells.IsCovered(0, 1));
+        table.Cells[2, 2] = oldAnchor;
+
+        Assert.Equal(version + 3, document.Version);
+        Assert.Equal(4, table.Cells.RowCount);
+        Assert.Equal(4, table.Cells.ColumnCount);
+        Assert.Equal(2, oldAnchor.RowIndex);
+        Assert.Equal(2, oldAnchor.ColumnIndex);
+        Assert.Equal(2, oldAnchor.RowSpan);
+        Assert.Equal(2, oldAnchor.ColumnSpan);
+        Assert.Equal("rowHeader", oldAnchor.Kind);
+        Assert.Equal("s0/e0/c2,2", oldAnchor.Address);
+        Assert.Equal("s0/e0/c2,2", oldText.Address);
+        Assert.Equal("lO0? &", oldText.Text);
+        Assert.Equal("replacement?", replacementText.Text);
+        Assert.Null(empty.Content);
+        for (int row = 0; row < 4; row++)
+        {
+            for (int column = 0; column < 4; column++)
+            {
+                DocumentTableCell? covering = null;
+                if (row >= 2 && column >= 2)
+                {
+                    covering = oldAnchor;
+                }
+                else if (row == 0 && column == 0)
+                {
+                    covering = replacement;
+                }
+                else if (row == 0 && column == 1)
+                {
+                    covering = empty;
+                }
+
+                Assert.Same(covering, table.Cells.GetCoveringCell(row, column));
+                Assert.Equal(row >= 2 && column >= 2 && (row != 2 || column != 2), table.Cells.IsCovered(row, column));
+            }
+        }
+
+        Assert.Equal(
+            new DocumentTableCell?[]
+            {
+                replacement, empty, null, null, null, null, null, null,
+                null, null, oldAnchor, null, null, null, null, null
+            },
+            table.Cells.ToArray());
+        Assert.Equal(
+            "<table><tr><td rowspan=\"1\" colspan=\"1\">replacement?</td><td rowspan=\"1\" colspan=\"1\"></td><td></td><td></td></tr>" +
+            "<tr><td></td><td></td><td></td><td></td></tr>" +
+            "<tr><td></td><td></td><th rowspan=\"2\" colspan=\"2\" data-kind=\"rowHeader\">lO0? &amp;</th></tr>" +
+            "<tr><td></td><td></td></tr></table>",
+            document.ToMarkdown());
+        Assert.Equal("stored table", table.GetMarkdown());
+        Assert.Same(frame, Assert.Single(document.SourcePages));
+        Assert.Same(frame, oldAnchor.Annotations[0].Regions[0].Page);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), oldAnchor.Annotations[0].Regions[0].Polygon);
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Same(artifact, Assert.Single(document.Artifacts));
+        Assert.Same(artifact, output.GetRawContent());
+        Assert.Same(native, output.GetRawRepresentation());
+        Assert.Equal(0, stream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.True(stream.CanRead);
+        Assert.Equal(34, output.GetRawContent()!.Content.ReadByte());
+        Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), stream.ToArray());
+        Assert.Equal(version + 3, document.Version);
+
+        document.Dispose();
+        document.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.False(stream.CanRead);
+        Assert.True(artifact.IsDisposed);
+        Assert.Equal(0, native.DisposeCount);
+    }
 }

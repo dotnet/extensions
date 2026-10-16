@@ -25,17 +25,17 @@ public static class LoggingDocumentExtractionClientBuilderExtensions
         _ = Throw.IfNull(builder);
         return builder.Use((inner, services) =>
         {
-            loggerFactory ??= services.GetService(typeof(ILoggerFactory)) as ILoggerFactory
+            ILoggerFactory resolvedFactory = loggerFactory ?? services.GetService(typeof(ILoggerFactory)) as ILoggerFactory
                 ?? NullLoggerFactory.Instance;
 
-            if (loggerFactory == NullLoggerFactory.Instance)
+            if (resolvedFactory == NullLoggerFactory.Instance)
             {
                 return inner;
             }
 
             LoggingDocumentExtractionClient client = new(
                 inner,
-                loggerFactory.CreateLogger(typeof(LoggingDocumentExtractionClient)));
+                resolvedFactory.CreateLogger(typeof(LoggingDocumentExtractionClient)));
             configure?.Invoke(client);
             return client;
         });

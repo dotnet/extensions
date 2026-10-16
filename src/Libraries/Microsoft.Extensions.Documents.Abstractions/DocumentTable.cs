@@ -186,11 +186,13 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
 {
     private readonly DocumentTableElement _owner;
     private readonly DocumentTableCell?[,] _cells;
+    private readonly DocumentTableCell?[,] _coveringCells;
 
     internal DocumentTableCellCollection(DocumentTableElement owner, int rowCount, int columnCount)
     {
         _owner = owner;
         _cells = new DocumentTableCell?[rowCount, columnCount];
+        _coveringCells = new DocumentTableCell?[rowCount, columnCount];
     }
 
     /// <summary>
@@ -235,6 +237,11 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
             {
                 ValidateSpan(row, column, value, oldCell);
                 ValidateCanAdd(value);
+                if (value.Content is { } candidateContent)
+                {
+                    _owner.OwningDocument?.ValidateArtifacts(candidateContent);
+                }
+
                 _owner.OwningDocument?.ValidateAnnotations(value.Annotations.Concat(
                     value.Content is { } content ? Document.EnumerateAnnotations(content) : Enumerable.Empty<DocumentAnnotation>()));
                 value.Attach(_owner, row, column);
@@ -256,11 +263,17 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
 
             if (oldCell is not null)
             {
+                SetCoverage(oldCell, null);
                 oldCell.Content?.Detach(_owner);
                 oldCell.Detach(_owner);
             }
 
             _cells[row, column] = value;
+            if (value is not null)
+            {
+                SetCoverage(value, value);
+            }
+
             _owner.NotifyMutation();
         }
     }
@@ -276,16 +289,7 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
     public DocumentTableCell? GetCoveringCell(int row, int column)
     {
         ValidateAddress(row, column);
-        foreach (DocumentTableCell? cell in this)
-        {
-            if (cell is not null && row >= cell.RowIndex && row - cell.RowIndex < cell.RowSpan &&
-                column >= cell.ColumnIndex && column - cell.ColumnIndex < cell.ColumnSpan)
-            {
-                return cell;
-            }
-        }
-
-        return null;
+        return _coveringCells[row, column];
     }
 
     /// <summary>Gets whether a position is covered by an anchor at a different address.</summary>
@@ -370,5 +374,16 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
         _ = Throw.IfGreaterThanOrEqual(row, RowCount, nameof(row));
         _ = Throw.IfLessThan(column, 0, nameof(column));
         _ = Throw.IfGreaterThanOrEqual(column, ColumnCount, nameof(column));
+    }
+
+    private void SetCoverage(DocumentTableCell cell, DocumentTableCell? covering)
+    {
+        for (int row = cell.RowIndex; row < cell.RowIndex + cell.RowSpan; row++)
+        {
+            for (int column = cell.ColumnIndex; column < cell.ColumnIndex + cell.ColumnSpan; column++)
+            {
+                _coveringCells[row, column] = covering;
+            }
+        }
     }
 }

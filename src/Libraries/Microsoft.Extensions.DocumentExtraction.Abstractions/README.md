@@ -12,6 +12,11 @@ and preserves equal text and duplicate ordered page references. Opaque evidence
 references and document-owned artifacts are associated with the resulting
 `Documents` elements. The builder owns artifacts until successful finalization;
 the finalized result owns them afterward and disposes them with its document.
+Cleanup attempts every eligible artifact even when a stream throws. A failed
+`Build()` preserves its original error; if cleanup also fails, an
+`AggregateException` contains the original error first and the cleanup failures.
+Builder disposal reports cleanup failures in an `AggregateException`. Artifacts
+already owned by another document remain that document's responsibility.
 
 Unknown, list, barcode, and provider-specific observations can preserve opaque
 structured values through `DocumentExtractionExtension.Value` and shared

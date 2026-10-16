@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DocumentExtraction;
 using Microsoft.Extensions.Documents;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -17,6 +18,115 @@ namespace Microsoft.Extensions.DocumentExtraction.Tests;
 
 public sealed class DocumentExtractionMiddlewareTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseLogging_ResolvesFactoryIndependentlyForEachBuild(bool firstWithoutServices)
+    {
+        FakeLogCollector firstCollector = new();
+        FakeLogCollector secondCollector = new();
+        using TestLoggerFactory firstFactory = new(firstCollector);
+        using TestLoggerFactory secondFactory = new(secondCollector);
+        using ServiceProvider firstServices = new ServiceCollection()
+            .AddSingleton<ILoggerFactory>(firstFactory).BuildServiceProvider();
+        using ServiceProvider secondServices = new ServiceCollection()
+            .AddSingleton<ILoggerFactory>(secondFactory).BuildServiceProvider();
+        DocumentExtractionClientBuilder builder = new(_ => new TestClient());
+        builder.UseLogging();
+
+        using IDocumentExtractionClient first = builder.Build(firstWithoutServices ? null : firstServices);
+        using IDocumentExtractionClient second = builder.Build(secondServices);
+        if (firstWithoutServices)
+        {
+            Assert.IsType<TestClient>(first);
+        }
+        else
+        {
+            Assert.IsType<LoggingDocumentExtractionClient>(first);
+        }
+
+        Assert.IsType<LoggingDocumentExtractionClient>(second);
+        using MemoryStream input = new();
+        await foreach (DocumentExtractionPage page in first.ExtractPagesAsync(input, "first", "application/pdf"))
+        {
+            Assert.Equal(1, page.PageNumber);
+        }
+
+        await foreach (DocumentExtractionPage page in second.ExtractPagesAsync(input, "second", "application/pdf"))
+        {
+            Assert.Equal(1, page.PageNumber);
+        }
+
+        Assert.Equal(firstWithoutServices ? 0 : 3, firstCollector.Count);
+        Assert.Equal(3, secondCollector.Count);
+        Assert.Equal(1, secondCollector.GetSnapshot().Count(entry => entry.Message == "Document extraction invoked."));
+    }
+
+    [Fact]
+    public async Task UseLogging_ExplicitFactoryOverridesEachServiceProvider()
+    {
+        FakeLogCollector explicitCollector = new();
+        FakeLogCollector serviceCollector = new();
+        using TestLoggerFactory explicitFactory = new(explicitCollector);
+        using TestLoggerFactory serviceFactory = new(serviceCollector);
+        using ServiceProvider services = new ServiceCollection()
+            .AddSingleton<ILoggerFactory>(serviceFactory).BuildServiceProvider();
+        DocumentExtractionClientBuilder builder = new(_ => new TestClient());
+        builder.UseLogging(explicitFactory);
+
+        using IDocumentExtractionClient first = builder.Build();
+        using IDocumentExtractionClient second = builder.Build(services);
+        using MemoryStream input = new();
+        foreach (IDocumentExtractionClient client in new[] { first, second })
+        {
+            await foreach (DocumentExtractionPage page in client.ExtractPagesAsync(input, "document", "application/pdf"))
+            {
+                Assert.Equal(1, page.PageNumber);
+            }
+        }
+
+        Assert.Equal(6, explicitCollector.Count);
+        Assert.Equal(0, serviceCollector.Count);
+    }
+
+    [Theory]
+    [InlineData(ServiceLifetime.Scoped)]
+    [InlineData(ServiceLifetime.Transient)]
+    public void FactoryRegistration_ScopesOwnIndependentClients(ServiceLifetime lifetime)
+    {
+        List<TestClient> clients = [];
+        ServiceCollection services = new();
+        services.AddDocumentExtractionClient(_ =>
+        {
+            TestClient client = new();
+            clients.Add(client);
+            return client;
+        }, lifetime).Use(inner => new RecordingMiddleware(inner, () => { }));
+        using ServiceProvider provider = services.BuildServiceProvider();
+        using IServiceScope firstScope = provider.CreateScope();
+        using IServiceScope secondScope = provider.CreateScope();
+        IDocumentExtractionClient first = firstScope.ServiceProvider.GetRequiredService<IDocumentExtractionClient>();
+        IDocumentExtractionClient second = secondScope.ServiceProvider.GetRequiredService<IDocumentExtractionClient>();
+        Assert.NotSame(first, second);
+        Assert.Equal(2, clients.Count);
+        Assert.NotSame(clients[0], clients[1]);
+
+        firstScope.Dispose();
+        Assert.Equal(1, clients[0].DisposeCount);
+        Assert.Equal(0, clients[1].DisposeCount);
+        secondScope.Dispose();
+        Assert.Equal(1, clients[1].DisposeCount);
+    }
+
+    private sealed class TestLoggerFactory(FakeLogCollector collector) : ILoggerFactory
+    {
+        public ILogger CreateLogger(string categoryName) => new FakeLogger(collector, categoryName);
+        public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
+        public void Dispose()
+        {
+        }
+    }
+
     [Fact]
     public async Task LoggingMiddleware_LogsLifecycleOnlyAndDisposesStreamingEnumerator()
     {

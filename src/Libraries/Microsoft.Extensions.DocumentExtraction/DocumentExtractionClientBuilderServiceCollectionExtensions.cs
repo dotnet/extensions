@@ -16,6 +16,11 @@ public static class DocumentExtractionClientBuilderServiceCollectionExtensions
     /// <summary>
     /// Registers a document extraction client and returns its middleware builder.
     /// </summary>
+    /// <remarks>
+    /// The supplied inner client is shared by all resolutions, including scoped or transient pipelines.
+    /// Disposing one pipeline disposes that inner client. Use the factory overload to create independent
+    /// clients for scoped or transient lifetimes.
+    /// </remarks>
     /// <returns>The middleware builder.</returns>
     public static DocumentExtractionClientBuilder AddDocumentExtractionClient(
         this IServiceCollection services,
