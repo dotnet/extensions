@@ -210,6 +210,22 @@ public sealed class HeaderParsingFeatureTests
     }
 
     [Fact]
+    public void Metrics_HaveDescriptions()
+    {
+        using var meter = new Meter(nameof(Metrics_HaveDescriptions));
+        _ = GetMockedMetrics(meter);
+        using var parseErrorsMetricCollector = new MetricCollector<long>(meter, "aspnetcore.header_parsing.parse_errors");
+        using var cacheAccessesMetricCollector = new MetricCollector<long>(meter, "aspnetcore.header_parsing.cache_accesses");
+
+        Assert.Equal(
+            "Number of errors that occurred when parsing HTTP request headers.",
+            parseErrorsMetricCollector.Instrument?.Description);
+        Assert.Equal(
+            "Number of times a cache storing parsed header values was accessed.",
+            cacheAccessesMetricCollector.Instrument?.Description);
+    }
+
+    [Fact]
     public void Counters_have_units()
     {
         using var meter = new Meter(nameof(Counters_have_units));
