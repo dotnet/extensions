@@ -11,7 +11,7 @@ The model contains a document-owned ordered section hierarchy. Sections contain 
 - Page references preserve opaque provider order and duplicates but do not assert that a page is authoritative source grounding.
 - Evidence and extension values are opaque associations. Optional `DocumentAnnotation` instances preserve structured values, roles, source regions, reported confidence, and explicit native-observation access without adding provider SDK dependencies.
 - `DocumentSourcePage` identifies the originating page and coordinate frame separately from assembly order. Dimensions, coordinate unit, and origin are optional: unknown values stay unknown. `DocumentRegion` copies every polygon vertex in producer order; it does not reduce rotated regions to rectangles. Confidence values retain their reported kind and optional scale and do not imply calibration across providers.
-- Table cells are explicitly addressable and can contain any non-section element, including images, or retain an empty anchor with annotations. Positive row/column spans distinguish anchors from covered positions; `GetCoveringCell` and `IsCovered` expose that distinction. Overlapping/out-of-bounds spans, reuse, cycles, and invalid relationships are rejected. Simple tables retain their pipe-table projection; spans or producer roles use HTML to preserve those semantics.
+- Table cells are explicitly addressable and can contain any non-section element, including images, or retain an empty anchor with annotations. Positive row/column spans distinguish anchors from covered positions; `GetCoveringCell` and `IsCovered` expose that distinction. Overlapping/out-of-bounds spans, reuse, cycles, and invalid relationships are rejected. Simple tables retain their pipe-delimited row projection (without a GFM header/separator, so not a rendered GFM table); spans or producer roles use HTML to preserve those semantics. The simple projection's rendering policy remains an API-review consideration; it does not infer a header row or substitute potentially stale stored Markdown.
 - `DocumentArtifact` owns its content stream, and an associated document disposes registered artifacts. The package does not fetch, create, or interpret artifacts.
 - `Document.Version` tracks supported scalar, hierarchy, and artifact-collection edits. Changes to metadata, page-reference, evidence, annotation, and source-registry collections do not increment it.
 
@@ -22,6 +22,13 @@ The model contains a document-owned ordered section hierarchy. Sections contain 
 `GetRawRepresentation()` exposes a borrowed native result for deliberate break-glass inspection. `GetRawContent()` exposes an owned artifact containing the original detached response body when available, **not** a reserialization of mapped SDK objects. `NativeStatus` and `ContentStatus` distinguish retained, unavailable, and explicitly disabled capture. Registered response artifacts are owned once and disposed with the document; borrowed native objects and structured values are not implicitly disposed. `DocumentArtifact.IsDocumentOwned` identifies an existing lifetime transfer, which a subsequent failed extraction must not dispose.
 
 Annotations and raw outputs do not enter `Text` or Markdown projections automatically. There is no automatic logging, embedding, persistence, or wire serialization contract. Consumers must deliberately select which supporting data to inspect or persist, protect sensitive response content, and respect the document's lifetime. An empty stored Markdown value is valid for blank or image-only content; it does not fabricate text.
+
+Attachment preflights subtree artifact ownership and annotation conflicts before
+transferring ownership. Rejected scalar edits on disposed documents do not change
+the retained value, and assigning the same section, element or artifact to its
+current slot is a no-op while the document is alive. Disposal attempts every
+registered artifact; one cleanup failure is rethrown, and multiple failures are
+reported together in an `AggregateException`. Borrowed values are never disposed.
 
 First-class list/item/nesting semantics and normalized barcode/language/link/email/address schemas remain separate API-review work. Structured supplied values can travel as annotations/extensions now; the package does not perform recognition, infer grounding, or define provider-specific feature flags.
 

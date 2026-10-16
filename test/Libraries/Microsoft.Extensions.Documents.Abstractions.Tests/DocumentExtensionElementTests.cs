@@ -20,14 +20,20 @@ public class DocumentExtensionElementTests
         Assert.Same(value, element.Value);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void RejectsEmptyType(string? type)
+    [Fact]
+    public void RejectsNullType()
     {
         Assert.Throws<ArgumentNullException>(
-            nameof(type),
-            () => new DocumentExtensionElement(type!, "stored extension"));
+            "type",
+            () => new DocumentExtensionElement(null!, "stored extension"));
+    }
+
+    [Fact]
+    public void RejectsEmptyType()
+    {
+        Assert.Throws<ArgumentException>(
+            "type",
+            () => new DocumentExtensionElement("", "stored extension"));
     }
 
     [Fact]

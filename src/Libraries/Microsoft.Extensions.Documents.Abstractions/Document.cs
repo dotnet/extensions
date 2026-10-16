@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Documents;
@@ -179,6 +181,8 @@ public sealed class Document : IDisposable
     }
 
     /// <inheritdoc/>
+    [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Report stream cleanup failures only after attempting every owned artifact.")]
+    [SuppressMessage("Blocker Code Smell", "S3877:Exceptions should not be thrown from unexpected methods", Justification = "Report stream cleanup failures only after attempting every owned artifact.")]
     public void Dispose()
     {
         if (_disposed)
@@ -187,9 +191,26 @@ public sealed class Document : IDisposable
         }
 
         _disposed = true;
+        List<Exception>? failures = null;
         foreach (DocumentArtifact artifact in _artifacts)
         {
-            artifact.Dispose();
+            try
+            {
+                artifact.Dispose();
+            }
+            catch (Exception exception)
+            {
+                (failures ??= []).Add(exception);
+            }
+        }
+
+        if (failures is { Count: 1 })
+        {
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        }
+        else if (failures is { Count: > 1 })
+        {
+            throw new AggregateException(failures);
         }
     }
 
@@ -280,16 +301,18 @@ public sealed class Document : IDisposable
     {
         List<DocumentSourceOutput> outputs = new(_sourceOutputs);
         List<DocumentSourcePage> pages = new(_sourcePages);
+        int outputCount = outputs.Count;
+        int pageCount = pages.Count;
         ValidateAnnotation(annotation, outputs, pages);
 
-        foreach (DocumentSourceOutput source in outputs)
+        for (int index = outputCount; index < outputs.Count; index++)
         {
-            AddSourceOutput(source);
+            AddSourceOutput(outputs[index]);
         }
 
-        foreach (DocumentSourcePage page in pages)
+        for (int index = pageCount; index < pages.Count; index++)
         {
-            AddSourcePage(page);
+            AddSourcePage(pages[index]);
         }
     }
 
@@ -361,6 +384,40 @@ public sealed class Document : IDisposable
 
         artifact.SetOwningDocument(this);
         _ = _artifacts.Add(artifact);
+    }
+
+    internal void ValidateArtifacts(DocumentElement element)
+    {
+        if (element.OwningDocument is not null && !ReferenceEquals(element.OwningDocument, this))
+        {
+            throw new InvalidOperationException("An element cannot belong to more than one document.");
+        }
+
+        foreach (DocumentArtifact artifact in element.Artifacts)
+        {
+            if (artifact.OwningDocument is not null && !ReferenceEquals(artifact.OwningDocument, this))
+            {
+                throw new InvalidOperationException("An artifact cannot belong to more than one document.");
+            }
+        }
+
+        if (element is DocumentSection section)
+        {
+            foreach (DocumentElement child in section.Elements)
+            {
+                ValidateArtifacts(child);
+            }
+        }
+        else if (element is DocumentTableElement table)
+        {
+            foreach (DocumentTableCell? cell in table.Cells)
+            {
+                if (cell?.Content is { } content)
+                {
+                    ValidateArtifacts(content);
+                }
+            }
+        }
     }
 
     internal string? GetAddress(DocumentElement element)
@@ -441,6 +498,11 @@ internal sealed class DocumentSectionCollection : Collection<DocumentSection>
 
         _owner.ThrowIfDisposed();
         DocumentSection oldItem = this[index];
+        if (ReferenceEquals(oldItem, item))
+        {
+            return;
+        }
+
         item.Attach(_owner, _owner);
 
         try

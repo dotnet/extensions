@@ -10,6 +10,63 @@ namespace Microsoft.Extensions.Documents.Tests;
 
 public class DocumentTableElementTests
 {
+    [Fact]
+    public void Coverage_TracksSpanReplacementRemovalAndRejectedEdits()
+    {
+        using Document document = new("coverage");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("", 3, 4);
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        DocumentTableCell wide = new(new DocumentTextElement(DocumentTextKind.Paragraph, "wide"), 2, 3);
+        DocumentTableCell corner = new(new DocumentTextElement(DocumentTextKind.Paragraph, "corner"), kind: "rowHeader");
+        table.Cells[0, 0] = wide;
+        table.Cells[2, 3] = corner;
+        AssertCoverage(wide, 2, 3);
+        long version = document.Version;
+
+        Assert.Throws<InvalidOperationException>(() => table.Cells[1, 1] = new DocumentTableCell());
+        Assert.Throws<InvalidOperationException>(() => table.Cells[0, 3] = new DocumentTableCell(3, 1));
+        Assert.Throws<ArgumentException>(() => table.Cells[0, 0] = new DocumentTableCell(4, 1));
+        Assert.Equal(version, document.Version);
+        AssertCoverage(wide, 2, 3);
+
+        DocumentTableCell small = new(new DocumentTextElement(DocumentTextKind.Paragraph, "small"));
+        table.Cells[0, 0] = small;
+        AssertCoverage(small, 1, 1);
+        Assert.Null(wide.Content!.Address);
+        Assert.Equal("s0/e0/c0,0", small.Content!.Address);
+        table.Cells[0, 0] = null;
+        AssertCoverage(null, 0, 0);
+        Assert.Null(small.Content.Address);
+        table.Cells[0, 0] = wide;
+        AssertCoverage(wide, 2, 3);
+        Assert.Equal("s0/e0/c0,0", wide.Content.Address);
+        Assert.Equal(
+            "<table><tr><td rowspan=\"2\" colspan=\"3\">wide</td><td></td></tr>" +
+            "<tr><td></td></tr><tr><td></td><td></td><td></td>" +
+            "<th rowspan=\"1\" colspan=\"1\" data-kind=\"rowHeader\">corner</th></tr></table>",
+            table.ToMarkdown());
+
+        void AssertCoverage(DocumentTableCell? anchor, int rows, int columns)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                for (int column = 0; column < 4; column++)
+                {
+                    bool inSpan = row < rows && column < columns;
+                    DocumentTableCell? cornerCell = row == 2 && column == 3 ? corner : null;
+                    DocumentTableCell? expected = inSpan ? anchor : cornerCell;
+                    Assert.Same(expected, table.Cells.GetCoveringCell(row, column));
+                    Assert.Equal(inSpan && (row != 0 || column != 0),
+                        table.Cells.IsCovered(row, column));
+                    Assert.Same(row == 0 && column == 0 ? anchor : cornerCell,
+                        table.Cells[row, column]);
+                }
+            }
+        }
+    }
+
     private const string RowSpanProjection =
         "<table><tr><td rowspan=\"1\" colspan=\"1\"></td><td></td><td></td><td></td></tr>" +
         "<tr><td></td><td rowspan=\"2\" colspan=\"1\">A|&lt;</td><td></td><td></td></tr>" +

@@ -68,6 +68,7 @@ public abstract class DocumentElement
             string markdown = Throw.IfNull(value);
             if (!string.Equals(_markdown, markdown, StringComparison.Ordinal))
             {
+                _document?.ThrowIfDisposed();
                 _markdown = markdown;
                 NotifyMutation();
             }
@@ -84,6 +85,7 @@ public abstract class DocumentElement
         {
             if (!string.Equals(field, value, StringComparison.Ordinal))
             {
+                _document?.ThrowIfDisposed();
                 field = value;
                 NotifyMutation();
             }
@@ -202,6 +204,7 @@ public abstract class DocumentElement
             return;
         }
 
+        document.ValidateArtifacts(this);
         document.ValidateAnnotations(Document.EnumerateAnnotations(this));
         _document = document;
 
@@ -349,6 +352,7 @@ public sealed class DocumentTextElement : DocumentElement
 
             if (field != value)
             {
+                OwningDocument?.ThrowIfDisposed();
                 field = value;
                 NotifyMutation();
             }
@@ -387,6 +391,7 @@ public sealed class DocumentImageElement : DocumentElement
         {
             if (!Nullable.Equals(_content, value))
             {
+                OwningDocument?.ThrowIfDisposed();
                 _content = value;
                 NotifyMutation();
             }
@@ -403,6 +408,7 @@ public sealed class DocumentImageElement : DocumentElement
         {
             if (!string.Equals(_mediaType, value, StringComparison.Ordinal))
             {
+                OwningDocument?.ThrowIfDisposed();
                 _mediaType = value;
                 NotifyMutation();
             }
@@ -419,6 +425,7 @@ public sealed class DocumentImageElement : DocumentElement
         {
             if (!Equals(_source, value))
             {
+                OwningDocument?.ThrowIfDisposed();
                 _source = value;
                 NotifyMutation();
             }
@@ -435,6 +442,7 @@ public sealed class DocumentImageElement : DocumentElement
         {
             if (!string.Equals(_alternativeText, value, StringComparison.Ordinal))
             {
+                OwningDocument?.ThrowIfDisposed();
                 _alternativeText = value;
                 NotifyMutation();
             }
@@ -460,7 +468,7 @@ public sealed class DocumentExtensionElement : DocumentElement
     public DocumentExtensionElement(string type, string markdown, object? value = null)
         : base(markdown)
     {
-        Type = string.IsNullOrEmpty(type) ? throw new ArgumentNullException(nameof(type)) : type;
+        Type = Throw.IfNullOrEmpty(type);
         Value = value;
     }
 
@@ -507,8 +515,13 @@ internal sealed class DocumentElementCollection : Collection<DocumentElement>
         _ = Throw.IfNull(item);
 
         _owner.OwningDocument?.ThrowIfDisposed();
-        ValidateCanAdd(item);
         DocumentElement oldItem = this[index];
+        if (ReferenceEquals(oldItem, item))
+        {
+            return;
+        }
+
+        ValidateCanAdd(item);
         item.Attach(_owner, _owner.OwningDocument);
 
         try
@@ -581,6 +594,11 @@ internal sealed class DocumentArtifactCollection : Collection<DocumentArtifact>
         _ = Throw.IfNull(item);
 
         _owner.OwningDocument?.ThrowIfDisposed();
+        if (ReferenceEquals(this[index], item))
+        {
+            return;
+        }
+
         _owner.OwningDocument?.RegisterArtifact(item);
         base.SetItem(index, item);
         _owner.NotifyMutation();

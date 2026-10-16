@@ -11,6 +11,88 @@ namespace Microsoft.Extensions.Documents.Tests;
 
 public class DocumentElementTests
 {
+    [Theory]
+    [InlineData("StoredMarkdown")]
+    [InlineData("Text")]
+    [InlineData("HeaderLevel")]
+    [InlineData("Content")]
+    [InlineData("MediaType")]
+    [InlineData("Source")]
+    [InlineData("AlternativeText")]
+    public void DisposedScalarMutation_PreservesBackingValueAndVersion(string property)
+    {
+        using Document document = new("disposed-scalars");
+        DocumentSection section = new("");
+        DocumentTextElement text = new(DocumentTextKind.Header, "original markdown", "original text") { HeaderLevel = 3 };
+        Uri source = new("urn:original");
+        ReadOnlyMemory<byte> bytes = new byte[] { 7, 8 };
+        DocumentImageElement image = new("image")
+        {
+            Content = bytes,
+            MediaType = "image/png",
+            Source = source,
+            AlternativeText = "original alt"
+        };
+        section.Elements.Add(text);
+        section.Elements.Add(image);
+        document.Sections.Add(section);
+        long version = document.Version;
+        document.Dispose();
+
+        Action edit = property switch
+        {
+            "StoredMarkdown" => () => text.StoredMarkdown = "rejected",
+            "Text" => () => text.Text = "rejected",
+            "HeaderLevel" => () => text.HeaderLevel = 5,
+            "Content" => () => image.Content = new byte[] { 99 },
+            "MediaType" => () => image.MediaType = "image/jpeg",
+            "Source" => () => image.Source = new Uri("urn:rejected"),
+            _ => () => image.AlternativeText = "rejected"
+        };
+        Assert.Throws<ObjectDisposedException>(edit);
+
+        Assert.Equal("original markdown", text.StoredMarkdown);
+        Assert.Equal("original text", text.Text);
+        Assert.Equal(3, text.HeaderLevel);
+        Assert.Equal(bytes.ToArray(), image.Content!.Value.ToArray());
+        Assert.Equal("image/png", image.MediaType);
+        Assert.Same(source, image.Source);
+        Assert.Equal("original alt", image.AlternativeText);
+        Assert.Equal(version, document.Version);
+        Assert.Equal("s0/e0", text.Address);
+        Assert.Equal("s0/e1", image.Address);
+    }
+
+    [Theory]
+    [InlineData("element")]
+    [InlineData("artifact")]
+    public void CollectionSelfAssignment_PreservesVersionAndOwnership(string collection)
+    {
+        using Document document = new("self");
+        DocumentSection section = new("");
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "text");
+        using DocumentArtifact artifact = new("text/plain", new MemoryStream(new byte[] { 12 }));
+        text.Artifacts.Add(artifact);
+        section.Elements.Add(text);
+        document.Sections.Add(section);
+        long version = document.Version;
+        Action assign = collection == "element" ? () => section.Elements[0] = text : () => text.Artifacts[0] = artifact;
+
+        assign();
+
+        Assert.Equal(version, document.Version);
+        Assert.Same(text, Assert.Single(section.Elements));
+        Assert.Same(section, text.ParentSection);
+        Assert.Equal("s0/e0", text.Address);
+        Assert.Same(artifact, Assert.Single(text.Artifacts));
+        Assert.Same(artifact, Assert.Single(document.Artifacts));
+        Assert.True(artifact.IsDocumentOwned);
+        Assert.False(artifact.IsDisposed);
+        document.Dispose();
+        Assert.Throws<ObjectDisposedException>(assign);
+        Assert.Equal(version, document.Version);
+    }
+
     [Fact]
     public void LocalId_IsDistinctPerInstance()
     {
