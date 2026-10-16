@@ -24,6 +24,8 @@ internal static class SymbolLoader
     internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag";
     internal const string IFormatProviderType = "System.IFormatProvider";
     internal const string ISpanFormattableType = "System.ISpanFormattable";
+    internal const string RateLimitAttribute = "Microsoft.Extensions.Logging.RateLimitAttribute";
+    internal const string MeterType = "System.Diagnostics.Metrics.Meter";
 
     private static readonly string[] _ignored = new[]
     {
@@ -89,6 +91,8 @@ internal static class SymbolLoader
         var enumerableSymbol = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
         var formatProviderSymbol = compilation.GetBestTypeByMetadataName(IFormatProviderType)!;
         var spanFormattableSymbol = compilation.GetBestTypeByMetadataName(ISpanFormattableType);
+        var rateLimitAttributeSymbol = compilation.GetBestTypeByMetadataName(RateLimitAttribute);
+        var meterSymbol = compilation.GetBestTypeByMetadataName(MeterType);
 
         var ignorePropsSymbols = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
@@ -117,6 +121,8 @@ internal static class SymbolLoader
             formatProviderSymbol,
             spanFormattableSymbol,
             dataClassificationAttribute,
-            noDataClassificationAttribute);
+            noDataClassificationAttribute,
+            rateLimitAttributeSymbol,
+            meterSymbol);
     }
 }

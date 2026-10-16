@@ -123,6 +123,8 @@ internal static class DiagnosticIds
         internal const string LOGGEN037 = nameof(LOGGEN037);
         internal const string LOGGEN038 = nameof(LOGGEN038);
         internal const string LOGGEN039 = nameof(LOGGEN039);
+        internal const string LOGGEN040 = nameof(LOGGEN040);
+        internal const string LOGGEN041 = nameof(LOGGEN041);
     }
 
     internal static class Metrics

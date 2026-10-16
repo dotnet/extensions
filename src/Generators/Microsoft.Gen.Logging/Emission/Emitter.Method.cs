@@ -77,6 +77,19 @@ internal sealed partial class Emitter : EmitterBase
             OutLn();
         }
 
+        if (_rateLimiterFields.TryGetValue(lm, out var rateLimiterField))
+        {
+            var meter = lm.Parameters.FirstOrDefault(static p => p.IsMeter)?.ParameterNameWithAtIfNeeded ?? string.Empty;
+
+            OutLn($"#pragma warning disable {ExperimentalTelemetryDiagnosticId}");
+            OutLn($"if (!{rateLimiterField}.TryAcquire({meter}))");
+            OutOpenBrace();
+            OutLn("return;");
+            OutCloseBrace();
+            OutLn($"#pragma warning restore {ExperimentalTelemetryDiagnosticId}");
+            OutLn();
+        }
+
         var stateName = PickUniqueName("state", lm.Parameters.Select(p => p.ParameterName));
 
         OutLn($"var {stateName} = {LoggerMessageHelperType}.ThreadLocalState;");

@@ -357,4 +357,16 @@
   <data name="LoggingMethodParameterParamsTitle" xml:space="preserve">
     <value>Logging method parameters can't have the "params" or "scoped" modifier</value>
   </data>
+  <data name="InvalidRateLimitMessage" xml:space="preserve">
+    <value>Logging method "{0}" has an invalid rate limit: PermitLimit must be from 1 to 16777215, WindowMilliseconds must be at least 1, and SegmentsPerWindow must be from 1 to WindowMilliseconds</value>
+  </data>
+  <data name="InvalidRateLimitTitle" xml:space="preserve">
+    <value>Logging method has an invalid rate limit</value>
+  </data>
+  <data name="InvalidMeterParameterMessage" xml:space="preserve">
+    <value>Meter parameter "{0}" can't be used: a rate-limited logging method can have only one Meter parameter, and it can't be referenced in the message template</value>
+  </data>
+  <data name="InvalidMeterParameterTitle" xml:space="preserve">
+    <value>Invalid Meter parameter in a rate-limited logging method</value>
+  </data>
 </root>

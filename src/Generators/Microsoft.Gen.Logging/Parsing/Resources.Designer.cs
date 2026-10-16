@@ -151,6 +151,42 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Meter parameter &quot;{0}&quot; can&apos;t be used: a rate-limited logging method can have only one Meter parameter, and it can&apos;t be referenced in the message template.
+        /// </summary>
+        internal static string InvalidMeterParameterMessage {
+            get {
+                return ResourceManager.GetString("InvalidMeterParameterMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Meter parameter in a rate-limited logging method.
+        /// </summary>
+        internal static string InvalidMeterParameterTitle {
+            get {
+                return ResourceManager.GetString("InvalidMeterParameterTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logging method &quot;{0}&quot; has an invalid rate limit: PermitLimit must be from 1 to 16777215, WindowMilliseconds must be at least 1, and SegmentsPerWindow must be from 1 to WindowMilliseconds.
+        /// </summary>
+        internal static string InvalidRateLimitMessage {
+            get {
+                return ResourceManager.GetString("InvalidRateLimitMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logging method has an invalid rate limit.
+        /// </summary>
+        internal static string InvalidRateLimitTitle {
+            get {
+                return ResourceManager.GetString("InvalidRateLimitTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Can&apos;t log properties of items of type &quot;{0}&quot;.
         /// </summary>
         internal static string InvalidTypeToLogPropertiesMessage {

@@ -29,6 +29,7 @@ internal sealed class LoggingMethod
     public string LoggerMember = "_logger";
     public bool LoggerMemberNullable;
     public bool HasXmlDocumentation;
+    public LoggingRateLimit? RateLimit;
 
     public LoggingMethodParameter? GetParameterForTemplate(string templateName)
     {
