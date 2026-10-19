@@ -557,4 +557,61 @@ public partial class ParserTests
                 public static partial void LogFunc(ILogger logger, IRedactorProvider provider, MyRecord /*0+*/p0/*-0*/);
             }");
     }
+
+    [Theory]
+    [InlineData("record Inner(int Value); record MyRecord(Inner First, MyRecord Self);")]
+    [InlineData("record Node { public Leaf Next { get; init; } } record Leaf : Node { } record MyRecord(Leaf First);")]
+    [InlineData("record Node<T>(Node<Node<T>> Next); record MyRecord(Node<int> Head);")]
+    public async Task LogMethod_SkipsTypeCyclesInRecord(string records)
+    {
+        await RunGenerator(@$"
+            {records}
+
+            partial class C
+            {{
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
+                public static partial void LogTemplate(ILogger logger, MyRecord p0);
+            }}");
+    }
+
+    [Fact]
+    public async Task LogMethod_DetectsSensitiveMembersInRecordWithTypeCycle()
+    {
+        await RunGenerator(@"
+            using Microsoft.Extensions.Compliance.Testing;
+
+            record Inner(int Value);
+
+            record MyRecord
+            {
+                public Inner First { get; init; }
+                public MyRecord Self { get; init; }
+                [PrivateData] public string Secret { get; init; }
+            }
+
+            partial class C
+            {
+                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
+                public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
+            }",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
+    }
+
+    [Theory]
+    [InlineData("record MyRecord { [PrivateData] public MyRecord Self { get; init; } }")]
+    [InlineData("record Child { [PrivateData] public Child Next { get; init; } } record MyRecord(Child First);")]
+    public async Task LogMethod_DetectsSensitiveSelfReferencingMemberInRecord(string records)
+    {
+        await RunGenerator(@$"
+            using Microsoft.Extensions.Compliance.Testing;
+
+            {records}
+
+            partial class C
+            {{
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
+                public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
+            }}",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
+    }
 }

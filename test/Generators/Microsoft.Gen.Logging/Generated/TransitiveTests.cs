@@ -64,4 +64,19 @@ public class TransitiveTests
 
         logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
+
+    [Fact]
+    public void SystemTypeIsLoggedAsSingleValue()
+    {
+        var logger = new FakeLogger();
+
+        TransitiveTestExtensions.M4(logger, new());
+
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["p0.Kind"] = typeof(TransitiveTestExtensions.C4).ToString(),
+        };
+
+        logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
 }
