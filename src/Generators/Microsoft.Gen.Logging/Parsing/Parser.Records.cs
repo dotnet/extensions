@@ -143,9 +143,14 @@ namespace Microsoft.Gen.Logging.Parsing
 
                     if (extractedType.IsRecord && // Going inside record types only
                         extractedType.Kind == SymbolKind.NamedType &&
-                        !extractedType.IsSpecialType(symbols) &&
-                        typesChain.Count < MaxTypeTraversalDepth)
+                        !extractedType.IsSpecialType(symbols))
                     {
+                        // Too deep to finish inspecting: assume the record is sensitive rather than let unchecked data be logged.
+                        if (typesChain.Count >= MaxTypeTraversalDepth)
+                        {
+                            return true;
+                        }
+
                         _ = typesChain.Add(extractedType);
                         if (RecordHasSensitivePublicMembers(extractedType, typesChain, symbols, token))
                         {

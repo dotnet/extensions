@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Logging.Parsing;
@@ -561,7 +562,6 @@ public partial class ParserTests
     [Theory]
     [InlineData("record Inner(int Value); record MyRecord(Inner First, MyRecord Self);")]
     [InlineData("record Node { public Leaf Next { get; init; } } record Leaf : Node { } record MyRecord(Leaf First);")]
-    [InlineData("record Node<T>(Node<Node<T>> Next); record MyRecord(Node<int> Head);")]
     public async Task LogMethod_SkipsTypeCyclesInRecord(string records)
     {
         await RunGenerator(@$"
@@ -612,6 +612,39 @@ public partial class ParserTests
                 [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
                 public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
             }}",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
+    }
+
+    [Fact]
+    public async Task LogMethod_DetectsSensitiveMembersNestedBeyondTraversalDepthInRecord()
+    {
+        var records = string.Join(" ", Enumerable.Range(1, 39).Select(i => $"record R{i}(R{i + 1} Next);"));
+
+        await RunGenerator(@$"
+            using Microsoft.Extensions.Compliance.Testing;
+
+            {records}
+            record R40([PrivateData] string Secret);
+
+            partial class C
+            {{
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
+                public static partial void LogTemplate(ILogger logger, R1 /*0+*/p0/*-0*/);
+            }}",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
+    }
+
+    [Fact]
+    public async Task LogMethod_ReportsUnboundedGenericRecord()
+    {
+        await RunGenerator(@"
+            record Node<T>(Node<Node<T>> Next);
+
+            partial class C
+            {
+                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
+                public static partial void LogTemplate(ILogger logger, Node<int> /*0+*/p0/*-0*/);
+            }",
             DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
     }
 }

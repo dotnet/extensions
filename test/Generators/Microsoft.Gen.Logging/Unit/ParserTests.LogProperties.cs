@@ -460,6 +460,35 @@ public partial class ParserTests
     }
 
     [Fact]
+    public async Task PropertyToLogWithSeveralTypeCyclesReportsOneDiagnostic()
+    {
+        const string Source = @"
+            public class A
+            {
+                public B First { get; set; }
+                public C Second { get; set; }
+            }
+
+            public class B
+            {
+                public A Back { get; set; }
+            }
+
+            public class C
+            {
+                public A Back { get; set; }
+            }
+
+            partial class LoggerClass
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
+                static partial void M(ILogger logger, [LogProperties(Transitive = true)] A /*0+*/test/*-0*/);
+            }";
+
+        await RunGenerator(Source, DiagDescriptors.LogPropertiesCycleDetected);
+    }
+
+    [Fact]
     public async Task TransitivePropertyOfSystemTypeIsNotExpanded()
     {
         const string Source = @"
