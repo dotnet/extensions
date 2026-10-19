@@ -32,6 +32,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
   </ItemGroup>
 
