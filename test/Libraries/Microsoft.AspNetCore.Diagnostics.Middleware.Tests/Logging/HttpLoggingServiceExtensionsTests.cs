@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Extensions.Compliance.Redaction;
+using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -190,6 +192,51 @@ public class HttpLoggingServiceExtensionsTests
         Assert.Single(options.ResponseHeadersDataClasses);
         Assert.Equal("Taxonomy3", options.ResponseHeadersDataClasses["three"].TaxonomyName);
         Assert.Equal("Value3", options.ResponseHeadersDataClasses["three"].Value);
+    }
+
+    [Fact]
+    public void AddHttpLoggingRedaction_RedactionNotRegistered_RegistersErasingRedactor()
+    {
+        var services = new ServiceCollection().AddHttpLoggingRedaction();
+
+        AssertPrivateDataRedactor<ErasingRedactor>(services);
+    }
+
+    [Fact]
+    public void AddHttpLoggingRedaction_WithConfigurationSection_RedactionNotRegistered_RegistersErasingRedactor()
+    {
+        var section = new ConfigurationBuilder().Build().GetSection("HttpLogging");
+        var services = new ServiceCollection().AddHttpLoggingRedaction(section);
+
+        AssertPrivateDataRedactor<ErasingRedactor>(services);
+    }
+
+    [Fact]
+    public void AddHttpLogEnricher_RedactionNotRegistered_RegistersErasingRedactor()
+    {
+        var services = new ServiceCollection().AddHttpLogEnricher<TestHttpLogEnricher>();
+
+        AssertPrivateDataRedactor<ErasingRedactor>(services);
+    }
+
+    [Fact]
+    public void AddHttpLoggingRedaction_RedactionRegisteredAfter_UsesRegisteredRedactor()
+    {
+        var services = new ServiceCollection()
+            .AddHttpLoggingRedaction()
+            .AddRedaction(redaction => redaction.SetFakeRedactor(FakeTaxonomy.PrivateData));
+
+        AssertPrivateDataRedactor<FakeRedactor>(services);
+    }
+
+    private static void AssertPrivateDataRedactor<TRedactor>(IServiceCollection services)
+        where TRedactor : Redactor
+    {
+        using var provider = services
+            .AddLogging()
+            .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+
+        Assert.IsType<TRedactor>(provider.GetRequiredService<IRedactorProvider>().GetRedactor(FakeTaxonomy.PrivateData));
     }
 }
 #endif

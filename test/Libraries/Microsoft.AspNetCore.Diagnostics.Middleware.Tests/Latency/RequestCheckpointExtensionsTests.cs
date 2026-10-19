@@ -41,6 +41,9 @@ public class RequestCheckpointExtensionsTests
 
         Assert.IsType<LatencyContextTokenIssuer>(serviceProvider.GetRequiredService<ILatencyContextTokenIssuer>());
         Assert.IsType<LatencyContextProvider>(serviceProvider.GetRequiredService<ILatencyContextProvider>());
+
+        using var scope = serviceProvider.CreateScope();
+        Assert.NotNull(scope.ServiceProvider.GetService<ILatencyContext>());
     }
 
     [Fact]
@@ -48,14 +51,19 @@ public class RequestCheckpointExtensionsTests
     {
         var tokenIssuer = Mock.Of<ILatencyContextTokenIssuer>();
         var latencyContextProvider = Mock.Of<ILatencyContextProvider>();
+        var latencyContext = Mock.Of<ILatencyContext>();
 
         using var serviceProvider = new ServiceCollection()
             .AddSingleton(tokenIssuer)
             .AddSingleton(latencyContextProvider)
+            .AddScoped(_ => latencyContext)
             .AddRequestCheckpoint()
             .BuildServiceProvider();
 
         Assert.Same(tokenIssuer, serviceProvider.GetRequiredService<ILatencyContextTokenIssuer>());
         Assert.Same(latencyContextProvider, serviceProvider.GetRequiredService<ILatencyContextProvider>());
+
+        using var scope = serviceProvider.CreateScope();
+        Assert.Same(latencyContext, scope.ServiceProvider.GetRequiredService<ILatencyContext>());
     }
 }

@@ -146,15 +146,10 @@ public partial class AcceptanceTests
     private static async Task RunAsync<TStartup>(
         LogLevel level,
         Action<IServiceCollection> configure,
-        Func<FakeLogCollector, HttpClient, IServiceProvider, Task> func,
-        bool fakeRedaction = true)
+        Func<FakeLogCollector, HttpClient, IServiceProvider, Task> func)
         where TStartup : class
     {
-        using var host = await FakeHost.CreateBuilder(options =>
-            {
-                options.FakeLogging = false;
-                options.FakeRedaction = fakeRedaction;
-            })
+        using var host = await FakeHost.CreateBuilder(options => options.FakeLogging = false)
             .ConfigureLogging(loggingBuilder => loggingBuilder
                 .AddFilter("Microsoft.Hosting", LogLevel.Warning)
                 .AddFilter("Microsoft.Extensions.Hosting", LogLevel.Warning)
