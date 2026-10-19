@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Numerics;
 using System.Reflection;
@@ -725,6 +726,7 @@ public partial class ParserTests
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,
                 Assembly.GetAssembly(typeof(BigInteger))!,
+                Assembly.GetAssembly(typeof(Meter))!,
             };
         }
 

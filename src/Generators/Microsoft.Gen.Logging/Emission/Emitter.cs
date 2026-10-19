@@ -17,9 +17,12 @@ internal sealed partial class Emitter : EmitterBase
     private const string DataClassificationType = "global::Microsoft.Extensions.Compliance.Classification.DataClassification";
     private const string GlobalNamespacePrefix = "global::";
     private const string LoggerMessageHelperType = "global::Microsoft.Extensions.Logging.LoggerMessageHelper";
+    private const string LoggerMessageRateLimiterType = "global::Microsoft.Extensions.Logging.LoggerMessageRateLimiter";
+    private const string ExperimentalTelemetryDiagnosticId = "EXTEXP0003";
 
     private readonly StringBuilderPool _sbPool = new();
     private readonly Dictionary<string, string> _classificationMap = [];
+    private readonly Dictionary<LoggingMethod, string> _rateLimiterFields = [];
 
     public string Emit(IEnumerable<LoggingType> logTypes, CancellationToken cancellationToken)
     {
@@ -62,6 +65,7 @@ internal sealed partial class Emitter : EmitterBase
         OutOpenBrace();
 
         GenAttributeClassifications(lt);
+        GenRateLimiterFields(lt);
 
         var first = true;
         foreach (LoggingMethod lm in lt.Methods)
@@ -123,6 +127,36 @@ internal sealed partial class Emitter : EmitterBase
 
             OutGeneratedCodeAttribute();
             OutLn($"private static readonly {DataClassificationType} {fieldName} = new {classificationAttr}().Classification;");
+            OutLn();
+        }
+    }
+
+    private void GenRateLimiterFields(LoggingType lt)
+    {
+        _rateLimiterFields.Clear();
+        foreach (var lm in lt.Methods)
+        {
+            var rateLimit = lm.RateLimit;
+            if (rateLimit is null)
+            {
+                continue;
+            }
+
+            var potentialConflicts = lt.AllMembers
+                .Concat(_classificationMap.Values)
+                .Concat(_rateLimiterFields.Values)
+                .Concat(lm.Parameters.Select(static p => p.ParameterName));
+
+            var fieldName = PickUniqueName($"_{lm.Name}RateLimiter", potentialConflicts);
+            _rateLimiterFields.Add(lm, fieldName);
+
+            var eventName = string.IsNullOrWhiteSpace(lm.EventName) ? $"nameof({lm.Name})" : EscapeMessageString(lm.EventName!);
+
+            OutLn($"#pragma warning disable {ExperimentalTelemetryDiagnosticId}");
+            OutGeneratedCodeAttribute();
+            OutLn($"private static readonly {LoggerMessageRateLimiterType} {fieldName} = " +
+                $"new({rateLimit.PermitLimit}, {rateLimit.WindowMilliseconds}, {rateLimit.SegmentsPerWindow}, {eventName});");
+            OutLn($"#pragma warning restore {ExperimentalTelemetryDiagnosticId}");
             OutLn();
         }
     }
