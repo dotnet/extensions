@@ -197,46 +197,47 @@ public class HttpLoggingServiceExtensionsTests
     [Fact]
     public void AddHttpLoggingRedaction_RedactionNotRegistered_RegistersErasingRedactor()
     {
-        var services = new ServiceCollection().AddHttpLoggingRedaction();
+        using var provider = new ServiceCollection()
+            .AddLogging()
+            .AddHttpLoggingRedaction()
+            .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
-        AssertPrivateDataRedactor<ErasingRedactor>(services);
+        Assert.IsType<ErasingRedactor>(provider.GetRequiredService<IRedactorProvider>().GetRedactor(FakeTaxonomy.PrivateData));
     }
 
     [Fact]
     public void AddHttpLoggingRedaction_WithConfigurationSection_RedactionNotRegistered_RegistersErasingRedactor()
     {
         var section = new ConfigurationBuilder().Build().GetSection("HttpLogging");
-        var services = new ServiceCollection().AddHttpLoggingRedaction(section);
+        using var provider = new ServiceCollection()
+            .AddLogging()
+            .AddHttpLoggingRedaction(section)
+            .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
-        AssertPrivateDataRedactor<ErasingRedactor>(services);
+        Assert.IsType<ErasingRedactor>(provider.GetRequiredService<IRedactorProvider>().GetRedactor(FakeTaxonomy.PrivateData));
     }
 
     [Fact]
     public void AddHttpLogEnricher_RedactionNotRegistered_RegistersErasingRedactor()
     {
-        var services = new ServiceCollection().AddHttpLogEnricher<TestHttpLogEnricher>();
+        using var provider = new ServiceCollection()
+            .AddLogging()
+            .AddHttpLogEnricher<TestHttpLogEnricher>()
+            .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
-        AssertPrivateDataRedactor<ErasingRedactor>(services);
+        Assert.IsType<ErasingRedactor>(provider.GetRequiredService<IRedactorProvider>().GetRedactor(FakeTaxonomy.PrivateData));
     }
 
     [Fact]
     public void AddHttpLoggingRedaction_RedactionRegisteredAfter_UsesRegisteredRedactor()
     {
-        var services = new ServiceCollection()
-            .AddHttpLoggingRedaction()
-            .AddRedaction(redaction => redaction.SetFakeRedactor(FakeTaxonomy.PrivateData));
-
-        AssertPrivateDataRedactor<FakeRedactor>(services);
-    }
-
-    private static void AssertPrivateDataRedactor<TRedactor>(IServiceCollection services)
-        where TRedactor : Redactor
-    {
-        using var provider = services
+        using var provider = new ServiceCollection()
             .AddLogging()
+            .AddHttpLoggingRedaction()
+            .AddRedaction(redaction => redaction.SetFakeRedactor(FakeTaxonomy.PrivateData))
             .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
-        Assert.IsType<TRedactor>(provider.GetRequiredService<IRedactorProvider>().GetRedactor(FakeTaxonomy.PrivateData));
+        Assert.IsType<FakeRedactor>(provider.GetRequiredService<IRedactorProvider>().GetRedactor(FakeTaxonomy.PrivateData));
     }
 }
 #endif
