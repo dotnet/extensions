@@ -14,6 +14,51 @@ namespace Microsoft.Extensions.Http.Latency.Test.Internal;
 
 public class HttpClientLatencyLogEnricherTest
 {
+    [Theory]
+    [InlineData("a,b/c", "a_b_c")]
+    [InlineData("plain", "plain")]
+    [InlineData("", "")]
+    public void HttpClientLatencyLogEnricher_EscapesDelimiters_InStringFields(string value, string expected)
+    {
+        var lcti = HttpMockProvider.GetTokenIssuer();
+        var mediator = new HttpLatencyMediator(lcti.Object);
+        var tags = new ArraySegment<Tag>(new[] { new Tag($"tag{value}", $"value{value}"), new Tag("second", "other") });
+        var checkpoints = new ArraySegment<Checkpoint>(new[] { new Checkpoint($"checkpoint{value}", 100, 1000) });
+        var measures = new ArraySegment<Measure>(new[] { new Measure($"measure{value}", 42) });
+        var lc = HttpMockProvider.GetLatencyContext();
+        lc.Setup(lc => lc.LatencyData).Returns(new LatencyData(tags, checkpoints, measures, default, default));
+        var context = new HttpClientLatencyContext();
+        context.Set(lc.Object);
+
+        using HttpResponseMessage response = new();
+        response.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, $"server{value}");
+        var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object, mediator);
+        var collector = new Mock<IEnrichmentTagCollector>();
+        string expectedValue = $"v1.0,server{expected},tag{expected}/second/,value{expected}/other/,"
+            + $"checkpoint{expected}/,100/,measure{expected}/,42/";
+
+        enricher.Enrich(collector.Object, null, response, null);
+
+        collector.Verify(c => c.Add("LatencyInfo", expectedValue), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("server,a/b", "server_a_b")]
+    [InlineData("server", "server")]
+    public void HttpClientLatencyLogEnricher_EscapesDelimiters_WithoutLatencyContext(string serverName, string expected)
+    {
+        var lcti = HttpMockProvider.GetTokenIssuer();
+        var mediator = new HttpLatencyMediator(lcti.Object);
+        var enricher = new HttpClientLatencyLogEnricher(new HttpClientLatencyContext(), lcti.Object, mediator);
+        using HttpResponseMessage response = new();
+        response.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, serverName);
+        var collector = new Mock<IEnrichmentTagCollector>();
+
+        enricher.Enrich(collector.Object, null, response, null);
+
+        collector.Verify(c => c.Add("LatencyInfo", $"v1.0,{expected},"), Times.Once);
+    }
+
     [Fact]
     public void HttpClientLatencyLogEnricher_NoOp_OnRequest()
     {
