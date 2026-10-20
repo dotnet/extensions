@@ -142,6 +142,7 @@ public class BottomKLogBufferTests
             {
                 options.Capacity = 1;
                 options.PreserveCapacity = 0;
+                options.Rules.Add(new BottomKLogSamplingFilterRule());
             });
         });
 
@@ -180,44 +181,69 @@ public class BottomKLogBufferTests
     }
 
     [Fact]
-    public void RetainAllLevel_BypassesBottomKBuffer()
+    public void EmptyRules_ApplyBottomKToEveryLevel()
     {
-        AssertBypasses(
+        AssertUsesBottomK(
             new BottomKLogSamplingOptions(),
             "category",
-            LogLevel.Error,
+            LogLevel.Critical,
             new EventId(1));
     }
 
     [Fact]
-    public void RetainAllEventId_BypassesBottomKBuffer()
+    public void ExplicitLogLevelRule_BypassesHigherLevels()
     {
-        var options = new BottomKLogSamplingOptions();
-        options.RetainAllLogLevel = LogLevel.None;
-        options.RetainAllEventIds.Add(42);
+        var options = new BottomKLogSamplingOptions
+        {
+            Rules = [new BottomKLogSamplingFilterRule(logLevel: LogLevel.Warning)],
+        };
 
-        AssertBypasses(options, "category", LogLevel.Information, new EventId(42));
+        AssertBypasses(options, "category", LogLevel.Error, new EventId(1));
+    }
+
+    [Fact]
+    public void EventIdRule_AppliesBottomK()
+    {
+        var options = new BottomKLogSamplingOptions
+        {
+            Rules = [new BottomKLogSamplingFilterRule(eventId: 42)],
+        };
+
+        AssertUsesBottomK(options, "category", LogLevel.Information, new EventId(42));
+    }
+
+    [Fact]
+    public void EventNameWithoutOtherMatchingCriteria_DoesNotAffectSelection()
+    {
+        var options = new BottomKLogSamplingOptions
+        {
+            Rules = [new BottomKLogSamplingFilterRule(eventName: "event")],
+        };
+
+        AssertUsesBottomK(options, "category", LogLevel.Information, new EventId(1, "different"));
     }
 
     [Theory]
     [InlineData("Contoso.Security.Component", "contoso.security.component")]
     [InlineData("Contoso.Security.Component", "contoso.security.*")]
     [InlineData("Prefix.Component.Suffix", "prefix*suffix")]
-    public void RetainAllCategory_BypassesBottomKBuffer(string category, string pattern)
+    public void CategoryRule_AppliesBottomK(string category, string pattern)
     {
-        var options = new BottomKLogSamplingOptions();
-        options.RetainAllLogLevel = LogLevel.None;
-        options.RetainAllCategories.Add(pattern);
+        var options = new BottomKLogSamplingOptions
+        {
+            Rules = [new BottomKLogSamplingFilterRule(categoryName: pattern)],
+        };
 
-        AssertBypasses(options, category, LogLevel.Information, new EventId(1));
+        AssertUsesBottomK(options, category, LogLevel.Information, new EventId(1));
     }
 
     [Fact]
     public void CategoryOutsideSampledAllowlist_BypassesBottomKBuffer()
     {
-        var options = new BottomKLogSamplingOptions();
-        options.RetainAllLogLevel = LogLevel.None;
-        options.SampledCategories.Add("Sampled.*");
+        var options = new BottomKLogSamplingOptions
+        {
+            Rules = [new BottomKLogSamplingFilterRule(categoryName: "Sampled.*")],
+        };
 
         AssertBypasses(options, "Retained.Category", LogLevel.Information, new EventId(1));
     }
@@ -225,8 +251,10 @@ public class BottomKLogBufferTests
     [Fact]
     public void OptionsChange_AppliesPolicyToNextAdmission()
     {
-        var initial = new BottomKLogSamplingOptions();
-        initial.RetainAllLogLevel = LogLevel.None;
+        var initial = new BottomKLogSamplingOptions
+        {
+            Rules = [new BottomKLogSamplingFilterRule()],
+        };
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
@@ -242,26 +270,38 @@ public class BottomKLogBufferTests
     [Fact]
     public void OptionsChange_RebuildsAllCompiledBypassPolicies()
     {
-        var initial = new BottomKLogSamplingOptions();
-        initial.RetainAllLogLevel = LogLevel.None;
+        var initial = new BottomKLogSamplingOptions
+        {
+            Rules = [new BottomKLogSamplingFilterRule()],
+        };
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
 
         var updated = new BottomKLogSamplingOptions
         {
-            RetainAllLogLevel = LogLevel.Warning,
-            RetainAllEventIds = [42],
-            RetainAllCategories = ["Exact.Protected", "Wildcard.*"],
-            SampledCategories = ["Sampled.Exact", "Sampled.*"],
+            Rules =
+            [
+                new(categoryName: "Sampled.Exact", logLevel: LogLevel.Information),
+                new(categoryName: "Sampled.*", logLevel: LogLevel.Information),
+                new(eventId: 42),
+            ],
         };
         monitor.Set(updated);
 
         AssertBypasses(buffer, destination, "category", LogLevel.Warning, new EventId(1));
-        AssertBypasses(buffer, destination, "category", LogLevel.Information, new EventId(42));
         AssertBypasses(buffer, destination, "exact.protected", LogLevel.Information, new EventId(1));
         AssertBypasses(buffer, destination, "Wildcard.Component", LogLevel.Information, new EventId(1));
         AssertBypasses(buffer, destination, "Outside.Allowlist", LogLevel.Information, new EventId(1));
+
+        var eventRuleEventId = new EventId(42);
+        Assert.True(buffer.Admit("category", LogLevel.Information, eventRuleEventId));
+        Assert.True(TryEnqueue(
+            buffer,
+            destination,
+            "category",
+            LogLevel.Information,
+            eventRuleEventId));
 
         var sampledEventId = new EventId(2);
         Assert.True(buffer.Admit("sampled.exact", LogLevel.Information, sampledEventId));
@@ -274,25 +314,27 @@ public class BottomKLogBufferTests
 
         var replacement = new BottomKLogSamplingOptions
         {
-            RetainAllLogLevel = LogLevel.None,
-            RetainAllCategories = ["Replacement.Protected"],
+            Rules = [new(categoryName: "Replacement.Sampled")],
         };
         monitor.Set(replacement);
 
         var oldCategoryEventId = new EventId(3);
-        Assert.True(buffer.Admit("Exact.Protected", LogLevel.Information, oldCategoryEventId));
-        Assert.True(TryEnqueue(
+        AssertBypasses(
             buffer,
             destination,
             "Exact.Protected",
             LogLevel.Information,
-            oldCategoryEventId));
-        AssertBypasses(
+            oldCategoryEventId);
+        Assert.True(buffer.Admit(
+            "replacement.sampled",
+            LogLevel.Information,
+            new EventId(4)));
+        Assert.True(TryEnqueue(
             buffer,
             destination,
-            "replacement.protected",
+            "replacement.sampled",
             LogLevel.Information,
-            new EventId(4));
+            new EventId(4)));
     }
 
     [Fact]
@@ -302,8 +344,8 @@ public class BottomKLogBufferTests
         {
             Capacity = 1,
             PreserveCapacity = 0,
+            Rules = [new BottomKLogSamplingFilterRule()],
         };
-        initial.RetainAllLogLevel = LogLevel.None;
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
@@ -313,8 +355,8 @@ public class BottomKLogBufferTests
         {
             Capacity = 2,
             PreserveCapacity = 0,
+            Rules = [new BottomKLogSamplingFilterRule()],
         };
-        updated.RetainAllLogLevel = LogLevel.None;
         monitor.Set(updated);
         _ = buffer.Admit("category", LogLevel.Information, new EventId(2));
 
@@ -328,8 +370,8 @@ public class BottomKLogBufferTests
         {
             Capacity = 1,
             PreserveCapacity = 0,
+            Rules = [new BottomKLogSamplingFilterRule()],
         };
-        initial.RetainAllLogLevel = LogLevel.None;
         var monitor = new MutableOptionsMonitor(initial);
         using var buffer = new BottomKLogBuffer(monitor, new TestTimeProvider());
         var destination = new RecordingBufferedLogger();
@@ -349,8 +391,8 @@ public class BottomKLogBufferTests
         {
             Capacity = 2,
             PreserveCapacity = 0,
+            Rules = [new BottomKLogSamplingFilterRule()],
         };
-        updated.RetainAllLogLevel = LogLevel.None;
         monitor.Set(updated);
         _ = buffer.Admit("category", LogLevel.Information, new EventId(2));
         continueInsertion.Set();
@@ -419,6 +461,7 @@ public class BottomKLogBufferTests
             {
                 options.Capacity = 1;
                 options.PreserveCapacity = 0;
+                options.Rules.Add(new BottomKLogSamplingFilterRule());
             });
         });
 
@@ -441,6 +484,7 @@ public class BottomKLogBufferTests
                 Capacity = 1,
                 PreserveCapacity = 0,
                 FlushInterval = TimeSpan.FromSeconds(1),
+                Rules = [new BottomKLogSamplingFilterRule()],
             },
             timeProvider);
 
@@ -537,6 +581,18 @@ public class BottomKLogBufferTests
 
         Assert.False(buffer.TryEnqueue(destination, entry));
         Assert.Empty(destination.Records);
+    }
+
+    private static void AssertUsesBottomK(
+        BottomKLogSamplingOptions options,
+        string category,
+        LogLevel logLevel,
+        EventId eventId)
+    {
+        using var buffer = new BottomKLogBuffer(options, new TestTimeProvider());
+        var destination = new RecordingBufferedLogger();
+        Assert.True(buffer.Admit(category, logLevel, eventId));
+        Assert.True(TryEnqueue(buffer, destination, category, logLevel, eventId));
     }
 
     private sealed class RecordingBufferedLogger : IBufferedLogger

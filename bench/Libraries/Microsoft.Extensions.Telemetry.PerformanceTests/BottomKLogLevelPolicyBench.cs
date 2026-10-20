@@ -5,6 +5,7 @@ using System;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
@@ -77,7 +78,10 @@ public class BottomKLogLevelPolicyBench
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;
                 options.FlushInterval = TimeSpan.FromDays(1);
-                options.RetainAllLogLevel = retainProtectedLevels ? LogLevel.Error : LogLevel.None;
+                options.Rules.Clear();
+                options.Rules.Add(retainProtectedLevels
+                    ? new BottomKLogSamplingFilterRule(logLevel: LogLevel.Warning)
+                    : new BottomKLogSamplingFilterRule());
             });
         });
 

@@ -2,38 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #if NET9_0_OR_GREATER
 
-using System.Collections.Frozen;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 internal sealed class BottomKLogSamplingPolicy
 {
-    private readonly BottomKCategoryMatcher _retainAllCategories;
-    private readonly FrozenSet<int> _retainAllEventIds;
-    private readonly BottomKCategoryMatcher _sampledCategories;
+    private static readonly BottomKLogSamplingFilterRule[] _defaultRules =
+        [new()];
+
+    private readonly BottomKLogSamplingFilterRule[] _rules;
 
     public BottomKLogSamplingPolicy(BottomKLogSamplingOptions options)
     {
         Options = options;
-        _retainAllEventIds = options.RetainAllEventIds.ToFrozenSet();
-        _retainAllCategories = new BottomKCategoryMatcher(options.RetainAllCategories);
-        _sampledCategories = new BottomKCategoryMatcher(options.SampledCategories);
+        _rules = options.Rules.Count == 0 ? _defaultRules : options.Rules.ToArray();
     }
 
     public BottomKLogSamplingOptions Options { get; }
 
     public bool ShouldBypass(string category, LogLevel logLevel, EventId eventId)
     {
-        if (!Options.Enabled
-            || logLevel >= Options.RetainAllLogLevel
-            || _retainAllEventIds.Contains(eventId.Id)
-            || _retainAllCategories.Matches(category))
-        {
-            return true;
-        }
+        BottomKLogSamplingFilterRule? rule = Options.Enabled
+            ? _rules.GetBestMatchFor(category, logLevel, eventId)
+            : null;
 
-        return !_sampledCategories.IsEmpty && !_sampledCategories.Matches(category);
+        return rule is null;
     }
 }
 #endif

@@ -154,6 +154,7 @@ internal static class RetainedMemoryMeasurement
             options.Capacity = capacity;
             options.PreserveCapacity = 0;
             options.FlushInterval = TimeSpan.FromDays(1);
+            options.Rules.Add(new BottomKLogSamplingFilterRule());
         });
     }
 

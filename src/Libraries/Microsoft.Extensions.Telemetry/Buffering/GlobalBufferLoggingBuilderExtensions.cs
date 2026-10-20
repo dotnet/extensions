@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -91,17 +92,11 @@ public static class GlobalBufferLoggingBuilderExtensions
 
     private static ILoggingBuilder AddGlobalBufferManager(this ILoggingBuilder builder)
     {
-        bool globalBufferRegistered = builder.Services.Any(descriptor =>
-            descriptor.ServiceType == typeof(GlobalLogBuffer));
-        bool perRequestBufferRegistered = builder.Services.Any(descriptor =>
-            descriptor.ServiceType == typeof(PerRequestLogBuffer));
-        bool logBufferRegistered = builder.Services.Any(descriptor =>
-            descriptor.ServiceType == typeof(LogBuffer));
-
-        if (logBufferRegistered && !globalBufferRegistered && !perRequestBufferRegistered)
+        if (builder.Services.Any(descriptor =>
+            !descriptor.IsKeyedService && descriptor.ServiceType == typeof(BottomKLogBuffer)))
         {
             Throw.InvalidOperationException(
-                "Global log buffering cannot be combined with another log buffer in the same logging pipeline.");
+                "Global log buffering cannot be combined with Bottom-K log sampling in the same logging pipeline.");
         }
 
         _ = builder.Services.AddExtendedLoggerFeactory();

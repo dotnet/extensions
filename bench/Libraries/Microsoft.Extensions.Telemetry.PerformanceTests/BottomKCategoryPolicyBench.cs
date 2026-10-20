@@ -5,12 +5,13 @@ using System;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 /// <summary>
-/// Measures the incremental cost of evaluating bottom-K retain-all category policies.
+/// Measures the incremental cost of evaluating bottom-K category sampling rules.
 /// </summary>
 [MemoryDiagnoser]
 [InvocationCount(1)]
@@ -105,14 +106,16 @@ public class BottomKCategoryPolicyBench
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;
                 options.FlushInterval = TimeSpan.FromDays(1);
-                options.RetainAllLogLevel = LogLevel.None;
+                options.Rules.Clear();
+                options.Rules.Add(new BottomKLogSamplingFilterRule(logLevel: LogLevel.Critical));
 
                 for (int i = 0; i < categoryPolicyCount; i++)
                 {
-                    options.RetainAllCategories.Add(
-                        useWildcards
-                            ? $"Contoso.Protected{i:D3}.*"
-                            : $"Contoso.Protected{i:D3}.Component");
+                    string categoryName = useWildcards
+                        ? $"Contoso.Protected{i:D3}.*"
+                        : $"Contoso.Protected{i:D3}.Component";
+                    options.Rules.Add(new BottomKLogSamplingFilterRule(
+                        categoryName: categoryName));
                 }
             });
         });

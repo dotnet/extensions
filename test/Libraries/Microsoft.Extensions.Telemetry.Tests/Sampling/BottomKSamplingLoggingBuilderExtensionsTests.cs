@@ -29,6 +29,9 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
         BottomKLogBuffer bottomKBuffer = provider.GetRequiredService<BottomKLogBuffer>();
         Assert.Same(bottomKBuffer, provider.GetRequiredService<LogBuffer>());
         Assert.IsType<BottomKLoggingSampler>(provider.GetRequiredService<LoggingSampler>());
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+        Assert.Empty(options.Rules);
     }
 
     [Fact]
@@ -57,6 +60,8 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
             {
                 ["Logging:BottomK:Capacity"] = "23",
                 ["Logging:BottomK:Enabled"] = "false",
+                ["Logging:BottomK:Rules:0:CategoryName"] = "Sampled.*",
+                ["Logging:BottomK:Rules:0:LogLevel"] = "Information",
             })
             .Build();
         var services = new ServiceCollection();
@@ -69,6 +74,9 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
 
         Assert.Equal(23, options.Capacity);
         Assert.False(options.Enabled);
+        BottomKLogSamplingFilterRule rule = Assert.Single(options.Rules);
+        Assert.Equal("Sampled.*", rule.CategoryName);
+        Assert.Equal(LogLevel.Information, rule.LogLevel);
     }
 
     [Fact]
@@ -92,9 +100,13 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
         {
             FlushInterval = TimeSpan.Zero,
             UnseenWeightMode = (BottomKUnseenWeightMode)int.MaxValue,
-            RetainAllLogLevel = (LogLevel)int.MaxValue,
-            RetainAllCategories = ["", "one*two*three"],
-            SampledCategories = [" "],
+            Rules =
+            [
+                new(logLevel: (LogLevel)int.MaxValue),
+                new(categoryName: ""),
+                new(categoryName: "one*two*three"),
+                null!,
+            ],
         };
         var validator = new BottomKLogSamplingOptionsCustomValidator();
 
@@ -109,8 +121,7 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
     {
         var options = new BottomKLogSamplingOptions
         {
-            RetainAllCategories = null!,
-            SampledCategories = null!,
+            Rules = null!,
         };
         var validator = new BottomKLogSamplingOptionsCustomValidator();
 
@@ -130,6 +141,46 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
 
         using ServiceProvider provider = services.BuildServiceProvider();
         Assert.IsType<BottomKLoggingSampler>(provider.GetRequiredService<LoggingSampler>());
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_DefaultThenDelegate_UsesExplicitRulesOnly()
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
+        {
+            builder.AddBottomKLogSampling();
+            builder.AddBottomKLogSampling(options =>
+                options.Rules.Add(new BottomKLogSamplingFilterRule(categoryName: "Explicit.Category")));
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+
+        BottomKLogSamplingFilterRule rule = Assert.Single(options.Rules);
+        Assert.Equal("Explicit.Category", rule.CategoryName);
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_DelegateThenDefault_KeepsExplicitRules()
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
+        {
+            builder.AddBottomKLogSampling(options =>
+                options.Rules.Add(new BottomKLogSamplingFilterRule(categoryName: "Explicit.Category")));
+            builder.AddBottomKLogSampling();
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+
+        BottomKLogSamplingFilterRule rule = Assert.Single(options.Rules);
+        Assert.Equal("Explicit.Category", rule.CategoryName);
     }
 
     [Fact]
@@ -249,7 +300,7 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
                 builder.AddGlobalBuffer();
             }));
 
-        Assert.Contains("another log buffer", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Bottom-K log sampling", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed class StubLogBuffer : LogBuffer

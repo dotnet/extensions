@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
@@ -53,35 +52,13 @@ public sealed class BottomKLogSamplingOptions
     public BottomKUnseenWeightMode UnseenWeightMode { get; set; } = BottomKUnseenWeightMode.Chao1;
 
     /// <summary>
-    /// Gets or sets the minimum log level that bypasses bottom-K sampling and is emitted normally.
-    /// </summary>
-    public LogLevel RetainAllLogLevel { get; set; } = LogLevel.Error;
-
-    /// <summary>
-    /// Gets or sets category patterns that bypass bottom-K sampling and are emitted normally.
+    /// Gets or sets the rules used to determine which log messages are processed by bottom-K sampling.
     /// </summary>
     /// <remarks>
-    /// Matching is case-insensitive. Exact category names use constant-time lookup.
-    /// A pattern can contain one <c>*</c> wildcard; wildcard patterns are evaluated sequentially.
+    /// The most specific matching rule is applied. If no rule matches, the log message is emitted normally.
+    /// An empty collection applies bottom-K sampling to every log message.
     /// </remarks>
     [Required]
-    public IList<string> RetainAllCategories { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets category patterns eligible for bottom-K sampling.
-    /// </summary>
-    /// <remarks>
-    /// An empty collection applies bottom-K sampling to every category not covered by a retain-all policy.
-    /// Matching is case-insensitive. Exact category names use constant-time lookup.
-    /// A pattern can contain one <c>*</c> wildcard; wildcard patterns are evaluated sequentially.
-    /// </remarks>
-    [Required]
-    public IList<string> SampledCategories { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets event identifiers that bypass bottom-K sampling and are emitted normally.
-    /// </summary>
-    [Required]
-    public IList<int> RetainAllEventIds { get; set; } = [];
+    public IList<BottomKLogSamplingFilterRule> Rules { get; set; } = [];
 }
 #endif

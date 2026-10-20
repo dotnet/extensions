@@ -67,7 +67,7 @@ The buffer is sized to retain all batches from a measured iteration and automati
 - `BottomKRetainAll` gives the reservoir enough capacity for the selected record count and measures admission plus buffering with no drops.
 - `BottomKRetainAllAndFlush` adds emission of every retained log, making downstream provider work equivalent to the baseline.
 - `BottomKDisabled` measures the options-monitor and policy-check overhead of a registered bottom-K pipeline with its kill switch disabled.
-- `BottomKRetainAllPolicy` measures the category-pattern bypass used for protected telemetry.
+- `BottomKRetainAllPolicy` measures a registered Bottom-K pipeline with no matching sampling rules.
 - `BottomKAdaptive` uses a representative fixed capacity of 128 per category (up to 512 records across the four-category workload) for the selected one-minute period and measures the adaptive high-volume path without flush cost.
 - `BottomKAdaptiveAndFlush` includes emission of the adaptive reservoir at the period boundary.
 
@@ -75,19 +75,17 @@ The novelty preserve is disabled so retained records are controlled only by the 
 
 ### Bottom-K log-level policy cost
 
-`BottomKLogLevelPolicyBench` isolates the incremental cost of the retain-all log-level decision. Both pipelines process the same Information-only workload with the same bottom-K capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline sets `RetainAllLogLevel` to `None`. The comparison uses an `Error` threshold, which does not match, so both pipelines perform equivalent bottom-K admission and retain equivalent output.
+`BottomKLogLevelPolicyBench` isolates the incremental cost of a log-level-constrained sampling rule. Both pipelines process the same Information-only workload with the same bottom-K capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline uses an unrestricted rule. The comparison uses a rule through `Warning`, which still matches, so both pipelines perform equivalent bottom-K admission and retain equivalent output.
 
-The benchmark measures the full logging path. `LogLevel` is already present on `LogEntry`; reading it does not construct or parse a value. The reported delta therefore covers passing that field into bottom-K sampling and checking the two configured retain-all levels.
+The benchmark measures the full logging path. `LogLevel` is already present on `LogEntry`; reading it does not construct or parse a value. The reported delta therefore covers evaluating the configured log-level constraint.
 
 ### Bottom-K category policy cost
 
-`BottomKCategoryPolicyBench` isolates the incremental cost of checking retain-all category policies. All pipelines use the same bottom-K configuration and workload. The comparisons check either two or 100 non-matching wildcard patterns, or 100 non-matching exact categories, so every record continues through the same adaptive bottom-K path as the zero-policy baseline. Exact categories use a case-insensitive frozen set; wildcard patterns use a linear scan.
-
-On .NET 10.0.12 in the Hyper-V Windows 11 benchmark VM, 100 wildcard misses increased 10,000 records from 4.000 ms to 27.305 ms and 20,000 records from 6.840 ms to 54.508 ms. That is 2.331–2.383 microseconds per log, or 23.3–23.8 nanoseconds per non-matching wildcard evaluation. In contrast, 100 exact-category misses took 3.750 ms and 6.535 ms respectively; their confidence intervals overlap the zero-policy baselines, so the frozen-set lookup added no measurable CPU or allocation cost.
+`BottomKCategoryPolicyBench` isolates the incremental cost of checking category sampling rules. All pipelines use the same bottom-K configuration and workload. The comparisons check either two or 100 non-matching wildcard patterns, or 100 non-matching exact categories, followed by a catch-all sampling rule, so every record continues through the same adaptive bottom-K path as the zero-policy baseline. Rules are evaluated by the shared sampling-rule selector; rerun this benchmark after changes to rule selection.
 
 ### Bottom-K EventId policy cost
 
-`BottomKEventIdPolicyBench` isolates the incremental cost of checking retain-all EventIds. The comparison checks two non-matching identifiers, `10001` and `10002`. The workload uses EventIds 1 through 16, so every record continues through the same adaptive bottom-K path as the baseline.
+`BottomKEventIdPolicyBench` isolates the incremental cost of checking EventId sampling rules. The comparison checks two non-matching identifiers, `10001` and `10002`, before a catch-all rule. The workload uses EventIds 1 through 16, so every record continues through the same adaptive bottom-K path as the baseline.
 
 ## Serialized-exporter benchmark
 
@@ -147,7 +145,7 @@ Measure the incremental bottom-K log-level policy cost:
 dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *BottomKLogLevelPolicyBench*
 ```
 
-Measure category and EventId retain-all policy costs independently:
+Measure category and EventId sampling-rule costs independently:
 
 ```powershell
 dotnet run -c Release --project .\bench\Libraries\Microsoft.Extensions.Telemetry.PerformanceTests\Microsoft.Extensions.Telemetry.PerformanceTests.csproj -- --filter *BottomKCategoryPolicyBench* *BottomKEventIdPolicyBench*

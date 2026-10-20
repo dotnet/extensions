@@ -92,6 +92,34 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule : Microsoft.Extensions.Diagnostics.Sampling.ILogSamplingFilterRule",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule.BottomKLogSamplingFilterRule(string? categoryName = null, Microsoft.Extensions.Logging.LogLevel? logLevel = null, int? eventId = null, string? eventName = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule.CategoryName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule.EventId { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule.EventName { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.LogLevel? Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule.LogLevel { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions",
       "Stage": "Experimental",
       "Methods": [
@@ -122,19 +150,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IList<string> Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.RetainAllCategories { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IList<int> Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.RetainAllEventIds { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.Logging.LogLevel Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.RetainAllLogLevel { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IList<string> Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.SampledCategories { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule> Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.Rules { get; set; }",
           "Stage": "Experimental"
         },
         {

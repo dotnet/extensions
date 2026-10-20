@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
@@ -28,39 +27,51 @@ internal sealed class BottomKLogSamplingOptionsCustomValidator : IValidateOption
             result.AddError("UnseenWeightMode must be a defined value.", nameof(options.UnseenWeightMode));
         }
 
-        if (!Enum.IsDefined(options.RetainAllLogLevel))
-        {
-            result.AddError("RetainAllLogLevel must be a defined value.", nameof(options.RetainAllLogLevel));
-        }
-
-        ValidateCategoryPatterns(options.RetainAllCategories, nameof(options.RetainAllCategories), result);
-        ValidateCategoryPatterns(options.SampledCategories, nameof(options.SampledCategories), result);
+        ValidateRules(options.Rules, result);
 
         return result.Build();
     }
 
-    private static void ValidateCategoryPatterns(
-        IList<string>? patterns,
-        string memberName,
+    private static void ValidateRules(
+        IList<BottomKLogSamplingFilterRule>? rules,
         ValidateOptionsResultBuilder result)
     {
-        if (patterns is null)
+        if (rules is null)
         {
             return;
         }
 
-        foreach (string pattern in patterns)
+        foreach (BottomKLogSamplingFilterRule? rule in rules)
         {
-            if (string.IsNullOrWhiteSpace(pattern))
+            if (rule is null)
             {
-                result.AddError("Category patterns cannot be empty.", memberName);
+                result.AddError("Rules cannot contain null values.", nameof(BottomKLogSamplingOptions.Rules));
                 continue;
             }
 
-            int wildcard = pattern.IndexOf("*", StringComparison.Ordinal);
-            if (wildcard >= 0 && pattern.IndexOf("*", wildcard + 1, StringComparison.Ordinal) >= 0)
+            if (rule.LogLevel is { } logLevel && !Enum.IsDefined(logLevel))
             {
-                result.AddError("Only one wildcard character is allowed in a category pattern.", memberName);
+                result.AddError("Rule LogLevel must be a defined value.", nameof(BottomKLogSamplingOptions.Rules));
+            }
+
+            string? categoryName = rule.CategoryName;
+            if (categoryName is null)
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(categoryName))
+            {
+                result.AddError("Rule category names cannot be empty.", nameof(BottomKLogSamplingOptions.Rules));
+                continue;
+            }
+
+            int wildcard = categoryName.IndexOf("*", StringComparison.Ordinal);
+            if (wildcard >= 0 && categoryName.IndexOf("*", wildcard + 1, StringComparison.Ordinal) >= 0)
+            {
+                result.AddError(
+                    "Only one wildcard character is allowed in a rule category name.",
+                    nameof(BottomKLogSamplingOptions.Rules));
             }
         }
     }

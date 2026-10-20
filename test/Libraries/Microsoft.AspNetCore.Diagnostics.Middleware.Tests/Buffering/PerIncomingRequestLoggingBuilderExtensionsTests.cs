@@ -14,6 +14,7 @@ using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Test;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -35,7 +36,23 @@ public class PerIncomingRequestLoggingBuilderExtensionsTests
                 builder.AddPerIncomingRequestBuffer();
             }));
 
-        Assert.Contains("another log buffer", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Bottom-K log sampling", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AddPerIncomingRequestBuffer_WhenCustomLogBufferIsRegistered_PreservesCustomBuffer()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddLogging(builder =>
+        {
+            builder.Services.AddSingleton<LogBuffer, StubLogBuffer>();
+            builder.AddPerIncomingRequestBuffer();
+        });
+
+        using ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+
+        Assert.IsType<StubLogBuffer>(serviceProvider.GetRequiredService<LogBuffer>());
+        Assert.NotNull(serviceProvider.GetRequiredService<PerRequestLogBuffer>());
     }
 
     [Fact]
@@ -104,6 +121,17 @@ public class PerIncomingRequestLoggingBuilderExtensionsTests
         Assert.NotNull(options);
         Assert.NotNull(options.CurrentValue);
         Assert.Equivalent(expectedData, options.CurrentValue.Rules);
+    }
+
+    private sealed class StubLogBuffer : LogBuffer
+    {
+        public override void Flush()
+        {
+        }
+
+        public override bool TryEnqueue<TState>(
+            IBufferedLogger bufferedLogger,
+            in LogEntry<TState> logEntry) => false;
     }
 
     [Fact]

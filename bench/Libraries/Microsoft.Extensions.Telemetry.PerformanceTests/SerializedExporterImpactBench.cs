@@ -127,6 +127,7 @@ public class SerializedExporterImpactBench
                             recordCount / 100 / LoggingBenchmarkWorkload.CategoryCount);
                         options.PreserveCapacity = 0;
                         options.FlushInterval = TimeSpan.FromDays(1);
+                        options.Rules.Add(new BottomKLogSamplingFilterRule());
                     });
                     break;
             }

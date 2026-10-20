@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
@@ -87,6 +88,7 @@ public class MultithreadedSamplingImpactBench
                         options.Capacity = RecordsPerMinute / 100 / CategoryCount;
                         options.PreserveCapacity = 0;
                         options.FlushInterval = TimeSpan.FromDays(1);
+                        options.Rules.Add(new BottomKLogSamplingFilterRule());
                     });
                     break;
             }

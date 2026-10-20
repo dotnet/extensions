@@ -36,8 +36,13 @@ public class BottomKImpactBench
     public void GlobalSetup()
     {
         _baselineServices = CreateServices();
-        _disabledServices = CreateServices(options => options.Enabled = false);
-        _retainAllPolicyServices = CreateServices(options => options.RetainAllCategories.Add("Benchmark.*"));
+        _disabledServices = CreateServices(options =>
+        {
+            options.Enabled = false;
+            options.Rules.Add(new BottomKLogSamplingFilterRule());
+        });
+        _retainAllPolicyServices = CreateServices(options =>
+            options.Rules.Add(new BottomKLogSamplingFilterRule(categoryName: "Does.Not.Match")));
         _retainAllServices = CreateServices(RecordsPerMinute / LoggingBenchmarkWorkload.CategoryCount);
         _adaptiveServices = CreateServices(AdaptiveCapacity);
 
@@ -122,6 +127,7 @@ public class BottomKImpactBench
             options.Capacity = capacity.Value;
             options.PreserveCapacity = 0;
             options.FlushInterval = TimeSpan.FromDays(1);
+            options.Rules.Add(new BottomKLogSamplingFilterRule());
         });
     }
 

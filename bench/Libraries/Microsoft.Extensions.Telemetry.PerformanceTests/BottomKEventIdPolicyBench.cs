@@ -5,12 +5,13 @@ using System;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 /// <summary>
-/// Measures the incremental cost of evaluating bottom-K retain-all EventId policies.
+/// Measures the incremental cost of evaluating bottom-K EventId sampling rules.
 /// </summary>
 [MemoryDiagnoser]
 [InvocationCount(1)]
@@ -77,12 +78,13 @@ public class BottomKEventIdPolicyBench
                 options.Capacity = AdaptiveCapacity;
                 options.PreserveCapacity = 0;
                 options.FlushInterval = TimeSpan.FromDays(1);
-                options.RetainAllLogLevel = LogLevel.None;
+                options.Rules.Clear();
+                options.Rules.Add(new BottomKLogSamplingFilterRule(logLevel: LogLevel.Critical));
 
                 if (retainProtectedEventIds)
                 {
-                    options.RetainAllEventIds.Add(10_001);
-                    options.RetainAllEventIds.Add(10_002);
+                    options.Rules.Add(new BottomKLogSamplingFilterRule(eventId: 10_001));
+                    options.Rules.Add(new BottomKLogSamplingFilterRule(eventId: 10_002));
                 }
             });
         });

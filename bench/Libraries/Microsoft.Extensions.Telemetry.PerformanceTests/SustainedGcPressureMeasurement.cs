@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
@@ -259,6 +260,7 @@ internal static class SustainedGcPressureMeasurement
                             (int)(logsPerMinute * flushInterval.TotalMinutes / 100 / CategoryCount));
                         options.PreserveCapacity = 0;
                         options.FlushInterval = flushInterval;
+                        options.Rules.Add(new BottomKLogSamplingFilterRule());
                     });
                     break;
             }
