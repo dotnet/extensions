@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
@@ -194,6 +196,54 @@ public sealed partial class HttpClientBuilderExtensionsTests
         {
             requests.Should().Be(3);
         }
+    }
+
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task AddStandardResilienceHandler_RetryBudgetExhausted_EmitsMetric(bool asynchronous = true)
+    {
+        const string ClientName = "retry-budget-metric";
+        using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience.polly.strategy.events");
+
+        var client = new ServiceCollection()
+            .AddHttpClient(ClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError))
+            .AddStandardResilienceHandler(HttpResilienceDefaults.Conservative)
+            .Configure(options =>
+            {
+                options.Retry.Delay = TimeSpan.Zero;
+                options.Retry.RetryBudget!.RetryRatio = 0.5;
+                options.Retry.RetryBudget.MinimumThroughput = 1;
+                options.CircuitBreaker.MinimumThroughput = 1000;
+            })
+            .Services.BuildServiceProvider()
+            .GetRequiredService<IHttpClientFactory>()
+            .CreateClient(ClientName);
+
+        // The floor of 1 allows the first retry; the second retry (MaxRetryAttempts is 2) is denied by the budget.
+        using (await SendRequest(client, "https://dummy", asynchronous))
+        {
+            var measurement = GetBudgetExhaustedMeasurements().Should().ContainSingle().Subject;
+            measurement.Value.Should().Be(1);
+            measurement.Tags["event.severity"].Should().Be("Warning");
+            measurement.Tags["strategy.name"].Should().Be("Standard-Retry");
+            measurement.Tags["error.type"].Should().Be("500");
+        }
+
+        // The budget is spent, so the next request is denied its first retry.
+        using (await SendRequest(client, "https://dummy", asynchronous))
+        {
+            GetBudgetExhaustedMeasurements().Should().HaveCount(2);
+        }
+
+        IEnumerable<CollectedMeasurement<int>> GetBudgetExhaustedMeasurements()
+            => metricCollector.GetMeasurementSnapshot().Where(m =>
+                m.Tags.TryGetValue("pipeline.name", out var pipeline) && Equals(pipeline, $"{ClientName}-standard") &&
+                m.Tags.TryGetValue("event.name", out var name) && Equals(name, RetryBudgetStrategy.BudgetExhaustedEventName));
     }
 
     private static HttpStandardResilienceOptions GetStandardOptions(IServiceCollection services)

@@ -87,6 +87,8 @@ clientBuilder.AddResilienceHandler("myHandler", b =>
 
 `AddRetry` ignores `HttpRetryStrategyOptions.RetryBudget`, so use `AddHttpRetry` when building custom pipelines. These APIs are experimental and require suppressing the `EXTEXP0001` diagnostic.
 
+Each retry that the budget denies is logged as a warning and counted by the `resilience.polly.strategy.events` metric (meter `Polly`) with the `event.name` tag set to `OnRetryBudgetExhausted`. The `pipeline.name`, `strategy.name` and `error.type` tags identify the client and the failure that wasn't retried, so you can alert when retries are being shed.
+
 ### Custom Resilience
 
 For more granular control a custom pipeline can be constructed.
