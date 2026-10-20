@@ -1,0 +1,205 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.Http.Resilience.Test.Helpers;
+using Microsoft.Extensions.Options;
+using Polly.Testing;
+using Xunit;
+
+namespace Microsoft.Extensions.Http.Resilience.Test;
+
+public sealed partial class HttpClientBuilderExtensionsTests
+{
+    [Fact]
+    public void AddStandardResilienceHandler_Defaults_NullBuilder_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => ((IHttpClientBuilder)null!).AddStandardResilienceHandler(HttpResilienceDefaults.Conservative));
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_Defaults_UndefinedValue_Throws()
+    {
+        var builder = new ServiceCollection().AddHttpClient("test");
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => builder.AddStandardResilienceHandler((HttpResilienceDefaults)42));
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_StandardDefaults_SameAsDefaultOverload()
+    {
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(HttpResilienceDefaults.Standard);
+
+        var options = GetStandardOptions(builder.Services);
+        options.Retry.MaxRetryAttempts.Should().Be(3);
+        options.Retry.RetryBudget.Should().BeNull();
+        options.CircuitBreaker.FailureRatio.Should().Be(0.1);
+
+        GetPipeline(builder.Services, "test-standard").GetPipelineDescriptor().Strategies.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_ConservativeDefaults_EnableRetryBudget()
+    {
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(HttpResilienceDefaults.Conservative);
+
+        var options = GetStandardOptions(builder.Services);
+        options.Retry.MaxRetryAttempts.Should().Be(2);
+        options.Retry.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
+        options.CircuitBreaker.FailureRatio.Should().Be(0.5);
+
+        var descriptor = GetPipeline(builder.Services, "test-standard").GetPipelineDescriptor();
+        descriptor.Strategies.Should().HaveCount(6);
+        descriptor.Strategies[0].Options.Should().BeOfType<HttpRateLimiterStrategyOptions>();
+        descriptor.Strategies[1].Options.Should().BeOfType<HttpTimeoutStrategyOptions>();
+        descriptor.Strategies[2].Options.Should().BeOfType<RetryBudgetStrategyOptions>();
+        descriptor.Strategies[3].Options.Should().BeOfType<HttpRetryStrategyOptions>();
+        descriptor.Strategies[4].Options.Should().BeOfType<HttpCircuitBreakerStrategyOptions>();
+        descriptor.Strategies[5].Options.Should().BeOfType<HttpTimeoutStrategyOptions>();
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_ConservativeDefaults_LaterConfigurationTakesPrecedence()
+    {
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(HttpResilienceDefaults.Conservative).Configure(o =>
+        {
+            o.Retry.MaxRetryAttempts = 5;
+            o.Retry.RetryBudget!.RetryRatio = 0.2;
+        });
+
+        var options = GetStandardOptions(builder.Services);
+        options.Retry.MaxRetryAttempts.Should().Be(5);
+        options.Retry.RetryBudget!.RetryRatio.Should().Be(0.2);
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_ConservativeDefaults_BudgetCanBeDisabled()
+    {
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(HttpResilienceDefaults.Conservative).Configure(o => o.Retry.RetryBudget = null);
+
+        GetPipeline(builder.Services, "test-standard").GetPipelineDescriptor().Strategies.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_ConservativeDefaults_ConfigurationOverridesBudget()
+    {
+        var section = ConfigurationStubFactory.Create(
+            new Dictionary<string, string?>
+            {
+                { "standard:Retry:RetryBudget:RetryRatio", "0.25" },
+                { "standard:Retry:RetryBudget:MinimumThroughput", "20" },
+            }).GetSection("standard");
+
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(HttpResilienceDefaults.Conservative).Configure(section);
+
+        var budget = GetStandardOptions(builder.Services).Retry.RetryBudget!;
+        budget.RetryRatio.Should().Be(0.25);
+        budget.MinimumThroughput.Should().Be(20);
+        budget.SamplingDuration.Should().Be(TimeSpan.FromSeconds(30));
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_ConfigurationEnablesBudget()
+    {
+        var section = ConfigurationStubFactory.Create(
+            new Dictionary<string, string?>
+            {
+                { "standard:Retry:RetryBudget:SamplingDuration", "00:00:10" },
+            }).GetSection("standard");
+
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(section);
+
+        var budget = GetStandardOptions(builder.Services).Retry.RetryBudget!;
+        budget.SamplingDuration.Should().Be(TimeSpan.FromSeconds(10));
+        budget.RetryRatio.Should().Be(0.1);
+
+        GetPipeline(builder.Services, "test-standard").GetPipelineDescriptor().Strategies.Should().HaveCount(6);
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_InvalidBudget_Throws()
+    {
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(o => o.Retry.RetryBudget = new() { MinimumThroughput = 0 });
+
+        Assert.Throws<OptionsValidationException>(() => GetPipeline(builder.Services, "test-standard"));
+    }
+
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task AddStandardResilienceHandler_RetryBudget_LimitsRetries(bool asynchronous = true)
+    {
+        var requests = 0;
+        var config = ConfigurationStubFactory.Create(
+            new()
+            {
+                { "standard:Retry:RetryBudget:RetryRatio", "0.5" },
+                { "standard:Retry:RetryBudget:MinimumThroughput", "1" },
+            },
+            out var reloadAction).GetSection("standard");
+
+        _builder.AddStandardResilienceHandler(HttpResilienceDefaults.Conservative).Configure(config).Configure(options =>
+        {
+            options.Retry.Delay = TimeSpan.Zero;
+            options.CircuitBreaker.MinimumThroughput = 1000;
+        });
+
+        _builder.AddHttpMessageHandler(() => new TestHandlerStub((_, _) =>
+        {
+            requests++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        }));
+
+        var client = CreateClient();
+
+        // 1 request allows 1 retry (the floor), even though MaxRetryAttempts is 2.
+        using (await SendRequest(client, "https://dummy", asynchronous))
+        {
+            requests.Should().Be(2);
+        }
+
+        // 2 requests allow 1 retry, which is already used.
+        requests = 0;
+        using (await SendRequest(client, "https://dummy", asynchronous))
+        {
+            requests.Should().Be(1);
+        }
+
+        // Reloading the options creates a new pipeline instance with a fresh budget.
+        requests = 0;
+        reloadAction(new()
+        {
+            { "standard:Retry:RetryBudget:RetryRatio", "0.5" },
+            { "standard:Retry:RetryBudget:MinimumThroughput", "2" },
+        });
+
+        using (await SendRequest(client, "https://dummy", asynchronous))
+        {
+            requests.Should().Be(3);
+        }
+    }
+
+    private static HttpStandardResilienceOptions GetStandardOptions(IServiceCollection services)
+    {
+        using var serviceProvider = services.BuildServiceProvider();
+
+        return serviceProvider.GetRequiredService<IOptionsMonitor<HttpStandardResilienceOptions>>().Get("test-standard");
+    }
+}

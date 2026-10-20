@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.Options;
+using Microsoft.Shared.DiagnosticIds;
 using Polly;
 using Polly.Retry;
 using Polly.Timeout;
@@ -64,4 +67,21 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
             }
         }
     }
+
+    /// <summary>
+    /// Gets or sets the retry budget options.
+    /// </summary>
+    /// <value>
+    /// The default value is <see langword="null"/>, which means retries are not limited by a budget.
+    /// </value>
+    /// <remarks>
+    /// The budget is only applied when the options are added through
+    /// <see cref="HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(ResiliencePipelineBuilder{HttpResponseMessage}, HttpRetryStrategyOptions)"/>,
+    /// which is what the standard resilience handler uses. It's ignored by
+    /// <see cref="RetryResiliencePipelineBuilderExtensions.AddRetry{TResult}(ResiliencePipelineBuilder{TResult}, RetryStrategyOptions{TResult})"/>.
+    /// See <see cref="HttpRetryBudgetOptions"/> for more details.
+    /// </remarks>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
+    [ValidateObjectMembers]
+    public HttpRetryBudgetOptions? RetryBudget { get; set; }
 }
