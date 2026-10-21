@@ -281,8 +281,10 @@ internal partial class Parser
                                 return null;
                             }
 
+                            var propertyTransitive = transitive || (logPropertiesAttribute != null && AttributeProcessors.ExtractLogPropertiesAttributeValues(logPropertiesAttribute).transitive);
+
                             _ = typesChain.Add(extractedType);
-                            var props = GetTypePropertiesToLog(extractedType, typesChain, symbols, transitive, ref foundDataClassificationAttributes);
+                            var props = GetTypePropertiesToLog(extractedType, typesChain, symbols, propertyTransitive, ref foundDataClassificationAttributes);
                             _ = typesChain.Remove(extractedType);
 
                             if (props == null)
@@ -308,7 +310,7 @@ internal partial class Parser
                         }
                     }
 
-                    if (tagProviderAttribute == null && logPropertiesAttribute == null && !transitive)
+                    if (tagProviderAttribute == null && logPropertiesAttribute == null)
                     {
                         if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
                             || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public)
