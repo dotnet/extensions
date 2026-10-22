@@ -9,6 +9,9 @@ namespace Foo.Bar
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Gen.Logging", "VERSION")]
         private static readonly global::Microsoft.Extensions.Compliance.Classification.DataClassification _Bar_Classifications_SecretAttribute = new global::Bar.Classifications.SecretAttribute().Classification;
 
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Gen.Logging", "VERSION")]
+        private static readonly global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet _Bar_Classifications_SecretAttributeSet = new global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet(_Bar_Classifications_SecretAttribute);
+
         /// <summary>
         /// Logs "M {p0}" at "Debug" level.
         /// </summary>
@@ -28,7 +31,7 @@ namespace Foo.Bar
                 state.TagArray[0] = new("{OriginalFormat}", "M {p0}");
 
                 _ = state.ReserveClassifiedTagSpace(1);
-                state.ClassifiedTagArray[0] = new("p0", p0, new global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet(_Bar_Classifications_SecretAttribute));
+                state.ClassifiedTagArray[0] = new("p0", p0, _Bar_Classifications_SecretAttributeSet);
 
                 logger.Log(
                     global::Microsoft.Extensions.Logging.LogLevel.Debug,

@@ -15,11 +15,13 @@ namespace Microsoft.Gen.Logging.Emission;
 internal sealed partial class Emitter : EmitterBase
 {
     private const string DataClassificationType = "global::Microsoft.Extensions.Compliance.Classification.DataClassification";
+    private const string DataClassificationSetType = "global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet";
     private const string GlobalNamespacePrefix = "global::";
     private const string LoggerMessageHelperType = "global::Microsoft.Extensions.Logging.LoggerMessageHelper";
 
     private readonly StringBuilderPool _sbPool = new();
     private readonly Dictionary<string, string> _classificationMap = [];
+    private readonly Dictionary<HashSet<string>, string> _classificationSetMap = new(HashSet<string>.CreateSetComparer());
 
     public string Emit(IEnumerable<LoggingType> logTypes, CancellationToken cancellationToken)
     {
@@ -95,25 +97,25 @@ internal sealed partial class Emitter : EmitterBase
 
     private void GenAttributeClassifications(LoggingType lt)
     {
-        // gather all the classification attributes referenced by the logging type
-        var classificationAttrs = new HashSet<string>();
+        // gather all the classifications referenced by the logging type
+        var classificationSets = new List<HashSet<string>>();
         foreach (var lm in lt.Methods)
         {
             foreach (var parameter in lm.Parameters)
             {
                 if (parameter.HasProperties)
                 {
-                    parameter.TraverseParameterPropertiesTransitively((_, property) => classificationAttrs.UnionWith(property.ClassificationAttributeTypes));
+                    parameter.TraverseParameterPropertiesTransitively((_, property) => classificationSets.Add(property.ClassificationAttributeTypes));
                 }
                 else
                 {
-                    classificationAttrs.UnionWith(parameter.ClassificationAttributeTypes);
+                    classificationSets.Add(parameter.ClassificationAttributeTypes);
                 }
             }
         }
 
         _classificationMap.Clear();
-        foreach (var classificationAttr in classificationAttrs)
+        foreach (var classificationAttr in new HashSet<string>(classificationSets.SelectMany(static s => s)))
         {
             var fieldTypeName = classificationAttr.StartsWith(GlobalNamespacePrefix, StringComparison.Ordinal)
                 ? classificationAttr.Substring(GlobalNamespacePrefix.Length)
@@ -123,6 +125,24 @@ internal sealed partial class Emitter : EmitterBase
 
             OutGeneratedCodeAttribute();
             OutLn($"private static readonly {DataClassificationType} {fieldName} = new {classificationAttr}().Classification;");
+            OutLn();
+        }
+
+        // DataClassificationSet is immutable, so each distinct set is created once rather than on every logging call
+        _classificationSetMap.Clear();
+        foreach (var classificationSet in classificationSets)
+        {
+            if (classificationSet.Count == 0 || _classificationSetMap.ContainsKey(classificationSet))
+            {
+                continue;
+            }
+
+            var classificationFields = classificationSet.Select(c => _classificationMap[c]).OrderBy(static f => f, StringComparer.Ordinal).ToList();
+            var fieldName = PickUniqueName($"{string.Concat(classificationFields)}Set", lt.AllMembers.Concat(_classificationMap.Values).Concat(_classificationSetMap.Values));
+            _classificationSetMap.Add(classificationSet, fieldName);
+
+            OutGeneratedCodeAttribute();
+            OutLn($"private static readonly {DataClassificationSetType} {fieldName} = new {DataClassificationSetType}({string.Join(", ", classificationFields)});");
             OutLn();
         }
     }
