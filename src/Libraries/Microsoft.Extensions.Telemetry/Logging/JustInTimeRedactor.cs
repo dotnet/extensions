@@ -61,7 +61,7 @@ internal sealed class JustInTimeRedactor : IResettable
 
     public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
     {
-        if (_redactedValue != null && format.IsEmpty)
+        if (_redactedValue != null && format.IsEmpty && ReferenceEquals(provider, CultureInfo.InvariantCulture))
         {
             bool copied = _redactedValue.AsSpan().TryCopyTo(destination);
             charsWritten = copied ? _redactedValue.Length : 0;

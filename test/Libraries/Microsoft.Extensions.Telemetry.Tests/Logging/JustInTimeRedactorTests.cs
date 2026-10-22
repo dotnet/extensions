@@ -123,15 +123,19 @@ public static class JustInTimeRedactorTests
     }
 
     [Fact]
-    public static void TryFormat_WithFormatSpecifier_RedactsTheFormattedValue()
+    public static void TryFormat_WithFormatOrCulture_RedactsTheFormattedValue()
     {
         var redactor = FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "R<{0}>" });
         var r = JustInTimeRedactor.Get(1234.5, redactor, string.Empty);
         Span<char> d = new char[64];
 
         Assert.Equal("R<1234.5>", r.ToString());
+
         Assert.True(r.TryFormat(d, out int charsWritten, "N2".AsSpan(), CultureInfo.InvariantCulture));
         Assert.Equal("R<1,234.50>", d.Slice(0, charsWritten).ToString());
+
+        Assert.True(r.TryFormat(d, out charsWritten, string.Empty.AsSpan(), new NumberFormatInfo { NumberDecimalSeparator = "#" }));
+        Assert.Equal("R<1234#5>", d.Slice(0, charsWritten).ToString());
 
         r.Return();
     }
