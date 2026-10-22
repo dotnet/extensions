@@ -397,7 +397,7 @@ internal sealed partial class Emitter : EmitterBase
                     if (NeedsASlot(p) && p.HasDataClassification)
                     {
                         var key = $"\"{p.TagName}\"";
-                        var classification = _classificationSetMap[p.ClassificationAttributeTypes];
+                        var classification = _classificationMap[p.ClassificationAttributeTypes];
 
                         var value = ShouldStringifyParameter(p)
                             ? ConvertParameterToString(p, p.ParameterNameWithAtIfNeeded)
@@ -422,7 +422,7 @@ internal sealed partial class Emitter : EmitterBase
                                     ? ConvertPropertyToString(member, accessExpression)
                                     : accessExpression;
 
-                                var classification = _classificationSetMap[member.ClassificationAttributeTypes];
+                                var classification = _classificationMap[member.ClassificationAttributeTypes];
 
                                 OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new(\"{propName}\", {value}, {classification});");
                             }
@@ -446,7 +446,7 @@ internal sealed partial class Emitter : EmitterBase
                                 ? ConvertPropertyToString(member, accessExpression)
                                 : accessExpression;
 
-                            var classification = _classificationSetMap[member.ClassificationAttributeTypes];
+                            var classification = _classificationMap[member.ClassificationAttributeTypes];
 
                             if (member.PotentiallyNull)
                             {

@@ -7,10 +7,7 @@ namespace Foo.Bar
     partial class C
     {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Gen.Logging", "VERSION")]
-        private static readonly global::Microsoft.Extensions.Compliance.Classification.DataClassification _Bar_Classifications_SecretAttribute = new global::Bar.Classifications.SecretAttribute().Classification;
-
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Gen.Logging", "VERSION")]
-        private static readonly global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet _Bar_Classifications_SecretAttributeSet = new global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet(_Bar_Classifications_SecretAttribute);
+        private static readonly global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet _Bar_Classifications_SecretAttribute = new global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet(new global::Bar.Classifications.SecretAttribute().Classification);
 
         /// <summary>
         /// Logs "M {p0}" at "Debug" level.
@@ -31,7 +28,7 @@ namespace Foo.Bar
                 state.TagArray[0] = new("{OriginalFormat}", "M {p0}");
 
                 _ = state.ReserveClassifiedTagSpace(1);
-                state.ClassifiedTagArray[0] = new("p0", p0, _Bar_Classifications_SecretAttributeSet);
+                state.ClassifiedTagArray[0] = new("p0", p0, _Bar_Classifications_SecretAttribute);
 
                 logger.Log(
                     global::Microsoft.Extensions.Logging.LogLevel.Debug,

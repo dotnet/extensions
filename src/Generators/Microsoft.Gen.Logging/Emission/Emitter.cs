@@ -14,14 +14,12 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
-    private const string DataClassificationType = "global::Microsoft.Extensions.Compliance.Classification.DataClassification";
     private const string DataClassificationSetType = "global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet";
     private const string GlobalNamespacePrefix = "global::";
     private const string LoggerMessageHelperType = "global::Microsoft.Extensions.Logging.LoggerMessageHelper";
 
     private readonly StringBuilderPool _sbPool = new();
-    private readonly Dictionary<string, string> _classificationMap = [];
-    private readonly Dictionary<HashSet<string>, string> _classificationSetMap = new(HashSet<string>.CreateSetComparer());
+    private readonly Dictionary<HashSet<string>, string> _classificationMap = new(HashSet<string>.CreateSetComparer());
 
     public string Emit(IEnumerable<LoggingType> logTypes, CancellationToken cancellationToken)
     {
@@ -115,34 +113,21 @@ internal sealed partial class Emitter : EmitterBase
         }
 
         _classificationMap.Clear();
-        foreach (var classificationAttr in new HashSet<string>(classificationSets.SelectMany(static s => s)))
-        {
-            var fieldTypeName = classificationAttr.StartsWith(GlobalNamespacePrefix, StringComparison.Ordinal)
-                ? classificationAttr.Substring(GlobalNamespacePrefix.Length)
-                : classificationAttr;
-            var fieldName = PickUniqueName($"_{EncodeTypeName(fieldTypeName)}", lt.AllMembers);
-            _classificationMap.Add(classificationAttr, fieldName);
-
-            OutGeneratedCodeAttribute();
-            OutLn($"private static readonly {DataClassificationType} {fieldName} = new {classificationAttr}().Classification;");
-            OutLn();
-        }
-
-        // DataClassificationSet is immutable, so each distinct set is created once rather than on every logging call
-        _classificationSetMap.Clear();
         foreach (var classificationSet in classificationSets)
         {
-            if (classificationSet.Count == 0 || _classificationSetMap.ContainsKey(classificationSet))
+            if (classificationSet.Count == 0 || _classificationMap.ContainsKey(classificationSet))
             {
                 continue;
             }
 
-            var classificationFields = classificationSet.Select(c => _classificationMap[c]).OrderBy(static f => f, StringComparer.Ordinal).ToList();
-            var fieldName = PickUniqueName($"{string.Concat(classificationFields)}Set", lt.AllMembers.Concat(_classificationMap.Values).Concat(_classificationSetMap.Values));
-            _classificationSetMap.Add(classificationSet, fieldName);
+            var classificationAttrs = classificationSet.OrderBy(static a => a, StringComparer.Ordinal).ToList();
+            var fieldTypeNames = classificationAttrs.Select(static a => EncodeTypeName(a.StartsWith(GlobalNamespacePrefix, StringComparison.Ordinal) ? a.Substring(GlobalNamespacePrefix.Length) : a));
+            var fieldName = PickUniqueName($"_{string.Join("_", fieldTypeNames)}", lt.AllMembers.Concat(_classificationMap.Values));
+            var classifications = string.Join(", ", classificationAttrs.Select(static a => $"new {a}().Classification"));
+            _classificationMap.Add(classificationSet, fieldName);
 
             OutGeneratedCodeAttribute();
-            OutLn($"private static readonly {DataClassificationSetType} {fieldName} = new {DataClassificationSetType}({string.Join(", ", classificationFields)});");
+            OutLn($"private static readonly {DataClassificationSetType} {fieldName} = new {DataClassificationSetType}({classifications});");
             OutLn();
         }
     }
