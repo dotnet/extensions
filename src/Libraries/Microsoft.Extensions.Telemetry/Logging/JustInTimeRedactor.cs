@@ -28,6 +28,7 @@ internal sealed class JustInTimeRedactor : IResettable
     private Redactor? _redactor;
     private string _discriminator = string.Empty;
     private object? _value;
+    private string? _redactedValue;
 
     public static JustInTimeRedactor Get(object? value, Redactor redactor, string discriminator)
     {
@@ -44,7 +45,7 @@ internal sealed class JustInTimeRedactor : IResettable
 
     public JustInTimeRedactor? Next { get; set; }
 
-    public override string ToString() => ToString(null, CultureInfo.InvariantCulture);
+    public override string ToString() => _redactedValue ??= ToString(null, CultureInfo.InvariantCulture);
 
     [SkipLocalsInit]
     public string ToString(string? format, IFormatProvider? formatProvider)
@@ -60,6 +61,13 @@ internal sealed class JustInTimeRedactor : IResettable
 
     public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
     {
+        if (_redactedValue != null && format.IsEmpty)
+        {
+            bool copied = _redactedValue.AsSpan().TryCopyTo(destination);
+            charsWritten = copied ? _redactedValue.Length : 0;
+            return copied;
+        }
+
         if (_discriminator.Length == 0)
         {
             return _redactor!.TryRedact(_value, destination, out charsWritten, format, provider);
@@ -73,6 +81,7 @@ internal sealed class JustInTimeRedactor : IResettable
         _value = null;
         _redactor = null;
         _discriminator = string.Empty;
+        _redactedValue = null;
         return true;
     }
 

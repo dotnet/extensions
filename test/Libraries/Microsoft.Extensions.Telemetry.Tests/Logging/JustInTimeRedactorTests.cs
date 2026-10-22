@@ -84,6 +84,72 @@ public static class JustInTimeRedactorTests
     }
 #pragma warning restore S103
 
+    [Fact]
+    public static void ToString_RedactsOnce()
+    {
+        var redactor = FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "R<{0}>" });
+        var r = JustInTimeRedactor.Get("ABC", redactor, "123");
+
+        var first = r.ToString();
+
+        Assert.Equal("R<ABC:123>", first);
+        Assert.Same(first, r.ToString());
+        Assert.Single(redactor.EventCollector.AllRedactedData);
+
+        r.Return();
+    }
+
+    [Fact]
+    public static void TryFormat_RedactsIntoDestination_UntilToStringIsCalled()
+    {
+        var redactor = FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "R<{0}>" });
+        var r = JustInTimeRedactor.Get("ABC", redactor, string.Empty);
+        Span<char> d = new char[64];
+
+        Assert.True(r.TryFormat(d, out int charsWritten, string.Empty.AsSpan(), CultureInfo.InvariantCulture));
+        Assert.Equal("R<ABC>", d.Slice(0, charsWritten).ToString());
+        Assert.Single(redactor.EventCollector.AllRedactedData);
+
+        _ = r.ToString();
+        Assert.Equal(2, redactor.EventCollector.AllRedactedData.Count);
+
+        Assert.True(r.TryFormat(d, out charsWritten, string.Empty.AsSpan(), CultureInfo.InvariantCulture));
+        Assert.Equal("R<ABC>", d.Slice(0, charsWritten).ToString());
+        Assert.False(r.TryFormat(new char[2], out charsWritten, string.Empty.AsSpan(), CultureInfo.InvariantCulture));
+        Assert.Equal(0, charsWritten);
+        Assert.Equal(2, redactor.EventCollector.AllRedactedData.Count);
+
+        r.Return();
+    }
+
+    [Fact]
+    public static void TryFormat_WithFormatSpecifier_RedactsTheFormattedValue()
+    {
+        var redactor = FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "R<{0}>" });
+        var r = JustInTimeRedactor.Get(1234.5, redactor, string.Empty);
+        Span<char> d = new char[64];
+
+        Assert.Equal("R<1234.5>", r.ToString());
+        Assert.True(r.TryFormat(d, out int charsWritten, "N2".AsSpan(), CultureInfo.InvariantCulture));
+        Assert.Equal("R<1,234.50>", d.Slice(0, charsWritten).ToString());
+
+        r.Return();
+    }
+
+    [Fact]
+    public static void Return_DropsRedactedValue()
+    {
+        var redactor = FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "R<{0}>" });
+
+        var r = JustInTimeRedactor.Get("ABC", redactor, string.Empty);
+        Assert.Equal("R<ABC>", r.ToString());
+        r.Return();
+
+        r = JustInTimeRedactor.Get("XYZ", redactor, string.Empty);
+        Assert.Equal("R<XYZ>", r.ToString());
+        r.Return();
+    }
+
     private sealed class Formattable : IFormattable
     {
         private readonly object? _value;

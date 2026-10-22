@@ -8,6 +8,7 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Diagnostics.Sampling;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -121,6 +122,48 @@ public static class ExtendedLoggerTests
         {
             Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
             Assert.Null(snap[1].GetStructuredStateValue("EK1"));
+        }
+    }
+
+    [Fact]
+    public static void ClassifiedTag_IsNotRedacted_WhenNotRead()
+    {
+        using var lf = Utils.CreateLoggerFactory(b => b.AddProvider(NullLoggerProvider.Instance).Services.AddFakeRedaction());
+        var collector = ((Utils.DisposingLoggerFactory)lf).ServiceProvider.GetFakeRedactionCollector();
+
+        var lms = LoggerMessageHelper.ThreadLocalState;
+        var index = lms.ReserveClassifiedTagSpace(1);
+        lms.ClassifiedTagArray[index] = new("PK1", "PV1", FakeTaxonomy.PrivateData);
+        lf.CreateLogger("C1").Log(LogLevel.Warning, new EventId(1), lms, null, (_, _) => "MSG");
+        lms.Clear();
+
+        Assert.Empty(collector.AllRedactedData);
+    }
+
+    [Fact]
+    public static void ClassifiedTag_IsRedactedOnce_AndStaysValidAfterLogCall()
+    {
+        using var provider1 = new RecordingProvider();
+        using var provider2 = new RecordingProvider();
+        using var lf = Utils.CreateLoggerFactory(b => b.AddProvider(provider1).AddProvider(provider2).Services.AddFakeRedaction(o => o.RedactionFormat = "REDACTED<{0}>"));
+        var collector = ((Utils.DisposingLoggerFactory)lf).ServiceProvider.GetFakeRedactionCollector();
+        var logger = lf.CreateLogger("C1");
+
+        // The second call reuses the pooled objects of the first one.
+        foreach (var value in new[] { "PV1", "PV2" })
+        {
+            var lms = LoggerMessageHelper.ThreadLocalState;
+            var index = lms.ReserveClassifiedTagSpace(1);
+            lms.ClassifiedTagArray[index] = new("PK1", value, FakeTaxonomy.PrivateData);
+            logger.Log(LogLevel.Warning, new EventId(1), lms, null, (_, _) => "MSG");
+            lms.Clear();
+        }
+
+        Assert.Equal(new[] { "PV1:PK1", "PV2:PK1" }, collector.AllRedactedData.Select(r => r.Original));
+
+        foreach (var provider in new[] { provider1, provider2 })
+        {
+            Assert.Equal(new[] { "REDACTED<PV1:PK1>", "REDACTED<PV2:PK1>" }, provider.Tags.Select(tags => Assert.IsType<string>(tags.Single(t => t.Key == "PK1").Value)));
         }
     }
 
@@ -1159,6 +1202,26 @@ public static class ExtendedLoggerTests
 
             public bool IsEnabled(LogLevel logLevel) => true;
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) => _provider.State = state?.ToString();
+        }
+    }
+
+    private sealed class RecordingProvider : ILoggerProvider, ILogger
+    {
+        public List<KeyValuePair<string, object?>[]> Tags { get; } = [];
+
+        public ILogger CreateLogger(string categoryName) => this;
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => throw new NotSupportedException();
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Tags.Add(((IEnumerable<KeyValuePair<string, object?>>)state!).ToArray());
+
+        public void Dispose()
+        {
+            // nothing to do
         }
     }
 

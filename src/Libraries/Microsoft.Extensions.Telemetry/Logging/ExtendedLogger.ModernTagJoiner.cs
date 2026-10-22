@@ -63,7 +63,8 @@ internal sealed partial class ExtendedLogger
 
                 if (index < _redactedTagsCount)
                 {
-                    return _redactedTags![index];
+                    var redactedTag = _redactedTags![index];
+                    return redactedTag.Value is JustInTimeRedactor jr ? new(redactedTag.Key, jr.ToString()) : redactedTag;
                 }
                 else if (index < _redactedTagsCount + extraTagsCount)
                 {
@@ -92,7 +93,8 @@ internal sealed partial class ExtendedLogger
 
             for (int i = 0; i < _redactedTagsCount; i++)
             {
-                yield return _redactedTags![i];
+                var redactedTag = _redactedTags![i];
+                yield return redactedTag.Value is JustInTimeRedactor jr ? new(redactedTag.Key, jr.ToString()) : redactedTag;
             }
 
             for (int i = 0; i < extraTagsCount; i++)
