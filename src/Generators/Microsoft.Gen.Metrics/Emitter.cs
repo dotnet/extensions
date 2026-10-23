@@ -319,7 +319,7 @@ internal sealed class Emitter : EmitterBase
                     StrongTypeMetricObjectType.String => $"{paramName}!",
                     StrongTypeMetricObjectType.Enum => $"{paramName}.ToString()",
                     StrongTypeMetricObjectType.Primitive => paramName,
-                    _ => null, // Class and struct members only contribute to the path of their nested tags
+                    _ => null,
                 };
 
                 if (paramInvoke is null)
