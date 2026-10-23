@@ -93,7 +93,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
     {
         if (headers.TryGetValues(TelemetryConstants.ServerApplicationNameHeader, out var values))
         {
-            _ = stringBuilder.Append(values.First());
+            AppendEscaped(stringBuilder, values.First().AsSpan());
         }
     }
 
@@ -106,7 +106,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 
         for (int i = 0; i < checkpointCount; i++)
         {
-            _ = stringBuilder.Append(latencyData.Checkpoints[i].Name);
+            AppendEscaped(stringBuilder, latencyData.Checkpoints[i].Name.AsSpan());
             _ = stringBuilder.Append('/');
         }
 
@@ -127,7 +127,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 
         for (int i = 0; i < measureCount; i++)
         {
-            _ = stringBuilder.Append(latencyData.Measures[i].Name);
+            AppendEscaped(stringBuilder, latencyData.Measures[i].Name.AsSpan());
             _ = stringBuilder.Append('/');
         }
 
@@ -147,7 +147,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 
         for (int i = 0; i < tagCount; i++)
         {
-            _ = stringBuilder.Append(latencyData.Tags[i].Name);
+            AppendEscaped(stringBuilder, latencyData.Tags[i].Name.AsSpan());
             _ = stringBuilder.Append('/');
         }
 
@@ -155,8 +155,17 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
 
         for (int i = 0; i < tagCount; i++)
         {
-            _ = stringBuilder.Append(latencyData.Tags[i].Value);
+            AppendEscaped(stringBuilder, latencyData.Tags[i].Value.AsSpan());
             _ = stringBuilder.Append('/');
+        }
+    }
+
+    private static void AppendEscaped(StringBuilder stringBuilder, ReadOnlySpan<char> value)
+    {
+        for (int i = 0; i < value.Length; i++)
+        {
+            char c = value[i];
+            _ = stringBuilder.Append(c is '/' or ',' ? '_' : c);
         }
     }
 }
