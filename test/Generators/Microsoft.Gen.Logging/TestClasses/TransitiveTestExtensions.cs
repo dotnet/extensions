@@ -40,6 +40,22 @@ namespace TestClasses
             public Type Kind { get; set; } = typeof(C4);
         }
 
+        public class C5
+        {
+            public string P5 { get; set; } = "V5";
+
+            [LogPropertyIgnore]
+            public string P6 { get; set; } = "V6";
+
+            public Action P7 { get; set; } = () => { };
+        }
+
+        public class C6
+        {
+            [LogProperties(Transitive = true)]
+            public C0 P8 { get; set; } = new C0();
+        }
+
         [LoggerMessage(LogLevel.Debug)]
         public static partial void M0(ILogger logger, [LogProperties(Transitive = true)] C0 p0);
 
@@ -54,5 +70,11 @@ namespace TestClasses
 
         [LoggerMessage(LogLevel.Information)]
         public static partial void M4(ILogger logger, [LogProperties(Transitive = true)] C4 p0);
+
+        [LoggerMessage(LogLevel.Information)]
+        public static partial void M5(ILogger logger, [LogProperties(Transitive = true)] C5 p0);
+
+        [LoggerMessage(LogLevel.Information)]
+        public static partial void M6(ILogger logger, [LogProperties] C6 p0);
     }
 }
