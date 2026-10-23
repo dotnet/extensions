@@ -60,7 +60,7 @@ internal partial class Parser
             providerMethodName,
             symbols.ITagCollectorSymbol,
             propTypeSymbol,
-            tagProviderAttribute.ApplicationSyntaxReference!.GetSyntax(_cancellationToken).GetLocation());
+            tagProviderAttribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation());
 
         if (providerMethod is not null)
         {

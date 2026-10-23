@@ -112,6 +112,16 @@ namespace TestClasses
                 i++;
             }
         }
+
+        public static void ProvideForInt(ITagCollector list, int p)
+        {
+            list.Add("ProvidedInt", p);
+        }
+
+        public static void ProvideForNullableClass(ITagCollector list, PropertyToProvide? p)
+        {
+            list.Add("ProvidedProperty", p?.Value);
+        }
     }
 
     internal sealed class ClassToLog
