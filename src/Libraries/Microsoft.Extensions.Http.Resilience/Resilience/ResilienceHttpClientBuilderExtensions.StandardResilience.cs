@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -17,6 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static partial class ResilienceHttpClientBuilderExtensions
 {
     private const string StandardIdentifier = "standard";
+    private const int ConservativeMaxRetryAttempts = 2;
+    private const double ConservativeFailureRatio = 0.5;
 
     /// <summary>
     /// Adds a standard resilience handler that uses multiple resilience strategies with default options to send the requests and handle any transient errors.
@@ -82,7 +86,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
             _ = builder
                 .AddRateLimiter(options.RateLimiter)
                 .AddTimeout(options.TotalRequestTimeout)
-                .AddRetry(options.Retry)
+                .AddHttpRetry(options.Retry)
                 .AddCircuitBreaker(options.CircuitBreaker)
                 .AddTimeout(options.AttemptTimeout);
         });
@@ -91,6 +95,41 @@ public static partial class ResilienceHttpClientBuilderExtensions
         _ = builder.ConfigureHttpClient(client => client.Timeout = Timeout.InfiniteTimeSpan);
 
         return new HttpStandardResiliencePipelineBuilder(optionsName, builder.Services);
+    }
+
+    /// <summary>
+    /// Adds a standard resilience handler that uses multiple resilience strategies with the selected defaults to send the requests and handle any transient errors.
+    /// </summary>
+    /// <param name="builder">The builder instance.</param>
+    /// <param name="defaults">The set of defaults to apply.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    /// <remarks>
+    /// The defaults are applied before any other configuration, so options configured later through
+    /// <c>Configure</c> or bound from configuration take precedence.
+    /// See <see cref="HttpResilienceDefaults"/> for the values of each set of defaults.
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="defaults"/> isn't a defined <see cref="HttpResilienceDefaults"/> value.</exception>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IHttpStandardResiliencePipelineBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder, HttpResilienceDefaults defaults)
+    {
+        _ = Throw.IfNull(builder);
+        _ = Throw.IfOutOfRange(defaults);
+
+        var pipelineBuilder = builder.AddStandardResilienceHandler();
+
+        if (defaults == HttpResilienceDefaults.Conservative)
+        {
+            _ = pipelineBuilder.Configure(ApplyConservativeDefaults);
+        }
+
+        return pipelineBuilder;
+    }
+
+    private static void ApplyConservativeDefaults(HttpStandardResilienceOptions options)
+    {
+        options.Retry.MaxRetryAttempts = ConservativeMaxRetryAttempts;
+        options.Retry.RetryBudget = new HttpRetryBudgetOptions();
+        options.CircuitBreaker.FailureRatio = ConservativeFailureRatio;
     }
 
     private sealed record HttpStandardResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpStandardResiliencePipelineBuilder;

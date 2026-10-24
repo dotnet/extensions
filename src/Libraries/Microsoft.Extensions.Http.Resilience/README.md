@@ -53,6 +53,42 @@ clientBuilder.AddStandardHedgingHandler().Configure(o =>
 });
 ```
 
+### Retry Budget
+
+A retry budget limits retries to a ratio of the requests sent over a sliding window. When a dependency is degraded, retries can multiply the load on it by up to `MaxRetryAttempts + 1`; a budget caps that amplification to roughly `1 + RetryRatio`. When the budget is exhausted, the failed outcome is returned without a retry and the `OnRetryBudgetExhausted` resilience event is reported.
+
+The `Conservative` defaults of the standard resilience pipeline enable the budget, lower `MaxRetryAttempts` to 2 and raise the circuit breaker `FailureRatio` to 0.5. Options configured afterwards take precedence over the defaults.
+
+```csharp
+var clientBuilder = services.AddHttpClient("MyClient");
+
+clientBuilder.AddStandardResilienceHandler(HttpResilienceDefaults.Conservative).Configure(o =>
+{
+    o.Retry.RetryBudget!.RetryRatio = 0.2;
+});
+```
+
+The budget can also be enabled on its own, either in the standard pipeline through `o.Retry.RetryBudget = new HttpRetryBudgetOptions()` or in a custom pipeline through `AddHttpRetry`:
+
+```csharp
+clientBuilder.AddResilienceHandler("myHandler", b =>
+{
+    b.AddHttpRetry(new HttpRetryStrategyOptions
+    {
+        RetryBudget = new HttpRetryBudgetOptions
+        {
+            RetryRatio = 0.1,
+            SamplingDuration = TimeSpan.FromSeconds(30),
+            MinimumThroughput = 100,
+        },
+    });
+});
+```
+
+`AddRetry` ignores `HttpRetryStrategyOptions.RetryBudget`, so use `AddHttpRetry` when building custom pipelines. These APIs are experimental and require suppressing the `EXTEXP0001` diagnostic.
+
+Each retry that the budget denies is logged as a warning and counted by the `resilience.polly.strategy.events` metric (meter `Polly`) with the `event.name` tag set to `OnRetryBudgetExhausted`. The `pipeline.name`, `strategy.name` and `error.type` tags identify the client and the failure that wasn't retried, so you can alert when retries are being shed.
+
 ### Custom Resilience
 
 For more granular control a custom pipeline can be constructed.
