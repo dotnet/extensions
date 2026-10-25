@@ -31,10 +31,12 @@ public class HybridCacheOptions
     /// The default <see cref="HybridCache"/> implementation does not provide built-in compression, so this option has no effect.
     /// To compress cached data, configure a serializer that performs compression.
     /// </remarks>
+#pragma warning disable CS0436 // Type conflicts with imported type
     [Obsolete(
         DiagnosticIds.Obsoletions.HybridCacheDisableCompressionMessage,
         DiagnosticId = DiagnosticIds.Obsoletions.HybridCacheDisableCompressionDiagId,
         UrlFormat = DiagnosticIds.UrlFormat)]
+#pragma warning restore CS0436 // Type conflicts with imported type
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool DisableCompression { get; set; }
 
