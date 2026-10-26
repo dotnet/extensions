@@ -27,6 +27,9 @@ and lifecycle logging middleware. Logging is intentionally limited to lifecycle,
 page-number, and observation-count fields; source content, evidence values,
 artifacts, credentials, and raw provider payloads are never serialized or
 logged.
+If enumeration and enumerator disposal both fail, logging middleware reports
+both failures in an `AggregateException`, with the original enumeration error
+or cancellation first.
 
 The packages do not include provider clients, provider SDKs, AI dependencies,
 MEDI/DataIngestion integration, source fetching, or package publication.

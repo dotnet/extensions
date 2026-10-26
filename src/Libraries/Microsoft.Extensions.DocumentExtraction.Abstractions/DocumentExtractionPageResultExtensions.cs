@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,12 +25,20 @@ public static class DocumentExtractionPageResultExtensions
     {
         _ = Throw.IfNull(pages);
         using DocumentExtractionDocumentBuilder builder = new(identifier, captureRawContent);
-        foreach (DocumentExtractionPage page in pages)
+        try
         {
-            builder.AddPage(page);
-        }
+            foreach (DocumentExtractionPage page in pages)
+            {
+                builder.AddPage(page);
+            }
 
-        return builder.Build();
+            return builder.Build();
+        }
+        catch (Exception failure)
+        {
+            DisposeAfterFailure(builder, failure);
+            throw;
+        }
     }
 
     /// <summary>
@@ -61,17 +70,39 @@ public static class DocumentExtractionPageResultExtensions
             CancellationToken cancellationToken)
         {
             using DocumentExtractionDocumentBuilder builder = new(identifier, captureRawContent);
-            cancellationToken.ThrowIfCancellationRequested();
-            await foreach (DocumentExtractionPage page in pages
-                .WithCancellation(cancellationToken)
-                .ConfigureAwait(false))
+            try
             {
-                builder.AddPage(page);
                 cancellationToken.ThrowIfCancellationRequested();
-            }
+                await foreach (DocumentExtractionPage page in pages
+                    .WithCancellation(cancellationToken)
+                    .ConfigureAwait(false))
+                {
+                    builder.AddPage(page);
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
 
-            cancellationToken.ThrowIfCancellationRequested();
-            return builder.Build();
+                cancellationToken.ThrowIfCancellationRequested();
+                return builder.Build();
+            }
+            catch (Exception failure)
+            {
+                DisposeAfterFailure(builder, failure);
+                throw;
+            }
+        }
+    }
+
+    private static void DisposeAfterFailure(DocumentExtractionDocumentBuilder builder, Exception failure)
+    {
+        try
+        {
+            builder.Dispose();
+        }
+        catch (AggregateException cleanupFailure)
+        {
+            List<Exception> failures = [failure];
+            failures.AddRange(cleanupFailure.InnerExceptions);
+            throw new AggregateException(failures);
         }
     }
 }

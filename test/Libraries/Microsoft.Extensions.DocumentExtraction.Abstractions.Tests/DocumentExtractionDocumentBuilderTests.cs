@@ -877,7 +877,7 @@ public sealed class DocumentExtractionDocumentBuilderTests
         DocumentSourceOutput output = new("shared-operation", native, artifact, providerName: "synthetic", modelId: "model:v1");
         DocumentSourcePage seven = PdfFrame(output);
         DocumentSourcePage two = new("frame-two", 2, sourceOutput: output);
-        using Document document = BuildSharedDocument(
+        using Document document = BuildSharedDocument(true,
             new DocumentExtractionPage(7, [new DocumentExtractionText("seven", 0, DocumentTextKind.Paragraph, "seven", "seven")], sourcePage: seven, sourceOutputs: [output]),
             new DocumentExtractionPage(2, [new DocumentExtractionText("two", 0, DocumentTextKind.Paragraph, "two", "two")], sourcePage: two, sourceOutputs: [output]));
 
@@ -909,9 +909,11 @@ public sealed class DocumentExtractionDocumentBuilderTests
     private static DocumentSourcePage PdfFrame(DocumentSourceOutput? output = null) =>
         new("urn:frame:pdf-A", 7, new DocumentPageDimensions(200, 100), DocumentCoordinateUnit.Point, DocumentCoordinateOrigin.BottomLeft, output);
 
-    private static Document BuildSharedDocument(params DocumentExtractionPage[] pages)
+    private static Document BuildSharedDocument(params DocumentExtractionPage[] pages) => BuildSharedDocument(false, pages);
+
+    private static Document BuildSharedDocument(bool captureRawContent, params DocumentExtractionPage[] pages)
     {
-        using DocumentExtractionDocumentBuilder builder = new("shared-only");
+        using DocumentExtractionDocumentBuilder builder = new("shared-only", captureRawContent);
         foreach (DocumentExtractionPage page in pages)
         {
             builder.AddPage(page);
@@ -939,10 +941,15 @@ public sealed class DocumentExtractionDocumentBuilderTests
     private sealed class FidelityNative : IDisposable
     {
         internal int DisposeCount { get; private set; }
+        internal int ToStringCount { get; private set; }
 
         public void Dispose() => DisposeCount++;
 
-        public override string ToString() => "NATIVE_ONLY_92";
+        public override string ToString()
+        {
+            ToStringCount++;
+            return "NATIVE_ONLY_92";
+        }
     }
 
     [Theory]
@@ -985,7 +992,7 @@ public sealed class DocumentExtractionDocumentBuilderTests
         DocumentExtractionPage later = new(3,
             [new DocumentExtractionImage("pending-image", 0, "pending image", artifacts: [pendingArtifact])],
             sourceOutputs: rawArtifact ? [foreignOutput] : []);
-        using DocumentExtractionDocumentBuilder builder = new("doomed-finalization");
+        using DocumentExtractionDocumentBuilder builder = new("doomed-finalization", true);
 
         // Arrival order differs from finalization order; page 1 transfers before page 2 rejects.
         builder.AddPage(later);
@@ -1051,5 +1058,390 @@ public sealed class DocumentExtractionDocumentBuilderTests
         Assert.Equal(1, foreignStream.DisposeCount);
         Assert.False(foreignStream.CanRead);
         Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(0, native.ToStringCount);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    public async Task Finalization_DefaultAndFalseEntryPoints_DisableBodyCaptureWithoutRejectingNative(int entryPoint)
+    {
+        using FidelityNative native = new();
+        DocumentSourceOutput output = new("native", native, contentCaptureDisabled: true);
+        DocumentAnnotation annotation = new("provider", sourceOutput: output, rawRepresentation: native);
+        DocumentExtractionPage page = CaptureCarrierPage(output, annotation, "page");
+        using CancellationTokenSource cancellation = new();
+        using DocumentExtractionResult result = await FinalizeWithoutCapture(page, entryPoint, cancellation.Token);
+
+        Assert.Same(page, Assert.Single(result.Pages));
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Same(native, output.GetRawRepresentation());
+        Assert.Same(annotation, Assert.Single(Assert.Single(result.Document.Sections).Annotations));
+        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
+        Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
+        Assert.Null(output.GetRawContent());
+        result.Dispose();
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(0, native.ToStringCount);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task Finalization_ExplicitCaptureEntryPoints_RetainOriginalBodyBytes(int entryPoint)
+    {
+        using FidelityNative native = new();
+        byte[] bytes = CaptureBytes();
+        FidelityStream stream = new(bytes);
+        using DocumentArtifact artifact = new("application/json", stream);
+        DocumentSourceOutput output = new("operation", native, artifact);
+        DocumentExtractionPage page = new(7, [], sourceOutputs: [output]);
+        using DocumentExtractionDocumentBuilder builder = new("document", true);
+        builder.AddPage(page);
+        using CancellationTokenSource cancellation = new();
+        CancellationToken received = default;
+        using DocumentExtractionResult result = entryPoint switch
+        {
+            0 => builder.Build(),
+            1 => new[] { page }.ToDocumentExtractionResult("document", true),
+            _ => await Pages().ToDocumentExtractionResultAsync("document", true, cancellation.Token)
+        };
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Same(native, output.GetRawRepresentation());
+        Assert.Same(artifact, output.GetRawContent());
+        Assert.Same(artifact, Assert.Single(result.Document.Artifacts));
+        using MemoryStream copy = new();
+        await artifact.Content.CopyToAsync(copy);
+        Assert.Equal(bytes, copy.ToArray());
+        if (entryPoint == 2)
+        {
+            Assert.Equal(cancellation.Token, received);
+        }
+
+        builder.Dispose();
+        Assert.Equal(0, stream.DisposeCount);
+        result.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+
+        async IAsyncEnumerable<DocumentExtractionPage> Pages([EnumeratorCancellation] CancellationToken token = default)
+        {
+            received = token;
+            yield return page;
+            await Task.CompletedTask;
+        }
+    }
+
+    [Theory]
+    [InlineData("page")]
+    [InlineData("observation")]
+    [InlineData("cell")]
+    [InlineData("empty-cell")]
+    [InlineData("nested-cell")]
+    public async Task Finalization_DefaultAndFalseCapture_PreserveNativeAnnotationsAtEveryCarrier(string carrier)
+    {
+        foreach (int entryPoint in new[] { 2, 3, 4, 5 })
+        {
+            foreach (int sourceMode in new[] { 0, 1, 2 })
+            {
+                using FidelityNative native = new();
+                using FidelityNative annotationNative = new();
+                DocumentSourceOutput output = new("operation", native, contentCaptureDisabled: true);
+                DocumentSourcePage frame = PdfFrame(sourceMode == 0 ? null : output);
+                DocumentRegion region = new(frame, FidelityPolygon());
+                DocumentAnnotation annotation = new("provider", regions: [region],
+                    sourceOutput: sourceMode == 1 ? output : null, rawRepresentation: annotationNative);
+                DocumentExtractionPage page = CaptureCarrierPage(output, annotation, carrier);
+                using DocumentExtractionResult result = await FinalizeWithoutCapture(page, entryPoint);
+
+                Assert.Same(annotation, Assert.Single(ProjectedAnnotations(result.Document)));
+                Assert.Same(annotationNative, annotation.GetRawRepresentation());
+                Assert.Same(region, Assert.Single(annotation.Regions));
+                Assert.Same(frame, region.Page);
+                Assert.Same(frame, Assert.Single(result.Document.SourcePages));
+                if (sourceMode == 0)
+                {
+                    Assert.Empty(result.Document.SourceOutputs);
+                }
+                else
+                {
+                    Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+                }
+
+                Assert.Same(native, output.GetRawRepresentation());
+                Assert.Same(sourceMode == 1 ? output : null, annotation.SourceOutput);
+                Assert.Equal(FidelityPolygon(), region.Polygon);
+                Assert.Null(output.GetRawContent());
+                Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
+                result.Dispose();
+                Assert.Equal(0, native.DisposeCount);
+                Assert.Equal(0, annotationNative.DisposeCount);
+                Assert.Equal(0, native.ToStringCount);
+                Assert.Equal(0, annotationNative.ToStringCount);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("page-output")]
+    [InlineData("frame-output")]
+    [InlineData("page")]
+    [InlineData("observation")]
+    [InlineData("cell")]
+    [InlineData("empty-cell")]
+    [InlineData("nested-cell")]
+    public async Task Finalization_OptOutRejectsRawAtEveryCarrierAndCleansAcquiredBodies(string carrier)
+    {
+        foreach (int entryPoint in new[] { 2, 3, 4, 5 })
+        {
+            using FidelityNative native = new();
+            FidelityStream stream = new(CaptureBytes());
+            using DocumentArtifact artifact = new("application/json", stream);
+            DocumentSourceOutput output = new("operation", native, artifact);
+            DocumentAnnotation annotation = new("provider", sourceOutput: output, rawRepresentation: native);
+            DocumentExtractionPage page = CaptureCarrierPage(output, annotation, carrier);
+            ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() => FinalizeWithoutCapture(page, entryPoint));
+
+            Assert.Equal("pages", error.ParamName);
+            Assert.Contains("content capture opt-out", error.Message);
+            Assert.Equal(1, stream.DisposeCount);
+            Assert.True(artifact.IsDisposed);
+            Assert.False(artifact.IsDocumentOwned);
+            Assert.Equal(0, native.DisposeCount);
+        }
+
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Finalization_OptOutAllowsNativeOnlyButRejectsContentOnly(bool hasNative, bool hasBody)
+    {
+        foreach (int entryPoint in new[] { 0, 1, 2, 3, 4, 5 })
+        {
+            using FidelityNative native = new();
+            FidelityStream stream = new(CaptureBytes());
+            using DocumentArtifact artifact = new("application/json", stream);
+            DocumentSourceOutput output = new("operation", hasNative ? native : null, hasBody ? artifact : null,
+                contentCaptureDisabled: !hasBody);
+            DocumentExtractionPage page = new(7, [], sourceOutputs: [output]);
+            if (hasBody)
+            {
+                ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() => FinalizeWithoutCapture(page, entryPoint));
+                Assert.Equal("pages", error.ParamName);
+                Assert.Equal(1, stream.DisposeCount);
+                Assert.False(artifact.IsDocumentOwned);
+            }
+            else
+            {
+                using DocumentExtractionResult result = await FinalizeWithoutCapture(page, entryPoint);
+                Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+                Assert.Same(native, output.GetRawRepresentation());
+                Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
+                Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
+                Assert.Null(output.GetRawContent());
+                Assert.Equal(0, stream.DisposeCount);
+            }
+
+            Assert.Equal(0, native.DisposeCount);
+            Assert.Equal(0, native.ToStringCount);
+        }
+    }
+
+    [Theory]
+    [InlineData("page")]
+    [InlineData("observation")]
+    [InlineData("cell")]
+    [InlineData("empty-cell")]
+    [InlineData("nested-cell")]
+    public async Task Finalization_OptOutRejectsRegionOnlyRawAtNestedDepths(string carrier)
+    {
+        foreach (int entryPoint in new[] { 2, 3, 4, 5 })
+        {
+            using FidelityNative native = new();
+            FidelityStream stream = new(CaptureBytes());
+            using DocumentArtifact artifact = new("application/json", stream);
+            DocumentSourceOutput output = new("region-only", native, artifact);
+            DocumentSourcePage frame = PdfFrame(output);
+            DocumentRegion region = new(frame, FidelityPolygon());
+            DocumentAnnotation annotation = new("provider", regions: [region], rawRepresentation: native);
+            DocumentExtractionPage page = CaptureCarrierPage(output, annotation, carrier);
+            ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() => FinalizeWithoutCapture(page, entryPoint));
+
+            Assert.Equal("pages", error.ParamName);
+            Assert.Empty(page.SourceOutputs);
+            Assert.Null(page.SourcePage);
+            Assert.Null(annotation.SourceOutput);
+            Assert.Same(region, Assert.Single(annotation.Regions));
+            Assert.Same(output, region.Page.SourceOutput);
+            Assert.Same(native, annotation.GetRawRepresentation());
+            Assert.Equal(1, stream.DisposeCount);
+            Assert.False(artifact.IsDocumentOwned);
+            Assert.Equal(0, native.DisposeCount);
+        }
+    }
+
+    [Theory]
+    [InlineData("page-output")]
+    [InlineData("frame-output")]
+    [InlineData("page")]
+    [InlineData("observation")]
+    [InlineData("cell")]
+    [InlineData("empty-cell")]
+    [InlineData("nested-cell")]
+    public void Builder_DisposeBeforeBuild_CleansAbandonedBodiesAtEveryCarrier(string carrier)
+    {
+        using FidelityNative native = new();
+        FidelityStream stream = new(CaptureBytes());
+        using DocumentArtifact artifact = new("application/json", stream);
+        DocumentSourceOutput output = new("operation", native, artifact);
+        DocumentAnnotation annotation = new("provider", sourceOutput: output, rawRepresentation: native);
+        using DocumentExtractionDocumentBuilder builder = new("abandoned", true);
+        builder.AddPage(CaptureCarrierPage(output, annotation, carrier));
+        builder.AddPage(new DocumentExtractionPage(2, [], sourceOutputs: [output]));
+        builder.Dispose();
+        builder.Dispose();
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.False(artifact.IsDocumentOwned);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Same(native, annotation.GetRawRepresentation());
+        Assert.Throws<ObjectDisposedException>(() => builder.Build());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Result_DisposalOrders_CloseTransferredBodyOnceAndLeaveBorrowedObjectsAlive(bool documentFirst)
+    {
+        using MemoryStream input = new([42]);
+        using FidelityNative native = new();
+        using FidelityNative annotationNative = new();
+        using FidelityNative opaque = new();
+        FidelityStream stream = new(CaptureBytes());
+        using DocumentArtifact artifact = new("application/json", stream);
+        DocumentSourceOutput output = new("shared", native, artifact);
+        DocumentAnnotation annotation = new("provider", value: opaque, sourceOutput: output, rawRepresentation: annotationNative);
+        using DocumentExtractionDocumentBuilder builder = new("shared", true);
+        builder.AddPage(CaptureCarrierPage(output, annotation, "nested-cell"));
+        builder.AddPage(new DocumentExtractionPage(2, [], sourceOutputs: [output]));
+        using DocumentExtractionResult result = builder.Build();
+        builder.Dispose();
+        Assert.Same(artifact, Assert.Single(result.Document.Artifacts));
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Same(annotation, Assert.Single(ProjectedAnnotations(result.Document)));
+        Assert.Same(opaque, annotation.Value);
+        Assert.True(artifact.IsDocumentOwned);
+        Assert.False(result.IsDisposed);
+        Assert.Equal(0, stream.DisposeCount);
+        if (documentFirst)
+        {
+            result.Document.Dispose();
+            Assert.False(result.IsDisposed);
+        }
+
+        result.Dispose();
+        result.Document.Dispose();
+        result.Dispose();
+        builder.Dispose();
+        Assert.True(result.IsDisposed);
+        Assert.True(result.Document.IsDisposed);
+        Assert.Equal(1, stream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(0, annotationNative.DisposeCount);
+        Assert.Equal(0, opaque.DisposeCount);
+        Assert.Equal(42, input.ReadByte());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Build_ExplicitCaptureWithoutBody_PreservesUnavailableContentStatus(bool hasNative)
+    {
+        using FidelityNative native = new();
+        DocumentSourceOutput output = new("operation", hasNative ? native : null);
+        using DocumentExtractionDocumentBuilder builder = new("native-only", true);
+        builder.AddPage(new DocumentExtractionPage(7, [], sourceOutputs: [output]));
+        using DocumentExtractionResult result = builder.Build();
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Same(hasNative ? native : null, output.GetRawRepresentation());
+        Assert.Null(output.GetRawContent());
+        Assert.Empty(result.Document.Artifacts);
+        Assert.Equal(DocumentRawContentStatus.Unavailable, output.ContentStatus);
+        Assert.Equal(hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable, output.NativeStatus);
+        result.Dispose();
+        Assert.Equal(0, native.DisposeCount);
+    }
+
+    private static byte[] CaptureBytes() => System.Text.Encoding.UTF8.GetBytes(
+        " {\r\n \"unknown\" : { \"z\" : [3, 1] }, \"pages\" : [7,2], \"marker\":\"RAW_BODY_ONLY_91\" \r\n}\n");
+
+    private static DocumentExtractionPage CaptureCarrierPage(DocumentSourceOutput output, DocumentAnnotation annotation, string carrier)
+    {
+        DocumentExtractionObservation observation = new DocumentExtractionText("text", 0, DocumentTextKind.Paragraph, "visible",
+            annotations: carrier is "observation" or "nested-cell" ? [annotation] : null);
+        if (carrier is "cell" or "empty-cell" or "nested-cell")
+        {
+            observation = new DocumentExtractionTable("inner", 0, "", 1, 1,
+                [new DocumentExtractionTableCell(0, 0, carrier == "empty-cell" ? null : observation,
+                    annotations: carrier is "cell" or "empty-cell" ? [annotation] : null)]);
+            if (carrier == "nested-cell")
+            {
+                observation = new DocumentExtractionTable("outer", 0, "", 1, 1, [new DocumentExtractionTableCell(0, 0, observation)]);
+            }
+        }
+
+        return new(7, [observation],
+            sourcePage: carrier == "frame-output" ? PdfFrame(output) : null,
+            annotations: carrier == "page" ? [annotation] : null,
+            sourceOutputs: carrier == "page-output" ? [output] : null);
+    }
+
+    private static async Task<DocumentExtractionResult> FinalizeWithoutCapture(
+        DocumentExtractionPage page, int entryPoint, CancellationToken token = default)
+    {
+        if (entryPoint < 2)
+        {
+            using DocumentExtractionDocumentBuilder builder = entryPoint == 0 ? new("document") : new("document", false);
+            builder.AddPage(page);
+            return builder.Build();
+        }
+
+        return entryPoint switch
+        {
+            2 => new[] { page }.ToDocumentExtractionResult("document"),
+            3 => new[] { page }.ToDocumentExtractionResult("document", false),
+            4 => await Pages().ToDocumentExtractionResultAsync("document", token),
+            _ => await Pages().ToDocumentExtractionResultAsync("document", false, token)
+        };
+
+        async IAsyncEnumerable<DocumentExtractionPage> Pages()
+        {
+            yield return page;
+            await Task.CompletedTask;
+        }
+    }
+
+    private static IEnumerable<DocumentAnnotation> ProjectedAnnotations(Document document)
+    {
+        return document.Sections.SelectMany(static section => section.Annotations)
+            .Concat(document.Sections.SelectMany(static section => section.Elements).SelectMany(ElementAnnotations));
+
+        static IEnumerable<DocumentAnnotation> ElementAnnotations(DocumentElement element)
+        {
+            IEnumerable<DocumentAnnotation> annotations = element.Annotations;
+            if (element is DocumentTableElement table)
+            {
+                annotations = annotations.Concat(table.Cells.OfType<DocumentTableCell>().SelectMany(static cell =>
+                    cell.Annotations.Concat(cell.Content is { } content ? ElementAnnotations(content) : [])));
+            }
+
+            return annotations;
+        }
     }
 }

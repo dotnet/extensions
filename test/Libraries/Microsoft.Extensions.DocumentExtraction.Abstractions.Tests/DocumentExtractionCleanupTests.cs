@@ -2,7 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DocumentExtraction;
 using Microsoft.Extensions.Documents;
 using Xunit;
@@ -55,7 +60,7 @@ public sealed class DocumentExtractionCleanupTests
         foreignImage.Artifacts.Add(foreignArtifact);
         foreignSection.Elements.Add(foreignImage);
         owner.Sections.Add(foreignSection);
-        using DocumentExtractionDocumentBuilder builder = new("failure");
+        using DocumentExtractionDocumentBuilder builder = new("failure", true);
         builder.AddPage(new DocumentExtractionPage(1,
             [new DocumentExtractionText("duplicate", 0, DocumentTextKind.Paragraph, "one")],
             sourceOutputs:
@@ -87,6 +92,7 @@ public sealed class DocumentExtractionCleanupTests
         Assert.Equal(1, pendingLater.DisposeCount);
         owner.Dispose();
         Assert.Equal(1, foreign.DisposeCount);
+        Assert.Equal(new Exception[] { original, pendingFailure, ownedFailure }, error.Flatten().InnerExceptions);
     }
 
     [Fact]
@@ -120,6 +126,265 @@ public sealed class DocumentExtractionCleanupTests
             if (disposing && failure is not null)
             {
                 throw failure;
+            }
+        }
+    }
+
+    [Fact]
+    public void Dispose_MultipleCleanupFailures_AttemptsEveryOwnedResourceOnce()
+    {
+        IOException firstFailure = new("first");
+        IOException lastFailure = new("last");
+        CleanupStream first = new(firstFailure);
+        CleanupStream middle = new();
+        CleanupStream last = new(lastFailure);
+        using DocumentArtifact a = new("application/json", first);
+        using DocumentArtifact b = new("application/json", middle);
+        using DocumentArtifact c = new("application/json", last);
+        using DocumentExtractionDocumentBuilder builder = new("abandoned", true);
+        builder.AddPage(new DocumentExtractionPage(7, [], sourceOutputs:
+            [new("a", rawContent: a), new("b", rawContent: b), new("c", rawContent: c)]));
+
+        AggregateException error = Assert.Throws<AggregateException>(() => builder.Dispose());
+        Assert.Equal(new Exception[] { firstFailure, lastFailure }, error.InnerExceptions);
+        builder.Dispose();
+        Assert.All(new[] { first, middle, last }, static stream => Assert.Equal(1, stream.DisposeCount));
+        Assert.All(new[] { a, b, c }, static artifact =>
+        {
+            Assert.True(artifact.IsDisposed);
+            Assert.False(artifact.IsDocumentOwned);
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Finalization_EnumerationFailureAfterBodyAcquisition_PreservesPrimaryAndCleansBodies(bool asynchronous)
+    {
+        InvalidOperationException primary = new("provider failed");
+        using CleanupFixture fixture = new();
+        PageSequence sequence = new(fixture.Page, primary);
+        Exception error = await FinalizeFailure(sequence, asynchronous);
+        Assert.Same(primary, error);
+        Assert.Equal(1, sequence.DisposeCount);
+        fixture.AssertCleaned();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Finalization_EnumerationFailureWithThrowingCleanup_KeepsPrimaryErrorFirst(bool asynchronous)
+    {
+        InvalidOperationException primary = new("provider failed");
+        IOException first = new("first body cleanup");
+        IOException second = new("second body cleanup");
+        using CleanupFixture fixture = new(first, second);
+        PageSequence sequence = new(fixture.Page, primary);
+        Exception error = await FinalizeFailure(sequence, asynchronous);
+        Assert.Equal(1, sequence.DisposeCount);
+        fixture.AssertCleaned();
+        Assert.Equal(new Exception[] { primary, first, second }, Assert.IsType<AggregateException>(error).Flatten().InnerExceptions);
+    }
+
+    [Fact]
+    public async Task ToDocumentExtractionResultAsync_PreCanceledToken_DoesNotAcquireBodies()
+    {
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+        using CleanupFixture fixture = new();
+        PageSequence sequence = new(fixture.Page);
+        OperationCanceledException error = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            sequence.ToDocumentExtractionResultAsync("document", true, cancellation.Token));
+        Assert.Equal(cancellation.Token, error.CancellationToken);
+        Assert.Equal(0, sequence.AcquireCount);
+        Assert.Equal(0, sequence.DisposeCount);
+        Assert.All(fixture.Streams, static stream => Assert.Equal(0, stream.DisposeCount));
+        Assert.All(fixture.Artifacts, static artifact => Assert.False(artifact.IsDocumentOwned));
+        Assert.Equal(0, fixture.Native.DisposeCount);
+        Assert.Equal(42, fixture.Input.ReadByte());
+    }
+
+    [Fact]
+    public Task ToDocumentExtractionResultAsync_CancellationDuringYield_CleansAcquiredBodies() =>
+        VerifyCancellation(afterLast: false, throwingCleanup: false);
+
+    [Fact]
+    public Task ToDocumentExtractionResultAsync_CancellationAfterLastYield_PreventsResultTransfer() =>
+        VerifyCancellation(afterLast: true, throwingCleanup: false);
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task ToDocumentExtractionResultAsync_UncooperativeIterator_StillHonorsCancellation(bool afterLast) =>
+        VerifyCancellation(afterLast, throwingCleanup: false);
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task ToDocumentExtractionResultAsync_CancellationWithThrowingCleanup_PreservesPrimaryTokenAndAttemptsAllCleanup(bool afterLast) =>
+        VerifyCancellation(afterLast, throwingCleanup: true);
+
+    private static async Task VerifyCancellation(bool afterLast, bool throwingCleanup)
+    {
+        using CancellationTokenSource cancellation = new();
+        IOException first = new("first cleanup");
+        IOException second = new("second cleanup");
+        using CleanupFixture fixture = new(throwingCleanup ? first : null, throwingCleanup ? second : null);
+        TaskCompletionSource<bool> reached = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<bool> release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        PageSequence sequence = new(fixture.Page)
+        {
+            BeforeMoveAsync = async index =>
+            {
+                if (index == (afterLast ? 2 : 1))
+                {
+                    reached.SetResult(true);
+                    await release.Task;
+                }
+            }
+        };
+        Task<DocumentExtractionResult> pending = sequence.ToDocumentExtractionResultAsync("document", true, cancellation.Token);
+        await reached.Task;
+        Assert.False(pending.IsCompleted);
+        cancellation.Cancel();
+        release.SetResult(true);
+        Exception error = await Assert.ThrowsAnyAsync<Exception>(() => pending);
+
+        Assert.Equal(cancellation.Token, sequence.ReceivedToken);
+        Assert.Equal(1, sequence.DisposeCount);
+        fixture.AssertCleaned();
+        IReadOnlyList<Exception> errors = error is AggregateException aggregate ? aggregate.Flatten().InnerExceptions : [error];
+        OperationCanceledException primary = Assert.IsAssignableFrom<OperationCanceledException>(errors[0]);
+        Assert.Equal(cancellation.Token, primary.CancellationToken);
+        Assert.Equal(throwingCleanup ? 3 : 1, errors.Count);
+        if (throwingCleanup)
+        {
+            Assert.Same(first, errors[1]);
+            Assert.Same(second, errors[2]);
+        }
+    }
+
+    private static async Task<Exception> FinalizeFailure(PageSequence sequence, bool asynchronous)
+    {
+        if (asynchronous)
+        {
+            return await Assert.ThrowsAnyAsync<Exception>(() => sequence.ToDocumentExtractionResultAsync("document", true));
+        }
+
+        return Assert.ThrowsAny<Exception>(() => sequence.ToDocumentExtractionResult("document", true));
+    }
+
+    private sealed class CleanupNative : IDisposable
+    {
+        internal int DisposeCount { get; private set; }
+        public void Dispose() => DisposeCount++;
+        public override string ToString() => throw new InvalidOperationException("Native must never be inspected.");
+    }
+
+    private sealed class CleanupFixture : IDisposable
+    {
+        internal CleanupFixture(Exception? first = null, Exception? second = null)
+        {
+            Streams = [new(first), new(second), new()];
+            Artifacts = Streams.Select(static stream => new DocumentArtifact("application/json", stream)).ToArray();
+            Page = new(7, [], sourceOutputs: Artifacts.Select((artifact, index) => new DocumentSourceOutput("output:" + index, Native, artifact)).ToArray());
+        }
+
+        internal MemoryStream Input { get; } = new([42, 43]);
+        internal CleanupNative Native { get; } = new();
+        internal CleanupStream[] Streams { get; }
+        internal DocumentArtifact[] Artifacts { get; }
+        internal DocumentExtractionPage Page { get; }
+
+        internal void AssertCleaned()
+        {
+            Assert.All(Streams, static stream => Assert.Equal(1, stream.DisposeCount));
+            Assert.All(Artifacts, static artifact =>
+            {
+                Assert.True(artifact.IsDisposed);
+                Assert.False(artifact.IsDocumentOwned);
+            });
+            Assert.Equal(0, Native.DisposeCount);
+            Assert.Equal(42, Input.ReadByte());
+        }
+
+        public void Dispose()
+        {
+            foreach (DocumentArtifact artifact in Artifacts)
+            {
+                artifact.Dispose();
+            }
+
+            Input.Dispose();
+            Native.Dispose();
+        }
+    }
+
+    private sealed class PageSequence(DocumentExtractionPage page, Exception? failure = null)
+        : IEnumerable<DocumentExtractionPage>, IAsyncEnumerable<DocumentExtractionPage>
+    {
+        internal int AcquireCount { get; private set; }
+        internal int DisposeCount { get; private set; }
+        internal CancellationToken ReceivedToken { get; private set; }
+        internal Func<int, Task>? BeforeMoveAsync { get; set; }
+        private DocumentExtractionPage Page => page;
+
+        private bool Move(int index)
+        {
+            if (index == 1)
+            {
+                return true;
+            }
+
+            if (failure is { } error)
+            {
+                throw error;
+            }
+
+            return false;
+        }
+
+        public IEnumerator<DocumentExtractionPage> GetEnumerator()
+        {
+            AcquireCount++;
+            return new Enumerator(this);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public IAsyncEnumerator<DocumentExtractionPage> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            ReceivedToken = cancellationToken;
+            AcquireCount++;
+            return new Enumerator(this);
+        }
+
+        private sealed class Enumerator(PageSequence owner) : IEnumerator<DocumentExtractionPage>, IAsyncEnumerator<DocumentExtractionPage>
+        {
+            private int _index;
+            public DocumentExtractionPage Current => owner.Page;
+            object IEnumerator.Current => Current;
+
+            public bool MoveNext() => owner.Move(++_index);
+
+            public async ValueTask<bool> MoveNextAsync()
+            {
+                ++_index;
+                if (owner.BeforeMoveAsync is { } before)
+                {
+                    await before(_index);
+                }
+
+                // Intentionally ignores ReceivedToken: the finalizer must enforce cancellation itself.
+                return owner.Move(_index);
+            }
+
+            public void Reset() => throw new NotSupportedException();
+            public void Dispose() => owner.DisposeCount++;
+            public ValueTask DisposeAsync()
+            {
+                Dispose();
+                return default;
             }
         }
     }

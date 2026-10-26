@@ -22,27 +22,27 @@ public sealed class DelegatingDocumentExtractionClientTests
         using Native opaque = new();
         DocumentExtractionOptions defaults = new();
         Assert.Null(defaults.ModelId);
-        Assert.True(defaults.CaptureRawOutput);
+        Assert.False(defaults.CaptureRawContent);
         Assert.Empty(defaults.AdditionalProperties);
         defaults.ModelId = "model:A";
-        defaults.CaptureRawOutput = false;
+        defaults.CaptureRawContent = false;
         defaults.AdditionalProperties.Add("setting", opaque);
         defaults.AdditionalProperties.Add("Setting", null);
         DocumentExtractionOptions copy = defaults.Clone();
         Assert.NotSame(defaults, copy);
         Assert.NotSame(defaults.AdditionalProperties, copy.AdditionalProperties);
         Assert.Equal("model:A", copy.ModelId);
-        Assert.False(copy.CaptureRawOutput);
+        Assert.False(copy.CaptureRawContent);
         Assert.Same(opaque, copy.AdditionalProperties["setting"]);
         Assert.Null(copy.AdditionalProperties["Setting"]);
         defaults.AdditionalProperties.Clear();
         defaults.ModelId = null;
-        defaults.CaptureRawOutput = true;
+        defaults.CaptureRawContent = true;
         Assert.Equal(2, copy.AdditionalProperties.Count);
         Assert.Equal("model:A", copy.ModelId);
         copy.AdditionalProperties["setting"] = "replacement";
         Assert.Empty(defaults.AdditionalProperties);
-        Assert.False(copy.CaptureRawOutput);
+        Assert.False(copy.CaptureRawContent);
         Assert.Equal(0, opaque.DisposeCount);
     }
 
@@ -52,10 +52,10 @@ public sealed class DelegatingDocumentExtractionClientTests
     [InlineData("\t")]
     public void Options_InvalidModelDoesNotReplacePriorValue(string invalid)
     {
-        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawOutput = false };
+        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawContent = false };
         Assert.Throws<ArgumentException>("value", () => options.ModelId = invalid);
         Assert.Equal("model:A", options.ModelId);
-        Assert.False(options.CaptureRawOutput);
+        Assert.False(options.CaptureRawContent);
         options.ModelId = null;
         Assert.Null(options.ModelId);
     }
@@ -67,7 +67,7 @@ public sealed class DelegatingDocumentExtractionClientTests
     {
         using MemoryStream source = new([1, 2, 3]);
         using CancellationTokenSource cancellation = new();
-        DocumentExtractionOptions? options = provideOptions ? new() { ModelId = "model:A", CaptureRawOutput = false } : null;
+        DocumentExtractionOptions? options = provideOptions ? new() { ModelId = "model:A", CaptureRawContent = false } : null;
         using Client inner = new((_, _, _, _, _) => PagesAsync(new DocumentExtractionPage(7, [])));
         using Delegating wrapper = new(inner);
         IDocumentExtractionClient client = wrapper;
@@ -123,7 +123,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         CountingStream body = new(RawBytes());
         using DocumentArtifact artifact = new("application/json", body);
         DocumentSourceOutput output = new("operation", native, artifact);
-        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawOutput = capture };
+        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawContent = capture };
         options.AdditionalProperties.Add("opaque", setting);
         TaskCompletionSource<bool>? release = null;
         int cleanup = 0;
@@ -132,15 +132,15 @@ public sealed class DelegatingDocumentExtractionClientTests
             Assert.NotNull(request);
             Assert.NotSame(options, request);
             Assert.Equal("model:A", request.ModelId);
-            Assert.Equal(capture, request.CaptureRawOutput);
+            Assert.Equal(capture, request.CaptureRawContent);
             Assert.Same(setting, request.AdditionalProperties["opaque"]);
-            request.CaptureRawOutput = !capture;
+            request.CaptureRawContent = !capture;
             return Pages();
         });
         using Delegating client = new(inner);
         Task<DocumentExtractionResult> pending = client.ExtractAsync(source, "urn:call:A", "application/pdf", options, cancellation.Token);
         options.ModelId = "model:B";
-        options.CaptureRawOutput = !capture;
+        options.CaptureRawContent = !capture;
         options.AdditionalProperties.Clear();
         ClientCall call = Assert.Single(inner.Calls);
         Assert.Equal("model:A", call.Options!.ModelId);
@@ -150,7 +150,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Equal("application/pdf", call.MediaType);
         Assert.Equal(cancellation.Token, call.Token);
         call.Options.ModelId = "provider:changed";
-        call.Options.CaptureRawOutput = !capture;
+        call.Options.CaptureRawContent = !capture;
         call.Options.AdditionalProperties.Clear();
         Assert.Equal("model:B", options.ModelId);
         Assert.Empty(options.AdditionalProperties);
@@ -200,9 +200,9 @@ public sealed class DelegatingDocumentExtractionClientTests
     {
         using MemoryStream source = new([4, 5, 6]);
         using CancellationTokenSource cancellation = new();
-        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawOutput = false };
+        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawContent = false };
         using Client client = new((_, identifier, _, request, _) =>
-            PagesAsync(Page(new DocumentSourceOutput(identifier, captureDisabled: request?.CaptureRawOutput == false))));
+            PagesAsync(Page(new DocumentSourceOutput(identifier, contentCaptureDisabled: request?.CaptureRawContent != true))));
         using DocumentExtractionResult first = await client.ExtractAsync(source, "default:first", "application/pdf");
         using DocumentExtractionResult explicitResult = await client.ExtractAsync(source, "explicit", "application/pdf", options, cancellation.Token);
         using DocumentExtractionResult last = await client.ExtractAsync(source, "default:last", "application/pdf");
@@ -211,15 +211,15 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Null(client.Calls[2].Options);
         Assert.NotSame(options, client.Calls[1].Options);
         Assert.Equal("model:A", client.Calls[1].Options!.ModelId);
-        Assert.False(client.Calls[1].Options!.CaptureRawOutput);
+        Assert.False(client.Calls[1].Options!.CaptureRawContent);
         Assert.Equal(cancellation.Token, client.Calls[1].Token);
         Assert.Equal(CancellationToken.None, client.Calls[0].Token);
         Assert.Equal(CancellationToken.None, client.Calls[2].Token);
         Assert.Equal(DocumentRawContentStatus.Unavailable, Assert.Single(first.Document.SourceOutputs).NativeStatus);
-        Assert.Equal(DocumentRawContentStatus.Disabled, Assert.Single(explicitResult.Document.SourceOutputs).NativeStatus);
-        Assert.Equal(DocumentRawContentStatus.Unavailable, Assert.Single(last.Document.SourceOutputs).ContentStatus);
+        Assert.Equal(DocumentRawContentStatus.Unavailable, Assert.Single(explicitResult.Document.SourceOutputs).NativeStatus);
+        Assert.Equal(DocumentRawContentStatus.Disabled, Assert.Single(last.Document.SourceOutputs).ContentStatus);
         Assert.Equal("model:A", options.ModelId);
-        Assert.False(options.CaptureRawOutput);
+        Assert.False(options.CaptureRawContent);
         Assert.Equal(4, source.ReadByte());
     }
 
@@ -239,7 +239,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         DocumentSourceOutput outputB = new("output:B", rawContent: artifactB);
         TaskCompletionSource<bool> gateA = new(TaskCreationOptions.RunContinuationsAsynchronously);
         TaskCompletionSource<bool> gateB = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        DocumentExtractionOptions options = new() { ModelId = "model:A" };
+        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawContent = true };
         options.AdditionalProperties.Add("opaque", opaque);
         using Client client = new((_, id, _, _, _) => Pages(id));
         Task<DocumentExtractionResult> pendingA = client.ExtractAsync(sourceA, "urn:call:A", "application/pdf", options, tokenA.Token);
@@ -267,8 +267,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Same(opaque, client.Calls[0].Options!.AdditionalProperties["opaque"]);
         Assert.Equal("B", client.Calls[1].Options!.AdditionalProperties["opaque"]);
         Assert.NotSame(client.Calls[0].Options, client.Calls[1].Options);
-        Assert.True(client.Calls[0].Options!.CaptureRawOutput);
-        Assert.True(client.Calls[1].Options!.CaptureRawOutput);
+        Assert.True(client.Calls[0].Options!.CaptureRawContent);
+        Assert.True(client.Calls[1].Options!.CaptureRawContent);
         Assert.Equal("urn:call:A", resultA.Document.Identifier);
         Assert.Equal("urn:call:B", resultB.Document.Identifier);
         Assert.Same(outputA, Assert.Single(resultA.Document.SourceOutputs));
@@ -332,7 +332,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         using Client client = new((_, _, _, _, _) => Pages());
         try
         {
-            using DocumentExtractionResult result = await client.ExtractAsync(source, "document", "application/pdf", cancellationToken: cancellation.Token);
+            using DocumentExtractionResult result = await client.ExtractAsync(source, "document", "application/pdf",
+                new DocumentExtractionOptions { CaptureRawContent = true }, cancellation.Token);
             Assert.Fail("Failure or cancellation must not return a result.");
         }
         catch (OperationCanceledException error)
@@ -390,8 +391,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         using Native native = new();
         CountingStream body = new(RawBytes());
         using DocumentArtifact artifact = new("application/json", body);
-        bool capture = overload != 2;
-        DocumentSourceOutput output = capture ? new("operation", native, artifact) : new("operation", captureDisabled: true);
+        bool capture = overload == 1;
+        DocumentSourceOutput output = capture ? new("operation", native, artifact) : new("operation", contentCaptureDisabled: true);
         int cleanup = 0;
         CancellationToken received = default;
         IAsyncEnumerable<DocumentExtractionPage> pages = Pages();
@@ -494,7 +495,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
         DocumentRawContentStatus nativeStatus = hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable;
         DocumentRawContentStatus contentStatus = hasBody ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable;
-        Assert.Equal(disabled ? DocumentRawContentStatus.Disabled : nativeStatus, output.NativeStatus);
+        Assert.Equal(nativeStatus, output.NativeStatus);
         Assert.Equal(disabled ? DocumentRawContentStatus.Disabled : contentStatus, output.ContentStatus);
         Assert.Same(hasNative ? native : null, output.GetRawRepresentation());
         Assert.Same(hasBody ? artifact : null, output.GetRawContent());
@@ -541,11 +542,12 @@ public sealed class DelegatingDocumentExtractionClientTests
     }
 
     [Fact]
-    public void Finalization_OptOutRejectsNativeAnnotationWithoutOperationOutput()
+    public void Finalization_OptOutPreservesNativeAnnotationWithoutOperationOutput()
     {
         using Native native = new();
         DocumentExtractionPage page = new(7, [], annotations: [new DocumentAnnotation("provider", rawRepresentation: native)]);
-        Assert.Throws<ArgumentException>("pages", () => new[] { page }.ToDocumentExtractionResult("document", false));
+        using DocumentExtractionResult result = new[] { page }.ToDocumentExtractionResult("document", false);
+        Assert.Same(page.Annotations[0], Assert.Single(Assert.Single(result.Document.Sections).Annotations));
         Assert.Empty(page.SourceOutputs);
         Assert.Same(native, page.Annotations[0].GetRawRepresentation());
         Assert.Equal(0, native.DisposeCount);
@@ -572,10 +574,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Throws<ObjectDisposedException>(() => builder.Build());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task ExtractAsync_DefaultCaptureRetainsExactOriginalBodyAndBorrowedNative(bool explicitDefaults)
+    [Fact]
+    public async Task ExtractAsync_ExplicitCapture_RetainsExactOriginalBodyAndBorrowedNative()
     {
         using MemoryStream source = new([42]);
         using Native native = new();
@@ -583,22 +583,15 @@ public sealed class DelegatingDocumentExtractionClientTests
         using DocumentArtifact artifact = new("application/json", body);
         DocumentSourceOutput output = new("operation", native, artifact);
         using Client client = new((_, _, _, _, _) => PagesAsync(Page(output)));
-        DocumentExtractionOptions? options = explicitDefaults ? new() : null;
+        DocumentExtractionOptions options = new() { CaptureRawContent = true };
         using DocumentExtractionResult result = await client.ExtractAsync(source, "document", "application/pdf", options);
         ClientCall call = Assert.Single(client.Calls);
         Assert.Equal(CancellationToken.None, call.Token);
-        if (explicitDefaults)
-        {
-            Assert.NotNull(call.Options);
-            Assert.NotSame(options, call.Options);
-            Assert.Null(call.Options.ModelId);
-            Assert.True(call.Options.CaptureRawOutput);
-            Assert.Empty(call.Options.AdditionalProperties);
-        }
-        else
-        {
-            Assert.Null(call.Options);
-        }
+        Assert.NotNull(call.Options);
+        Assert.NotSame(options, call.Options);
+        Assert.Null(call.Options.ModelId);
+        Assert.True(call.Options.CaptureRawContent);
+        Assert.Empty(call.Options.AdditionalProperties);
 
         Assert.Same(source, call.Source);
         Assert.Equal("document", call.Identifier);
@@ -625,13 +618,22 @@ public sealed class DelegatingDocumentExtractionClientTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void Finalization_OptOutRejectsNativeOnlyAndContentOnlyIndependently(bool nativeOnly)
+    public void Finalization_OptOutAllowsNativeOnlyButRejectsContentOnly(bool nativeOnly)
     {
         using Native native = new();
         CountingStream body = new(RawBytes());
         using DocumentArtifact artifact = new("application/json", body);
         DocumentSourceOutput output = new("operation", nativeOnly ? native : null, nativeOnly ? null : artifact);
-        Assert.Throws<ArgumentException>("pages", () => new[] { Page(output) }.ToDocumentExtractionResult("document", false));
+        if (nativeOnly)
+        {
+            using DocumentExtractionResult result = new[] { Page(output) }.ToDocumentExtractionResult("document", false);
+            Assert.Same(native, Assert.Single(result.Document.SourceOutputs).GetRawRepresentation());
+        }
+        else
+        {
+            Assert.Throws<ArgumentException>("pages", () => new[] { Page(output) }.ToDocumentExtractionResult("document", false));
+        }
+
         Assert.Equal(nativeOnly ? 0 : 1, body.DisposeCount);
         Assert.False(artifact.IsDocumentOwned);
         Assert.Equal(0, native.DisposeCount);
@@ -658,12 +660,12 @@ public sealed class DelegatingDocumentExtractionClientTests
         using Client client = new((_, _, _, _, _) => Pages());
 
         ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
-            client.ExtractAsync(source, "document", "application/pdf", new DocumentExtractionOptions { CaptureRawOutput = false }));
+            client.ExtractAsync(source, "document", "application/pdf", new DocumentExtractionOptions { CaptureRawContent = false }));
 
         Assert.Equal("pages", error.ParamName);
         ClientCall call = Assert.Single(client.Calls);
         Assert.Same(source, call.Source);
-        Assert.False(call.Options!.CaptureRawOutput);
+        Assert.False(call.Options!.CaptureRawContent);
         Assert.Empty(page.SourceOutputs);
         Assert.Null(page.SourcePage);
         Assert.Empty(page.Annotations);
@@ -729,7 +731,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         DocumentExtractionTable outer = new("outer", 0, "stored outer", 1, 1, [new DocumentExtractionTableCell(0, 0, inner)]);
         DocumentExtractionPage page = new(7, [outer], pageReferences: [reference]);
         using Client client = new((_, _, _, _, _) => PagesAsync(page));
-        using DocumentExtractionResult result = await client.ExtractAsync(source, "nested", "application/pdf");
+        using DocumentExtractionResult result = await client.ExtractAsync(source, "nested", "application/pdf",
+            new DocumentExtractionOptions { CaptureRawContent = true });
         Document document = result.Document;
 
         Assert.Equal("nested", document.Identifier);
@@ -845,7 +848,7 @@ public sealed class DelegatingDocumentExtractionClientTests
     }
 
     private static byte[] RawBytes() => System.Text.Encoding.UTF8.GetBytes(
-        "{\"unknown\":{\"z\":[3,1]},\"marker\":\"RAW_BODY_ONLY_91\",\"pages\":[7,2]}");
+        " {\r\n \"unknown\" : {\"z\":[3, 1]}, \"marker\":\"RAW_BODY_ONLY_91\", \"pages\":[7,2]\r\n}\n");
 
     private static DocumentExtractionPage Page(DocumentSourceOutput output, int number = 7) =>
         new(number, [new DocumentExtractionText("text:" + number, 0, DocumentTextKind.Paragraph, "visible **text**", "visible text")],
@@ -918,9 +921,297 @@ public sealed class DelegatingDocumentExtractionClientTests
     private sealed class Native : IDisposable
     {
         internal int DisposeCount { get; private set; }
+        internal int ToStringCount { get; private set; }
 
         public void Dispose() => DisposeCount++;
 
-        public override string ToString() => "NATIVE_ONLY_92";
+        public override string ToString()
+        {
+            ToStringCount++;
+            return "NATIVE_ONLY_92";
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Options_DefaultsAndClone_PreserveScalarsAndBorrowValuesWithIndependentOrdinalProperties(bool capture)
+    {
+        using Native opaque = new();
+        Assert.False(new DocumentExtractionOptions().CaptureRawContent);
+        DocumentExtractionOptions original = new() { ModelId = "original", CaptureRawContent = capture };
+        original.AdditionalProperties.Add("setting", opaque);
+        original.AdditionalProperties.Add("Setting", null);
+        DocumentExtractionOptions copy = original.Clone();
+
+        Assert.NotSame(original, copy);
+        Assert.NotSame(original.AdditionalProperties, copy.AdditionalProperties);
+        Assert.Equal("original", copy.ModelId);
+        Assert.Equal(capture, copy.CaptureRawContent);
+        Assert.Same(opaque, copy.AdditionalProperties["setting"]);
+        Assert.Null(copy.AdditionalProperties["Setting"]);
+        copy.ModelId = "copy";
+        copy.CaptureRawContent = !capture;
+        copy.AdditionalProperties["Setting"] = "copy-only";
+        Assert.Equal("original", original.ModelId);
+        Assert.Equal(capture, original.CaptureRawContent);
+        Assert.Null(original.AdditionalProperties["Setting"]);
+        original.ModelId = null;
+        original.AdditionalProperties.Clear();
+        Assert.Equal("copy", copy.ModelId);
+        Assert.Equal(!capture, copy.CaptureRawContent);
+        Assert.Equal(2, copy.AdditionalProperties.Count);
+        Assert.Same(opaque, copy.AdditionalProperties["setting"]);
+        Assert.Equal(0, opaque.DisposeCount);
+    }
+
+    [Fact]
+    public void Options_PublicSurface_UsesCaptureRawContentWithoutCaptureRawOutputAlias()
+    {
+        Assert.Equal(typeof(bool), typeof(DocumentExtractionOptions).GetProperty("CaptureRawContent")!.PropertyType);
+        Assert.Null(typeof(DocumentExtractionOptions).GetProperty("CaptureRawOutput"));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task ExtractAsync_AbsentDefaultAndFalseOptions_DisableBodyCaptureAndPreserveNativeIdentity(int optionKind)
+    {
+        using MemoryStream source = new([42]);
+        using Native native = new();
+        using Native annotationNative = new();
+        DocumentExtractionOptions? options = optionKind switch
+        {
+            2 => new(),
+            3 => new() { CaptureRawContent = false },
+            _ => null
+        };
+        DocumentSourceOutput? output = null;
+        DocumentAnnotation annotation = new("native", rawRepresentation: annotationNative);
+        DocumentExtractionPage? page = null;
+        using Client client = new((_, _, _, request, _) =>
+        {
+            output = new("operation", native, contentCaptureDisabled: request?.CaptureRawContent != true);
+            page = new(7, [], annotations: [annotation], sourceOutputs: [output]);
+            return PagesAsync(page);
+        });
+        using DocumentExtractionResult result = optionKind == 0
+            ? await client.ExtractAsync(source, "document", "application/pdf")
+            : await client.ExtractAsync(source, "document", "application/pdf", options);
+
+        ClientCall call = Assert.Single(client.Calls);
+        if (options is null)
+        {
+            Assert.Null(call.Options);
+        }
+        else
+        {
+            Assert.NotSame(options, call.Options);
+            Assert.False(call.Options!.CaptureRawContent);
+        }
+
+        Assert.Same(page, Assert.Single(result.Pages));
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Same(native, output!.GetRawRepresentation());
+        Assert.Null(output.GetRawContent());
+        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
+        Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
+        Assert.Same(annotation, Assert.Single(Assert.Single(result.Document.Sections).Annotations));
+        Assert.Same(annotationNative, annotation.GetRawRepresentation());
+        result.Dispose();
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(0, annotationNative.DisposeCount);
+        Assert.Equal(0, native.ToStringCount);
+        Assert.Equal(0, annotationNative.ToStringCount);
+        Assert.Equal(42, source.ReadByte());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExtractAsync_ProviderCaptureMutation_DoesNotChangeFrozenFinalizationPolicy(bool capture)
+    {
+        using MemoryStream source = new([42]);
+        CountingStream body = new(RawBytes());
+        using DocumentArtifact artifact = new("application/json", body);
+        using Native native = new();
+        DocumentSourceOutput output = new("operation", native, artifact);
+        DocumentExtractionOptions options = new() { CaptureRawContent = capture };
+        using Client client = new((_, _, _, request, _) =>
+        {
+            request!.CaptureRawContent = !capture;
+            return PagesAsync(Page(output));
+        });
+        if (capture)
+        {
+            using DocumentExtractionResult result = await client.ExtractAsync(source, "document", "application/pdf", options);
+            Assert.Same(artifact, Assert.Single(result.Document.SourceOutputs).GetRawContent());
+            using MemoryStream copy = new();
+            await artifact.Content.CopyToAsync(copy);
+            Assert.Equal(RawBytes(), copy.ToArray());
+            Assert.Equal(0, body.DisposeCount);
+        }
+        else
+        {
+            ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
+                client.ExtractAsync(source, "document", "application/pdf", options));
+            Assert.Equal("pages", error.ParamName);
+            Assert.False(artifact.IsDocumentOwned);
+        }
+
+        Assert.Equal(capture, options.CaptureRawContent);
+        Assert.Equal(!capture, Assert.Single(client.Calls).Options!.CaptureRawContent);
+        Assert.Equal(1, body.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(42, source.ReadByte());
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, true, true)]
+    public async Task ExtractAsync_SourceOutputStatuses_KeepNativeAvailabilityIndependentOfBodyPolicy(bool hasNative, bool capture, bool hasBody)
+    {
+        using MemoryStream source = new([42]);
+        using Native native = new();
+        CountingStream body = new(RawBytes());
+        using DocumentArtifact artifact = new("application/json", body);
+        DocumentSourceOutput output = new("operation", hasNative ? native : null, hasBody ? artifact : null,
+            contentCaptureDisabled: !capture);
+        using Client client = new((_, _, _, _, _) => PagesAsync(Page(output)));
+        using DocumentExtractionResult result = await client.ExtractAsync(source, "document", "application/pdf",
+            new DocumentExtractionOptions { CaptureRawContent = capture });
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Equal(hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable, output.NativeStatus);
+        DocumentRawContentStatus contentStatus = hasBody ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable;
+        Assert.Equal(!capture ? DocumentRawContentStatus.Disabled : contentStatus, output.ContentStatus);
+        Assert.Same(hasNative ? native : null, output.GetRawRepresentation());
+        Assert.Same(hasBody ? artifact : null, output.GetRawContent());
+        result.Dispose();
+        Assert.Equal(hasBody ? 1 : 0, body.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(42, source.ReadByte());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExtractAsync_NativeOnlyWithCaptureEnabled_DoesNotInventBody(bool hasNative)
+    {
+        using MemoryStream source = new([42]);
+        using Native native = new();
+        DocumentSourceOutput output = new("operation", hasNative ? native : null);
+        using Client client = new((_, _, _, _, _) => PagesAsync(Page(output)));
+        using DocumentExtractionResult result = await client.ExtractAsync(source, "document", "application/pdf",
+            new DocumentExtractionOptions { CaptureRawContent = true });
+        Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+        Assert.Same(hasNative ? native : null, output.GetRawRepresentation());
+        Assert.Null(output.GetRawContent());
+        Assert.Empty(result.Document.Artifacts);
+        Assert.Equal(DocumentRawContentStatus.Unavailable, output.ContentStatus);
+        Assert.Equal(hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable, output.NativeStatus);
+        result.Dispose();
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(0, native.ToStringCount);
+        Assert.Equal(42, source.ReadByte());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExtractPagesAsync_Delegation_ForwardsExactStreamOptionsAndToken(bool provideOptions)
+    {
+        using MemoryStream input = new([42]);
+        using CancellationTokenSource cancellation = new();
+        using Native native = new();
+        using Native opaque = new();
+        DocumentSourceOutput output = new("operation", native, contentCaptureDisabled: true);
+        DocumentExtractionPage page = Page(output);
+        DocumentExtractionOptions? options = provideOptions ? new() : null;
+        options?.AdditionalProperties.Add("opaque", opaque);
+        using Client inner = new((_, _, _, _, _) => PagesAsync(page));
+        using Delegating client = new(inner);
+        List<DocumentExtractionPage> observed = [];
+        await foreach (DocumentExtractionPage item in client.ExtractPagesAsync(input, "urn:input", "application/pdf", options, cancellation.Token))
+        {
+            observed.Add(item);
+        }
+
+        Assert.Same(page, Assert.Single(observed));
+        ClientCall call = Assert.Single(inner.Calls);
+        Assert.Same(input, call.Source);
+        Assert.Same(options, call.Options);
+        Assert.Equal("urn:input", call.Identifier);
+        Assert.Equal("application/pdf", call.MediaType);
+        Assert.Equal(cancellation.Token, call.Token);
+        client.Dispose();
+        Assert.Equal(1, inner.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(0, native.ToStringCount);
+        Assert.Equal(0, opaque.DisposeCount);
+        Assert.Equal(42, input.ReadByte());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExtractAsync_FailureAndCancellation_LeaveBorrowedOptionValuesAlive(bool cancel)
+    {
+        using MemoryStream input = new([42]);
+        using CancellationTokenSource cancellation = new();
+        using Native native = new();
+        using Native annotationNative = new();
+        using Native opaque = new();
+        CountingStream body = new(RawBytes());
+        using DocumentArtifact artifact = new("application/json", body);
+        DocumentSourceOutput output = new("operation", native, artifact);
+        DocumentAnnotation annotation = new("vendor", value: opaque, sourceOutput: output, rawRepresentation: annotationNative);
+        DocumentExtractionPage page = new(7, [], annotations: [annotation], sourceOutputs: [output]);
+        DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawContent = true };
+        options.AdditionalProperties.Add("opaque", opaque);
+        Exception primary = cancel
+            ? new OperationCanceledException(cancellation.Token)
+            : new InvalidOperationException("provider failure");
+        using Client client = new((_, _, _, _, _) => Pages());
+
+        Exception actual = await Assert.ThrowsAnyAsync<Exception>(() =>
+            client.ExtractAsync(input, "document", "application/pdf", options, cancellation.Token));
+
+        Assert.Same(primary, actual);
+        Assert.Equal(1, body.DisposeCount);
+        Assert.False(artifact.IsDocumentOwned);
+        ClientCall call = Assert.Single(client.Calls);
+        Assert.NotSame(options, call.Options);
+        Assert.Same(opaque, call.Options!.AdditionalProperties["opaque"]);
+        Assert.Same(opaque, options.AdditionalProperties["opaque"]);
+        Assert.Equal("model:A", options.ModelId);
+        Assert.True(options.CaptureRawContent);
+        Assert.Equal(cancellation.Token, call.Token);
+        Assert.Same(native, output.GetRawRepresentation());
+        Assert.Same(annotationNative, annotation.GetRawRepresentation());
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(0, annotationNative.DisposeCount);
+        Assert.Equal(0, opaque.DisposeCount);
+        Assert.Equal(0, native.ToStringCount);
+        Assert.Equal(0, annotationNative.ToStringCount);
+        Assert.Equal(0, opaque.ToStringCount);
+        Assert.Equal(42, input.ReadByte());
+
+        async IAsyncEnumerable<DocumentExtractionPage> Pages()
+        {
+            yield return page;
+            await Task.CompletedTask;
+            if (cancel)
+            {
+                cancellation.Cancel();
+            }
+
+            throw primary;
+        }
     }
 }

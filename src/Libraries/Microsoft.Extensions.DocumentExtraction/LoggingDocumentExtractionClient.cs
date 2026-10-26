@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
@@ -53,32 +54,36 @@ public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtract
             throw;
         }
 
+        bool failed = false;
         try
         {
             while (true)
             {
-                bool hasNext;
+                DocumentExtractionPage page;
                 try
                 {
-                    hasNext = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                    if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+                    {
+                        break;
+                    }
+
+                    page = enumerator.Current;
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException cancellation)
                 {
+                    failed = true;
                     LogCanceled();
+                    await DisposeAfterFailureAsync(enumerator, cancellation).ConfigureAwait(false);
                     throw;
                 }
-                catch (Exception)
+                catch (Exception error)
                 {
+                    failed = true;
                     LogFailed();
+                    await DisposeAfterFailureAsync(enumerator, error).ConfigureAwait(false);
                     throw;
                 }
 
-                if (!hasNext)
-                {
-                    break;
-                }
-
-                DocumentExtractionPage page = enumerator.Current;
                 LogPageReceived(page.PageNumber, page.Observations.Count);
                 yield return page;
             }
@@ -87,9 +92,26 @@ public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtract
         }
         finally
         {
-            await enumerator.DisposeAsync().ConfigureAwait(false);
+            if (!failed)
+            {
+                await enumerator.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
+
+#pragma warning disable EA0014 // IAsyncDisposable.DisposeAsync doesn't support cancellation.
+    private static async ValueTask DisposeAfterFailureAsync(IAsyncEnumerator<DocumentExtractionPage> enumerator, Exception failure)
+    {
+        try
+        {
+            await enumerator.DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception cleanupFailure)
+        {
+            throw new AggregateException(failure, cleanupFailure);
+        }
+    }
+#pragma warning restore EA0014
 
     [LoggerMessage(LogLevel.Debug, "Document extraction invoked.")]
     private partial void LogInvoked();

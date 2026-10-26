@@ -17,6 +17,8 @@ Cleanup attempts every eligible artifact even when a stream throws. A failed
 `AggregateException` contains the original error first and the cleanup failures.
 Builder disposal reports cleanup failures in an `AggregateException`. Artifacts
 already owned by another document remain that document's responsibility.
+Page-sequence finalization also preserves enumeration failures or cancellation
+ahead of any artifact-cleanup failures rather than replacing the primary error.
 
 Unknown, list, barcode, and provider-specific observations can preserve opaque
 structured values through `DocumentExtractionExtension.Value` and shared
