@@ -29,10 +29,10 @@ public class DocumentAnnotationRegistrationTests
         using DocumentAnnotationTestData.BorrowedNative native = new();
         DocumentSourceOutput output = new("candidate-output", native, rawArtifact);
         DocumentSourcePage page = new("candidate-page", 1, sourceOutput: output);
-        DocumentAnnotation annotation = new("layout", regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) });
+        DocumentSourceReference annotation = new(page, DocumentAnnotationTestData.Polygon());
         DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
         first.Artifacts.Add(localArtifact);
-        first.Annotations.Add(annotation);
+        first.Sources.Add(annotation);
         DocumentTextElement last = new(DocumentTextKind.Paragraph, "last");
         last.Artifacts.Add(foreignArtifact);
         DocumentTableElement nested = new("", 1, 2);
@@ -47,7 +47,7 @@ public class DocumentAnnotationRegistrationTests
         DocumentTableCell old = new(new DocumentTextElement(DocumentTextKind.Paragraph, "old"), 2, 2);
         table.Cells[0, 0] = old;
         DocumentTableCell cell = new(nested, 2, 2);
-        cell.Annotations.Add(annotation);
+        cell.Sources.Add(annotation);
         if (route == "cell")
         {
             candidate.Elements.Remove(nested);
@@ -112,7 +112,7 @@ public class DocumentAnnotationRegistrationTests
     }
 
     [Fact]
-    public void NestedTableAttachment_RecursivelyRegistersCellContentAnnotationsAndOwnedRawOutputs()
+    public void NestedTableAttachment_RecursivelyRegistersCellContentSourcesAndOwnedRawOutputs()
     {
         using Document document = new("recursive-sources");
         DocumentSection section = new("");
@@ -129,11 +129,9 @@ public class DocumentAnnotationRegistrationTests
         DocumentSourcePage cellPage = new("nested-cell-frame", 7, sourceOutput: cellOutput);
         DocumentSourcePage contentPage = new("nested-content-frame", 2, sourceOutput: contentOutput);
         DocumentTextElement text = new(DocumentTextKind.Paragraph, "nested **value**", "nested value");
-        text.Annotations.Add(new DocumentAnnotation("content-layout",
-            regions: new[] { new DocumentRegion(contentPage, DocumentAnnotationTestData.Polygon()) }));
+        text.Sources.Add(new DocumentSourceReference(contentPage, DocumentAnnotationTestData.Polygon()));
         DocumentTableCell innerCell = new(text);
-        innerCell.Annotations.Add(new DocumentAnnotation("cell-layout",
-            regions: new[] { new DocumentRegion(cellPage, DocumentAnnotationTestData.Polygon()) }));
+        innerCell.Sources.Add(new DocumentSourceReference(cellPage, DocumentAnnotationTestData.Polygon()));
         DocumentTableElement inner = new("", 1, 1);
         inner.Cells[0, 0] = innerCell;
         DocumentTableElement outer = new("", 1, 1);
@@ -206,12 +204,10 @@ public class DocumentAnnotationRegistrationTests
         DocumentSourcePage secondFrame = new("second-frame", 2, sourceOutput: secondOutput);
         DocumentTextElement first = new(DocumentTextKind.Paragraph, "**first**", "first");
         DocumentTextElement second = new(DocumentTextKind.Paragraph, "**second**", "second");
-        DocumentAnnotation firstAnnotation = new("first-layout",
-            regions: new[] { new DocumentRegion(firstFrame, DocumentAnnotationTestData.Polygon()) });
-        DocumentAnnotation conflictingAnnotation = new("second-layout",
-            regions: new[] { new DocumentRegion(secondFrame, DocumentAnnotationTestData.Polygon()) });
-        first.Annotations.Add(firstAnnotation);
-        second.Annotations.Add(conflictingAnnotation);
+        DocumentSourceReference firstAnnotation = new(firstFrame, DocumentAnnotationTestData.Polygon());
+        DocumentSourceReference conflictingAnnotation = new(secondFrame, DocumentAnnotationTestData.Polygon());
+        first.Sources.Add(firstAnnotation);
+        second.Sources.Add(conflictingAnnotation);
         DocumentSection nested = new("");
         nested.Elements.Add(second);
         DocumentSection candidate = new("");
@@ -236,8 +232,8 @@ public class DocumentAnnotationRegistrationTests
         Assert.Same(nested, second.ParentSection);
         Assert.Collection(candidate.Elements, element => Assert.Same(first, element), element => Assert.Same(nested, element));
         Assert.Same(second, Assert.Single(nested.Elements));
-        Assert.Same(firstAnnotation, Assert.Single(first.Annotations));
-        Assert.Same(conflictingAnnotation, Assert.Single(second.Annotations));
+        Assert.Same(firstAnnotation, Assert.Single(first.Sources));
+        Assert.Same(conflictingAnnotation, Assert.Single(second.Sources));
         Assert.False(firstArtifact.IsDocumentOwned);
         Assert.False(secondArtifact.IsDocumentOwned);
         Assert.Equal(0, firstStream.DisposeCount);
@@ -248,7 +244,7 @@ public class DocumentAnnotationRegistrationTests
         Assert.Equal(21, secondStream.ReadByte());
 
         // This conflict is intrinsic: remove it explicitly, not merely change the destination.
-        Assert.True(second.Annotations.Remove(conflictingAnnotation));
+        Assert.True(second.Sources.Remove(conflictingAnnotation));
         recovered.Sections.Add(candidate);
         Assert.Same(candidate, Assert.Single(recovered.Sections));
         Assert.Same(firstOutput, Assert.Single(recovered.SourceOutputs));
@@ -299,10 +295,8 @@ public class DocumentAnnotationRegistrationTests
         DocumentSourcePage secondFrame = new("same-frame", 7, new DocumentPageDimensions(400, 200), sourceOutput: output);
         DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
         DocumentTextElement second = new(DocumentTextKind.Paragraph, "second");
-        first.Annotations.Add(new DocumentAnnotation("first-layout",
-            regions: new[] { new DocumentRegion(firstFrame, DocumentAnnotationTestData.Polygon()) }));
-        second.Annotations.Add(new DocumentAnnotation("second-layout",
-            regions: new[] { new DocumentRegion(secondFrame, DocumentAnnotationTestData.Polygon()) }));
+        first.Sources.Add(new DocumentSourceReference(firstFrame, DocumentAnnotationTestData.Polygon()));
+        second.Sources.Add(new DocumentSourceReference(secondFrame, DocumentAnnotationTestData.Polygon()));
         DocumentSection candidate = new("");
         candidate.Elements.Add(first);
         candidate.Elements.Add(second);
@@ -321,8 +315,8 @@ public class DocumentAnnotationRegistrationTests
         Assert.Null(second.Address);
         Assert.Same(candidate, first.ParentSection);
         Assert.Same(candidate, second.ParentSection);
-        Assert.Same(firstFrame, Assert.Single(first.Annotations).Regions[0].Page);
-        Assert.Same(secondFrame, Assert.Single(second.Annotations).Regions[0].Page);
+        Assert.Same(firstFrame, Assert.Single(first.Sources).Page);
+        Assert.Same(secondFrame, Assert.Single(second.Sources).Page);
         Assert.False(artifact.IsDocumentOwned);
         Assert.False(artifact.IsDisposed);
         document.Dispose();
@@ -333,7 +327,7 @@ public class DocumentAnnotationRegistrationTests
     }
 
     [Fact]
-    public void RejectedCell_ConflictingCellAndContentAnnotationsPreserveMergedAnchor()
+    public void RejectedCell_ConflictingCellAndContentSourcesPreserveMergedAnchor()
     {
         using Document document = new("old-anchor-owner");
         using Document recovered = new("replacement-owner");
@@ -351,8 +345,7 @@ public class DocumentAnnotationRegistrationTests
         DocumentSourcePage contentFrame = new("content-frame", 2, sourceOutput: contentOutput);
         DocumentTextElement oldText = new(DocumentTextKind.Paragraph, "old **anchor**", "old anchor");
         DocumentTableCell oldCell = new(oldText, 2, 2, "columnHeader");
-        oldCell.Annotations.Add(new DocumentAnnotation("old-layout",
-            regions: new[] { new DocumentRegion(oldFrame, DocumentAnnotationTestData.Polygon()) }));
+        oldCell.Sources.Add(new DocumentSourceReference(oldFrame, DocumentAnnotationTestData.Polygon()));
         DocumentTableElement table = new("", 2, 2);
         table.Cells[0, 0] = oldCell;
         DocumentSection section = new("");
@@ -360,11 +353,9 @@ public class DocumentAnnotationRegistrationTests
         document.Sections.Add(section);
         DocumentTextElement replacementText = new(DocumentTextKind.Paragraph, "new **anchor**", "new anchor");
         DocumentTableCell replacement = new(replacementText, 2, 2, "rowHeader");
-        replacement.Annotations.Add(new DocumentAnnotation("cell-layout",
-            regions: new[] { new DocumentRegion(cellFrame, DocumentAnnotationTestData.Polygon()) }));
-        DocumentAnnotation conflict = new("content-layout",
-            regions: new[] { new DocumentRegion(contentFrame, DocumentAnnotationTestData.Polygon()) });
-        replacementText.Annotations.Add(conflict);
+        replacement.Sources.Add(new DocumentSourceReference(cellFrame, DocumentAnnotationTestData.Polygon()));
+        DocumentSourceReference conflict = new(contentFrame, DocumentAnnotationTestData.Polygon());
+        replacementText.Sources.Add(conflict);
         long version = document.Version;
 
         Assert.Throws<System.InvalidOperationException>(() => table.Cells[0, 0] = replacement);
@@ -404,7 +395,7 @@ public class DocumentAnnotationRegistrationTests
         Assert.Null(replacementText.Address);
         Assert.Null(replacementText.ParentSection);
         Assert.Same(replacementText, replacement.Content);
-        Assert.Same(conflict, Assert.Single(replacementText.Annotations));
+        Assert.Same(conflict, Assert.Single(replacementText.Sources));
         Assert.False(cellArtifact.IsDocumentOwned);
         Assert.False(contentArtifact.IsDocumentOwned);
         Assert.Equal(0, cellStream.DisposeCount);
@@ -415,7 +406,7 @@ public class DocumentAnnotationRegistrationTests
         Assert.Equal(61, contentStream.ReadByte());
 
         // Resolve the intrinsic cell/content source conflict before reusing this exact cell.
-        Assert.True(replacementText.Annotations.Remove(conflict));
+        Assert.True(replacementText.Sources.Remove(conflict));
         DocumentTableElement recoveredTable = new("", 2, 2);
         recoveredTable.Cells[0, 0] = replacement;
         DocumentSection recoveredSection = new("");
@@ -453,7 +444,7 @@ public class DocumentAnnotationRegistrationTests
     [Theory]
     [InlineData("output")]
     [InlineData("page")]
-    [InlineData("annotation")]
+    [InlineData("source")]
     [InlineData("subtree")]
     public void ExternallyClosedRawContent_RegistrationRejectsWithoutTakingOwnership(string route)
     {
@@ -463,12 +454,13 @@ public class DocumentAnnotationRegistrationTests
         using DocumentAnnotationTestData.BorrowedNative native = new();
         DocumentSourceOutput output = new("closed-operation", native, artifact);
         DocumentSourcePage frame = new("closed-frame", 7, sourceOutput: output);
-        DocumentAnnotation annotation = new("closed-layout", sourceOutput: output,
-            regions: new[] { new DocumentRegion(frame, DocumentAnnotationTestData.Polygon()) });
+        DocumentSourceReference annotation = new(frame, DocumentAnnotationTestData.Polygon());
         DocumentTextElement text = new(DocumentTextKind.Paragraph, "preserved");
-        text.Annotations.Add(annotation);
+        text.Sources.Add(annotation);
         DocumentSection candidate = new("");
         candidate.Elements.Add(text);
+        DocumentSection host = new("");
+        document.Sections.Add(host);
         long version = document.Version;
         stream.Dispose();
         Assert.False(artifact.IsDisposed);
@@ -479,7 +471,7 @@ public class DocumentAnnotationRegistrationTests
         {
             "output" => () => document.AddSourceOutput(output),
             "page" => () => document.AddSourcePage(frame),
-            "annotation" => () => document.Annotations.Add(annotation),
+            "source" => () => host.Sources.Add(annotation),
             "subtree" => () => document.Sections.Add(candidate),
             _ => throw new System.ArgumentOutOfRangeException(nameof(route))
         };
@@ -488,8 +480,8 @@ public class DocumentAnnotationRegistrationTests
         Assert.Empty(document.SourceOutputs);
         Assert.Empty(document.SourcePages);
         Assert.Empty(document.Artifacts);
-        Assert.Empty(document.Annotations);
-        Assert.Empty(document.Sections);
+        Assert.Empty(host.Sources);
+        Assert.Same(host, Assert.Single(document.Sections));
         Assert.Equal(version, document.Version);
         Assert.False(artifact.IsDocumentOwned);
         Assert.False(artifact.IsDisposed);
@@ -497,7 +489,7 @@ public class DocumentAnnotationRegistrationTests
         Assert.Null(candidate.ParentSection);
         Assert.Null(text.Address);
         Assert.Same(candidate, text.ParentSection);
-        Assert.Same(annotation, Assert.Single(text.Annotations));
+        Assert.Same(annotation, Assert.Single(text.Sources));
         Assert.Same(artifact, output.GetRawContent());
         Assert.Same(native, output.GetRawRepresentation());
         document.Dispose();

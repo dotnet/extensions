@@ -447,8 +447,7 @@ public class DocumentTableCellCollectionTests
         DocumentSourcePage frame = DocumentAnnotationTestData.PdfPage(output);
         DocumentTextElement oldText = new(DocumentTextKind.Paragraph, "lO0? &", "lO0? &");
         DocumentTableCell oldAnchor = new(oldText, 2, 2, "rowHeader");
-        oldAnchor.Annotations.Add(new DocumentAnnotation("layout",
-            regions: new[] { new DocumentRegion(frame, DocumentAnnotationTestData.Polygon()) }));
+        oldAnchor.Sources.Add(new DocumentSourceReference(frame, DocumentAnnotationTestData.Polygon()));
         DocumentTableElement table = new("stored table", 4, 4);
         table.Cells[0, 0] = oldAnchor;
         DocumentSection section = new("");
@@ -548,8 +547,8 @@ public class DocumentTableCellCollectionTests
             document.ToMarkdown());
         Assert.Equal("stored table", table.GetMarkdown());
         Assert.Same(frame, Assert.Single(document.SourcePages));
-        Assert.Same(frame, oldAnchor.Annotations[0].Regions[0].Page);
-        Assert.Equal(DocumentAnnotationTestData.Polygon(), oldAnchor.Annotations[0].Regions[0].Polygon);
+        Assert.Same(frame, oldAnchor.Sources[0].Page);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), oldAnchor.Sources[0].Polygon);
         Assert.Same(output, Assert.Single(document.SourceOutputs));
         Assert.Same(artifact, Assert.Single(document.Artifacts));
         Assert.Same(artifact, output.GetRawContent());

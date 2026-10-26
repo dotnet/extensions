@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Documents.Tests;
 
-public class DocumentTests
+public partial class DocumentTests
 {
     [Fact]
     public void StoresIdentifierAndInitialState()
@@ -704,10 +704,9 @@ public class DocumentTests
         DocumentSourcePage page2 = new("urn:frame:page2", 2, sourceOutput: output);
         DocumentTextElement text7 = new(DocumentTextKind.Paragraph, "same text");
         DocumentTextElement text2 = new(DocumentTextKind.Paragraph, "same text");
-        DocumentRegion region = new(page7, DocumentAnnotationTestData.Polygon());
-        text7.Annotations.Add(new DocumentAnnotation("layout", regions: new[] { region }));
-        text2.Annotations.Add(new DocumentAnnotation("layout",
-            regions: new[] { new DocumentRegion(page2, DocumentAnnotationTestData.Polygon()) }));
+        DocumentSourceReference region = new(page7, DocumentAnnotationTestData.Polygon());
+        text7.Sources.Add(region);
+        text2.Sources.Add(new DocumentSourceReference(page2, DocumentAnnotationTestData.Polygon()));
         DocumentSection first = new("");
         DocumentSection second = new("");
         first.Elements.Add(text7);
@@ -724,7 +723,7 @@ public class DocumentTests
         Assert.Equal("s1/e1", text2.Address);
         Assert.Equal(new[] { text7, text2 }, document.EnumerateContent());
         Assert.Equal(new[] { 7, 2 }, document.SourcePages.Select(page => page.PageNumber));
-        Assert.Same(page7, text7.Annotations[0].Regions[0].Page);
+        Assert.Same(page7, text7.Sources[0].Page);
         Assert.Equal("urn:frame:pdf-A", region.Page.Identifier);
         Assert.Equal(DocumentAnnotationTestData.Polygon(), region.Polygon);
         Assert.Same(output, Assert.Single(document.SourceOutputs));
@@ -787,7 +786,7 @@ public class DocumentTests
     }
 
     [Fact]
-    public void DocumentAnnotations_AreConsumableWithoutExtractionResult()
+    public void DocumentMetadataAndSources_AreConsumableWithoutExtractionResult()
     {
         using Document document = new("shared-annotations");
         DocumentSection section = new("");
@@ -798,18 +797,16 @@ public class DocumentTests
         DocumentSourceOutput output = new("operation", providerName: "synthetic", modelId: "engine:v1");
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage(output);
         long version = document.Version;
-        document.Annotations.Add(new DocumentAnnotation("vendor-extra", payload, "caption",
-            new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) }, sourceOutput: output));
+        document.Metadata["vendor-extra"] = payload;
+        text.Sources.Add(new DocumentSourceReference(page, DocumentAnnotationTestData.Polygon()));
 
-        DocumentAnnotation observed = Assert.Single(document.Annotations);
-        Assert.Same(payload, observed.Value);
+        Assert.Same(payload, document.Metadata["vendor-extra"]);
         Assert.Equal(text.LocalId, payload.target);
         Assert.Equal(new object[] { 3, "x" }, payload.nested.unknown);
         Assert.Equal("kept", payload.vendorFlag);
-        Assert.Equal("caption", observed.Role);
         Assert.Same(page, Assert.Single(document.SourcePages));
         Assert.Same(output, Assert.Single(document.SourceOutputs));
-        Assert.Equal("engine:v1", observed.SourceOutput!.ModelId);
+        Assert.Equal("engine:v1", page.SourceOutput!.ModelId);
         Assert.Equal(version, document.Version);
         Assert.Same(text, Assert.Single(document.EnumerateContent()));
         Assert.Equal("visible **text**", document.ToMarkdown());
@@ -817,7 +814,7 @@ public class DocumentTests
     }
 
     [Fact]
-    public void NestedAnnotations_RegisterBeforeAndAfterAttachmentWithoutSemanticVersionChanges()
+    public void NestedSources_RegisterBeforeAndAfterAttachmentWithoutSemanticVersionChanges()
     {
         using Document document = new("nested");
         DocumentSourceOutput output = new("operation");
@@ -827,20 +824,17 @@ public class DocumentTests
         DocumentSection nested = new("");
         DocumentTableElement table = new("", 2, 2);
         DocumentTableCell empty = new();
-        empty.Annotations.Add(new DocumentAnnotation("before-cell",
-            regions: new[] { new DocumentRegion(page7, DocumentAnnotationTestData.Polygon()) }));
+        empty.Sources.Add(new DocumentSourceReference(page7, DocumentAnnotationTestData.Polygon()));
         table.Cells[1, 1] = empty;
         nested.Elements.Add(table);
         root.Elements.Add(nested);
         document.Sections.Add(root);
         long version = document.Version;
 
-        DocumentAnnotation after = new("after-element",
-            regions: new[] { new DocumentRegion(page2, DocumentAnnotationTestData.Polygon()) });
-        nested.Annotations.Add(after);
-        empty.Annotations.Add(after);
-        table.Annotations.Add(after);
-        document.Annotations.Add(after);
+        DocumentSourceReference after = new(page2, DocumentAnnotationTestData.Polygon());
+        nested.Sources.Add(after);
+        empty.Sources.Add(after);
+        table.Sources.Add(after);
         document.AddSourcePage(page7);
         document.AddSourceOutput(output);
 
@@ -850,9 +844,9 @@ public class DocumentTests
         Assert.Equal("s0/e0/e0/c1,1", empty.Address);
         Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
         Assert.Same(table, Assert.Single(document.EnumerateContent()));
-        nested.Annotations[0] = new DocumentAnnotation("replacement");
-        empty.Annotations.RemoveAt(1);
-        table.Annotations.Clear();
+        nested.Sources[0] = new DocumentSourceReference(page7);
+        empty.Sources.RemoveAt(1);
+        table.Sources.Clear();
         Assert.Equal(version, document.Version);
         Assert.Equal(new[] { page7, page2 }, document.SourcePages);
         table.Cells.SetContent(0, 0, new DocumentTextElement(DocumentTextKind.Paragraph, "real mutation"));
@@ -873,11 +867,13 @@ public class DocumentTests
         long version = document.Version;
         Assert.Throws<InvalidOperationException>(() => document.AddSourceOutput(new DocumentSourceOutput("operation-A")));
         Assert.Throws<InvalidOperationException>(() => document.AddSourcePage(new DocumentSourcePage("same-frame", 2, sourceOutput: first)));
-        DocumentAnnotation conflicting = new("conflict", sourceOutput: new DocumentSourceOutput("operation-C"),
-            regions: new[] { new DocumentRegion(new DocumentSourcePage("same-frame", 7, sourceOutput: first), DocumentAnnotationTestData.Polygon()) });
-        Assert.Throws<InvalidOperationException>(() => document.Annotations.Add(conflicting));
+        DocumentSourceReference conflicting = new(new DocumentSourcePage("same-frame", 7, sourceOutput: first), DocumentAnnotationTestData.Polygon());
+        DocumentSection section = new("");
+        document.Sections.Add(section);
+        version = document.Version;
+        Assert.Throws<InvalidOperationException>(() => section.Sources.Add(conflicting));
 
-        Assert.Empty(document.Annotations);
+        Assert.Empty(section.Sources);
         Assert.Equal(new[] { first, second }, document.SourceOutputs);
         Assert.Equal(new[] { firstPage, secondPage }, document.SourcePages);
         Assert.Equal(version, document.Version);
@@ -910,16 +906,15 @@ public class DocumentTests
     }
 
     [Fact]
-    public void DisposedDocument_RejectsSupplementalRegistrationsAndAnnotationEdits()
+    public void DisposedDocument_RejectsSupplementalRegistrationsAndSourceEdits()
     {
         using Document document = new("disposed");
         DocumentSection section = new("");
         DocumentTableElement table = new("", 1, 1);
         DocumentTableCell cell = new();
-        DocumentAnnotation original = new("original");
-        document.Annotations.Add(original);
-        section.Annotations.Add(original);
-        cell.Annotations.Add(original);
+        DocumentSourceReference original = new(new("original", 1));
+        section.Sources.Add(original);
+        cell.Sources.Add(original);
         table.Cells[0, 0] = cell;
         section.Elements.Add(table);
         document.Sections.Add(section);
@@ -928,57 +923,55 @@ public class DocumentTests
 
         Assert.Throws<ObjectDisposedException>(() => document.AddSourceOutput(new DocumentSourceOutput("new")));
         Assert.Throws<ObjectDisposedException>(() => document.AddSourcePage(DocumentAnnotationTestData.PdfPage()));
-        Assert.Throws<ObjectDisposedException>(() => document.Annotations.Add(new DocumentAnnotation("new")));
-        Assert.Throws<ObjectDisposedException>(() => section.Annotations[0] = new DocumentAnnotation("new"));
-        Assert.Throws<ObjectDisposedException>(() => cell.Annotations.RemoveAt(0));
-        Assert.Throws<ObjectDisposedException>(() => cell.Annotations.Clear());
-        Assert.Same(original, Assert.Single(document.Annotations));
-        Assert.Same(original, Assert.Single(section.Annotations));
-        Assert.Same(original, Assert.Single(cell.Annotations));
-        Assert.Empty(document.SourcePages);
+        Assert.Throws<ObjectDisposedException>(() => section.Sources.Add(new DocumentSourceReference(new("new", 2))));
+        Assert.Throws<ObjectDisposedException>(() => section.Sources[0] = new DocumentSourceReference(new("new", 2)));
+        Assert.Throws<ObjectDisposedException>(() => cell.Sources.RemoveAt(0));
+        Assert.Throws<ObjectDisposedException>(() => cell.Sources.Clear());
+        Assert.Same(original, Assert.Single(section.Sources));
+        Assert.Same(original, Assert.Single(cell.Sources));
+        Assert.Same(original.Page, Assert.Single(document.SourcePages));
         Assert.Empty(document.SourceOutputs);
         Assert.Equal(version, document.Version);
     }
 
     [Fact]
-    public void AttachedElementAndCell_RejectConflictingAnnotationsWithoutPartialRegistration()
+    public void AttachedElementAndCell_RejectConflictingSourcesWithoutPartialRegistration()
     {
         using Document document = new("conflicting-annotations");
         DocumentSourceOutput output = new("operation-A");
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage(output);
-        DocumentAnnotation original = new("original", regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) });
+        DocumentSourceReference original = new(page, DocumentAnnotationTestData.Polygon());
         DocumentSection section = new("");
         DocumentTableElement table = new("", 1, 2);
         DocumentTableCell cell = new();
-        cell.Annotations.Add(original);
+        cell.Sources.Add(original);
         table.Cells[0, 0] = cell;
         section.Elements.Add(table);
         document.Sections.Add(section);
-        section.Annotations.Add(original);
-        DocumentAnnotation conflict = new("conflict", sourceOutput: new DocumentSourceOutput("new-operation"),
-            regions: new[] { new DocumentRegion(new DocumentSourcePage(page.Identifier, 7, sourceOutput: output), DocumentAnnotationTestData.Polygon()) });
+        section.Sources.Add(original);
+        DocumentSourceReference conflict = new(new DocumentSourcePage(page.Identifier, 7, sourceOutput: output), DocumentAnnotationTestData.Polygon());
         long version = document.Version;
 
-        Assert.Throws<InvalidOperationException>(() => section.Annotations.Add(conflict));
-        Assert.Throws<InvalidOperationException>(() => cell.Annotations[0] = conflict);
+        Assert.Throws<InvalidOperationException>(() => section.Sources.Add(conflict));
+        Assert.Throws<InvalidOperationException>(() => cell.Sources[0] = conflict);
         DocumentTableCell rejected = new();
-        rejected.Annotations.Add(conflict);
+        rejected.Sources.Add(conflict);
         Assert.Throws<InvalidOperationException>(() => table.Cells[0, 1] = rejected);
         Assert.Null(rejected.Address);
         Assert.Null(table.Cells[0, 1]);
-        Assert.Same(original, Assert.Single(section.Annotations));
-        Assert.Same(original, Assert.Single(cell.Annotations));
+        Assert.Same(original, Assert.Single(section.Sources));
+        Assert.Same(original, Assert.Single(cell.Sources));
         Assert.Same(page, Assert.Single(document.SourcePages));
         Assert.Same(output, Assert.Single(document.SourceOutputs));
         Assert.Equal(version, document.Version);
         Assert.Equal("|  |  |", document.ToMarkdown());
-        Assert.Throws<ArgumentNullException>(() => section.Annotations.Add(null!));
-        Assert.Throws<ArgumentNullException>(() => cell.Annotations[0] = null!);
+        Assert.Throws<ArgumentNullException>(() => section.Sources.Add(null!));
+        Assert.Throws<ArgumentNullException>(() => cell.Sources[0] = null!);
         Assert.Equal(version, document.Version);
     }
 
     [Fact]
-    public void AnnotatedEmptyCell_RegistersOwnedRawOutputWhenInsertedIntoAttachedTable()
+    public void SourcedEmptyCell_RegistersOwnedRawOutputWhenInsertedIntoAttachedTable()
     {
         using Document document = new("late-cell");
         DocumentSection section = new("");
@@ -991,8 +984,7 @@ public class DocumentTests
         DocumentSourceOutput output = new("operation", native, artifact);
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage(output);
         DocumentTableCell cell = new();
-        cell.Annotations.Add(new DocumentAnnotation("layout",
-            regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) }));
+        cell.Sources.Add(new DocumentSourceReference(page, DocumentAnnotationTestData.Polygon()));
         long version = document.Version;
         table.Cells[1, 0] = cell;
 
@@ -1011,7 +1003,7 @@ public class DocumentTests
     }
 
     [Fact]
-    public void LateAnnotations_EachOwnerImmediatelyRegistersDistinctSourcesWithoutSemanticMutation()
+    public void LateSources_EachOwnerImmediatelyRegistersDistinctSourcesWithoutSemanticMutation()
     {
         using Document document = new("late-distinct-sources");
         DocumentSection section = new("");
@@ -1048,7 +1040,7 @@ public class DocumentTests
         DocumentAnnotationTestData.CountingStream[] streams = [documentStream, elementStream, cellStream];
         DocumentAnnotationTestData.BorrowedNative[] natives = [documentNative, elementNative, cellNative];
         byte[][] expectedBytes = [new byte[] { 11, 12, 13 }, new byte[] { 21, 22, 23 }, new byte[] { 31, 32, 33 }];
-        var owners = new[] { document.Annotations, text.Annotations, cell.Annotations };
+        var owners = new[] { section.Sources, text.Sources, cell.Sources };
 
         Assert.Empty(document.SourcePages);
         Assert.Empty(document.SourceOutputs);
@@ -1060,9 +1052,7 @@ public class DocumentTests
             Assert.DoesNotContain(outputs[index], document.SourceOutputs);
             Assert.DoesNotContain(artifacts[index], document.Artifacts);
             Assert.False(artifacts[index].IsDocumentOwned);
-            DocumentAnnotation annotation = new($"owner-{index}",
-                regions: new[] { new DocumentRegion(pages[index], DocumentAnnotationTestData.Polygon()) },
-                sourceOutput: outputs[index]);
+            DocumentSourceReference annotation = new(pages[index], DocumentAnnotationTestData.Polygon());
             owners[index].Add(annotation);
 
             Assert.Same(annotation, Assert.Single(owners[index]));
