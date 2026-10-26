@@ -273,15 +273,14 @@ public class DocumentTableElementTests
     }
 
     [Fact]
-    public void PipeProjection_DoesNotSerializeEmptyCellAnnotations()
+    public void PipeProjection_DoesNotSerializeEmptyCellSources()
     {
         using Document document = new("projection-loss", "stored document");
         DocumentSection section = new("");
         DocumentTableElement table = new("stored source table", 1, 3);
         DocumentTableCell empty = new();
         DocumentSourcePage frame = DocumentAnnotationTestData.PdfPage();
-        empty.Annotations.Add(new DocumentAnnotation("empty-layout", value: "ANNOTATION_ONLY",
-            regions: new[] { new DocumentRegion(frame, DocumentAnnotationTestData.Polygon()) }));
+        empty.Sources.Add(new DocumentSourceReference(frame, DocumentAnnotationTestData.Polygon(), "NATIVE_ONLY"));
         DocumentTextElement text = new(DocumentTextKind.Paragraph, "INV0ICE  1O0?", "INV0ICE  1O0?");
         table.Cells[0, 1] = empty;
         table.Cells.SetContent(0, 2, text);
@@ -298,10 +297,10 @@ public class DocumentTableElementTests
         Assert.False(table.Cells.IsCovered(0, 1));
         Assert.Null(empty.Content);
         Assert.Equal("s0/e0/c0,1", empty.Address);
-        Assert.Null(Assert.Single(empty.Annotations).Confidence);
+        Assert.Same(frame, Assert.Single(empty.Sources).Page);
         Assert.Same(frame, Assert.Single(document.SourcePages));
-        Assert.Equal(DocumentAnnotationTestData.Polygon(), empty.Annotations[0].Regions[0].Polygon);
-        Assert.Equal("ANNOTATION_ONLY", empty.Annotations[0].Value);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), empty.Sources[0].Polygon);
+        Assert.Equal("NATIVE_ONLY", empty.Sources[0].GetRawRepresentation());
         Assert.Equal("INV0ICE  1O0?", text.Text);
         Assert.Equal("stored source table", table.GetMarkdown());
         Assert.Equal("stored document", document.GetMarkdown());

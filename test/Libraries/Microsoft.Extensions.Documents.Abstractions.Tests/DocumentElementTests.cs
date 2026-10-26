@@ -164,42 +164,47 @@ public class DocumentElementTests
     }
 
     [Fact]
-    public void PageReferences_PreserveDuplicateInsertionOrder()
+    public void Sources_PreserveDuplicateInsertionOrder()
     {
         DocumentTextElement element = new(DocumentTextKind.Paragraph, "content");
-        DocumentPageReference first = new("page-1");
-        DocumentPageReference duplicate = new("page-1");
-        DocumentPageReference last = new("page-2");
+        DocumentSourcePage page = new("page-1", 1);
+        DocumentSourceReference first = new(page);
+        DocumentSourceReference duplicate = new(page);
+        DocumentSourceReference last = new(new("page-2", 2));
 
-        element.PageReferences.Add(first);
-        element.PageReferences.Add(duplicate);
-        element.PageReferences.Add(last);
+        element.Sources.Add(first);
+        element.Sources.Add(duplicate);
+        element.Sources.Add(first);
+        element.Sources.Add(last);
 
-        Assert.Equal(3, element.PageReferences.Count);
-        Assert.Equal(new[] { first, duplicate, last }, element.PageReferences);
-        Assert.Equal(new[] { "page-1", "page-1", "page-2" }, element.PageReferences.Select(reference => reference.Value));
+        Assert.Equal(new[] { first, duplicate, first, last }, element.Sources);
+        Assert.Equal(new[] { "page-1", "page-1", "page-1", "page-2" }, element.Sources.Select(reference => reference.Page.Identifier));
+        Assert.Equal("content", element.ToMarkdown());
     }
 
     [Fact]
-    public void Evidence_PreservesOpaqueValueAndKindAndOrder()
+    public void Sources_InsertReplaceRemoveAndClear_RegisterWithoutSemanticMutation()
     {
+        using Document document = new("edits");
+        DocumentSection section = new("");
         DocumentTextElement element = new(DocumentTextKind.Paragraph, "content");
-        DocumentEvidenceReference first = new("evidence-1", "citation");
-        DocumentEvidenceReference duplicate = new("evidence-1", "citation");
-        DocumentEvidenceReference second = new("evidence-2");
-
-        element.Evidence.Add(first);
-        element.Evidence.Add(duplicate);
-        element.Evidence.Add(second);
-
-        Assert.Equal(3, element.Evidence.Count);
-        Assert.Equal(new[] { first, duplicate, second }, element.Evidence);
-        Assert.Equal("evidence-1", element.Evidence[0].Value);
-        Assert.Equal("citation", element.Evidence[0].Kind);
-        Assert.Equal("evidence-1", element.Evidence[1].Value);
-        Assert.Equal("citation", element.Evidence[1].Kind);
-        Assert.Equal("evidence-2", element.Evidence[2].Value);
-        Assert.Null(element.Evidence[2].Kind);
+        section.Elements.Add(element);
+        document.Sections.Add(section);
+        long version = document.Version;
+        DocumentSourceReference first = new(new("first", 1, sourceOutput: new("op-1")));
+        DocumentSourceReference second = new(new("second", 2, sourceOutput: new("op-2")));
+        element.Sources.Insert(0, first);
+        element.Sources[0] = second;
+        Assert.Same(second, Assert.Single(element.Sources));
+        Assert.Equal(new[] { first.Page, second.Page }, document.SourcePages);
+        Assert.Equal(new[] { first.Page.SourceOutput!, second.Page.SourceOutput! }, document.SourceOutputs);
+        element.Sources.RemoveAt(0);
+        element.Sources.Add(first);
+        element.Sources.Clear();
+        Assert.Empty(element.Sources);
+        Assert.Equal(2, document.SourcePages.Count);
+        Assert.Equal(version, document.Version);
+        Assert.Equal("content", document.ToMarkdown());
     }
 
     [Fact]
@@ -247,7 +252,7 @@ public class DocumentElementTests
     }
 
     [Fact]
-    public void RawMetadataPageReferencesAndEvidence_AreUnversionedMutableCollections()
+    public void RawMetadataAndSources_AreUnversionedMutableCollections()
     {
         using Document document = new("document");
         DocumentSection section = new("section");
@@ -256,16 +261,14 @@ public class DocumentElementTests
         section.Elements.Add(element);
         long version = document.Version;
 
-        DocumentPageReference page = new("page-raw");
-        DocumentEvidenceReference evidence = new("evidence-raw", "opaque-kind");
+        DocumentSourceReference page = new(new("page-raw", 1));
         element.Metadata["provider-key"] = "provider-value";
-        element.PageReferences.Add(page);
-        element.Evidence.Add(evidence);
+        element.Sources.Add(page);
 
         Assert.True(element.HasMetadata);
         Assert.Equal("provider-value", element.Metadata["provider-key"]);
-        Assert.Same(page, element.PageReferences[0]);
-        Assert.Same(evidence, element.Evidence[0]);
+        Assert.Same(page, element.Sources[0]);
+        Assert.Same(page.Page, Assert.Single(document.SourcePages));
         Assert.Equal(version, document.Version);
     }
 
@@ -416,17 +419,15 @@ public class DocumentElementTests
         DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible", "visible");
         DocumentSourcePage dimensionsOnly = new("dimensions-only", 7, new DocumentPageDimensions(200, 100));
         DocumentSourcePage polygonOnly = new("polygon-only", 2);
-        DocumentRegion region = new(polygonOnly, DocumentAnnotationTestData.Polygon());
-        text.Annotations.Add(new DocumentAnnotation("absent"));
-        text.Annotations.Add(new DocumentAnnotation("polygon-only", regions: new[] { region }));
+        DocumentSourceReference region = new(polygonOnly, DocumentAnnotationTestData.Polygon());
+        Assert.Empty(text.Sources);
+        text.Sources.Add(region);
         section.Elements.Add(text);
         document.Sections.Add(section);
         document.AddSourcePage(dimensionsOnly);
 
-        Assert.Empty(text.Annotations[0].Regions);
-        Assert.Null(text.Annotations[0].Confidence);
-        Assert.Null(text.Annotations[0].SourceOutput);
-        Assert.Null(text.Annotations[0].Role);
+        Assert.Same(region, Assert.Single(text.Sources));
+        Assert.Null(region.GetRawRepresentation());
         Assert.Null(polygonOnly.Dimensions);
         Assert.Null(polygonOnly.CoordinateUnit);
         Assert.Null(polygonOnly.CoordinateOrigin);
@@ -474,9 +475,10 @@ public class DocumentElementTests
         DocumentImageElement image = new("") { Source = new Uri("urn:image:page7"), AlternativeText = "diagram only" };
         DocumentExtensionElement extension = new("vendor-extra", "extension");
         DocumentElement[] elements = [section, text, image, extension];
+        DocumentSourcePage page = new("page", 1, sourceOutput: output);
         foreach (DocumentElement element in elements)
         {
-            element.Annotations.Add(new DocumentAnnotation("native", sourceOutput: output, rawRepresentation: native));
+            element.Sources.Add(new DocumentSourceReference(page, rawRepresentation: native));
         }
 
         section.Elements.Add(text);
@@ -492,12 +494,12 @@ public class DocumentElementTests
         Assert.Null(image.Text);
         Assert.Null(extension.Text);
         Assert.Same(output, Assert.Single(document.SourceOutputs));
-        Assert.Same(native, text.Annotations[0].GetRawRepresentation());
+        Assert.Same(native, text.Sources[0].GetRawRepresentation());
         Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), ((MemoryStream)output.GetRawContent()!.Content).ToArray());
         Assert.DoesNotContain(native.Marker, document.ToMarkdown(), StringComparison.Ordinal);
         Assert.DoesNotContain("RAW_BODY_ONLY_91", document.ToMarkdown(), StringComparison.Ordinal);
         Assert.DoesNotContain(typeof(DocumentSourceOutput).GetProperties(), property => property.Name is "RawRepresentation" or "RawContent");
-        Assert.DoesNotContain(typeof(DocumentAnnotation).GetProperties(), property => property.Name == "RawRepresentation");
+        Assert.DoesNotContain(typeof(DocumentSourceReference).GetProperties(), property => property.Name == "RawRepresentation");
         document.Dispose();
         Assert.Equal(0, native.DisposeCount);
     }

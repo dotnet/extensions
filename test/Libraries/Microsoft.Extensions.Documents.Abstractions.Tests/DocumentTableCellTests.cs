@@ -72,16 +72,14 @@ public class DocumentTableCellTests
     }
 
     [Fact]
-    public void EmptyCell_PreservesGeometryAndConfidenceWithoutText()
+    public void EmptyCell_PreservesGeometryWithoutText()
     {
         using Document document = new("empty-cell");
         DocumentSection section = new("");
         DocumentTableElement table = new("", 3, 3);
         DocumentTableCell empty = new();
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
-        empty.Annotations.Add(new DocumentAnnotation("empty-layout",
-            regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) },
-            confidence: new DocumentConfidence(0.73, "provider-reported symbol certainty", 0, 1)));
+        empty.Sources.Add(new DocumentSourceReference(page, DocumentAnnotationTestData.Polygon()));
         table.Cells[2, 2] = empty;
         section.Elements.Add(table);
         document.Sections.Add(section);
@@ -96,14 +94,12 @@ public class DocumentTableCellTests
         Assert.False(table.Cells.IsCovered(2, 2));
         Assert.Same(empty, table.Cells.GetCoveringCell(2, 2));
         Assert.Null(table.Cells.GetCoveringCell(1, 2));
-        Assert.Equal(DocumentAnnotationTestData.Polygon(), empty.Annotations[0].Regions[0].Polygon);
-        Assert.Equal(0.73, empty.Annotations[0].Confidence!.Value);
-        Assert.Equal("provider-reported symbol certainty", empty.Annotations[0].Confidence!.Kind);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), empty.Sources[0].Polygon);
         Assert.Same(page, Assert.Single(document.SourcePages));
         Assert.Equal($"|  |  |  |{Environment.NewLine}|  |  |  |{Environment.NewLine}|  |  |  |", document.ToMarkdown());
-        empty.Annotations.Add(new DocumentAnnotation("additional"));
+        empty.Sources.Add(new DocumentSourceReference(page));
         Assert.Equal(version, document.Version);
-        Assert.Equal(2, empty.Annotations.Count);
+        Assert.Equal(2, empty.Sources.Count);
     }
 
     [Theory]
@@ -134,16 +130,11 @@ public class DocumentTableCellTests
             new(20.5, 159), new(81.5, 163.5), new(89, 79.75), new(25.75, 82.5), new(17, 129.5)
         ];
         DocumentTableCell empty = new();
-        empty.Annotations.Add(new DocumentAnnotation("dual-layout", role: "vendor-empty",
-            regions: new[]
-            {
-                new DocumentRegion(pdf, DocumentAnnotationTestData.Polygon()),
-                new DocumentRegion(raster, rasterPolygon)
-            }));
+        empty.Sources.Add(new DocumentSourceReference(pdf, DocumentAnnotationTestData.Polygon()));
+        empty.Sources.Add(new DocumentSourceReference(raster, rasterPolygon));
         DocumentTextElement text = new(DocumentTextKind.Paragraph, "lO0  ??", "lO0  ??");
         DocumentTableCell ordinary = new(text);
-        text.Annotations.Add(new DocumentAnnotation("opaque-score",
-            confidence: new DocumentConfidence(-12.5, "vendor unknown margin")));
+        text.Metadata["vendor unknown margin"] = -12.5;
         DocumentTableElement table = new("stored table", 1, 3);
         table.Cells[0, 1] = empty;
         table.Cells[0, 2] = ordinary;
@@ -179,32 +170,25 @@ public class DocumentTableCellTests
         Assert.False(table.Cells.IsCovered(0, 1));
         Assert.Null(table.Cells.GetCoveringCell(0, 0));
         Assert.Equal(new[] { pdf, raster }, document.SourcePages);
-        DocumentAnnotation layout = Assert.Single(table.Cells.GetCoveringCell(0, 1)!.Annotations);
-        Assert.Equal("dual-layout", layout.Kind);
-        Assert.Equal("vendor-empty", layout.Role);
-        Assert.Null(layout.Confidence);
-        Assert.Equal(2, layout.Regions.Count);
-        Assert.Same(document.SourcePages[0], layout.Regions[0].Page);
-        Assert.Same(document.SourcePages[1], layout.Regions[1].Page);
-        Assert.Equal(DocumentAnnotationTestData.Polygon(), layout.Regions[0].Polygon);
-        Assert.Equal(rasterPolygon, layout.Regions[1].Polygon);
-        Assert.Equal(7, layout.Regions[0].Page.PageNumber);
-        Assert.Equal(7, layout.Regions[1].Page.PageNumber);
-        Assert.Equal(new DocumentPageDimensions(200, 100), layout.Regions[0].Page.Dimensions);
-        Assert.Equal(new DocumentPageDimensions(400, 200), layout.Regions[1].Page.Dimensions);
-        Assert.Equal(DocumentCoordinateUnit.Point, layout.Regions[0].Page.CoordinateUnit);
-        Assert.Equal(DocumentCoordinateOrigin.BottomLeft, layout.Regions[0].Page.CoordinateOrigin);
-        Assert.Equal(DocumentCoordinateUnit.Pixel, layout.Regions[1].Page.CoordinateUnit);
-        Assert.Equal(DocumentCoordinateOrigin.TopLeft, layout.Regions[1].Page.CoordinateOrigin);
-        Assert.Same(output, layout.Regions[0].Page.SourceOutput);
-        Assert.Same(output, layout.Regions[1].Page.SourceOutput);
+        var sources = table.Cells.GetCoveringCell(0, 1)!.Sources;
+        Assert.Equal(2, sources.Count);
+        Assert.Same(document.SourcePages[0], sources[0].Page);
+        Assert.Same(document.SourcePages[1], sources[1].Page);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), sources[0].Polygon);
+        Assert.Equal(rasterPolygon, sources[1].Polygon);
+        Assert.Equal(7, sources[0].Page.PageNumber);
+        Assert.Equal(7, sources[1].Page.PageNumber);
+        Assert.Equal(new DocumentPageDimensions(200, 100), sources[0].Page.Dimensions);
+        Assert.Equal(new DocumentPageDimensions(400, 200), sources[1].Page.Dimensions);
+        Assert.Equal(DocumentCoordinateUnit.Point, sources[0].Page.CoordinateUnit);
+        Assert.Equal(DocumentCoordinateOrigin.BottomLeft, sources[0].Page.CoordinateOrigin);
+        Assert.Equal(DocumentCoordinateUnit.Pixel, sources[1].Page.CoordinateUnit);
+        Assert.Equal(DocumentCoordinateOrigin.TopLeft, sources[1].Page.CoordinateOrigin);
+        Assert.Same(output, sources[0].Page.SourceOutput);
+        Assert.Same(output, sources[1].Page.SourceOutput);
         Assert.Same(output, Assert.Single(document.SourceOutputs));
-        DocumentAnnotation score = Assert.Single(table.Cells.GetCoveringCell(0, 2)!.Content!.Annotations);
-        Assert.Empty(score.Regions);
-        Assert.Equal(-12.5, score.Confidence!.Value);
-        Assert.Equal("vendor unknown margin", score.Confidence.Kind);
-        Assert.Null(score.Confidence.Minimum);
-        Assert.Null(score.Confidence.Maximum);
+        Assert.Empty(table.Cells.GetCoveringCell(0, 2)!.Content!.Sources);
+        Assert.Equal(-12.5, text.Metadata["vendor unknown margin"]);
         Assert.Equal("lO0  ??", text.Text);
         Assert.Equal("lO0  ??", text.GetMarkdown());
         Assert.Equal("stored table", table.GetMarkdown());

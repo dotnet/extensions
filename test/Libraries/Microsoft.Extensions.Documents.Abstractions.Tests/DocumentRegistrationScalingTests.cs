@@ -16,9 +16,11 @@ public class DocumentRegistrationScalingTests
     [InlineData(32)]
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "Registration transfers artifacts to the using-scoped document; disposal is asserted.")]
-    public void RegisterAnnotation_DoesNotRevisitUnrelatedRawStreams(int sourceCount)
+    public void RegisterSource_DoesNotRevisitUnrelatedRawStreams(int sourceCount)
     {
         using Document document = new("registration");
+        DocumentSection section = new("");
+        document.Sections.Add(section);
         CapabilityProbeStream[] streams = new CapabilityProbeStream[sourceCount];
         DocumentSourceOutput[] sources = new DocumentSourceOutput[sourceCount];
         for (int index = 0; index < sourceCount; index++)
@@ -29,8 +31,7 @@ public class DocumentRegistrationScalingTests
             DocumentSourcePage page = new($"page-{index}", index + 1, sourceOutput: sources[index]);
             int[] before = streams.Take(index).Select(static stream => stream.CapabilityReads).ToArray();
 
-            document.Annotations.Add(new DocumentAnnotation("layout",
-                regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) }));
+            section.Sources.Add(new DocumentSourceReference(page, DocumentAnnotationTestData.Polygon()));
 
             Assert.Equal(before, streams.Take(index).Select(static stream => stream.CapabilityReads));
             Assert.Same(sources[index], document.SourceOutputs[index]);
@@ -38,11 +39,12 @@ public class DocumentRegistrationScalingTests
         }
 
         int[] registeredReads = streams.Select(static stream => stream.CapabilityReads).ToArray();
-        document.Annotations.Add(new DocumentAnnotation("source-less"));
+        section.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "application-only"));
         Assert.Equal(registeredReads, streams.Select(static stream => stream.CapabilityReads));
         Assert.Equal(sourceCount, document.SourceOutputs.Count);
         Assert.Equal(sourceCount, document.SourcePages.Count);
         Assert.Equal(sourceCount, document.Artifacts.Count);
+        Assert.Equal("application-only", document.ToMarkdown());
         Assert.All(sources, static source => Assert.True(source.GetRawContent()!.IsDocumentOwned));
         document.Dispose();
         Assert.All(streams, static stream => Assert.Equal(1, stream.DisposeCount));

@@ -11,49 +11,89 @@ namespace Microsoft.Extensions.Documents.Tests;
 public class DocumentReferencesTests
 {
     [Fact]
-    public void DocumentPageReference_PreservesOpaqueValue()
+    public void ReducedApi_ExposesOnlyTypedSourcesAndPublicOwnershipQuery()
     {
-        const string Value = "provider-page/opaque-007";
+        var assembly = typeof(Document).Assembly;
+        foreach (string name in new[] { "DocumentAnnotation", "DocumentRegion", "DocumentConfidence", "DocumentPageReference", "DocumentEvidenceReference" })
+        {
+            Assert.Null(assembly.GetType("Microsoft.Extensions.Documents." + name));
+        }
 
-        DocumentPageReference reference = new(Value);
+        foreach (Type type in new[] { typeof(Document), typeof(DocumentElement), typeof(DocumentTableCell) })
+        {
+            foreach (string name in new[] { "Annotations", "Evidence", "PageReferences", "HasMetadata", "Address", "LocalId", "Version", "IsDisposed" })
+            {
+                Assert.Null(type.GetProperty(name));
+            }
+        }
 
-        Assert.Equal(Value, reference.Value);
+        Assert.Null(typeof(Document).GetProperty("Sources"));
+        Assert.Null(typeof(Document).GetProperty("Artifacts"));
+        Assert.Null(typeof(DocumentArtifact).GetProperty("IsDisposed"));
+        Assert.Equal(typeof(bool), typeof(DocumentArtifact).GetProperty("IsDocumentOwned")!.PropertyType);
+        Assert.Null(typeof(DocumentSourceOutput).GetProperty("NativeStatus"));
+        foreach (Type type in new[] { typeof(DocumentElement), typeof(DocumentTableCell) })
+        {
+            var property = type.GetProperty("Sources")!;
+            Assert.Equal(typeof(System.Collections.Generic.IList<DocumentSourceReference>), property.PropertyType);
+            Assert.False(property.CanWrite);
+        }
+
+        Assert.False(typeof(DocumentSourceReference).GetProperty("Page")!.CanWrite);
+        Assert.False(typeof(DocumentSourceReference).GetProperty("Polygon")!.CanWrite);
+        Assert.False(typeof(Document).GetProperty("SourcePages")!.CanWrite);
+        Assert.False(typeof(Document).GetProperty("SourceOutputs")!.CanWrite);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SourceReference_NullOrEmptyPolygonIsPageOnly(bool empty)
+    {
+        DocumentSourcePage page = new("unknown", 3);
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        DocumentSourceReference reference = new(page, empty ? Array.Empty<DocumentPoint>() : null, native);
+        DocumentSourceReference omitted = new(page);
+        Assert.Same(page, reference.Page);
+        Assert.Empty(reference.Polygon);
+        Assert.Empty(omitted.Polygon);
+        Assert.Null(omitted.GetRawRepresentation());
+        Assert.Same(native, reference.GetRawRepresentation());
+        Assert.Null(page.Dimensions);
+        Assert.Null(page.CoordinateUnit);
+        Assert.Null(page.CoordinateOrigin);
+        Assert.Equal(0, native.DisposeCount);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void SourceReference_RejectsShortPolygons(int count)
+    {
+        Assert.Throws<ArgumentException>("polygon", () => new DocumentSourceReference(new("page", 1), new DocumentPoint[count]));
+    }
+
+    [Fact]
+    public void SourceReference_MinimumTriangleSnapshotsVerticesAndBorrowsNative()
+    {
+        DocumentPoint[] points = [new(1, 2), new(3, 4), new(5, 6)];
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        DocumentSourcePage page = new("triangle", 1);
+        DocumentSourceReference reference = new(page, points, native);
+        points[2] = new(9, 10);
+        Assert.Equal(new[] { new DocumentPoint(1, 2), new DocumentPoint(3, 4), new DocumentPoint(5, 6) }, reference.Polygon);
+        Assert.Same(page, reference.Page);
+        Assert.Same(native, reference.GetRawRepresentation());
+        Assert.Equal(0, native.DisposeCount);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void DocumentPageReference_NullOrEmptyValue_Throws(string? value)
+    public void SourceIdentifiers_NullOrEmptyValue_Throws(string? value)
     {
-        Assert.ThrowsAny<ArgumentException>(() => new DocumentPageReference(value!));
-    }
-
-    [Fact]
-    public void DocumentEvidenceReference_PreservesOpaqueValueAndKind()
-    {
-        const string Value = "provider-evidence:opaque#7";
-        const string Kind = "citation-kind";
-
-        DocumentEvidenceReference reference = new(Value, Kind);
-
-        Assert.Equal(Value, reference.Value);
-        Assert.Equal(Kind, reference.Kind);
-    }
-
-    [Fact]
-    public void DocumentEvidenceReference_WithoutKind_HasNullKind()
-    {
-        DocumentEvidenceReference reference = new("provider-evidence:opaque#8");
-
-        Assert.Null(reference.Kind);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void DocumentEvidenceReference_NullOrEmptyValue_Throws(string? value)
-    {
-        Assert.ThrowsAny<ArgumentException>(() => new DocumentEvidenceReference(value!));
+        Assert.ThrowsAny<ArgumentException>(() => new DocumentSourcePage(value!, 1));
+        Assert.ThrowsAny<ArgumentException>(() => new DocumentSourceOutput(value!));
     }
 
     [Fact]
@@ -112,10 +152,10 @@ public class DocumentReferencesTests
         using Document document = new("geometry");
         DocumentPoint[] supplied = DocumentAnnotationTestData.Polygon();
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
-        DocumentRegion region = new(page, supplied);
+        DocumentSourceReference region = new(page, supplied);
         supplied[0] = new DocumentPoint(999, 999);
         DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible");
-        text.Annotations.Add(new DocumentAnnotation("layout", regions: new[] { region }));
+        text.Sources.Add(region);
         DocumentSection section = new("");
         section.Elements.Add(text);
         document.Sections.Add(section);
@@ -135,7 +175,7 @@ public class DocumentReferencesTests
     [Fact]
     public void Geometry_KnownPdfAndRasterFixturesProduceDistinctExpectedOverlayVertices()
     {
-        DocumentRegion pdf = new(DocumentAnnotationTestData.PdfPage(), DocumentAnnotationTestData.Polygon());
+        DocumentSourceReference pdf = new(DocumentAnnotationTestData.PdfPage(), DocumentAnnotationTestData.Polygon());
         DocumentPoint[] expected =
         [
             new(20.5, 159), new(81.5, 163.5), new(89, 79.75),
@@ -143,7 +183,7 @@ public class DocumentReferencesTests
         ];
         DocumentSourcePage rasterPage = new("urn:frame:raster-A", 7, new DocumentPageDimensions(400, 200),
             DocumentCoordinateUnit.Pixel, DocumentCoordinateOrigin.TopLeft);
-        DocumentRegion raster = new(rasterPage, expected);
+        DocumentSourceReference raster = new(rasterPage, expected);
 
         Assert.Equal(expected, ProjectKnownOverlay(pdf));
         Assert.Equal(expected, ProjectKnownOverlay(raster));
@@ -160,7 +200,7 @@ public class DocumentReferencesTests
         DocumentSourcePage page = new("partial", 7, new DocumentPageDimensions(200, 100),
             unknownUnit ? null : DocumentCoordinateUnit.Point,
             unknownUnit ? DocumentCoordinateOrigin.BottomLeft : null);
-        DocumentRegion region = new(page, DocumentAnnotationTestData.Polygon());
+        DocumentSourceReference region = new(page, DocumentAnnotationTestData.Polygon());
 
         Assert.Null(ProjectKnownOverlay(region));
         Assert.Equal(DocumentAnnotationTestData.Polygon(), region.Polygon);
@@ -170,52 +210,35 @@ public class DocumentReferencesTests
     }
 
     [Fact]
-    public void Confidence_PreservesDeclaredScaleWithoutNormalization()
+    public void Geometry_UnknownDimensionsDoNotInferSizeFromKnownFrameOrPolygon()
     {
-        using Document document = new("confidence");
-        DocumentSection section = new("");
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible **text**", "visible text");
-        section.Elements.Add(text);
-        document.Sections.Add(section);
-        long version = document.Version;
-        text.Annotations.Add(new DocumentAnnotation("symbol",
-            confidence: new DocumentConfidence(73, "provider-reported symbol certainty", 0, 100)));
-        text.Annotations.Add(new DocumentAnnotation("unscaled",
-            confidence: new DocumentConfidence(-12.5, "vendor margin")));
-
-        DocumentConfidence reported = text.Annotations[0].Confidence!;
-        Assert.Equal(73, reported.Value);
-        Assert.Equal("provider-reported symbol certainty", reported.Kind);
-        Assert.Equal(0, reported.Minimum);
-        Assert.Equal(100, reported.Maximum);
-        Assert.Equal(-12.5, text.Annotations[1].Confidence!.Value);
-        Assert.Null(text.Annotations[1].Confidence!.Minimum);
-        Assert.Null(text.Annotations[1].Confidence!.Maximum);
-        Assert.Equal("visible **text**", document.ToMarkdown());
-        Assert.Equal("visible text", text.Text);
-        Assert.Equal(version, document.Version);
+        DocumentSourcePage page = new("no-size", 7, coordinateUnit: DocumentCoordinateUnit.Point,
+            coordinateOrigin: DocumentCoordinateOrigin.BottomLeft);
+        DocumentSourceReference reference = new(page, DocumentAnnotationTestData.Polygon());
+        Assert.Null(page.Dimensions);
+        Assert.Equal(DocumentCoordinateUnit.Point, page.CoordinateUnit);
+        Assert.Equal(DocumentCoordinateOrigin.BottomLeft, page.CoordinateOrigin);
+        Assert.Equal(DocumentAnnotationTestData.Polygon(), reference.Polygon);
+        Assert.Null(ProjectKnownOverlay(reference));
     }
 
     [Theory]
     [InlineData(double.NaN)]
     [InlineData(double.PositiveInfinity)]
     [InlineData(double.NegativeInfinity)]
-    public void GeometryAndConfidence_RejectNonFiniteValues(double value)
+    public void Geometry_RejectsNonFiniteValues(double value)
     {
         Assert.Throws<ArgumentOutOfRangeException>("x", () => new DocumentPoint(value, 2));
         Assert.Throws<ArgumentOutOfRangeException>("y", () => new DocumentPoint(2, value));
         Assert.Throws<ArgumentOutOfRangeException>("width", () => new DocumentPageDimensions(value, 100));
         Assert.Throws<ArgumentOutOfRangeException>("height", () => new DocumentPageDimensions(200, value));
-        Assert.Throws<ArgumentOutOfRangeException>(nameof(value), () => new DocumentConfidence(value, "recognition"));
-        Assert.Throws<ArgumentOutOfRangeException>("minimum", () => new DocumentConfidence(5, "recognition", value));
-        Assert.Throws<ArgumentOutOfRangeException>("maximum", () => new DocumentConfidence(5, "recognition", maximum: value));
-        DocumentRegion valid = new(DocumentAnnotationTestData.PdfPage(), DocumentAnnotationTestData.Polygon());
+        DocumentSourceReference valid = new(DocumentAnnotationTestData.PdfPage(), DocumentAnnotationTestData.Polygon());
         Assert.Equal(5, valid.Polygon.Count);
         Assert.Equal(60.125, valid.Polygon[2].Y);
     }
 
     [Fact]
-    public void AnnotationCarriers_RejectInvalidFramesRegionsAndDeclaredScales()
+    public void SourceCarriers_RejectInvalidFramesAndReferences()
     {
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
         Assert.Throws<ArgumentOutOfRangeException>("width", () => new DocumentPageDimensions(0, 100));
@@ -224,18 +247,14 @@ public class DocumentReferencesTests
         Assert.Throws<ArgumentOutOfRangeException>("dimensions", () => new DocumentSourcePage("frame", 1, default(DocumentPageDimensions)));
         Assert.Throws<ArgumentOutOfRangeException>("coordinateUnit", () => new DocumentSourcePage("frame", 1, coordinateUnit: (DocumentCoordinateUnit)99));
         Assert.Throws<ArgumentOutOfRangeException>("coordinateOrigin", () => new DocumentSourcePage("frame", 1, coordinateOrigin: (DocumentCoordinateOrigin)99));
-        Assert.Throws<ArgumentNullException>("page", () => new DocumentRegion(null!, DocumentAnnotationTestData.Polygon()));
-        Assert.Throws<ArgumentNullException>("polygon", () => new DocumentRegion(page, null!));
-        Assert.Throws<ArgumentException>("polygon", () => new DocumentRegion(page, new[] { new DocumentPoint(1, 2), new DocumentPoint(3, 4) }));
-        Assert.Throws<ArgumentException>("regions", () => new DocumentAnnotation("layout", regions: new DocumentRegion[] { null! }));
-        Assert.ThrowsAny<ArgumentException>(() => new DocumentAnnotation(""));
-        Assert.ThrowsAny<ArgumentException>(() => new DocumentConfidence(5, ""));
-        Assert.Throws<ArgumentOutOfRangeException>("value", () => new DocumentConfidence(101, "recognition", 0, 100));
-        Assert.Throws<ArgumentOutOfRangeException>("value", () => new DocumentConfidence(-1, "recognition", 0, 100));
-        Assert.Throws<ArgumentOutOfRangeException>("value", () => new DocumentConfidence(5, "recognition", 5, 5));
-        Assert.Throws<ArgumentOutOfRangeException>("value", () => new DocumentConfidence(5, "recognition", 10, 0));
-        Assert.Equal(0, new DocumentConfidence(0, "recognition", 0, 100).Value);
-        Assert.Equal(100, new DocumentConfidence(100, "recognition", 0, 100).Value);
+        Assert.Throws<ArgumentNullException>("page", () => new DocumentSourceReference(null!));
+        Assert.Throws<ArgumentException>("polygon", () => new DocumentSourceReference(page, new[] { new DocumentPoint(1, 2), new DocumentPoint(3, 4) }));
+        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible");
+        DocumentTableCell cell = new();
+        Assert.Throws<ArgumentNullException>(() => text.Sources.Add(null!));
+        Assert.Throws<ArgumentNullException>(() => cell.Sources.Add(null!));
+        Assert.Empty(text.Sources);
+        Assert.Empty(cell.Sources);
     }
 
     [Fact]
@@ -248,7 +267,6 @@ public class DocumentReferencesTests
         DocumentSourceOutput output = new("operation-A", native, artifact, providerName: "synthetic", modelId: "model:v1");
         document.AddSourceOutput(output);
 
-        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Retained, output.ContentStatus);
         Assert.Same(native, output.GetRawRepresentation());
         Assert.Same(artifact, output.GetRawContent());
@@ -298,17 +316,16 @@ public class DocumentReferencesTests
         using DocumentArtifact content = new("application/json", new MemoryStream(DocumentAnnotationTestData.OriginalBytes()));
         DocumentSourceOutput contentOnly = new("content-only", rawContent: content);
 
-        Assert.Equal(DocumentRawContentStatus.Unavailable, unavailable.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Unavailable, unavailable.ContentStatus);
         Assert.Null(unavailable.GetRawRepresentation());
         Assert.Null(unavailable.GetRawContent());
-        Assert.Equal(DocumentRawContentStatus.Unavailable, disabled.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Disabled, disabled.ContentStatus);
         Assert.Null(disabled.GetRawRepresentation());
         Assert.Null(disabled.GetRawContent());
-        Assert.Equal(DocumentRawContentStatus.Retained, nativeOnly.NativeStatus);
+        Assert.Same(native, nativeOnly.GetRawRepresentation());
         Assert.Equal(DocumentRawContentStatus.Unavailable, nativeOnly.ContentStatus);
-        Assert.Equal(DocumentRawContentStatus.Unavailable, contentOnly.NativeStatus);
+        Assert.Null(contentOnly.GetRawRepresentation());
+        Assert.Same(content, contentOnly.GetRawContent());
         Assert.Equal(DocumentRawContentStatus.Retained, contentOnly.ContentStatus);
         Assert.Throws<ArgumentException>("contentCaptureDisabled", () => new DocumentSourceOutput("bad", rawContent: content, contentCaptureDisabled: true));
         content.Dispose();
@@ -328,7 +345,6 @@ public class DocumentReferencesTests
         DocumentSourceOutput output = new("operation", representation, contentCaptureDisabled: contentCaptureDisabled);
 
         Assert.Same(representation, output.GetRawRepresentation());
-        Assert.Equal(hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable, output.NativeStatus);
         Assert.Equal(contentCaptureDisabled ? DocumentRawContentStatus.Disabled : DocumentRawContentStatus.Unavailable, output.ContentStatus);
         Assert.Null(output.GetRawContent());
         Assert.Equal(0, native.DisposeCount);
@@ -344,7 +360,6 @@ public class DocumentReferencesTests
 
         Assert.Same(output, Assert.Single(document.SourceOutputs));
         Assert.Same(native, output.GetRawRepresentation());
-        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
         document.Dispose();
         Assert.Same(native, output.GetRawRepresentation());
@@ -367,7 +382,7 @@ public class DocumentReferencesTests
     }
 
     // Consumer-owned oracle for these two known fixtures only; not a production conversion API.
-    private static DocumentPoint[]? ProjectKnownOverlay(DocumentRegion region)
+    private static DocumentPoint[]? ProjectKnownOverlay(DocumentSourceReference region)
     {
         if (region.Page.Dimensions == new DocumentPageDimensions(200, 100) &&
             region.Page.CoordinateUnit == DocumentCoordinateUnit.Point &&

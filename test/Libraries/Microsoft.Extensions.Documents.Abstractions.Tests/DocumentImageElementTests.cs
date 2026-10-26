@@ -123,8 +123,7 @@ public class DocumentImageElementTests
         };
         image.Artifacts.Add(artifact);
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
-        image.Annotations.Add(new DocumentAnnotation("page-image",
-            regions: new[] { new DocumentRegion(page, DocumentAnnotationTestData.Polygon()) }));
+        image.Sources.Add(new DocumentSourceReference(page, DocumentAnnotationTestData.Polygon()));
         DocumentSection section = new("");
         section.Elements.Add(image);
         document.Sections.Add(section);
