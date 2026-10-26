@@ -226,25 +226,25 @@ public sealed class DocumentExtractionCleanupTests
         IOException first = new("first cleanup");
         IOException second = new("second cleanup");
         using CleanupFixture fixture = new(throwingCleanup ? first : null, throwingCleanup ? second : null);
-        TaskCompletionSource<bool> reached = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        TaskCompletionSource<bool> release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        using SemaphoreSlim reached = new(0, 1);
+        using SemaphoreSlim release = new(0, 1);
         PageSequence sequence = new(fixture.Page)
         {
             BeforeMoveAsync = async index =>
             {
                 if (index == (afterLast ? 2 : 1))
                 {
-                    reached.SetResult(true);
-                    await release.Task;
+                    reached.Release();
+                    await release.WaitAsync();
                 }
             }
         };
-        Task<DocumentExtractionResult> pending = sequence.ToDocumentExtractionResultAsync("document", true, cancellation.Token);
-        await reached.Task;
+        Task<Exception> pending = Assert.ThrowsAnyAsync<Exception>(() => sequence.ToDocumentExtractionResultAsync("document", true, cancellation.Token));
+        await reached.WaitAsync();
         Assert.False(pending.IsCompleted);
         cancellation.Cancel();
-        release.SetResult(true);
-        Exception error = await Assert.ThrowsAnyAsync<Exception>(() => pending);
+        release.Release();
+        Exception error = await pending;
 
         Assert.Equal(cancellation.Token, sequence.ReceivedToken);
         Assert.Equal(1, sequence.DisposeCount);
@@ -281,7 +281,10 @@ public sealed class DocumentExtractionCleanupTests
     {
         internal CleanupFixture(Exception? first = null, Exception? second = null)
         {
-            Streams = [new(first), new(second), new()];
+            First = new(first);
+            Second = new(second);
+            Third = new();
+            Streams = [First, Second, Third];
             Artifacts = Streams.Select(static stream => new DocumentArtifact("application/json", stream)).ToArray();
             Page = new(7, [], sourceOutputs: Artifacts.Select((artifact, index) => new DocumentSourceOutput("output:" + index, Native, artifact)).ToArray());
         }
@@ -289,6 +292,9 @@ public sealed class DocumentExtractionCleanupTests
         internal MemoryStream Input { get; } = new([42, 43]);
         internal CleanupNative Native { get; } = new();
         internal CleanupStream[] Streams { get; }
+        private CleanupStream First { get; }
+        private CleanupStream Second { get; }
+        private CleanupStream Third { get; }
         internal DocumentArtifact[] Artifacts { get; }
         internal DocumentExtractionPage Page { get; }
 

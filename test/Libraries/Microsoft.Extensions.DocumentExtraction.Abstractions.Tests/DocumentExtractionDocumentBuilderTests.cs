@@ -1249,40 +1249,45 @@ public sealed class DocumentExtractionDocumentBuilderTests
         {
             foreach (int sourceMode in new[] { 0, 1 })
             {
-                using FidelityNative native = new();
-                using FidelityNative annotationNative = new();
-                DocumentSourceOutput output = new("operation", native, contentCaptureDisabled: true);
-                DocumentSourcePage frame = PdfFrame(sourceMode == 0 ? null : output);
-                DocumentSourceReference annotation = new(frame, FidelityPolygon(), annotationNative);
-                DocumentExtractionPage page = CaptureCarrierPage(output, annotation, carrier);
-                using DocumentExtractionResult result = await FinalizeWithoutCapture(page, entryPoint);
-
-                DocumentSourceReference[] projected = ProjectedSources(result.Document).ToArray();
-                Assert.Equal(carrier == "page" ? 2 : 1, projected.Length);
-                Assert.All(projected, source => Assert.Same(annotation, source));
-                Assert.Same(annotationNative, annotation.GetRawRepresentation());
-                Assert.Same(frame, annotation.Page);
-                Assert.Same(frame, Assert.Single(result.Document.SourcePages));
-                if (sourceMode == 0)
-                {
-                    Assert.Empty(result.Document.SourceOutputs);
-                }
-                else
-                {
-                    Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
-                }
-
-                Assert.Same(native, output.GetRawRepresentation());
-                Assert.Same(sourceMode == 1 ? output : null, annotation.Page.SourceOutput);
-                Assert.Equal(FidelityPolygon(), annotation.Polygon);
-                Assert.Null(output.GetRawContent());
-                Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
-                result.Dispose();
-                Assert.Equal(0, native.DisposeCount);
-                Assert.Equal(0, annotationNative.DisposeCount);
-                Assert.Equal(0, native.ToStringCount);
-                Assert.Equal(0, annotationNative.ToStringCount);
+                await VerifyNativeSources(entryPoint, sourceMode, carrier);
             }
+        }
+
+        static async Task VerifyNativeSources(int entryPoint, int sourceMode, string carrier)
+        {
+            using FidelityNative native = new();
+            using FidelityNative annotationNative = new();
+            DocumentSourceOutput output = new("operation", native, contentCaptureDisabled: true);
+            DocumentSourcePage frame = PdfFrame(sourceMode == 0 ? null : output);
+            DocumentSourceReference annotation = new(frame, FidelityPolygon(), annotationNative);
+            DocumentExtractionPage page = CaptureCarrierPage(output, annotation, carrier);
+            using DocumentExtractionResult result = await FinalizeWithoutCapture(page, entryPoint);
+
+            DocumentSourceReference[] projected = ProjectedSources(result.Document).ToArray();
+            Assert.Equal(carrier == "page" ? 2 : 1, projected.Length);
+            Assert.All(projected, source => Assert.Same(annotation, source));
+            Assert.Same(annotationNative, annotation.GetRawRepresentation());
+            Assert.Same(frame, annotation.Page);
+            Assert.Same(frame, Assert.Single(result.Document.SourcePages));
+            if (sourceMode == 0)
+            {
+                Assert.Empty(result.Document.SourceOutputs);
+            }
+            else
+            {
+                Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
+            }
+
+            Assert.Same(native, output.GetRawRepresentation());
+            Assert.Same(sourceMode == 1 ? output : null, annotation.Page.SourceOutput);
+            Assert.Equal(FidelityPolygon(), annotation.Polygon);
+            Assert.Null(output.GetRawContent());
+            Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
+            result.Dispose();
+            Assert.Equal(0, native.DisposeCount);
+            Assert.Equal(0, annotationNative.DisposeCount);
+            Assert.Equal(0, native.ToStringCount);
+            Assert.Equal(0, annotationNative.ToStringCount);
         }
     }
 
@@ -1324,6 +1329,11 @@ public sealed class DocumentExtractionDocumentBuilderTests
     public async Task Finalization_OptOutAllowsNativeOnlyButRejectsContentOnly(bool hasNative, bool hasBody)
     {
         foreach (int entryPoint in new[] { 0, 1, 2, 3, 4, 5 })
+        {
+            await VerifyNativeAndContent(entryPoint, hasNative, hasBody);
+        }
+
+        static async Task VerifyNativeAndContent(int entryPoint, bool hasNative, bool hasBody)
         {
             using FidelityNative native = new();
             FidelityStream stream = new(CaptureBytes());
@@ -1485,13 +1495,14 @@ public sealed class DocumentExtractionDocumentBuilderTests
     {
         DocumentExtractionObservation observation = new DocumentExtractionText("text", 0, DocumentTextKind.Paragraph, "visible",
             sources: carrier is "observation" or "nested-cell" ? [annotation] : null);
-        if (carrier is "table" or "cell" or "empty-cell" or "nested-cell" or "nested-cell-source")
+        bool isNestedCell = carrier is "nested-cell" or "nested-cell-source";
+        if (isNestedCell || carrier is "table" or "cell" or "empty-cell")
         {
             observation = new DocumentExtractionTable("inner", 0, "", 1, 1,
                 [new DocumentExtractionTableCell(0, 0, carrier == "empty-cell" ? null : observation,
                     sources: carrier is "cell" or "empty-cell" or "nested-cell-source" ? [annotation] : null)],
                 sources: carrier == "table" ? [annotation] : null);
-            if (carrier is "nested-cell" or "nested-cell-source")
+            if (isNestedCell)
             {
                 observation = new DocumentExtractionTable("outer", 0, "", 1, 1, [new DocumentExtractionTableCell(0, 0, observation)]);
             }
