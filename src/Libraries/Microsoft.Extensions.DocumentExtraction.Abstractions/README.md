@@ -8,9 +8,9 @@ It does not define a second canonical tree.
 
 Finalization sorts out-of-order pages and observations, rejects duplicate page
 numbers and provider observation identifiers, validates table-cell ownership,
-and preserves equal text and duplicate ordered page references. Opaque evidence
-references and document-owned artifacts are associated with the resulting
-`Documents` elements. The builder owns artifacts until successful finalization;
+and preserves equal text and duplicate ordered source references. Typed
+`DocumentSourceReference` instances and document-owned artifacts are associated
+with the resulting `Documents` elements. The builder owns artifacts until successful finalization;
 the finalized result owns them afterward and disposes them with its document.
 Cleanup attempts every eligible artifact even when a stream throws. A failed
 `Build()` preserves its original error; if cleanup also fails, an
@@ -21,11 +21,12 @@ Page-sequence finalization also preserves enumeration failures or cancellation
 ahead of any artifact-cleanup failures rather than replacing the primary error.
 
 Unknown, list, barcode, and provider-specific observations can preserve opaque
-structured values through `DocumentExtractionExtension.Value` and shared
-`DocumentAnnotation` instances, without flattening them into Markdown. This is
-transport, not first-class list/item/nesting or normalized detection schemas;
-those remain separate review work. The package has no provider, AI, Azure, or
-MEDI dependencies and does not fabricate grounding or recognize detections.
+structured values through `DocumentExtractionExtension.Value`, without flattening
+them into Markdown. Provider-specific confidence, detections and transforms belong
+in page or observation `Metadata`, not generalized annotation or normalized
+detection schemas. This is transport, not first-class list/item/nesting. The
+package has no provider, AI, Azure, or MEDI dependencies and does not fabricate
+grounding or recognize detections.
 
 `IDocumentExtractionClient.ExtractPagesAsync(Stream, identifier, mediaType,
 DocumentExtractionOptions?, CancellationToken)` is the single provider operation. The `ExtractAsync`
@@ -37,14 +38,27 @@ network extraction: a provider may finish a remote operation before yielding pag
 ## Layout and finalization
 
 Source-page frames retain the reported page number, dimensions, coordinate unit
-and origin separately from the assembled page order. Annotations on pages,
-observations and table cells carry exact ordered polygons, optional reported
-confidence, roles and structured values into the shared document. Unknown units
-remain unknown; scores are not normalized or treated as cross-provider calibrated.
+and origin separately from the assembled page order. `Sources` on pages,
+observations and table cells carry typed page references and exact ordered polygons
+into the shared document. A source reference without polygon vertices identifies
+only a page, not a precise location. Unknown units remain unknown.
 Table cells preserve positive row/column spans, producer roles, empty anchors
-and annotations independently of content. Blank/image-only pages remain sections
+and sources independently of content. Blank/image-only pages remain sections
 without invented Markdown. Stored document Markdown is assembled only when every
 page supplied it; semantic projection remains separate.
+
+Source lists are snapshotted at construction. Page sources are copied to the
+canonical section and precede each observation's sources on its canonical element,
+including nested table-cell content; supplied order and multiplicity are preserved.
+`SourcePage` and `SourceOutputs` retain real blank-page frames and source operations
+even when no observation refers to them. Source references also register their
+frames and operations when attached to the document.
+
+Page and observation metadata dictionaries are snapshotted with ordinal keys;
+opaque values remain borrowed. Finalization copies page entries to section
+`Metadata` and observation entries to element `Metadata`, including nested content.
+No normalized provider-specific schema, metadata-presence flag or automatic
+projection/logging of this extension data is introduced.
 
 ## Per-call options and break-glass output
 
@@ -60,7 +74,7 @@ Direct `ExtractPagesAsync` callers must follow the provider's snapshot contract.
 `CaptureRawContent` defaults to `false`, including when options are absent.
 It controls only retention of available original detached response content in a
 per-operation `DocumentSourceOutput`, never a mutable client "last response".
-Supplied native SDK results and native annotation representations remain available
+Supplied native SDK results and native source-reference representations remain available
 by identity independently of this option; native inspection never requires body
 capture. Native objects are borrowed and are never implicitly disposed.
 Disabling content capture prevents the separate original-content artifact; it is
@@ -68,8 +82,8 @@ not redaction and does not strip sensitive or content-bearing fields from retain
 native SDK objects, which may themselves contain response data.
 Set the flag to `true` to opt into original body retention. Unavailable native/body
 data is explicitly reported, not manufactured by serializing mapped objects.
-Only content availability may be `Disabled`; native availability remains
-`Retained` or `Unavailable`. Providers must distinguish unsupported explicit
+Content availability may be `Disabled`; a native getter returning `null` reports
+that the native representation is unavailable. Providers must distinguish unsupported explicit
 settings (which they reject) from legitimately unavailable source output (which
 they report honestly even when capture is requested). Finalization rejects retained
 original content when capture is off, including nested source associations, and

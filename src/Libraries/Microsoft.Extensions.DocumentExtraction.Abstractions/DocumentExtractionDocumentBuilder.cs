@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DocumentExtraction;
 /// </summary>
 /// <remarks>
 /// Pages may arrive out of order. Finalization sorts pages and observations, rejects duplicate page numbers and
-/// provider identifiers, preserves equal text from distinct observations, and preserves page-reference order and
+/// provider identifiers, preserves equal text from distinct observations, and preserves source-reference order and
 /// multiplicity. Artifacts are owned by the builder until successful finalization and by the result thereafter.
 /// </remarks>
 public sealed class DocumentExtractionDocumentBuilder : IDisposable
@@ -96,14 +96,14 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
                 }
 
                 DocumentSection section = new(page.Markdown ?? string.Empty);
-                foreach (DocumentPageReference reference in page.PageReferences)
+                foreach (DocumentSourceReference source in page.Sources)
                 {
-                    section.PageReferences.Add(reference);
+                    section.Sources.Add(source);
                 }
 
-                foreach (DocumentAnnotation annotation in page.Annotations)
+                foreach (KeyValuePair<string, object?> entry in page.Metadata)
                 {
-                    section.Annotations.Add(annotation);
+                    section.Metadata.Add(entry.Key, entry.Value);
                 }
 
                 foreach (DocumentExtractionObservation observation in page.Observations
@@ -112,7 +112,7 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
                     .ThenBy(static pair => pair.index)
                     .Select(static pair => pair.item))
                 {
-                    DocumentElement element = BuildElement(observation, page.PageReferences, providerIds);
+                    DocumentElement element = BuildElement(observation, page.Sources, providerIds);
                     section.Elements.Add(element);
                 }
 
@@ -179,13 +179,13 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
 
     private static DocumentElement BuildElement(
         DocumentExtractionObservation observation,
-        IReadOnlyList<DocumentPageReference> pageReferences,
+        IReadOnlyList<DocumentSourceReference> pageSources,
         HashSet<string> providerIds)
     {
         RegisterProviderId(observation, providerIds);
 
         DocumentElement element = observation.ToDocumentElement();
-        observation.ApplyAssociations(element, pageReferences);
+        observation.ApplyAssociations(element, pageSources);
 
         if (observation is DocumentExtractionTable table)
         {
@@ -199,11 +199,11 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
                 }
 
                 DocumentTableCell sharedCell = cell.Content is { } observationContent
-                    ? new DocumentTableCell(BuildElement(observationContent, pageReferences, providerIds), cell.RowSpan, cell.ColumnSpan, cell.Kind)
+                    ? new DocumentTableCell(BuildElement(observationContent, pageSources, providerIds), cell.RowSpan, cell.ColumnSpan, cell.Kind)
                     : new DocumentTableCell(cell.RowSpan, cell.ColumnSpan, cell.Kind);
-                foreach (DocumentAnnotation annotation in cell.Annotations)
+                foreach (DocumentSourceReference source in cell.Sources)
                 {
-                    sharedCell.Annotations.Add(annotation);
+                    sharedCell.Sources.Add(source);
                 }
 
                 ((DocumentTableElement)element).Cells[cell.Row, cell.Column] = sharedCell;
@@ -280,43 +280,43 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
         return unique;
     }
 
-    private static IEnumerable<DocumentAnnotation> EnumerateAnnotations(DocumentExtractionPage page)
+    private static IEnumerable<DocumentSourceReference> EnumerateReferences(DocumentExtractionPage page)
     {
-        foreach (DocumentAnnotation annotation in page.Annotations)
+        foreach (DocumentSourceReference source in page.Sources)
         {
-            yield return annotation;
+            yield return source;
         }
 
         foreach (DocumentExtractionObservation observation in page.Observations)
         {
-            foreach (DocumentAnnotation annotation in EnumerateAnnotations(observation))
+            foreach (DocumentSourceReference source in EnumerateReferences(observation))
             {
-                yield return annotation;
+                yield return source;
             }
         }
     }
 
-    private static IEnumerable<DocumentAnnotation> EnumerateAnnotations(DocumentExtractionObservation observation)
+    private static IEnumerable<DocumentSourceReference> EnumerateReferences(DocumentExtractionObservation observation)
     {
-        foreach (DocumentAnnotation annotation in observation.Annotations)
+        foreach (DocumentSourceReference source in observation.Sources)
         {
-            yield return annotation;
+            yield return source;
         }
 
         if (observation is DocumentExtractionTable table)
         {
             foreach (DocumentExtractionTableCell cell in table.Cells)
             {
-                foreach (DocumentAnnotation annotation in cell.Annotations)
+                foreach (DocumentSourceReference source in cell.Sources)
                 {
-                    yield return annotation;
+                    yield return source;
                 }
 
                 if (cell.Content is { } content)
                 {
-                    foreach (DocumentAnnotation annotation in EnumerateAnnotations(content))
+                    foreach (DocumentSourceReference source in EnumerateReferences(content))
                     {
-                        yield return annotation;
+                        yield return source;
                     }
                 }
             }
@@ -335,19 +335,11 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
             yield return output;
         }
 
-        foreach (DocumentAnnotation annotation in EnumerateAnnotations(page))
+        foreach (DocumentSourceReference reference in EnumerateReferences(page))
         {
-            if (annotation.SourceOutput is { } source)
+            if (reference.Page.SourceOutput is { } source)
             {
                 yield return source;
-            }
-
-            foreach (DocumentRegion region in annotation.Regions)
-            {
-                if (region.Page.SourceOutput is { } regionSource)
-                {
-                    yield return regionSource;
-                }
             }
         }
     }

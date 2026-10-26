@@ -72,31 +72,11 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence.DocumentExtractionEvidence(Microsoft.Extensions.Documents.DocumentEvidenceReference reference, string? role = null);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.Documents.DocumentEvidenceReference Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence.Reference { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence.Role { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.Extensions.DocumentExtraction.DocumentExtractionExtension : Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionExtension.DocumentExtractionExtension(string providerId, int order, string type, string markdown, string? text = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null, object? value = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionExtension.DocumentExtractionExtension(string providerId, int order, string type, string markdown, string? text = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference>? sources = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? metadata = null, object? value = null);",
           "Stage": "Experimental"
         }
       ],
@@ -120,7 +100,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionImage.DocumentExtractionImage(string providerId, int order, string markdown, string? text = null, System.ReadOnlyMemory<byte>? content = null, string? mediaType = null, System.Uri? source = null, string? alternativeText = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionImage.DocumentExtractionImage(string providerId, int order, string markdown, string? text = null, System.ReadOnlyMemory<byte>? content = null, string? mediaType = null, System.Uri? source = null, string? alternativeText = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference>? sources = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? metadata = null);",
           "Stage": "Experimental"
         }
       ],
@@ -152,21 +132,13 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.DocumentExtractionObservation(string providerId, int order, string markdown, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.DocumentExtractionObservation(string providerId, int order, string markdown, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference>? sources = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? metadata = null);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Annotations { get; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Artifacts { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Evidence { get; }",
           "Stage": "Experimental"
         },
         {
@@ -174,15 +146,19 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Metadata { get; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "int Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Order { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.PageReferences { get; }",
+          "Member": "string Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.ProviderId { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "string Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.ProviderId { get; }",
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference> Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation.Sources { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -220,17 +196,17 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.DocumentExtractionPage(int pageNumber, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation> observations, string? markdown = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, Microsoft.Extensions.Documents.DocumentSourcePage? sourcePage = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceOutput>? sourceOutputs = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.DocumentExtractionPage(int pageNumber, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation> observations, string? markdown = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference>? sources = null, Microsoft.Extensions.Documents.DocumentSourcePage? sourcePage = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceOutput>? sourceOutputs = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? metadata = null);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.Annotations { get; }",
+          "Member": "string? Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.Markdown { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "string? Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.Markdown { get; }",
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.Metadata { get; }",
           "Stage": "Experimental"
         },
         {
@@ -242,15 +218,15 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.PageReferences { get; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceOutput> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.SourceOutputs { get; }",
           "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Documents.DocumentSourcePage? Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.SourcePage { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage.Sources { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -302,7 +278,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTable.DocumentExtractionTable(string providerId, int order, string markdown, int rowCount, int columnCount, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell>? cells = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTable.DocumentExtractionTable(string providerId, int order, string markdown, int rowCount, int columnCount, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell>? cells = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference>? sources = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? metadata = null);",
           "Stage": "Experimental"
         }
       ],
@@ -326,15 +302,11 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.DocumentExtractionTableCell(int row, int column, Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation? content, int rowSpan = 1, int columnSpan = 1, string? kind = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.DocumentExtractionTableCell(int row, int column, Microsoft.Extensions.DocumentExtraction.DocumentExtractionObservation? content, int rowSpan = 1, int columnSpan = 1, string? kind = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference>? sources = null);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
-        {
-          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation> Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Annotations { get; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "int Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Column { get; }",
           "Stage": "Experimental"
@@ -358,6 +330,10 @@
         {
           "Member": "int Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.RowSpan { get; }",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference> Microsoft.Extensions.DocumentExtraction.DocumentExtractionTableCell.Sources { get; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -366,7 +342,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionText.DocumentExtractionText(string providerId, int order, Microsoft.Extensions.Documents.DocumentTextKind kind, string markdown, string? text = null, int? headerLevel = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentPageReference>? pageReferences = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionEvidence>? evidence = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentAnnotation>? annotations = null);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionText.DocumentExtractionText(string providerId, int order, Microsoft.Extensions.Documents.DocumentTextKind kind, string markdown, string? text = null, int? headerLevel = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourceReference>? sources = null, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentArtifact>? artifacts = null, System.Collections.Generic.IReadOnlyDictionary<string, object?>? metadata = null);",
           "Stage": "Experimental"
         }
       ],

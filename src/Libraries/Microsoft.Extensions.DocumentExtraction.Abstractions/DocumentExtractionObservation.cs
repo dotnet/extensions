@@ -25,34 +25,29 @@ public abstract class DocumentExtractionObservation
     /// <param name="providerId">The non-empty provider identifier for this observation.</param>
     /// <param name="order">The zero-based reading-order value.</param>
     /// <param name="markdown">The stored markdown supplied for this observation.</param>
-    /// <param name="pageReferences">Optional opaque source-page references.</param>
-    /// <param name="evidence">Optional opaque evidence associations.</param>
+    /// <param name="sources">Optional typed source references in supplied order.</param>
     /// <param name="artifacts">Optional document-owned artifacts.</param>
-    /// <param name="annotations">Optional source layout and structured producer information.</param>
+    /// <param name="metadata">Optional provider-specific metadata. Entries are copied; values remain borrowed.</param>
     protected DocumentExtractionObservation(
         string providerId,
         int order,
         string markdown,
-        IReadOnlyList<DocumentPageReference>? pageReferences = null,
-        IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
+        IReadOnlyList<DocumentSourceReference>? sources = null,
         IReadOnlyList<DocumentArtifact>? artifacts = null,
-        IReadOnlyList<DocumentAnnotation>? annotations = null)
+        IReadOnlyDictionary<string, object?>? metadata = null)
     {
         ProviderId = Throw.IfNullOrEmpty(providerId);
         _ = Throw.IfLessThan(order, 0, nameof(order));
         Order = order;
         Markdown = Throw.IfNull(markdown);
-        PageReferences = Copy(pageReferences);
-        Evidence = Copy(evidence);
+        Sources = Copy(sources);
         Artifacts = Copy(artifacts);
-        Annotations = Copy(annotations);
+        Metadata = CopyMetadata(metadata);
 
-        if (PageReferences.Any(static item => item is null) ||
-            Evidence.Any(static item => item is null) ||
-            Artifacts.Any(static item => item is null) ||
-            Annotations.Any(static item => item is null))
+        if (Sources.Any(static item => item is null) ||
+            Artifacts.Any(static item => item is null))
         {
-            Throw.ArgumentException(nameof(pageReferences), "Association collections cannot contain null entries.");
+            Throw.ArgumentException(nameof(sources), "Association collections cannot contain null entries.");
         }
     }
 
@@ -72,52 +67,52 @@ public abstract class DocumentExtractionObservation
     public string Markdown { get; }
 
     /// <summary>
-    /// Gets opaque source-page references in supplied order and multiplicity.
+    /// Gets typed source references in supplied order and multiplicity.
     /// </summary>
-    public IReadOnlyList<DocumentPageReference> PageReferences { get; }
-
-    /// <summary>
-    /// Gets opaque evidence associations in supplied order.
-    /// </summary>
-    public IReadOnlyList<DocumentExtractionEvidence> Evidence { get; }
+    public IReadOnlyList<DocumentSourceReference> Sources { get; }
 
     /// <summary>
     /// Gets document-owned artifacts that are transferred to the finalized document.
     /// </summary>
     public IReadOnlyList<DocumentArtifact> Artifacts { get; }
 
-    /// <summary>Gets structured source layout and supplementary producer information.</summary>
-    public IReadOnlyList<DocumentAnnotation> Annotations { get; }
+    /// <summary>Gets snapshotted provider-specific metadata whose opaque values remain borrowed.</summary>
+    public IReadOnlyDictionary<string, object?> Metadata { get; }
 
     internal static IReadOnlyList<T> Copy<T>(IEnumerable<T>? values)
         => new ReadOnlyCollection<T>((values ?? Array.Empty<T>()).ToArray());
 
-    internal abstract DocumentElement ToDocumentElement();
-
-    internal void ApplyAssociations(DocumentElement element, IReadOnlyList<DocumentPageReference> pageReferences)
+    internal static IReadOnlyDictionary<string, object?> CopyMetadata(IReadOnlyDictionary<string, object?>? metadata)
     {
-        foreach (DocumentPageReference pageReference in pageReferences)
+        Dictionary<string, object?> copy = new(StringComparer.Ordinal);
+        if (metadata is not null)
         {
-            element.PageReferences.Add(pageReference);
-        }
-
-        foreach (DocumentPageReference pageReference in PageReferences)
-        {
-            element.PageReferences.Add(pageReference);
-        }
-
-        foreach (DocumentExtractionEvidence evidence in Evidence)
-        {
-            element.Evidence.Add(evidence.Reference);
-            if (evidence.Role is not null)
+            foreach (KeyValuePair<string, object?> entry in metadata)
             {
-                element.Annotations.Add(new DocumentAnnotation(evidence.Reference.Kind ?? "evidence", evidence.Reference.Value, evidence.Role));
+                copy.Add(entry.Key, entry.Value);
             }
         }
 
-        foreach (DocumentAnnotation annotation in Annotations)
+        return new ReadOnlyDictionary<string, object?>(copy);
+    }
+
+    internal abstract DocumentElement ToDocumentElement();
+
+    internal void ApplyAssociations(DocumentElement element, IReadOnlyList<DocumentSourceReference> pageSources)
+    {
+        foreach (DocumentSourceReference source in pageSources)
         {
-            element.Annotations.Add(annotation);
+            element.Sources.Add(source);
+        }
+
+        foreach (DocumentSourceReference source in Sources)
+        {
+            element.Sources.Add(source);
+        }
+
+        foreach (KeyValuePair<string, object?> entry in Metadata)
+        {
+            element.Metadata.Add(entry.Key, entry.Value);
         }
 
         foreach (DocumentArtifact artifact in Artifacts)
@@ -142,11 +137,10 @@ public sealed class DocumentExtractionText : DocumentExtractionObservation
         string markdown,
         string? text = null,
         int? headerLevel = null,
-        IReadOnlyList<DocumentPageReference>? pageReferences = null,
-        IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
+        IReadOnlyList<DocumentSourceReference>? sources = null,
         IReadOnlyList<DocumentArtifact>? artifacts = null,
-        IReadOnlyList<DocumentAnnotation>? annotations = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(providerId, order, markdown, sources, artifacts, metadata)
     {
         if (kind == DocumentTextKind.Header && headerLevel is not null && (headerLevel < 1 || headerLevel > 10))
         {
@@ -200,11 +194,10 @@ public sealed class DocumentExtractionImage : DocumentExtractionObservation
         string? mediaType = null,
         Uri? source = null,
         string? alternativeText = null,
-        IReadOnlyList<DocumentPageReference>? pageReferences = null,
-        IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
+        IReadOnlyList<DocumentSourceReference>? sources = null,
         IReadOnlyList<DocumentArtifact>? artifacts = null,
-        IReadOnlyList<DocumentAnnotation>? annotations = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(providerId, order, markdown, sources, artifacts, metadata)
     {
         Text = text;
         Content = content;
@@ -253,11 +246,10 @@ public sealed class DocumentExtractionTable : DocumentExtractionObservation
         int rowCount,
         int columnCount,
         IReadOnlyList<DocumentExtractionTableCell>? cells = null,
-        IReadOnlyList<DocumentPageReference>? pageReferences = null,
-        IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
+        IReadOnlyList<DocumentSourceReference>? sources = null,
         IReadOnlyList<DocumentArtifact>? artifacts = null,
-        IReadOnlyList<DocumentAnnotation>? annotations = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(providerId, order, markdown, sources, artifacts, metadata)
     {
         _ = Throw.IfLessThan(rowCount, 0, nameof(rowCount));
         _ = Throw.IfLessThan(columnCount, 0, nameof(columnCount));
@@ -298,12 +290,11 @@ public sealed class DocumentExtractionExtension : DocumentExtractionObservation
         string type,
         string markdown,
         string? text = null,
-        IReadOnlyList<DocumentPageReference>? pageReferences = null,
-        IReadOnlyList<DocumentExtractionEvidence>? evidence = null,
+        IReadOnlyList<DocumentSourceReference>? sources = null,
         IReadOnlyList<DocumentArtifact>? artifacts = null,
-        IReadOnlyList<DocumentAnnotation>? annotations = null,
+        IReadOnlyDictionary<string, object?>? metadata = null,
         object? value = null)
-        : base(providerId, order, markdown, pageReferences, evidence, artifacts, annotations)
+        : base(providerId, order, markdown, sources, artifacts, metadata)
     {
         Type = Throw.IfNullOrEmpty(type);
         Text = text;

@@ -12,7 +12,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DocumentExtraction;
 
 /// <summary>
-/// Logs extraction lifecycle events without logging source content, evidence values, artifacts, or provider state.
+/// Logs extraction lifecycle events without logging source content, metadata values, artifacts, or provider state.
 /// </summary>
 public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtractionClient
 {

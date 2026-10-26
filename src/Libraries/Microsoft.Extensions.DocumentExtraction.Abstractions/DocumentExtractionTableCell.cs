@@ -21,7 +21,7 @@ public sealed class DocumentExtractionTableCell
     /// <param name="rowSpan">The positive number of rows occupied.</param>
     /// <param name="columnSpan">The positive number of columns occupied.</param>
     /// <param name="kind">The optional native cell role.</param>
-    /// <param name="annotations">Optional annotations independent of content.</param>
+    /// <param name="sources">Optional typed source references independent of content.</param>
     public DocumentExtractionTableCell(
         int row,
         int column,
@@ -29,7 +29,7 @@ public sealed class DocumentExtractionTableCell
         int rowSpan = 1,
         int columnSpan = 1,
         string? kind = null,
-        IReadOnlyList<DocumentAnnotation>? annotations = null)
+        IReadOnlyList<DocumentSourceReference>? sources = null)
     {
         _ = Throw.IfLessThan(row, 0, nameof(row));
         _ = Throw.IfLessThan(column, 0, nameof(column));
@@ -39,10 +39,10 @@ public sealed class DocumentExtractionTableCell
         RowSpan = Throw.IfLessThan(rowSpan, 1);
         ColumnSpan = Throw.IfLessThan(columnSpan, 1);
         Kind = kind is null ? null : Throw.IfNullOrWhitespace(kind);
-        Annotations = DocumentExtractionObservation.Copy(annotations);
-        foreach (DocumentAnnotation annotation in Annotations)
+        Sources = DocumentExtractionObservation.Copy(sources);
+        foreach (DocumentSourceReference source in Sources)
         {
-            _ = Throw.IfNull(annotation);
+            _ = Throw.IfNull(source);
         }
     }
 
@@ -64,6 +64,6 @@ public sealed class DocumentExtractionTableCell
     /// <summary>Gets the optional producer-supplied cell role.</summary>
     public string? Kind { get; }
 
-    /// <summary>Gets source annotations, independently of content presence.</summary>
-    public IReadOnlyList<DocumentAnnotation> Annotations { get; }
+    /// <summary>Gets typed source references, independently of content presence.</summary>
+    public IReadOnlyList<DocumentSourceReference> Sources { get; }
 }

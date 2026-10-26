@@ -8,14 +8,20 @@ These experimental packages define the extraction-side waist for the neutral
 `DocumentExtractionDocumentBuilder`. The builder accepts pages in any arrival
 order, sorts them and their observations during explicit finalization, rejects
 duplicate page numbers and provider observation identifiers, preserves equal
-text from different observations, and preserves opaque page/evidence references
+text from different observations, and preserves typed page/polygon source references
 without asserting grounding. It maps tables, images, and unknown/list/barcode
 extensions into the existing `Documents` element types. `DocumentArtifact`
 instances are transferred to the finalized `DocumentExtractionResult` and are
 disposed when the result is disposed or finalization fails.
 
-Shared annotations retain reported polygon geometry, coordinate frames,
-confidence, table spans/roles and structured values. Source operations provide
+Typed source references retain reported polygon geometry and coordinate frames;
+tables retain spans/roles and empty anchors independently of cell content.
+Page and observation `Metadata` snapshots transport provider-specific confidence,
+detections and transforms without introducing normalized provider schemas.
+Finalization copies page metadata to the canonical section and observation metadata
+to its element, including nested content. Dictionary keys use ordinal comparison
+and opaque values remain borrowed. Structured extension values remain separate
+from Markdown. Source operations provide
 explicit native-result/original-response inspection without entering semantic
 projections. Original response artifacts are deduplicated across pages and owned
 once; borrowed native objects and artifacts owned by another document are not
@@ -24,7 +30,7 @@ disposed on failure.
 `Microsoft.Extensions.DocumentExtraction` contains the optional
 `DocumentExtractionClientBuilder`, dependency-injection registration, delegation,
 and lifecycle logging middleware. Logging is intentionally limited to lifecycle,
-page-number, and observation-count fields; source content, evidence values,
+page-number, and observation-count fields; source content, metadata values,
 artifacts, credentials, and raw provider payloads are never serialized or
 logged.
 If enumeration and enumerator disposal both fail, logging middleware reports
@@ -42,9 +48,9 @@ Production targets are net10.0, net9.0, net8.0, net462, and netstandard2.0.
 Per-call `DocumentExtractionOptions` forwards model/adapter-specific overrides
 and `CaptureRawContent` (default `false`, also when options are absent) through
 delegation and lifecycle logging.
-Logging does not serialize options, annotations or raw output. Providers must
+Logging does not serialize options, source references, metadata or raw output. Providers must
 reject unsupported explicit settings and use fresh requests without mutating
-client defaults. Native SDK results and annotation objects remain available
+client defaults. Native SDK results and source-reference objects remain available
 independently of this setting and are borrowed, never implicitly disposed.
 Disabling capture is not redaction: retained native objects may themselves contain
 sensitive fields or response data even without a separate original-content artifact.
