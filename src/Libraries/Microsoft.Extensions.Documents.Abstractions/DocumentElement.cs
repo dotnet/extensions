@@ -28,7 +28,7 @@ public abstract class DocumentElement
     {
         _markdown = Throw.IfNull(markdown);
         Artifacts = new DocumentArtifactCollection(this);
-        Annotations = new DocumentAnnotationCollection(() => _document);
+        Sources = new DocumentSourceReferenceCollection(() => _document);
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public abstract class DocumentElement
     /// <remarks>
     /// This value is not a durable serialization identifier and has no provider-specific meaning.
     /// </remarks>
-    public Guid LocalId => _localId;
+    internal Guid LocalId => _localId;
 
     /// <summary>
     /// Gets the current structural address of this element within its owning document.
@@ -46,7 +46,7 @@ public abstract class DocumentElement
     /// The address is local to the current in-memory hierarchy and changes when the hierarchy is edited.
     /// It is <see langword="null"/> while the element is not attached to a document.
     /// </remarks>
-    public string? Address => _document?.GetAddress(this);
+    internal string? Address => _document?.GetAddress(this);
 
     /// <summary>
     /// Gets the section that directly contains this element, or <see langword="null"/> for a root section or a table cell.
@@ -93,30 +93,17 @@ public abstract class DocumentElement
     }
 
     /// <summary>
-    /// Gets the ordered page references associated with this element.
-    /// </summary>
-    /// <remarks>
-    /// References are opaque values. Their order and duplicates are preserved, and they do not claim source grounding.
-    /// </remarks>
-    public IList<DocumentPageReference> PageReferences { get; } = new List<DocumentPageReference>();
-
-    /// <summary>
     /// Gets a value indicating whether this element has metadata.
     /// </summary>
-    public bool HasMetadata => _metadata is { Count: > 0 };
+    internal bool HasMetadata => _metadata is { Count: > 0 };
 
     /// <summary>
     /// Gets the metadata associated with this element.
     /// </summary>
     public IDictionary<string, object?> Metadata => _metadata ??= new Dictionary<string, object?>(StringComparer.Ordinal);
 
-    /// <summary>
-    /// Gets the opaque evidence references associated with this element.
-    /// </summary>
-    public IList<DocumentEvidenceReference> Evidence { get; } = new List<DocumentEvidenceReference>();
-
-    /// <summary>Gets optional source layout and structured annotations, excluded from Markdown projection.</summary>
-    public IList<DocumentAnnotation> Annotations { get; }
+    /// <summary>Gets optional page and region associations, excluded from Markdown projection.</summary>
+    public IList<DocumentSourceReference> Sources { get; }
 
     /// <summary>
     /// Gets the artifacts associated with this element.
@@ -205,7 +192,7 @@ public abstract class DocumentElement
         }
 
         document.ValidateArtifacts(this);
-        document.ValidateAnnotations(Document.EnumerateAnnotations(this));
+        document.ValidateSources(Document.EnumerateSources(this));
         _document = document;
 
         try

@@ -108,7 +108,7 @@ public sealed class DocumentTableCell
         RowSpan = Throw.IfLessThan(rowSpan, 1);
         ColumnSpan = Throw.IfLessThan(columnSpan, 1);
         Kind = kind is null ? null : Throw.IfNullOrWhitespace(kind);
-        Annotations = new DocumentAnnotationCollection(() => _table?.OwningDocument);
+        Sources = new DocumentSourceReferenceCollection(() => _table?.OwningDocument);
     }
 
     /// <summary>Initializes a new instance of the <see cref="DocumentTableCell"/> class without content.</summary>
@@ -117,7 +117,7 @@ public sealed class DocumentTableCell
         RowSpan = Throw.IfLessThan(rowSpan, 1);
         ColumnSpan = Throw.IfLessThan(columnSpan, 1);
         Kind = kind is null ? null : Throw.IfNullOrWhitespace(kind);
-        Annotations = new DocumentAnnotationCollection(() => _table?.OwningDocument);
+        Sources = new DocumentSourceReferenceCollection(() => _table?.OwningDocument);
     }
 
     /// <summary>
@@ -134,8 +134,8 @@ public sealed class DocumentTableCell
     /// <summary>Gets the optional producer-supplied cell role.</summary>
     public string? Kind { get; }
 
-    /// <summary>Gets source annotations independent of the presence of cell content.</summary>
-    public IList<DocumentAnnotation> Annotations { get; }
+    /// <summary>Gets page and region associations independent of the presence of cell content.</summary>
+    public IList<DocumentSourceReference> Sources { get; }
 
     /// <summary>
     /// Gets the row index of the cell.
@@ -150,7 +150,7 @@ public sealed class DocumentTableCell
     /// <summary>
     /// Gets the local structural address of the cell.
     /// </summary>
-    public string? Address => _table?.OwningDocument?.GetAddress(_table) is string tableAddress
+    internal string? Address => _table?.OwningDocument?.GetAddress(_table) is string tableAddress
         ? $"{tableAddress}/c{RowIndex},{ColumnIndex}"
         : null;
 
@@ -242,14 +242,14 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
                     _owner.OwningDocument?.ValidateArtifacts(candidateContent);
                 }
 
-                _owner.OwningDocument?.ValidateAnnotations(value.Annotations.Concat(
-                    value.Content is { } content ? Document.EnumerateAnnotations(content) : Enumerable.Empty<DocumentAnnotation>()));
+                _owner.OwningDocument?.ValidateSources(value.Sources.Concat(
+                    value.Content is { } content ? Document.EnumerateSources(content) : Enumerable.Empty<DocumentSourceReference>()));
                 value.Attach(_owner, row, column);
                 try
                 {
-                    foreach (DocumentAnnotation annotation in value.Annotations)
+                    foreach (DocumentSourceReference source in value.Sources)
                     {
-                        _owner.OwningDocument?.RegisterAnnotation(annotation);
+                        _owner.OwningDocument?.RegisterSource(source);
                     }
 
                     value.Content?.Attach(_owner, _owner.OwningDocument);

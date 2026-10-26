@@ -21,6 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <PackageReference Include="System.Memory" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
   </ItemGroup>
 </Project>

@@ -8,54 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Documents;
 
 /// <summary>
-/// Represents an opaque page reference in provider order.
-/// </summary>
-public sealed class DocumentPageReference
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentPageReference"/> class.
-    /// </summary>
-    /// <param name="value">The opaque page reference value.</param>
-    public DocumentPageReference(string value)
-    {
-        Value = Throw.IfNullOrEmpty(value);
-    }
-
-    /// <summary>
-    /// Gets the opaque page reference value.
-    /// </summary>
-    public string Value { get; }
-}
-
-/// <summary>
-/// Represents an opaque evidence association.
-/// </summary>
-public sealed class DocumentEvidenceReference
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentEvidenceReference"/> class.
-    /// </summary>
-    /// <param name="value">The opaque evidence value.</param>
-    /// <param name="kind">An optional opaque evidence kind.</param>
-    public DocumentEvidenceReference(string value, string? kind = null)
-    {
-        Value = Throw.IfNullOrEmpty(value);
-        Kind = kind;
-    }
-
-    /// <summary>
-    /// Gets the opaque evidence value.
-    /// </summary>
-    public string Value { get; }
-
-    /// <summary>
-    /// Gets the optional opaque evidence kind.
-    /// </summary>
-    public string? Kind { get; }
-}
-
-/// <summary>
-/// Represents an artifact whose lifetime is owned by the document to which it is associated.
+/// Represents binary content whose lifetime transfers to the document to which it is attached.
 /// </summary>
 public sealed class DocumentArtifact : IDisposable
 {
@@ -93,7 +46,7 @@ public sealed class DocumentArtifact : IDisposable
     /// <summary>
     /// Gets a value indicating whether this artifact has been disposed.
     /// </summary>
-    public bool IsDisposed => _disposed;
+    internal bool IsDisposed => _disposed;
 
     /// <summary>
     /// Gets a value indicating whether this artifact's lifetime has been transferred to a document.
