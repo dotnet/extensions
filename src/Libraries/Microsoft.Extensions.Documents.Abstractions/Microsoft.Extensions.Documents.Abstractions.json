@@ -563,7 +563,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Documents.DocumentSourceOutput.DocumentSourceOutput(string identifier, object? rawRepresentation = null, Microsoft.Extensions.Documents.DocumentArtifact? rawContent = null, bool captureDisabled = false, string? providerName = null, string? modelId = null);",
+          "Member": "Microsoft.Extensions.Documents.DocumentSourceOutput.DocumentSourceOutput(string identifier, object? rawRepresentation = null, Microsoft.Extensions.Documents.DocumentArtifact? rawContent = null, bool contentCaptureDisabled = false, string? providerName = null, string? modelId = null);",
           "Stage": "Experimental"
         },
         {

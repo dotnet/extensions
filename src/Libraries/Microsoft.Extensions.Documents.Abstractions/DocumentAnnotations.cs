@@ -201,7 +201,7 @@ public enum DocumentRawContentStatus
     /// <summary>The original representation is retained.</summary>
     Retained,
 
-    /// <summary>Capture was explicitly disabled.</summary>
+    /// <summary>Original response-content capture was explicitly disabled.</summary>
     Disabled
 }
 
@@ -221,14 +221,14 @@ public sealed class DocumentSourceOutput
         string identifier,
         object? rawRepresentation = null,
         DocumentArtifact? rawContent = null,
-        bool captureDisabled = false,
+        bool contentCaptureDisabled = false,
         string? providerName = null,
         string? modelId = null)
     {
         Identifier = Throw.IfNullOrEmpty(identifier);
-        if (captureDisabled && (rawRepresentation is not null || rawContent is not null))
+        if (contentCaptureDisabled && rawContent is not null)
         {
-            Throw.ArgumentException(nameof(captureDisabled), "Disabled capture cannot contain raw output.");
+            Throw.ArgumentException(nameof(contentCaptureDisabled), "Disabled content capture cannot contain original response content.");
         }
 
         if (rawContent is not null && (rawContent.IsDisposed || !rawContent.Content.CanRead))
@@ -238,9 +238,8 @@ public sealed class DocumentSourceOutput
 
         _rawRepresentation = rawRepresentation;
         _rawContent = rawContent;
-        NativeStatus = captureDisabled ? DocumentRawContentStatus.Disabled :
-            rawRepresentation is null ? DocumentRawContentStatus.Unavailable : DocumentRawContentStatus.Retained;
-        ContentStatus = captureDisabled ? DocumentRawContentStatus.Disabled :
+        NativeStatus = rawRepresentation is null ? DocumentRawContentStatus.Unavailable : DocumentRawContentStatus.Retained;
+        ContentStatus = contentCaptureDisabled ? DocumentRawContentStatus.Disabled :
             rawContent is null ? DocumentRawContentStatus.Unavailable : DocumentRawContentStatus.Retained;
         ProviderName = providerName;
         ModelId = modelId;
@@ -256,6 +255,7 @@ public sealed class DocumentSourceOutput
     public string? ModelId { get; }
 
     /// <summary>Gets native representation availability.</summary>
+    /// <remarks>Native availability is independent of original response-content capture and is never disabled by its policy.</remarks>
     public DocumentRawContentStatus NativeStatus { get; }
 
     /// <summary>Gets original response content availability.</summary>
