@@ -164,7 +164,7 @@ public sealed class DelegatingDocumentExtractionClientTests
             Assert.Equal(0, body.DisposeCount);
             result.Dispose();
             result.Dispose();
-            Assert.True(result.IsDisposed);
+            Assert.False(body.CanRead);
         }
         catch (ArgumentException error)
         {
@@ -215,8 +215,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Equal(cancellation.Token, client.Calls[1].Token);
         Assert.Equal(CancellationToken.None, client.Calls[0].Token);
         Assert.Equal(CancellationToken.None, client.Calls[2].Token);
-        Assert.Equal(DocumentRawContentStatus.Unavailable, Assert.Single(first.Document.SourceOutputs).NativeStatus);
-        Assert.Equal(DocumentRawContentStatus.Unavailable, Assert.Single(explicitResult.Document.SourceOutputs).NativeStatus);
+        Assert.Null(Assert.Single(first.Document.SourceOutputs).GetRawRepresentation());
+        Assert.Null(Assert.Single(explicitResult.Document.SourceOutputs).GetRawRepresentation());
         Assert.Equal(DocumentRawContentStatus.Disabled, Assert.Single(last.Document.SourceOutputs).ContentStatus);
         Assert.Equal("model:A", options.ModelId);
         Assert.False(options.CaptureRawContent);
@@ -425,7 +425,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Equal(0, body.DisposeCount);
         result.Document.Dispose();
         result.Dispose();
-        Assert.True(result.IsDisposed);
+        Assert.Equal(capture, !body.CanRead);
         Assert.Equal(capture ? 1 : 0, body.DisposeCount);
         Assert.Equal(0, native.DisposeCount);
         if (capture)
@@ -468,7 +468,6 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Equal(cancellation.Token, error.CancellationToken);
         Assert.Equal(0, started);
         Assert.Equal(0, body.DisposeCount);
-        Assert.False(artifact.IsDocumentOwned);
         Assert.True(body.CanRead);
 
         async IAsyncEnumerable<DocumentExtractionPage> Pages()
@@ -493,9 +492,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         DocumentSourceOutput output = new("operation", hasNative ? native : null, hasBody ? artifact : null, disabled);
         using DocumentExtractionResult result = new[] { Page(output) }.ToDocumentExtractionResult("document", !disabled);
         Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
-        DocumentRawContentStatus nativeStatus = hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable;
         DocumentRawContentStatus contentStatus = hasBody ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable;
-        Assert.Equal(nativeStatus, output.NativeStatus);
         Assert.Equal(disabled ? DocumentRawContentStatus.Disabled : contentStatus, output.ContentStatus);
         Assert.Same(hasNative ? native : null, output.GetRawRepresentation());
         Assert.Same(hasBody ? artifact : null, output.GetRawContent());
@@ -510,46 +507,49 @@ public sealed class DelegatingDocumentExtractionClientTests
     [Theory]
     [InlineData("page-output")]
     [InlineData("frame-output")]
-    [InlineData("page-annotation")]
-    [InlineData("observation-annotation")]
+    [InlineData("page-source")]
+    [InlineData("observation-source")]
     [InlineData("nested-cell")]
-    [InlineData("raw-annotation")]
+    [InlineData("raw-source")]
     public void Finalization_OptOutRejectsRawAtEveryCarrierAndCleansOwnedContent(string carrier)
     {
         using Native native = new();
         CountingStream body = new(RawBytes());
         using DocumentArtifact artifact = new("application/json", body);
         DocumentSourceOutput output = new("operation", native, artifact);
-        DocumentAnnotation annotation = new("provider", sourceOutput: output, rawRepresentation: carrier == "raw-annotation" ? native : null);
+        DocumentSourceReference annotation = new(new DocumentSourcePage("provider", 7, sourceOutput: output),
+            rawRepresentation: carrier == "raw-source" ? native : null);
         DocumentExtractionObservation observation = new DocumentExtractionText("text", 0, DocumentTextKind.Paragraph, "visible",
-            annotations: carrier is "observation-annotation" or "raw-annotation" ? [annotation] : null);
+            sources: carrier is "observation-source" or "raw-source" ? [annotation] : null);
         if (carrier == "nested-cell")
         {
             observation = new DocumentExtractionTable("table", 0, "", 1, 1,
-                [new DocumentExtractionTableCell(0, 0, observation, annotations: [annotation])]);
+                [new DocumentExtractionTableCell(0, 0, observation, sources: [annotation])]);
         }
 
         DocumentExtractionPage page = new(7, [observation],
             sourcePage: carrier == "frame-output" ? new DocumentSourcePage("frame", 7, sourceOutput: output) : null,
-            annotations: carrier == "page-annotation" ? [annotation] : null,
+            sources: carrier == "page-source" ? [annotation] : null,
             sourceOutputs: carrier == "page-output" ? [output] : null);
         ArgumentException error = Assert.Throws<ArgumentException>(() => new[] { page }.ToDocumentExtractionResult("document", false));
         Assert.Equal("pages", error.ParamName);
         Assert.Equal(1, body.DisposeCount);
         Assert.Throws<ObjectDisposedException>(() => body.ReadByte());
-        Assert.False(artifact.IsDocumentOwned);
+        Assert.False(body.CanRead);
         Assert.Equal(0, native.DisposeCount);
     }
 
     [Fact]
-    public void Finalization_OptOutPreservesNativeAnnotationWithoutOperationOutput()
+    public void Finalization_OptOutPreservesNativeSourceWithoutOperationOutput()
     {
         using Native native = new();
-        DocumentExtractionPage page = new(7, [], annotations: [new DocumentAnnotation("provider", rawRepresentation: native)]);
+        DocumentExtractionPage page = new(7, [], sources: [new DocumentSourceReference(new DocumentSourcePage("provider", 7), rawRepresentation: native)]);
         using DocumentExtractionResult result = new[] { page }.ToDocumentExtractionResult("document", false);
-        Assert.Same(page.Annotations[0], Assert.Single(Assert.Single(result.Document.Sections).Annotations));
+        Assert.Same(page.Sources[0], Assert.Single(Assert.Single(result.Document.Sections).Sources));
         Assert.Empty(page.SourceOutputs);
-        Assert.Same(native, page.Annotations[0].GetRawRepresentation());
+        Assert.Same(native, page.Sources[0].GetRawRepresentation());
+        Assert.Same(page.Sources[0].Page, Assert.Single(result.Document.SourcePages));
+        Assert.Empty(result.Document.SourceOutputs);
         Assert.Equal(0, native.DisposeCount);
     }
 
@@ -569,7 +569,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         builder.Dispose();
         Assert.Equal(1, body.DisposeCount);
         Assert.Throws<ObjectDisposedException>(() => body.ReadByte());
-        Assert.False(artifact.IsDocumentOwned);
+        Assert.False(body.CanRead);
         Assert.Equal(0, native.DisposeCount);
         Assert.Throws<ObjectDisposedException>(() => builder.Build());
     }
@@ -602,7 +602,6 @@ public sealed class DelegatingDocumentExtractionClientTests
         using MemoryStream observed = new();
         await output.GetRawContent()!.Content.CopyToAsync(observed);
         Assert.Equal(RawBytes(), observed.ToArray());
-        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Retained, output.ContentStatus);
         Assert.Equal("visible **text**", result.Document.ToMarkdown());
         Assert.Equal("visible text", Assert.IsType<DocumentTextElement>(Assert.Single(result.Document.EnumerateContent())).Text);
@@ -635,7 +634,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         }
 
         Assert.Equal(nativeOnly ? 0 : 1, body.DisposeCount);
-        Assert.False(artifact.IsDocumentOwned);
+        Assert.Equal(nativeOnly, body.CanRead);
         Assert.Equal(0, native.DisposeCount);
         if (!nativeOnly)
         {
@@ -644,7 +643,7 @@ public sealed class DelegatingDocumentExtractionClientTests
     }
 
     [Fact]
-    public async Task ExtractAsync_OptOutRejectsRegionOnlyRawAndPreservesCallerOwnership()
+    public async Task ExtractAsync_OptOutRejectsSourcePageRawAndPreservesCallerOwnership()
     {
         using MemoryStream source = new([42, 43]);
         using Native native = new();
@@ -652,9 +651,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         using DocumentArtifact artifact = new("application/json", body);
         DocumentSourceOutput output = new("region-operation", native, artifact);
         DocumentSourcePage frame = new("region-frame", 7, sourceOutput: output);
-        DocumentAnnotation annotation = new("layout", regions:
-            [new DocumentRegion(frame, [new(1, 2), new(4, 2), new(3, 5)])]);
-        DocumentExtractionText observation = new("text", 0, DocumentTextKind.Paragraph, "visible", annotations: [annotation]);
+        DocumentSourceReference annotation = new(frame, [new(1, 2), new(4, 2), new(3, 5)]);
+        DocumentExtractionText observation = new("text", 0, DocumentTextKind.Paragraph, "visible", sources: [annotation]);
         DocumentExtractionPage page = new(7, [observation]);
         int cleanup = 0;
         using Client client = new((_, _, _, _, _) => Pages());
@@ -668,15 +666,13 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.False(call.Options!.CaptureRawContent);
         Assert.Empty(page.SourceOutputs);
         Assert.Null(page.SourcePage);
-        Assert.Empty(page.Annotations);
-        Assert.Null(annotation.SourceOutput);
+        Assert.Empty(page.Sources);
         Assert.Null(annotation.GetRawRepresentation());
-        Assert.Same(annotation, Assert.Single(observation.Annotations));
-        Assert.Same(output, Assert.Single(annotation.Regions).Page.SourceOutput);
+        Assert.Same(annotation, Assert.Single(observation.Sources));
+        Assert.Same(output, annotation.Page.SourceOutput);
         Assert.Equal(1, cleanup);
         Assert.Equal(1, body.DisposeCount);
-        Assert.True(artifact.IsDisposed);
-        Assert.False(artifact.IsDocumentOwned);
+        Assert.False(body.CanRead);
         Assert.Throws<ObjectDisposedException>(() => body.ReadByte());
         Assert.Equal(0, native.DisposeCount);
         Assert.Equal(42, source.ReadByte());
@@ -710,18 +706,16 @@ public sealed class DelegatingDocumentExtractionClientTests
         [
             new(10.25, 20.5), new(40.75, 18.25), new(44.5, 60.125), new(12.875, 58.75), new(8.5, 35.25)
         ];
-        DocumentRegion region = new(frame, vertices);
-        DocumentConfidence confidence = new(-12.5, "vendor margin", -20, 20);
-        DocumentAnnotation emptyLayout = new("empty-layout", role: "blank", regions: [region], confidence: confidence);
+        DocumentSourceReference emptyLayout = new(frame, vertices);
         var payload = new { kind = "vendor-extra", nested = new { unknown = new object[] { 3, "x" } } };
         var attributes = new { vendorFlag = "kept", provenance = "urn:synthetic:engine:v1", target = "urn:target:nested" };
-        DocumentAnnotation extensionAnnotation = new("vendor-observation", attributes, "caption", [region], sourceOutput: output);
-        DocumentEvidenceReference evidence = new("urn:evidence:nested", "vendor-evidence");
-        DocumentPageReference reference = new("page:7");
+        DocumentSourceReference extensionSource = new(frame, vertices);
+        DocumentSourceReference reference = new(frame);
+        Dictionary<string, object?> metadata = new(StringComparer.Ordinal) { ["vendor"] = attributes, ["Vendor"] = null };
         DocumentExtractionText anchorText = new("anchor", 0, DocumentTextKind.Paragraph, "MERGED_A", "merged plain");
         DocumentExtractionExtension extension = new("extension", 0, "vendor-extra", "visible **extra**", "visible extra",
-            evidence: [new DocumentExtractionEvidence(evidence, "support")], annotations: [extensionAnnotation], value: payload);
-        DocumentExtractionTableCell emptyCell = new(2, 2, null, kind: "empty", annotations: [emptyLayout]);
+            sources: [extensionSource], metadata: metadata, value: payload);
+        DocumentExtractionTableCell emptyCell = new(2, 2, null, kind: "empty", sources: [emptyLayout]);
         DocumentExtractionTable inner = new("inner", 0, "stored inner", 3, 3,
         [
             new DocumentExtractionTableCell(0, 0, anchorText, 2, 2, "columnHeader"),
@@ -729,7 +723,8 @@ public sealed class DelegatingDocumentExtractionClientTests
             emptyCell
         ]);
         DocumentExtractionTable outer = new("outer", 0, "stored outer", 1, 1, [new DocumentExtractionTableCell(0, 0, inner)]);
-        DocumentExtractionPage page = new(7, [outer], pageReferences: [reference]);
+        DocumentExtractionPage page = new(7, [outer], sources: [reference]);
+        metadata.Clear();
         using Client client = new((_, _, _, _, _) => PagesAsync(page));
         using DocumentExtractionResult result = await client.ExtractAsync(source, "nested", "application/pdf",
             new DocumentExtractionOptions { CaptureRawContent = true });
@@ -741,7 +736,7 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Same(inner, outer.Cells[0].Content);
         Assert.Same(extension, inner.Cells[1].Content);
         Assert.Same(emptyCell, inner.Cells[2]);
-        Assert.Same(emptyLayout, Assert.Single(emptyCell.Annotations));
+        Assert.Same(emptyLayout, Assert.Single(emptyCell.Sources));
         Assert.Same(payload, extension.Value);
         Assert.Equal(2, inner.Cells[0].RowSpan);
         Assert.Equal(2, inner.Cells[0].ColumnSpan);
@@ -780,21 +775,14 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Same(sharedEmpty, sharedInner.Cells.GetCoveringCell(2, 2));
         Assert.False(sharedInner.Cells.IsCovered(2, 1));
         Assert.Null(sharedInner.Cells.GetCoveringCell(2, 1));
-        Assert.Same(emptyLayout, Assert.Single(sharedEmpty.Annotations));
-        Assert.Same(region, Assert.Single(sharedEmpty.Annotations[0].Regions));
-        Assert.Equal(vertices, region.Polygon);
-        Assert.Same(frame, region.Page);
+        Assert.Same(emptyLayout, Assert.Single(sharedEmpty.Sources));
+        Assert.Equal(vertices, emptyLayout.Polygon);
+        Assert.Same(frame, emptyLayout.Page);
         Assert.Equal("nested-frame", frame.Identifier);
         Assert.Equal(7, frame.PageNumber);
         Assert.Equal(new DocumentPageDimensions(200, 100), frame.Dimensions);
         Assert.Equal(DocumentCoordinateUnit.Point, frame.CoordinateUnit);
         Assert.Equal(DocumentCoordinateOrigin.BottomLeft, frame.CoordinateOrigin);
-        Assert.Same(confidence, sharedEmpty.Annotations[0].Confidence);
-        Assert.Equal(-12.5, sharedEmpty.Annotations[0].Confidence!.Value);
-        Assert.Equal("vendor margin", sharedEmpty.Annotations[0].Confidence!.Kind);
-        Assert.Equal(-20, sharedEmpty.Annotations[0].Confidence!.Minimum);
-        Assert.Equal(20, sharedEmpty.Annotations[0].Confidence!.Maximum);
-        Assert.Equal("blank", sharedEmpty.Annotations[0].Role);
         DocumentTableCell extensionCell = Assert.IsType<DocumentTableCell>(sharedInner.Cells[2, 0]);
         Assert.Equal("rowHeader", extensionCell.Kind);
         DocumentExtensionElement sharedExtension = Assert.IsType<DocumentExtensionElement>(extensionCell.Content);
@@ -802,22 +790,23 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Equal(new object[] { 3, "x" }, payload.nested.unknown);
         Assert.Equal("vendor-extra", sharedExtension.Type);
         Assert.Equal("visible extra", sharedExtension.Text);
-        Assert.Same(evidence, Assert.Single(sharedExtension.Evidence));
-        Assert.Equal(new[] { "support", "caption" }, sharedExtension.Annotations.Select(static item => item.Role));
-        Assert.Equal("vendor-evidence", sharedExtension.Annotations[0].Kind);
-        Assert.Equal("urn:evidence:nested", sharedExtension.Annotations[0].Value);
-        Assert.Same(extensionAnnotation, sharedExtension.Annotations[1]);
-        Assert.Same(attributes, sharedExtension.Annotations[1].Value);
+        Assert.Equal(new[] { reference, extensionSource }, sharedExtension.Sources);
+        Assert.Equal(2, sharedExtension.Metadata.Count);
+        Assert.Same(attributes, sharedExtension.Metadata["vendor"]);
+        Assert.Null(sharedExtension.Metadata["Vendor"]);
+        Assert.False(sharedExtension.Metadata.ContainsKey("VENDOR"));
+        Assert.Empty(sharedOuter.Metadata);
+        Assert.Empty(sharedInner.Metadata);
+        Assert.Empty(Assert.Single(document.Sections).Metadata);
         Assert.Equal("kept", attributes.vendorFlag);
         Assert.Equal("urn:synthetic:engine:v1", attributes.provenance);
         Assert.Equal("urn:target:nested", attributes.target);
-        Assert.Equal("s0/e0", sharedOuter.Address);
-        Assert.Equal("s0/e0/c0,0", outerCell.Address);
-        Assert.Equal(outerCell.Address, sharedInner.Address);
-        Assert.Equal("s0/e0/c0,0/c0,0", anchor.Address);
-        Assert.Equal("s0/e0/c0,0/c2,0", sharedExtension.Address);
-        Assert.Equal("s0/e0/c0,0/c2,2", sharedEmpty.Address);
-        Assert.Equal(new[] { reference }, sharedExtension.PageReferences);
+        Assert.Equal(new[] { reference }, sharedOuter.Sources);
+        Assert.Equal(new[] { reference }, sharedInner.Sources);
+        Assert.Equal(new[] { reference }, anchor.Content!.Sources);
+        Assert.Empty(outerCell.Sources);
+        Assert.Empty(extensionCell.Sources);
+        Assert.Equal(new[] { reference }, Assert.Single(document.Sections).Sources);
         Assert.Equal(new[] { "MERGED_A", "visible **extra**" },
             sharedInner.Cells.Select(static cell => cell?.Content).OfType<DocumentElement>().Select(static element => element.ToMarkdown()));
         Assert.Equal("merged plain", Assert.IsType<DocumentTextElement>(anchor.Content).Text);
@@ -835,9 +824,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Same(output, frame.SourceOutput);
         Assert.Same(native, output.GetRawRepresentation());
         Assert.Same(artifact, output.GetRawContent());
-        Assert.Same(artifact, Assert.Single(document.Artifacts));
         Assert.Equal(RawBytes(), body.ToArray());
-        Assert.True(artifact.IsDocumentOwned);
+        Assert.True(body.CanRead);
         Assert.Equal(0, body.DisposeCount);
         result.Dispose();
         document.Dispose();
@@ -989,12 +977,12 @@ public sealed class DelegatingDocumentExtractionClientTests
             _ => null
         };
         DocumentSourceOutput? output = null;
-        DocumentAnnotation annotation = new("native", rawRepresentation: annotationNative);
+        DocumentSourceReference annotation = new(new DocumentSourcePage("native", 7), rawRepresentation: annotationNative);
         DocumentExtractionPage? page = null;
         using Client client = new((_, _, _, request, _) =>
         {
             output = new("operation", native, contentCaptureDisabled: request?.CaptureRawContent != true);
-            page = new(7, [], annotations: [annotation], sourceOutputs: [output]);
+            page = new(7, [], sources: [annotation], sourceOutputs: [output]);
             return PagesAsync(page);
         });
         using DocumentExtractionResult result = optionKind == 0
@@ -1016,9 +1004,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
         Assert.Same(native, output!.GetRawRepresentation());
         Assert.Null(output.GetRawContent());
-        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
-        Assert.Same(annotation, Assert.Single(Assert.Single(result.Document.Sections).Annotations));
+        Assert.Same(annotation, Assert.Single(Assert.Single(result.Document.Sections).Sources));
         Assert.Same(annotationNative, annotation.GetRawRepresentation());
         result.Dispose();
         Assert.Equal(0, native.DisposeCount);
@@ -1058,7 +1045,7 @@ public sealed class DelegatingDocumentExtractionClientTests
             ArgumentException error = await Assert.ThrowsAsync<ArgumentException>(() =>
                 client.ExtractAsync(source, "document", "application/pdf", options));
             Assert.Equal("pages", error.ParamName);
-            Assert.False(artifact.IsDocumentOwned);
+            Assert.False(body.CanRead);
         }
 
         Assert.Equal(capture, options.CaptureRawContent);
@@ -1087,7 +1074,6 @@ public sealed class DelegatingDocumentExtractionClientTests
         using DocumentExtractionResult result = await client.ExtractAsync(source, "document", "application/pdf",
             new DocumentExtractionOptions { CaptureRawContent = capture });
         Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
-        Assert.Equal(hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable, output.NativeStatus);
         DocumentRawContentStatus contentStatus = hasBody ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable;
         Assert.Equal(!capture ? DocumentRawContentStatus.Disabled : contentStatus, output.ContentStatus);
         Assert.Same(hasNative ? native : null, output.GetRawRepresentation());
@@ -1112,9 +1098,8 @@ public sealed class DelegatingDocumentExtractionClientTests
         Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
         Assert.Same(hasNative ? native : null, output.GetRawRepresentation());
         Assert.Null(output.GetRawContent());
-        Assert.Empty(result.Document.Artifacts);
+        Assert.All(result.Document.SourceOutputs, static sourceOutput => Assert.Null(sourceOutput.GetRawContent()));
         Assert.Equal(DocumentRawContentStatus.Unavailable, output.ContentStatus);
-        Assert.Equal(hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable, output.NativeStatus);
         result.Dispose();
         Assert.Equal(0, native.DisposeCount);
         Assert.Equal(0, native.ToStringCount);
@@ -1170,8 +1155,9 @@ public sealed class DelegatingDocumentExtractionClientTests
         CountingStream body = new(RawBytes());
         using DocumentArtifact artifact = new("application/json", body);
         DocumentSourceOutput output = new("operation", native, artifact);
-        DocumentAnnotation annotation = new("vendor", value: opaque, sourceOutput: output, rawRepresentation: annotationNative);
-        DocumentExtractionPage page = new(7, [], annotations: [annotation], sourceOutputs: [output]);
+        DocumentSourceReference annotation = new(new DocumentSourcePage("vendor", 7, sourceOutput: output), rawRepresentation: annotationNative);
+        DocumentExtractionPage page = new(7, [], sources: [annotation], sourceOutputs: [output],
+            metadata: new Dictionary<string, object?> { ["vendor"] = opaque });
         DocumentExtractionOptions options = new() { ModelId = "model:A", CaptureRawContent = true };
         options.AdditionalProperties.Add("opaque", opaque);
         Exception primary = cancel
@@ -1184,7 +1170,7 @@ public sealed class DelegatingDocumentExtractionClientTests
 
         Assert.Same(primary, actual);
         Assert.Equal(1, body.DisposeCount);
-        Assert.False(artifact.IsDocumentOwned);
+        Assert.False(body.CanRead);
         ClientCall call = Assert.Single(client.Calls);
         Assert.NotSame(options, call.Options);
         Assert.Same(opaque, call.Options!.AdditionalProperties["opaque"]);

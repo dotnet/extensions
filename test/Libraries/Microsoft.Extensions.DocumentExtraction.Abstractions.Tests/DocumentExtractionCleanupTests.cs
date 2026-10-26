@@ -32,8 +32,8 @@ public sealed class DocumentExtractionCleanupTests
         Assert.Same(failure, Assert.Single(error.InnerExceptions));
         Assert.Equal(1, throwing.DisposeCount);
         Assert.Equal(1, later.DisposeCount);
-        Assert.True(first.IsDisposed);
-        Assert.True(second.IsDisposed);
+        Assert.False(throwing.CanRead);
+        Assert.False(later.CanRead);
         builder.Dispose();
         Assert.Equal(1, throwing.DisposeCount);
         Assert.Equal(1, later.DisposeCount);
@@ -85,9 +85,9 @@ public sealed class DocumentExtractionCleanupTests
         Assert.Equal(1, pendingLater.DisposeCount);
         Assert.Equal(0, foreign.DisposeCount);
         Assert.True(foreign.CanRead);
-        Assert.False(owner.IsDisposed);
-        Assert.True(ownedFirst.IsDocumentOwned);
-        Assert.False(pendingFirst.IsDocumentOwned);
+        Assert.Same(foreignArtifact, Assert.Single(foreignImage.Artifacts));
+        Assert.False(ownedThrowing.CanRead);
+        Assert.False(pendingThrowing.CanRead);
         builder.Dispose();
         Assert.Equal(1, pendingLater.DisposeCount);
         owner.Dispose();
@@ -149,11 +149,7 @@ public sealed class DocumentExtractionCleanupTests
         Assert.Equal(new Exception[] { firstFailure, lastFailure }, error.InnerExceptions);
         builder.Dispose();
         Assert.All(new[] { first, middle, last }, static stream => Assert.Equal(1, stream.DisposeCount));
-        Assert.All(new[] { a, b, c }, static artifact =>
-        {
-            Assert.True(artifact.IsDisposed);
-            Assert.False(artifact.IsDocumentOwned);
-        });
+        Assert.All(new[] { first, middle, last }, static stream => Assert.False(stream.CanRead));
     }
 
     [Theory]
@@ -199,7 +195,7 @@ public sealed class DocumentExtractionCleanupTests
         Assert.Equal(0, sequence.AcquireCount);
         Assert.Equal(0, sequence.DisposeCount);
         Assert.All(fixture.Streams, static stream => Assert.Equal(0, stream.DisposeCount));
-        Assert.All(fixture.Artifacts, static artifact => Assert.False(artifact.IsDocumentOwned));
+        Assert.All(fixture.Streams, static stream => Assert.True(stream.CanRead));
         Assert.Equal(0, fixture.Native.DisposeCount);
         Assert.Equal(42, fixture.Input.ReadByte());
     }
@@ -299,11 +295,7 @@ public sealed class DocumentExtractionCleanupTests
         internal void AssertCleaned()
         {
             Assert.All(Streams, static stream => Assert.Equal(1, stream.DisposeCount));
-            Assert.All(Artifacts, static artifact =>
-            {
-                Assert.True(artifact.IsDisposed);
-                Assert.False(artifact.IsDocumentOwned);
-            });
+            Assert.All(Streams, static stream => Assert.False(stream.CanRead));
             Assert.Equal(0, Native.DisposeCount);
             Assert.Equal(42, Input.ReadByte());
         }

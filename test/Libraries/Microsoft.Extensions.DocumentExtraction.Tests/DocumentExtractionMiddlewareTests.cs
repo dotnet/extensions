@@ -361,7 +361,8 @@ public sealed class DocumentExtractionMiddlewareTests
         DocumentSourceOutput output = new("raw-operation", native, artifact);
         DocumentExtractionPage page = new(7,
             [new DocumentExtractionText("provider", 0, DocumentTextKind.Paragraph, "visible **text**", "visible text",
-                annotations: [new DocumentAnnotation("vendor", sourceOutput: output, rawRepresentation: native)])],
+                sources: [new DocumentSourceReference(new DocumentSourcePage("vendor", 7, sourceOutput: output), rawRepresentation: native)],
+                metadata: new Dictionary<string, object?> { ["vendor"] = native, ["Vendor"] = "METADATA_ONLY_94" })],
             sourceOutputs: [output]);
         using RawLoggingClient inner = new(page);
         FakeLogCollector collector = new();
@@ -384,6 +385,7 @@ public sealed class DocumentExtractionMiddlewareTests
             Assert.DoesNotContain("NATIVE_ONLY_92", state);
             Assert.DoesNotContain("secret/path", state);
             Assert.DoesNotContain("visible text", state);
+            Assert.DoesNotContain("METADATA_ONLY_94", state);
         });
         Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
         Assert.Same(native, output.GetRawRepresentation());
@@ -525,7 +527,7 @@ public sealed class DocumentExtractionMiddlewareTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    public async Task Logging_DefaultOffNativeAndAnnotationOnlySuccess_PreservesIdentityWithoutLeaks(int optionKind)
+    public async Task Logging_DefaultOffNativeSourcesAndMetadata_PreserveIdentityWithoutLeaks(int optionKind)
     {
         using MemoryStream input = new([42]);
         using LoggingNative native = new();
@@ -545,12 +547,18 @@ public sealed class DocumentExtractionMiddlewareTests
             : await client.ExtractAsync(input, "secret/path", "application/pdf", options);
         Assert.Same(output, Assert.Single(result.Document.SourceOutputs));
         Assert.Same(native, output.GetRawRepresentation());
-        DocumentAnnotation annotation = Assert.Single(Assert.Single(result.Document.EnumerateContent()).Annotations);
-        Assert.Same(page.Observations[0].Annotations[0], annotation);
+        DocumentElement element = Assert.Single(result.Document.EnumerateContent());
+        DocumentSourceReference annotation = Assert.Single(element.Sources);
+        Assert.Same(page.Observations[0].Sources[0], annotation);
         Assert.Same(native, annotation.GetRawRepresentation());
+        Assert.Same(native, element.Metadata["vendor"]);
+        Assert.Equal("METADATA_ONLY_94", element.Metadata["Vendor"]);
+        Assert.False(element.Metadata.ContainsKey("VENDOR"));
+        Assert.Equal("visible **text**", result.Document.ToMarkdown());
+        Assert.Equal("visible text", Assert.IsType<DocumentTextElement>(element).Text);
+        Assert.Equal("METADATA_ONLY_94", result.Document.Sections[0].Metadata["vendor"]);
         Assert.Null(output.GetRawContent());
         Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
-        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
         AssertLifecycle(logs, "completed");
         result.Dispose();
         Assert.Equal(1, inner.CleanupCount);
@@ -707,7 +715,6 @@ public sealed class DocumentExtractionMiddlewareTests
         Assert.Equal(1, inner.CleanupCount);
         Assert.False(body.CanRead);
         Assert.Equal(1, body.DisposeCount);
-        Assert.False(artifact.IsDocumentOwned);
         Assert.Equal(cancellation.Token, inner.Token);
         Assert.Equal(0, native.DisposeCount);
         Assert.Equal(0, native.ToStringCount);
@@ -729,7 +736,9 @@ public sealed class DocumentExtractionMiddlewareTests
 
     private static DocumentExtractionPage LoggingPage(DocumentSourceOutput output, LoggingNative native) =>
         new(7, [new DocumentExtractionText("provider", 0, DocumentTextKind.Paragraph, "visible **text**", "visible text",
-            annotations: [new DocumentAnnotation("vendor", sourceOutput: output, rawRepresentation: native)])], sourceOutputs: [output]);
+            sources: [new DocumentSourceReference(new DocumentSourcePage("vendor", 7, sourceOutput: output), rawRepresentation: native)],
+            metadata: new Dictionary<string, object?> { ["vendor"] = native, ["Vendor"] = "METADATA_ONLY_94" })],
+            sourceOutputs: [output], metadata: new Dictionary<string, object?> { ["vendor"] = "METADATA_ONLY_94" });
 
     private static byte[] LoggingBytes() => System.Text.Encoding.UTF8.GetBytes(
         " {\r\n \"unknown\": {\"z\":[3, 1]}, \"marker\" : \"RAW_BODY_ONLY_91\" \r\n}\n");
@@ -774,7 +783,7 @@ public sealed class DocumentExtractionMiddlewareTests
                 Assert.Equal("1", state.Single(static pair => pair.Key == "ObservationCount").Value);
             }
 
-            foreach (string marker in new[] { "RAW_BODY_ONLY_91", "NATIVE_ONLY_92", "OPTIONS_ONLY_93", "secret/path", "visible text", "visible **text**" })
+            foreach (string marker in new[] { "RAW_BODY_ONLY_91", "NATIVE_ONLY_92", "OPTIONS_ONLY_93", "METADATA_ONLY_94", "secret/path", "visible text", "visible **text**" })
             {
                 Assert.DoesNotContain(marker, entry.Message);
                 Assert.All(state, pair =>
