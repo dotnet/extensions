@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DocumentExtraction;
 public sealed class DocumentExtractionDocumentBuilder : IDisposable
 {
     private readonly List<DocumentExtractionPage> _pages = [];
-    private readonly bool _captureRawOutput;
+    private readonly bool _captureRawContent;
     private bool _finalized;
     private bool _disposed;
 
@@ -30,11 +30,11 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
     /// Initializes a new instance of the <see cref="DocumentExtractionDocumentBuilder"/> class.
     /// </summary>
     /// <param name="identifier">The identifier for the resulting Documents document.</param>
-    /// <param name="captureRawOutput">Whether raw output retention is enabled for this request.</param>
-    public DocumentExtractionDocumentBuilder(string identifier, bool captureRawOutput = true)
+    /// <param name="captureRawContent">Whether available original response content is retained for this request. Native objects are independent of this setting.</param>
+    public DocumentExtractionDocumentBuilder(string identifier, bool captureRawContent = false)
     {
         Identifier = Throw.IfNullOrEmpty(identifier);
-        _captureRawOutput = captureRawOutput;
+        _captureRawContent = captureRawContent;
     }
 
     /// <summary>Gets the identifier for the resulting document.</summary>
@@ -74,12 +74,10 @@ public sealed class DocumentExtractionDocumentBuilder : IDisposable
             }
 
             ValidatePages(pages);
-            if (!_captureRawOutput &&
-                (pages.SelectMany(EnumerateSources).Any(static source =>
-                    source.NativeStatus == DocumentRawContentStatus.Retained || source.ContentStatus == DocumentRawContentStatus.Retained) ||
-                 pages.SelectMany(EnumerateAnnotations).Any(static annotation => annotation.GetRawRepresentation() is not null)))
+            if (!_captureRawContent &&
+                pages.SelectMany(EnumerateSources).Any(static source => source.ContentStatus == DocumentRawContentStatus.Retained))
             {
-                Throw.ArgumentException(nameof(pages), "The provider returned raw output despite the per-call capture opt-out.");
+                Throw.ArgumentException(nameof(pages), "The provider returned original response content despite the per-call content capture opt-out.");
             }
 
             document = new Document(Identifier);

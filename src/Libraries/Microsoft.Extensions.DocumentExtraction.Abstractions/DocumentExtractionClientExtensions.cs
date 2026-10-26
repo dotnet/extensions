@@ -30,8 +30,8 @@ public static class DocumentExtractionClientExtensions
         _ = Throw.IfNullOrEmpty(identifier);
         _ = Throw.IfNullOrEmpty(mediaType);
         DocumentExtractionOptions? request = options?.Clone();
-        bool captureRawOutput = request?.CaptureRawOutput ?? true;
+        bool captureRawContent = request?.CaptureRawContent ?? false;
         return client.ExtractPagesAsync(document, identifier, mediaType, request, cancellationToken)
-            .ToDocumentExtractionResultAsync(identifier, captureRawOutput, cancellationToken);
+            .ToDocumentExtractionResultAsync(identifier, captureRawContent, cancellationToken);
     }
 }

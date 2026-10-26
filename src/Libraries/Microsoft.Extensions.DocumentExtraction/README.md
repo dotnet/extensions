@@ -37,13 +37,20 @@ diagnostic `MEDE0001`; the shared Documents dependency uses `EXTEXP0019`.
 Production targets are net10.0, net9.0, net8.0, net462, and netstandard2.0.
 
 Per-call `DocumentExtractionOptions` forwards model/adapter-specific overrides
-and `CaptureRawOutput` (default `true`) through delegation and lifecycle logging.
+and `CaptureRawContent` (default `false`, also when options are absent) through
+delegation and lifecycle logging.
 Logging does not serialize options, annotations or raw output. Providers must
 reject unsupported explicit settings and use fresh requests without mutating
-client defaults. Set capture to `false` when retained native/body data is not
-needed; finalization rejects providers returning retained raw slots despite this
-opt-out. The generic seam does not define provider feature flags or restore
-configuration middleware.
+client defaults. Native SDK results and annotation objects remain available
+independently of this setting and are borrowed, never implicitly disposed.
+Disabling capture is not redaction: retained native objects may themselves contain
+sensitive fields or response data even without a separate original-content artifact.
+Set capture to `true` to retain available original detached response content;
+finalization rejects retained body artifacts when capture is off, including nested
+source associations. Capture never manufactures unavailable response bytes by
+serializing mapped objects. Providers must distinguish unsupported explicit
+settings from legitimately unavailable native/body output. The generic seam does
+not define provider feature flags or restore configuration middleware.
 
 PR #7588 temporarily includes the Documents prerequisite from PR #7835,
 including its layout-fidelity correction. After that prerequisite merges,

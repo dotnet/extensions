@@ -14,6 +14,10 @@ namespace Microsoft.Extensions.DocumentExtraction;
 /// <remarks>
 /// Implementations do not own or dispose the source stream. They must honor the supplied cancellation token
 /// and dispose any provider resources when the returned async enumerator is disposed.
+/// Native result and annotation objects are borrowed and may be exposed regardless of content capture.
+/// Original response content is retained only when <see cref="DocumentExtractionOptions.CaptureRawContent"/> is enabled.
+/// Providers must document unsupported explicit settings separately from response content that is legitimately
+/// unavailable. Enabling capture must not synthesize response bytes by serializing mapped objects.
 /// </remarks>
 public interface IDocumentExtractionClient : IDisposable
 {

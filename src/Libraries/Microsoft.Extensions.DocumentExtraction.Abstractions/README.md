@@ -55,13 +55,23 @@ clones the options and dictionary entries before forwarding; opaque values remai
 borrowed and callers must not mutate them while the operation is in flight.
 Direct `ExtractPagesAsync` callers must follow the provider's snapshot contract.
 
-`CaptureRawOutput` defaults to `true`: providers retain the native result and
-available original detached response body in a per-operation
-`DocumentSourceOutput`, never a mutable client "last response". Unavailable
-native/body data is explicitly reported, not manufactured by serializing mapped
-objects. Set the flag to `false` to opt out; providers must return no retained raw
-slots, including native observations. Finalization rejects violations and releases
-new unowned artifacts instead of silently returning retained data.
+`CaptureRawContent` defaults to `false`, including when options are absent.
+It controls only retention of available original detached response content in a
+per-operation `DocumentSourceOutput`, never a mutable client "last response".
+Supplied native SDK results and native annotation representations remain available
+by identity independently of this option; native inspection never requires body
+capture. Native objects are borrowed and are never implicitly disposed.
+Disabling content capture prevents the separate original-content artifact; it is
+not redaction and does not strip sensitive or content-bearing fields from retained
+native SDK objects, which may themselves contain response data.
+Set the flag to `true` to opt into original body retention. Unavailable native/body
+data is explicitly reported, not manufactured by serializing mapped objects.
+Only content availability may be `Disabled`; native availability remains
+`Retained` or `Unavailable`. Providers must distinguish unsupported explicit
+settings (which they reject) from legitimately unavailable source output (which
+they report honestly even when capture is requested). Finalization rejects retained
+original content when capture is off, including nested source associations, and
+releases new unowned artifacts instead of silently returning retained data.
 
 Multiple pages may reference one operation. Finalization registers its raw-content
 artifact once under document ownership; semantic observation artifact duplication

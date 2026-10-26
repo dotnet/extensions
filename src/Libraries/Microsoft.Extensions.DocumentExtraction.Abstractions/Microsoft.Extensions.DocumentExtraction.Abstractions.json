@@ -48,7 +48,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionDocumentBuilder.DocumentExtractionDocumentBuilder(string identifier, bool captureRawOutput = true);",
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionDocumentBuilder.DocumentExtractionDocumentBuilder(string identifier, bool captureRawContent = false);",
           "Stage": "Experimental"
         },
         {
@@ -206,7 +206,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "bool Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.CaptureRawOutput { get; set; }",
+          "Member": "bool Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.CaptureRawContent { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -260,7 +260,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResult(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier, bool captureRawOutput = true);",
+          "Member": "static Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResult(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier, bool captureRawContent = false);",
           "Stage": "Experimental"
         },
         {
@@ -268,7 +268,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResultAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier, bool captureRawOutput, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult> Microsoft.Extensions.DocumentExtraction.DocumentExtractionPageResultExtensions.ToDocumentExtractionResultAsync(this System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> pages, string identifier, bool captureRawContent, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]
