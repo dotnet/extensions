@@ -34,7 +34,6 @@ public sealed class Document : IDisposable
         Identifier = Throw.IfNullOrEmpty(identifier);
         _markdown = markdown;
         Sections = new DocumentSectionCollection(this);
-        Annotations = new DocumentAnnotationCollection(() => this);
         SourceOutputs = _sourceOutputs.AsReadOnly();
         SourcePages = _sourcePages.AsReadOnly();
     }
@@ -69,20 +68,12 @@ public sealed class Document : IDisposable
     /// <summary>
     /// Gets a value indicating whether this document has metadata.
     /// </summary>
-    public bool HasMetadata => _metadata.Count > 0;
+    internal bool HasMetadata => _metadata.Count > 0;
 
     /// <summary>
     /// Gets the metadata associated with the document.
     /// </summary>
     public IDictionary<string, object?> Metadata => _metadata;
-
-    /// <summary>
-    /// Gets the opaque evidence references associated with the document.
-    /// </summary>
-    public IList<DocumentEvidenceReference> Evidence { get; } = new List<DocumentEvidenceReference>();
-
-    /// <summary>Gets supplementary structured information, excluded from semantic projection.</summary>
-    public IList<DocumentAnnotation> Annotations { get; }
 
     /// <summary>Gets registered source operations, with explicit break-glass access.</summary>
     public IReadOnlyList<DocumentSourceOutput> SourceOutputs { get; }
@@ -129,17 +120,17 @@ public sealed class Document : IDisposable
     /// <remarks>
     /// The version changes when supported document, element, or collection edits occur. It is not a durable revision number.
     /// </remarks>
-    public long Version => _version;
+    internal long Version => _version;
 
     /// <summary>
     /// Gets a value indicating whether this document has been disposed.
     /// </summary>
-    public bool IsDisposed => _disposed;
+    internal bool IsDisposed => _disposed;
 
     /// <summary>
     /// Gets the artifacts associated with this document or its elements.
     /// </summary>
-    public IReadOnlyCollection<DocumentArtifact> Artifacts => _artifacts;
+    internal IReadOnlyCollection<DocumentArtifact> Artifacts => _artifacts;
 
     /// <summary>
     /// Enumerates non-section content in depth-first document order.
@@ -214,20 +205,20 @@ public sealed class Document : IDisposable
         }
     }
 
-    internal static IEnumerable<DocumentAnnotation> EnumerateAnnotations(DocumentElement element)
+    internal static IEnumerable<DocumentSourceReference> EnumerateSources(DocumentElement element)
     {
-        foreach (DocumentAnnotation annotation in element.Annotations)
+        foreach (DocumentSourceReference source in element.Sources)
         {
-            yield return annotation;
+            yield return source;
         }
 
         if (element is DocumentSection section)
         {
             foreach (DocumentElement child in section.Elements)
             {
-                foreach (DocumentAnnotation annotation in EnumerateAnnotations(child))
+                foreach (DocumentSourceReference source in EnumerateSources(child))
                 {
-                    yield return annotation;
+                    yield return source;
                 }
             }
         }
@@ -240,16 +231,16 @@ public sealed class Document : IDisposable
                     continue;
                 }
 
-                foreach (DocumentAnnotation annotation in cell.Annotations)
+                foreach (DocumentSourceReference source in cell.Sources)
                 {
-                    yield return annotation;
+                    yield return source;
                 }
 
                 if (cell.Content is { } content)
                 {
-                    foreach (DocumentAnnotation annotation in EnumerateAnnotations(content))
+                    foreach (DocumentSourceReference source in EnumerateSources(content))
                     {
-                        yield return annotation;
+                        yield return source;
                     }
                 }
             }
@@ -272,9 +263,9 @@ public sealed class Document : IDisposable
 
     internal void RegisterArtifacts(DocumentElement element)
     {
-        foreach (DocumentAnnotation annotation in element.Annotations)
+        foreach (DocumentSourceReference source in element.Sources)
         {
-            RegisterAnnotation(annotation);
+            RegisterSource(source);
         }
 
         if (element is DocumentTableElement table)
@@ -283,9 +274,9 @@ public sealed class Document : IDisposable
             {
                 if (cell is not null)
                 {
-                    foreach (DocumentAnnotation annotation in cell.Annotations)
+                    foreach (DocumentSourceReference source in cell.Sources)
                     {
-                        RegisterAnnotation(annotation);
+                        RegisterSource(source);
                     }
                 }
             }
@@ -297,32 +288,21 @@ public sealed class Document : IDisposable
         }
     }
 
-    internal void RegisterAnnotation(DocumentAnnotation annotation)
+    internal void RegisterSource(DocumentSourceReference source) => AddSourcePage(source.Page);
+
+    internal void ValidateSources(IEnumerable<DocumentSourceReference> sources)
     {
         List<DocumentSourceOutput> outputs = new(_sourceOutputs);
         List<DocumentSourcePage> pages = new(_sourcePages);
-        int outputCount = outputs.Count;
-        int pageCount = pages.Count;
-        ValidateAnnotation(annotation, outputs, pages);
-
-        for (int index = outputCount; index < outputs.Count; index++)
+        foreach (DocumentSourceReference source in sources)
         {
-            AddSourceOutput(outputs[index]);
-        }
-
-        for (int index = pageCount; index < pages.Count; index++)
-        {
-            AddSourcePage(pages[index]);
-        }
-    }
-
-    internal void ValidateAnnotations(IEnumerable<DocumentAnnotation> annotations)
-    {
-        List<DocumentSourceOutput> outputs = new(_sourceOutputs);
-        List<DocumentSourcePage> pages = new(_sourcePages);
-        foreach (DocumentAnnotation annotation in annotations)
-        {
-            ValidateAnnotation(annotation, outputs, pages);
+            ValidateSourcePage(source.Page, pages);
+            pages.Add(source.Page);
+            if (source.Page.SourceOutput is { } output)
+            {
+                ValidateSourceOutput(output, outputs);
+                outputs.Add(output);
+            }
         }
     }
 
@@ -332,29 +312,6 @@ public sealed class Document : IDisposable
             item.SourceOutput?.Identifier == page.SourceOutput?.Identifier && !ReferenceEquals(item, page)))
         {
             throw new InvalidOperationException("A source frame identifier must identify one frame instance within its operation.");
-        }
-    }
-
-    private void ValidateAnnotation(
-        DocumentAnnotation annotation,
-        List<DocumentSourceOutput> outputs,
-        List<DocumentSourcePage> pages)
-    {
-        if (annotation.SourceOutput is { } output)
-        {
-            ValidateSourceOutput(output, outputs);
-            outputs.Add(output);
-        }
-
-        foreach (DocumentRegion region in annotation.Regions)
-        {
-            ValidateSourcePage(region.Page, pages);
-            pages.Add(region.Page);
-            if (region.Page.SourceOutput is { } source)
-            {
-                ValidateSourceOutput(source, outputs);
-                outputs.Add(source);
-            }
         }
     }
 

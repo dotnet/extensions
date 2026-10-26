@@ -42,8 +42,8 @@ public readonly record struct DocumentPoint
     /// <summary>Initializes a new instance of the <see cref="DocumentPoint"/> struct.</summary>
     public DocumentPoint(double x, double y)
     {
-        DocumentAnnotationValidation.Finite(x, nameof(x));
-        DocumentAnnotationValidation.Finite(y, nameof(y));
+        DocumentSourceValidation.Finite(x, nameof(x));
+        DocumentSourceValidation.Finite(y, nameof(y));
         X = x;
         Y = y;
     }
@@ -61,8 +61,8 @@ public readonly record struct DocumentPageDimensions
     /// <summary>Initializes a new instance of the <see cref="DocumentPageDimensions"/> struct.</summary>
     public DocumentPageDimensions(double width, double height)
     {
-        DocumentAnnotationValidation.Finite(width, nameof(width));
-        DocumentAnnotationValidation.Finite(height, nameof(height));
+        DocumentSourceValidation.Finite(width, nameof(width));
+        DocumentSourceValidation.Finite(height, nameof(height));
         Width = Throw.IfLessThanOrEqual(width, 0);
         Height = Throw.IfLessThanOrEqual(height, 0);
     }
@@ -128,70 +128,6 @@ public sealed class DocumentSourcePage
     public DocumentSourceOutput? SourceOutput { get; }
 }
 
-/// <summary>Preserves an ordered polygon in its originating source coordinate frame.</summary>
-public sealed class DocumentRegion
-{
-    /// <summary>Initializes a new instance of the <see cref="DocumentRegion"/> class.</summary>
-    public DocumentRegion(DocumentSourcePage page, IReadOnlyList<DocumentPoint> polygon)
-    {
-        Page = Throw.IfNull(page);
-        Polygon = new ReadOnlyCollection<DocumentPoint>(Throw.IfNull(polygon).ToArray());
-        if (Polygon.Count < 3)
-        {
-            Throw.ArgumentException(nameof(polygon), "A region must contain at least three vertices.");
-        }
-    }
-
-    /// <summary>Gets the originating page and coordinate frame.</summary>
-    public DocumentSourcePage Page { get; }
-
-    /// <summary>Gets the vertices in the exact producer-supplied order.</summary>
-    public IReadOnlyList<DocumentPoint> Polygon { get; }
-}
-
-/// <summary>Preserves a reported confidence measurement without implying calibration across providers.</summary>
-public sealed class DocumentConfidence
-{
-    /// <summary>Initializes a new instance of the <see cref="DocumentConfidence"/> class.</summary>
-    public DocumentConfidence(double value, string kind, double? minimum = null, double? maximum = null)
-    {
-        DocumentAnnotationValidation.Finite(value, nameof(value));
-        if (minimum is { } min)
-        {
-            DocumentAnnotationValidation.Finite(min, nameof(minimum));
-        }
-
-        if (maximum is { } max)
-        {
-            DocumentAnnotationValidation.Finite(max, nameof(maximum));
-        }
-
-        if ((minimum is { } lower && value < lower) ||
-            (maximum is { } upper && value > upper) ||
-            (minimum is { } a && maximum is { } b && a >= b))
-        {
-            Throw.ArgumentOutOfRangeException(nameof(value), "The value must be within the declared confidence scale.");
-        }
-
-        Value = value;
-        Kind = Throw.IfNullOrEmpty(kind);
-        Minimum = minimum;
-        Maximum = maximum;
-    }
-
-    /// <summary>Gets the reported value, without normalization or clipping.</summary>
-    public double Value { get; }
-
-    /// <summary>Gets the measurement kind, such as recognition or classification.</summary>
-    public string Kind { get; }
-
-    /// <summary>Gets the declared minimum, when known.</summary>
-    public double? Minimum { get; }
-
-    /// <summary>Gets the declared maximum, when known.</summary>
-    public double? Maximum { get; }
-}
-
 /// <summary>Describes the availability of retained provider output.</summary>
 public enum DocumentRawContentStatus
 {
@@ -238,7 +174,6 @@ public sealed class DocumentSourceOutput
 
         _rawRepresentation = rawRepresentation;
         _rawContent = rawContent;
-        NativeStatus = rawRepresentation is null ? DocumentRawContentStatus.Unavailable : DocumentRawContentStatus.Retained;
         ContentStatus = contentCaptureDisabled ? DocumentRawContentStatus.Disabled :
             rawContent is null ? DocumentRawContentStatus.Unavailable : DocumentRawContentStatus.Retained;
         ProviderName = providerName;
@@ -254,10 +189,6 @@ public sealed class DocumentSourceOutput
     /// <summary>Gets the actual source model identifier, when reported.</summary>
     public string? ModelId { get; }
 
-    /// <summary>Gets native representation availability.</summary>
-    /// <remarks>Native availability is independent of original response-content capture and is never disabled by its policy.</remarks>
-    public DocumentRawContentStatus NativeStatus { get; }
-
     /// <summary>Gets original response content availability.</summary>
     public DocumentRawContentStatus ContentStatus { get; }
 
@@ -272,56 +203,39 @@ public sealed class DocumentSourceOutput
     public DocumentArtifact? GetRawContent() => _rawContent;
 }
 
-/// <summary>Associates structured producer information with a document, element, or cell.</summary>
+/// <summary>Associates content with an originating page and an optional source polygon.</summary>
 /// <remarks>
-/// Values are opaque borrowed data, not standardized detection schemas or semantic content.
-/// Collections retain order. Geometry and confidence remain optional and do not assert authoritative grounding.
+/// A reference without a polygon identifies a page, not a precise location. Native observations are
+/// borrowed and excluded from semantic projection. A source association does not verify content.
 /// </remarks>
-public sealed class DocumentAnnotation
+public sealed class DocumentSourceReference
 {
     private readonly object? _rawRepresentation;
 
-    /// <summary>Initializes a new instance of the <see cref="DocumentAnnotation"/> class.</summary>
-    public DocumentAnnotation(
-        string kind,
-        object? value = null,
-        string? role = null,
-        IReadOnlyList<DocumentRegion>? regions = null,
-        DocumentConfidence? confidence = null,
-        DocumentSourceOutput? sourceOutput = null,
+    /// <summary>Initializes a new instance of the <see cref="DocumentSourceReference"/> class.</summary>
+    /// <param name="page">The originating page and coordinate frame.</param>
+    /// <param name="polygon">Ordered polygon vertices, or no vertices for a page-only reference.</param>
+    /// <param name="rawRepresentation">An optional borrowed native observation.</param>
+    public DocumentSourceReference(
+        DocumentSourcePage page,
+        IReadOnlyList<DocumentPoint>? polygon = null,
         object? rawRepresentation = null)
     {
-        Kind = Throw.IfNullOrEmpty(kind);
-        Value = value;
-        Role = role;
-        Regions = new ReadOnlyCollection<DocumentRegion>((regions ?? Array.Empty<DocumentRegion>()).ToArray());
-        if (Regions.Any(static region => region is null))
+        Page = Throw.IfNull(page);
+        Polygon = new ReadOnlyCollection<DocumentPoint>((polygon ?? Array.Empty<DocumentPoint>()).ToArray());
+        if (Polygon.Count is 1 or 2)
         {
-            Throw.ArgumentException(nameof(regions), "Regions cannot contain null entries.");
+            Throw.ArgumentException(nameof(polygon), "A source polygon must contain at least three vertices.");
         }
 
-        Confidence = confidence;
-        SourceOutput = sourceOutput;
         _rawRepresentation = rawRepresentation;
     }
 
-    /// <summary>Gets the producer's annotation kind.</summary>
-    public string Kind { get; }
+    /// <summary>Gets the originating page and coordinate frame.</summary>
+    public DocumentSourcePage Page { get; }
 
-    /// <summary>Gets a structured value, without interpreting or flattening it.</summary>
-    public object? Value { get; }
-
-    /// <summary>Gets the annotation role, when supplied.</summary>
-    public string? Role { get; }
-
-    /// <summary>Gets the ordered originating regions.</summary>
-    public IReadOnlyList<DocumentRegion> Regions { get; }
-
-    /// <summary>Gets the reported confidence measurement.</summary>
-    public DocumentConfidence? Confidence { get; }
-
-    /// <summary>Gets the source operation, when available.</summary>
-    public DocumentSourceOutput? SourceOutput { get; }
+    /// <summary>Gets every supplied polygon vertex in order, or an empty list for a page-only reference.</summary>
+    public IReadOnlyList<DocumentPoint> Polygon { get; }
 
     /// <summary>Gets the borrowed native observation for explicit inspection, when supplied.</summary>
     /// <returns>The borrowed native observation, or <see langword="null"/>.</returns>
@@ -329,41 +243,41 @@ public sealed class DocumentAnnotation
     public object? GetRawRepresentation() => _rawRepresentation;
 }
 
-internal static class DocumentAnnotationValidation
+internal static class DocumentSourceValidation
 {
     internal static void Finite(double value, string name)
     {
         if (double.IsNaN(value) || double.IsInfinity(value))
         {
-            Throw.ArgumentOutOfRangeException(name, "A coordinate or measurement must be finite.");
+            Throw.ArgumentOutOfRangeException(name, "A coordinate must be finite.");
         }
     }
 }
 
-internal sealed class DocumentAnnotationCollection : Collection<DocumentAnnotation>
+internal sealed class DocumentSourceReferenceCollection : Collection<DocumentSourceReference>
 {
     private readonly Func<Document?> _document;
 
-    internal DocumentAnnotationCollection(Func<Document?> document) => _document = document;
+    internal DocumentSourceReferenceCollection(Func<Document?> document) => _document = document;
 
-    protected override void InsertItem(int index, DocumentAnnotation item)
+    protected override void InsertItem(int index, DocumentSourceReference item)
     {
         _ = Throw.IfNull(item);
         _ = Throw.IfLessThan(index, 0);
         _ = Throw.IfGreaterThan(index, Count);
         Document? document = _document();
         document?.ThrowIfDisposed();
-        document?.RegisterAnnotation(item);
+        document?.RegisterSource(item);
         base.InsertItem(index, item);
     }
 
-    protected override void SetItem(int index, DocumentAnnotation item)
+    protected override void SetItem(int index, DocumentSourceReference item)
     {
         _ = Throw.IfNull(item);
         _ = this[index];
         Document? document = _document();
         document?.ThrowIfDisposed();
-        document?.RegisterAnnotation(item);
+        document?.RegisterSource(item);
         base.SetItem(index, item);
     }
 
