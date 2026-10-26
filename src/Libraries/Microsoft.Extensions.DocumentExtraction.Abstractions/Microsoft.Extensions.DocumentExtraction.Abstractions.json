@@ -264,10 +264,6 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "bool Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult.IsDisposed { get; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.DocumentExtraction.DocumentExtractionPage> Microsoft.Extensions.DocumentExtraction.DocumentExtractionResult.Pages { get; }",
           "Stage": "Experimental"
         }

@@ -29,7 +29,7 @@ public sealed class DocumentExtractionResult : IDisposable
     public IReadOnlyList<DocumentExtractionPage> Pages { get; }
 
     /// <summary>Gets a value indicating whether this result has been disposed.</summary>
-    public bool IsDisposed => _disposed;
+    internal bool IsDisposed => _disposed;
 
     /// <inheritdoc />
     public void Dispose()
