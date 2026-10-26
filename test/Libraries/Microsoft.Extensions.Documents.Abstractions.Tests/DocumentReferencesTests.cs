@@ -289,10 +289,10 @@ public class DocumentReferencesTests
     }
 
     [Fact]
-    public void RawOutput_DisabledUnavailableAndPartialRetentionRemainDistinct()
+    public void RawOutput_ContentCaptureDisabledUnavailableAndPartialRetentionRemainDistinct()
     {
         DocumentSourceOutput unavailable = new("unavailable");
-        DocumentSourceOutput disabled = new("disabled", captureDisabled: true);
+        DocumentSourceOutput disabled = new("disabled", contentCaptureDisabled: true);
         using DocumentAnnotationTestData.BorrowedNative native = new();
         DocumentSourceOutput nativeOnly = new("native-only", native);
         using DocumentArtifact content = new("application/json", new MemoryStream(DocumentAnnotationTestData.OriginalBytes()));
@@ -302,7 +302,7 @@ public class DocumentReferencesTests
         Assert.Equal(DocumentRawContentStatus.Unavailable, unavailable.ContentStatus);
         Assert.Null(unavailable.GetRawRepresentation());
         Assert.Null(unavailable.GetRawContent());
-        Assert.Equal(DocumentRawContentStatus.Disabled, disabled.NativeStatus);
+        Assert.Equal(DocumentRawContentStatus.Unavailable, disabled.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Disabled, disabled.ContentStatus);
         Assert.Null(disabled.GetRawRepresentation());
         Assert.Null(disabled.GetRawContent());
@@ -310,11 +310,60 @@ public class DocumentReferencesTests
         Assert.Equal(DocumentRawContentStatus.Unavailable, nativeOnly.ContentStatus);
         Assert.Equal(DocumentRawContentStatus.Unavailable, contentOnly.NativeStatus);
         Assert.Equal(DocumentRawContentStatus.Retained, contentOnly.ContentStatus);
-        Assert.Throws<ArgumentException>("captureDisabled", () => new DocumentSourceOutput("bad", native, captureDisabled: true));
-        Assert.Throws<ArgumentException>("captureDisabled", () => new DocumentSourceOutput("bad", rawContent: content, captureDisabled: true));
+        Assert.Throws<ArgumentException>("contentCaptureDisabled", () => new DocumentSourceOutput("bad", rawContent: content, contentCaptureDisabled: true));
         content.Dispose();
         Assert.Throws<ArgumentException>("rawContent", () => new DocumentSourceOutput("bad", rawContent: content));
         Assert.Equal(0, native.DisposeCount);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void RawOutput_NativeAvailability_IsIndependentOfContentCapture(bool contentCaptureDisabled, bool hasNative)
+    {
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        object? representation = hasNative ? native : null;
+        DocumentSourceOutput output = new("operation", representation, contentCaptureDisabled: contentCaptureDisabled);
+
+        Assert.Same(representation, output.GetRawRepresentation());
+        Assert.Equal(hasNative ? DocumentRawContentStatus.Retained : DocumentRawContentStatus.Unavailable, output.NativeStatus);
+        Assert.Equal(contentCaptureDisabled ? DocumentRawContentStatus.Disabled : DocumentRawContentStatus.Unavailable, output.ContentStatus);
+        Assert.Null(output.GetRawContent());
+        Assert.Equal(0, native.DisposeCount);
+    }
+
+    [Fact]
+    public void RawOutput_ContentCaptureDisabled_PreservesNativeAfterDocumentDisposal()
+    {
+        using Document document = new("native-only");
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+        DocumentSourceOutput output = new("operation", native, contentCaptureDisabled: true);
+        document.AddSourcePage(DocumentAnnotationTestData.PdfPage(output));
+
+        Assert.Same(output, Assert.Single(document.SourceOutputs));
+        Assert.Same(native, output.GetRawRepresentation());
+        Assert.Equal(DocumentRawContentStatus.Retained, output.NativeStatus);
+        Assert.Equal(DocumentRawContentStatus.Disabled, output.ContentStatus);
+        document.Dispose();
+        Assert.Same(native, output.GetRawRepresentation());
+        Assert.Equal(0, native.DisposeCount);
+    }
+
+    [Fact]
+    public void RawOutput_ContentCaptureDisabled_RejectsContentWithoutTakingOwnership()
+    {
+        DocumentAnnotationTestData.CountingStream stream = new(DocumentAnnotationTestData.OriginalBytes());
+        using DocumentArtifact content = new("application/json", stream);
+        using DocumentAnnotationTestData.BorrowedNative native = new();
+
+        Assert.Throws<ArgumentException>("contentCaptureDisabled",
+            () => new DocumentSourceOutput("operation", native, content, contentCaptureDisabled: true));
+        Assert.False(content.IsDocumentOwned);
+        Assert.Equal(0, stream.DisposeCount);
+        Assert.Equal(0, native.DisposeCount);
+        Assert.Equal(DocumentAnnotationTestData.OriginalBytes()[0], content.Content.ReadByte());
     }
 
     // Consumer-owned oracle for these two known fixtures only; not a production conversion API.
