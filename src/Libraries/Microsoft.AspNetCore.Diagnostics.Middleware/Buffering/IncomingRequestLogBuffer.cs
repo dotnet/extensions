@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.Buffering;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -19,10 +20,11 @@ namespace Microsoft.AspNetCore.Diagnostics.Buffering;
 internal sealed class IncomingRequestLogBuffer
 {
     private const int MaxBatchSize = 256;
-    private static readonly ObjectPool<List<DeserializedLogRecord>> _recordsToEmitListPool =
-        PoolFactory.CreateListPoolWithCapacity<DeserializedLogRecord>(MaxBatchSize);
+    private static readonly ObjectPool<List<SerializedLogRecord>> _recordsToEmitListPool =
+        PoolFactory.CreateListPoolWithCapacity<SerializedLogRecord>(MaxBatchSize);
 
     private readonly IBufferedLogger _bufferedLogger;
+    private readonly IExternalScopeProvider _scopeProvider;
     private readonly IOptionsMonitor<PerRequestLogBufferingOptions> _options;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private readonly LogBufferingFilterRule[] _filterRules;
@@ -35,9 +37,11 @@ internal sealed class IncomingRequestLogBuffer
     public IncomingRequestLogBuffer(
         IBufferedLogger bufferedLogger,
         string category,
-        IOptionsMonitor<PerRequestLogBufferingOptions> options)
+        IOptionsMonitor<PerRequestLogBufferingOptions> options,
+        IExternalScopeProvider scopeProvider)
     {
         _bufferedLogger = bufferedLogger;
+        _scopeProvider = scopeProvider;
         _options = options;
         _filterRules = LogBufferingFilterRuleSelector.SelectByCategory(_options.CurrentValue.Rules.ToArray(), category);
     }
@@ -72,7 +76,8 @@ internal sealed class IncomingRequestLogBuffer
             _timeProvider.GetUtcNow(),
             attributes,
             logEntry.Exception,
-            logEntry.Formatter(logEntry.State, logEntry.Exception));
+            logEntry.Formatter(logEntry.State, logEntry.Exception),
+            _options.CurrentValue.IncludeScopes ? _scopeProvider : null);
 
         if (serializedLogRecord.SizeInBytes > _options.CurrentValue.MaxLogRecordSizeInBytes)
         {
@@ -112,18 +117,12 @@ internal sealed class IncomingRequestLogBuffer
         for (int offset = 0; offset < numItemsToEmit && !tempBuffer.IsEmpty; offset += MaxBatchSize)
         {
             int currentBatchSize = Math.Min(MaxBatchSize, numItemsToEmit - offset);
-            List<DeserializedLogRecord> recordsToEmit = _recordsToEmitListPool.Get();
+            List<SerializedLogRecord> recordsToEmit = _recordsToEmitListPool.Get();
             try
             {
-                for (int i = 0; i < currentBatchSize && tempBuffer.TryDequeue(out SerializedLogRecord bufferedRecord); i++)
+                for (int i = 0; i < currentBatchSize && tempBuffer.TryDequeue(out SerializedLogRecord? bufferedRecord); i++)
                 {
-                    recordsToEmit.Add(new DeserializedLogRecord(
-                        bufferedRecord.Timestamp,
-                        bufferedRecord.LogLevel,
-                        bufferedRecord.EventId,
-                        bufferedRecord.Exception,
-                        bufferedRecord.FormattedMessage,
-                        bufferedRecord.Attributes));
+                    recordsToEmit.Add(bufferedRecord);
                 }
 
                 _bufferedLogger.LogRecords(recordsToEmit);
@@ -138,7 +137,7 @@ internal sealed class IncomingRequestLogBuffer
     private void TrimExcessRecords()
     {
         while (_activeBufferSize > _options.CurrentValue.MaxPerRequestBufferSizeInBytes &&
-               _activeBuffer.TryDequeue(out SerializedLogRecord item))
+               _activeBuffer.TryDequeue(out SerializedLogRecord? item))
         {
             _ = Interlocked.Add(ref _activeBufferSize, -item.SizeInBytes);
             SerializedLogRecordFactory.Return(item);
