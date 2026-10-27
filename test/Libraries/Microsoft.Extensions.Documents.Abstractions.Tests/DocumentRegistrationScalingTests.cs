@@ -39,7 +39,7 @@ public class DocumentRegistrationScalingTests
         }
 
         int[] registeredReads = streams.Select(static stream => stream.CapabilityReads).ToArray();
-        section.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "application-only"));
+        section.Elements.Add(new DocumentTextElement("application-only"));
         Assert.Equal(registeredReads, streams.Select(static stream => stream.CapabilityReads));
         Assert.Equal(sourceCount, document.SourceOutputs.Count);
         Assert.Equal(sourceCount, document.SourcePages.Count);

@@ -46,7 +46,7 @@ public sealed class Document : IDisposable
     /// <summary>
     /// Gets or sets the stored markdown representation of the document.
     /// </summary>
-    public string? StoredMarkdown
+    public string? Markdown
     {
         get => _markdown;
         set
@@ -157,18 +157,8 @@ public sealed class Document : IDisposable
     {
         ThrowIfDisposed();
         return Sections.Count == 0
-            ? StoredMarkdown ?? string.Empty
+            ? Markdown ?? string.Empty
             : string.Join(Environment.NewLine, Sections.Select(static section => section.ToMarkdown()));
-    }
-
-    /// <summary>
-    /// Gets the stored markdown representation of the document.
-    /// </summary>
-    /// <returns>The stored markdown, or an empty string when none was stored.</returns>
-    public string GetMarkdown()
-    {
-        ThrowIfDisposed();
-        return StoredMarkdown ?? string.Empty;
     }
 
     /// <inheritdoc/>
@@ -261,7 +251,7 @@ public sealed class Document : IDisposable
         _version++;
     }
 
-    internal void RegisterArtifacts(DocumentElement element)
+    internal void RegisterSources(DocumentElement element)
     {
         foreach (DocumentSourceReference source in element.Sources)
         {
@@ -280,11 +270,6 @@ public sealed class Document : IDisposable
                     }
                 }
             }
-        }
-
-        foreach (DocumentArtifact artifact in element.Artifacts)
-        {
-            RegisterArtifact(artifact);
         }
     }
 
@@ -343,26 +328,18 @@ public sealed class Document : IDisposable
         _ = _artifacts.Add(artifact);
     }
 
-    internal void ValidateArtifacts(DocumentElement element)
+    internal void ValidateOwnership(DocumentElement element)
     {
         if (element.OwningDocument is not null && !ReferenceEquals(element.OwningDocument, this))
         {
             throw new InvalidOperationException("An element cannot belong to more than one document.");
         }
 
-        foreach (DocumentArtifact artifact in element.Artifacts)
-        {
-            if (artifact.OwningDocument is not null && !ReferenceEquals(artifact.OwningDocument, this))
-            {
-                throw new InvalidOperationException("An artifact cannot belong to more than one document.");
-            }
-        }
-
         if (element is DocumentSection section)
         {
             foreach (DocumentElement child in section.Elements)
             {
-                ValidateArtifacts(child);
+                ValidateOwnership(child);
             }
         }
         else if (element is DocumentTableElement table)
@@ -371,7 +348,7 @@ public sealed class Document : IDisposable
             {
                 if (cell?.Content is { } content)
                 {
-                    ValidateArtifacts(content);
+                    ValidateOwnership(content);
                 }
             }
         }

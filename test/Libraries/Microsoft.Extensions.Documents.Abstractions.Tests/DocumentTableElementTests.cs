@@ -18,8 +18,8 @@ public class DocumentTableElementTests
         DocumentTableElement table = new("", 3, 4);
         section.Elements.Add(table);
         document.Sections.Add(section);
-        DocumentTableCell wide = new(new DocumentTextElement(DocumentTextKind.Paragraph, "wide"), 2, 3);
-        DocumentTableCell corner = new(new DocumentTextElement(DocumentTextKind.Paragraph, "corner"), kind: "rowHeader");
+        DocumentTableCell wide = new(new DocumentTextElement("wide"), 2, 3);
+        DocumentTableCell corner = new(new DocumentTextElement("corner"), role: "rowHeader");
         table.Cells[0, 0] = wide;
         table.Cells[2, 3] = corner;
         AssertCoverage(wide, 2, 3);
@@ -31,7 +31,7 @@ public class DocumentTableElementTests
         Assert.Equal(version, document.Version);
         AssertCoverage(wide, 2, 3);
 
-        DocumentTableCell small = new(new DocumentTextElement(DocumentTextKind.Paragraph, "small"));
+        DocumentTableCell small = new(new DocumentTextElement("small"));
         table.Cells[0, 0] = small;
         AssertCoverage(small, 1, 1);
         Assert.Null(wide.Content!.Address);
@@ -82,7 +82,7 @@ public class DocumentTableElementTests
     {
         DocumentTableElement table = new("stored table", 2, 3);
 
-        Assert.Equal("stored table", table.StoredMarkdown);
+        Assert.Equal("stored table", table.Markdown);
         Assert.Equal(2, table.Cells.RowCount);
         Assert.Equal(3, table.Cells.ColumnCount);
         Assert.Equal(
@@ -103,7 +103,7 @@ public class DocumentTableElementTests
     [Theory]
     [InlineData(0, 2)]
     [InlineData(2, 0)]
-    public void ZeroDimensions_ToMarkdownReturnsStoredMarkdown(int rowCount, int columnCount)
+    public void ZeroDimensions_ToMarkdownReturnsMarkdown(int rowCount, int columnCount)
     {
         DocumentTableElement table = new("stored table", rowCount, columnCount);
 
@@ -118,11 +118,23 @@ public class DocumentTableElementTests
     public void RejectsInvalidCellAddresses(int row, int column, string parameterName)
     {
         DocumentTableElement table = new("stored table", 2, 2);
+        DocumentTextElement text = new("candidate");
+        DocumentTableCell candidate = new(text);
 
         Assert.Throws<ArgumentOutOfRangeException>(
             parameterName,
             () => _ = table.Cells[row, column]);
+        Assert.Throws<ArgumentOutOfRangeException>(
+            parameterName,
+            () => table.Cells[row, column] = candidate);
+        Assert.Throws<ArgumentOutOfRangeException>(
+            parameterName,
+            () => table.Cells[row, column] = null);
 
+        Assert.Null(candidate.Table);
+        Assert.Null(text.OwningDocument);
+        Assert.Null(text.Parent);
+        Assert.Equal("candidate", text.ToMarkdown());
         Assert.Equal(
             new DocumentTableCell?[] { null, null, null, null },
             table.Cells.ToArray());
@@ -132,8 +144,8 @@ public class DocumentTableElementTests
     public void ToMarkdown_ProjectsEveryCellAndUsesEmptyValueForNull()
     {
         DocumentTableElement table = new("stored table", 2, 3);
-        table.Cells.SetContent(0, 1, new DocumentTextElement(DocumentTextKind.Paragraph, "one"));
-        table.Cells.SetContent(1, 0, new DocumentTextElement(DocumentTextKind.Paragraph, "two"));
+        table.Cells[0, 1] = new DocumentTableCell(new DocumentTextElement("one"));
+        table.Cells[1, 0] = new DocumentTableCell(new DocumentTextElement("two"));
 
         Assert.Equal(
             $"|  | one |  |{Environment.NewLine}| two |  |  |",
@@ -144,21 +156,18 @@ public class DocumentTableElementTests
     public void ToMarkdown_EscapesPipesInCellProjections()
     {
         DocumentTableElement table = new("stored table", 1, 1);
-        table.Cells.SetContent(
-            0,
-            0,
-            new DocumentTextElement(DocumentTextKind.Paragraph, "left|right"));
+        table.Cells[0, 0] = new DocumentTableCell(new DocumentTextElement("left|right"));
 
         Assert.Equal("| left\\|right |", table.ToMarkdown());
     }
 
     [Fact]
-    public void GetMarkdown_RemainsStoredMarkdown()
+    public void Markdown_RemainsSuppliedWhileToMarkdownProjectsCells()
     {
         DocumentTableElement table = new("stored table", 1, 1);
-        table.Cells.SetContent(0, 0, new DocumentTextElement(DocumentTextKind.Paragraph, "semantic cell"));
+        table.Cells[0, 0] = new DocumentTableCell(new DocumentTextElement("semantic cell"));
 
-        Assert.Equal("stored table", table.GetMarkdown());
+        Assert.Equal("stored table", table.Markdown);
         Assert.Equal("| semantic cell |", table.ToMarkdown());
     }
 
@@ -166,10 +175,10 @@ public class DocumentTableElementTests
     public void MergedCells_ProjectAnchorContentExactlyOnceWithRolesAndHtmlEscaping()
     {
         DocumentTableElement table = new("stored table", 3, 3);
-        DocumentTableCell anchor = new(new DocumentTextElement(DocumentTextKind.Paragraph, "MERGED_A<&"), 2, 2, "columnHeader");
+        DocumentTableCell anchor = new(new DocumentTextElement("MERGED_A<&"), 2, 2, "columnHeader");
         table.Cells[0, 0] = anchor;
-        table.Cells[2, 0] = new DocumentTableCell(new DocumentTextElement(DocumentTextKind.Paragraph, "B"), kind: "rowHeader");
-        DocumentTableCell empty = new(kind: "vendor\"role");
+        table.Cells[2, 0] = new DocumentTableCell(new DocumentTextElement("B"), role: "rowHeader");
+        DocumentTableCell empty = new(role: "vendor\"role");
         table.Cells[2, 2] = empty;
         DocumentTableCell?[] before = table.Cells.ToArray();
 
@@ -183,7 +192,7 @@ public class DocumentTableElementTests
         Assert.Null(table.Cells[1, 1]);
         Assert.False(table.Cells.IsCovered(2, 2));
         Assert.Null(empty.Content);
-        Assert.Equal("stored table", table.GetMarkdown());
+        Assert.Equal("stored table", table.Markdown);
     }
 
     [Theory]
@@ -200,8 +209,8 @@ public class DocumentTableElementTests
         DocumentTableElement table = new("stored imperfect table", 1, 1);
 
         // Header text is not permission to invent a table-cell role or repair recognition.
-        DocumentTextElement text = new(DocumentTextKind.Header, " INV0ICE  1O0? <&| ", " INV0ICE  1O0? <&| ");
-        DocumentTableCell cell = new(text, kind: role);
+        DocumentTextElement text = new(" INV0ICE  1O0? <&| ", " INV0ICE  1O0? <&| ", role: "heading");
+        DocumentTableCell cell = new(text, role: role);
         table.Cells[0, 0] = cell;
         section.Elements.Add(table);
         document.Sections.Add(section);
@@ -209,11 +218,11 @@ public class DocumentTableElementTests
 
         Assert.Equal(expected, document.ToMarkdown());
         Assert.Equal(expected, table.ToMarkdown());
-        Assert.Equal("stored imperfect table", table.GetMarkdown());
-        Assert.Equal("stored document", document.GetMarkdown());
-        Assert.Equal(" INV0ICE  1O0? <&| ", text.StoredMarkdown);
+        Assert.Equal("stored imperfect table", table.Markdown);
+        Assert.Equal("stored document", document.Markdown);
+        Assert.Equal(" INV0ICE  1O0? <&| ", text.Markdown);
         Assert.Equal(" INV0ICE  1O0? <&| ", text.Text);
-        Assert.Equal(role, cell.Kind);
+        Assert.Equal(role, cell.Role);
         Assert.Same(cell, table.Cells.GetCoveringCell(0, 0));
         Assert.False(table.Cells.IsCovered(0, 0));
         Assert.Equal("s0/e0/c0,0", text.Address);
@@ -229,7 +238,7 @@ public class DocumentTableElementTests
         DocumentSection section = new("");
         DocumentTableElement table = new("stored grid", 3, 4);
         DocumentTableCell empty = new();
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "A|<", "A|<");
+        DocumentTextElement text = new("A|<", "A|<");
         DocumentTableCell anchor = new(text, rowSpan, columnSpan);
         table.Cells[0, 0] = empty;
         table.Cells[1, 1] = anchor;
@@ -247,7 +256,7 @@ public class DocumentTableElementTests
         Assert.Equal("s0/e0/c1,1", anchor.Address);
         Assert.Equal("s0/e0/c1,1", text.Address);
         Assert.Equal("A|<", text.Text);
-        Assert.Null(anchor.Kind);
+        Assert.Null(anchor.Role);
         Assert.Equal(
             new DocumentTableCell?[] { empty, null, null, null, null, anchor, null, null, null, null, null, null },
             table.Cells.ToArray());
@@ -267,7 +276,7 @@ public class DocumentTableElementTests
             }
         }
 
-        Assert.Equal("stored grid", table.GetMarkdown());
+        Assert.Equal("stored grid", table.Markdown);
         Assert.Same(table, Assert.Single(document.EnumerateContent()));
         Assert.Equal(version, document.Version);
     }
@@ -281,9 +290,9 @@ public class DocumentTableElementTests
         DocumentTableCell empty = new();
         DocumentSourcePage frame = DocumentAnnotationTestData.PdfPage();
         empty.Sources.Add(new DocumentSourceReference(frame, DocumentAnnotationTestData.Polygon(), "NATIVE_ONLY"));
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "INV0ICE  1O0?", "INV0ICE  1O0?");
+        DocumentTextElement text = new("INV0ICE  1O0?", "INV0ICE  1O0?");
         table.Cells[0, 1] = empty;
-        table.Cells.SetContent(0, 2, text);
+        table.Cells[0, 2] = new DocumentTableCell(text);
         section.Elements.Add(table);
         document.Sections.Add(section);
         long version = document.Version;
@@ -302,8 +311,8 @@ public class DocumentTableElementTests
         Assert.Equal(DocumentAnnotationTestData.Polygon(), empty.Sources[0].Polygon);
         Assert.Equal("NATIVE_ONLY", empty.Sources[0].GetRawRepresentation());
         Assert.Equal("INV0ICE  1O0?", text.Text);
-        Assert.Equal("stored source table", table.GetMarkdown());
-        Assert.Equal("stored document", document.GetMarkdown());
+        Assert.Equal("stored source table", table.Markdown);
+        Assert.Equal("stored document", document.Markdown);
 
         // Structurally different tables can have the same semantic projection; this is not a wire format.
         table.Cells[0, 1] = null;
@@ -337,8 +346,8 @@ public class DocumentTableElementTests
         Assert.Equal("s0/e0", table.Address);
         Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", table.ToMarkdown());
         Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
-        Assert.Equal(providerMarkdown, table.StoredMarkdown);
-        Assert.Equal(providerMarkdown, table.GetMarkdown());
+        Assert.Equal(providerMarkdown, table.Markdown);
+        Assert.Null(document.Markdown);
         Assert.Equal(new DocumentTableCell?[] { null, null, null, null }, table.Cells.ToArray());
         Assert.Equal(version, document.Version);
     }
@@ -358,8 +367,8 @@ public class DocumentTableElementTests
 
         Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", table.ToMarkdown());
         Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
-        Assert.Equal(providerMarkdown, table.StoredMarkdown);
-        Assert.Equal(providerMarkdown, table.GetMarkdown());
+        Assert.Equal(providerMarkdown, table.Markdown);
+        Assert.Null(document.Markdown);
         Assert.Equal(new DocumentTableCell?[] { null, null, null, empty }, table.Cells.ToArray());
         Assert.Null(empty.Content);
         Assert.Same(empty, table.Cells.GetCoveringCell(1, 1));
@@ -376,7 +385,7 @@ public class DocumentTableElementTests
         using Document document = new("cleared-table");
         DocumentSection section = new("");
         DocumentTableElement table = new(providerMarkdown, 2, 2);
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "mapped A", "mapped A");
+        DocumentTextElement text = new("mapped A", "mapped A");
         DocumentTableCell populated = new(text);
         DocumentTableCell empty = new();
         table.Cells[0, 0] = populated;
@@ -390,7 +399,7 @@ public class DocumentTableElementTests
         Assert.Equal("s0/e0/c0,0", populated.Address);
         Assert.Equal("s0/e0/c0,0", text.Address);
         Assert.Equal("s0/e0/c1,1", empty.Address);
-        Assert.Equal(providerMarkdown, table.GetMarkdown());
+        Assert.Equal(providerMarkdown, table.Markdown);
         Assert.Equal(version, document.Version);
 
         table.Cells[0, 0] = null;
@@ -404,14 +413,14 @@ public class DocumentTableElementTests
 
         Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", table.ToMarkdown());
         Assert.Equal($"|  |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
-        Assert.Equal(providerMarkdown, table.StoredMarkdown);
-        Assert.Equal(providerMarkdown, table.GetMarkdown());
+        Assert.Equal(providerMarkdown, table.Markdown);
+        Assert.Null(document.Markdown);
         Assert.Equal(new DocumentTableCell?[] { null, null, null, null }, table.Cells.ToArray());
         Assert.Equal(2, table.Cells.RowCount);
         Assert.Equal(2, table.Cells.ColumnCount);
         Assert.Null(empty.Address);
         Assert.Equal("mapped A", text.Text);
-        Assert.Equal("mapped A", text.GetMarkdown());
+        Assert.Equal("mapped A", text.Markdown);
         Assert.Same(table, Assert.Single(document.EnumerateContent()));
         Assert.Equal("s0/e0", table.Address);
         for (int row = 0; row < 2; row++)

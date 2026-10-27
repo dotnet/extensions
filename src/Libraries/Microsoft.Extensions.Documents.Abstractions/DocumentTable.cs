@@ -40,10 +40,10 @@ public sealed class DocumentTableElement : DocumentElement
     {
         if (Cells.RowCount == 0 || Cells.ColumnCount == 0)
         {
-            return StoredMarkdown;
+            return Markdown;
         }
 
-        if (Cells.Any(static cell => cell is not null && (cell.RowSpan != 1 || cell.ColumnSpan != 1 || cell.Kind is not null)))
+        if (Cells.Any(static cell => cell is not null && (cell.RowSpan != 1 || cell.ColumnSpan != 1 || cell.Role is not null)))
         {
             List<string> htmlRows = new(Cells.RowCount);
             for (int row = 0; row < Cells.RowCount; row++)
@@ -57,10 +57,10 @@ public sealed class DocumentTableElement : DocumentElement
                     }
 
                     DocumentTableCell? cell = Cells[row, column];
-                    string tag = cell?.Kind is "columnHeader" or "rowHeader" ? "th" : "td";
+                    string tag = cell?.Role is "columnHeader" or "rowHeader" ? "th" : "td";
                     string attributes = cell is null ? string.Empty :
                         $" rowspan=\"{cell.RowSpan}\" colspan=\"{cell.ColumnSpan}\"" +
-                        (cell.Kind is null ? string.Empty : $" data-kind=\"{WebUtility.HtmlEncode(cell.Kind)}\"");
+                        (cell.Role is null ? string.Empty : $" data-kind=\"{WebUtility.HtmlEncode(cell.Role)}\"");
                     htmlCells.Add($"<{tag}{attributes}>{WebUtility.HtmlEncode(cell?.Content?.ToMarkdown() ?? string.Empty)}</{tag}>");
                 }
 
@@ -101,22 +101,22 @@ public sealed class DocumentTableCell
     /// <param name="content">The element in the cell.</param>
     /// <param name="rowSpan">The positive number of rows covered by the cell.</param>
     /// <param name="columnSpan">The positive number of columns covered by the cell.</param>
-    /// <param name="kind">The optional producer-supplied cell role.</param>
-    public DocumentTableCell(DocumentElement content, int rowSpan = 1, int columnSpan = 1, string? kind = null)
+    /// <param name="role">The optional producer-supplied cell role.</param>
+    public DocumentTableCell(DocumentElement content, int rowSpan = 1, int columnSpan = 1, string? role = null)
     {
         Content = Throw.IfNull(content);
         RowSpan = Throw.IfLessThan(rowSpan, 1);
         ColumnSpan = Throw.IfLessThan(columnSpan, 1);
-        Kind = kind is null ? null : Throw.IfNullOrWhitespace(kind);
+        Role = role is null ? null : Throw.IfNullOrWhitespace(role);
         Sources = new DocumentSourceReferenceCollection(() => _table?.OwningDocument);
     }
 
     /// <summary>Initializes a new instance of the <see cref="DocumentTableCell"/> class without content.</summary>
-    public DocumentTableCell(int rowSpan = 1, int columnSpan = 1, string? kind = null)
+    public DocumentTableCell(int rowSpan = 1, int columnSpan = 1, string? role = null)
     {
         RowSpan = Throw.IfLessThan(rowSpan, 1);
         ColumnSpan = Throw.IfLessThan(columnSpan, 1);
-        Kind = kind is null ? null : Throw.IfNullOrWhitespace(kind);
+        Role = role is null ? null : Throw.IfNullOrWhitespace(role);
         Sources = new DocumentSourceReferenceCollection(() => _table?.OwningDocument);
     }
 
@@ -132,7 +132,7 @@ public sealed class DocumentTableCell
     public int ColumnSpan { get; }
 
     /// <summary>Gets the optional producer-supplied cell role.</summary>
-    public string? Kind { get; }
+    public string? Role { get; }
 
     /// <summary>Gets page and region associations independent of the presence of cell content.</summary>
     public IList<DocumentSourceReference> Sources { get; }
@@ -239,7 +239,7 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
                 ValidateCanAdd(value);
                 if (value.Content is { } candidateContent)
                 {
-                    _owner.OwningDocument?.ValidateArtifacts(candidateContent);
+                    _owner.OwningDocument?.ValidateOwnership(candidateContent);
                 }
 
                 _owner.OwningDocument?.ValidateSources(value.Sources.Concat(
@@ -278,15 +278,9 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
         }
     }
 
-    /// <summary>
-    /// Sets a cell's content, or clears the cell when <paramref name="content"/> is <see langword="null"/>.
-    /// </summary>
-    public void SetContent(int row, int column, DocumentElement? content)
-        => this[row, column] = content is null ? null : new DocumentTableCell(content);
-
     /// <summary>Gets the anchor cell covering a position, or <see langword="null"/> for an empty position.</summary>
     /// <returns>The covering anchor, or <see langword="null"/>.</returns>
-    public DocumentTableCell? GetCoveringCell(int row, int column)
+    internal DocumentTableCell? GetCoveringCell(int row, int column)
     {
         ValidateAddress(row, column);
         return _coveringCells[row, column];
@@ -294,7 +288,7 @@ public sealed class DocumentTableCellCollection : IEnumerable<DocumentTableCell?
 
     /// <summary>Gets whether a position is covered by an anchor at a different address.</summary>
     /// <returns>Whether another anchor covers the position.</returns>
-    public bool IsCovered(int row, int column)
+    internal bool IsCovered(int row, int column)
         => GetCoveringCell(row, column) is { } cell && (cell.RowIndex != row || cell.ColumnIndex != column);
 
     /// <summary>

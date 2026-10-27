@@ -15,9 +15,9 @@ public class DocumentTableCellTests
         using Document document = new("document");
         DocumentSection section = new("section");
         DocumentTableElement table = new("stored table", 2, 2);
-        DocumentTextElement content = new(DocumentTextKind.Paragraph, "cell");
+        DocumentTextElement content = new("cell");
 
-        table.Cells.SetContent(1, 0, content);
+        table.Cells[1, 0] = new DocumentTableCell(content);
         section.Elements.Add(table);
         document.Sections.Add(section);
 
@@ -38,9 +38,9 @@ public class DocumentTableCellTests
         DocumentSection firstSection = new("first");
         DocumentSection secondSection = new("second");
         DocumentTableElement table = new("stored table", 1, 1);
-        DocumentTextElement content = new(DocumentTextKind.Paragraph, "cell");
+        DocumentTextElement content = new("cell");
 
-        table.Cells.SetContent(0, 0, content);
+        table.Cells[0, 0] = new DocumentTableCell(content);
         firstSection.Elements.Add(table);
         document.Sections.Add(firstSection);
         document.Sections.Add(secondSection);
@@ -69,6 +69,61 @@ public class DocumentTableCellTests
         Assert.Throws<ArgumentNullException>(
             "content",
             () => new DocumentTableCell(null!));
+    }
+
+    [Theory]
+    [InlineData(null, "| cell |  |")]
+    [InlineData("columnHeader", "<table><tr><th rowspan=\"1\" colspan=\"1\" data-kind=\"columnHeader\">cell</th><th rowspan=\"1\" colspan=\"1\" data-kind=\"columnHeader\"></th></tr></table>")]
+    [InlineData("rowHeader", "<table><tr><th rowspan=\"1\" colspan=\"1\" data-kind=\"rowHeader\">cell</th><th rowspan=\"1\" colspan=\"1\" data-kind=\"rowHeader\"></th></tr></table>")]
+    [InlineData("ColumnHeader", "<table><tr><td rowspan=\"1\" colspan=\"1\" data-kind=\"ColumnHeader\">cell</td><td rowspan=\"1\" colspan=\"1\" data-kind=\"ColumnHeader\"></td></tr></table>")]
+    [InlineData("vendor\"role", "<table><tr><td rowspan=\"1\" colspan=\"1\" data-kind=\"vendor&quot;role\">cell</td><td rowspan=\"1\" colspan=\"1\" data-kind=\"vendor&quot;role\"></td></tr></table>")]
+    [InlineData(" custom ", "<table><tr><td rowspan=\"1\" colspan=\"1\" data-kind=\" custom \">cell</td><td rowspan=\"1\" colspan=\"1\" data-kind=\" custom \"></td></tr></table>")]
+    public void Constructors_PreserveRolesForContentAndEmptyCellsThroughIndexerAndRendering(string? role, string expected)
+    {
+        using Document document = new("cell-roles", "supplied root");
+        DocumentSection section = new("");
+        DocumentTableElement table = new("supplied table", 1, 2);
+        DocumentTextElement text = new("cell", "plain cell");
+        DocumentTableCell content = new(text, role: role);
+        DocumentTableCell empty = new(role: role);
+        table.Cells[0, 0] = content;
+        table.Cells[0, 1] = empty;
+        section.Elements.Add(table);
+        document.Sections.Add(section);
+        long version = document.Version;
+
+        Assert.Equal(role, content.Role);
+        Assert.Equal(role, empty.Role);
+        Assert.Equal(1, content.RowSpan);
+        Assert.Equal(1, empty.ColumnSpan);
+        Assert.Same(text, content.Content);
+        Assert.Null(empty.Content);
+        Assert.Equal(new DocumentTableCell?[] { content, empty }, table.Cells);
+        Assert.Equal("s0/e0/c0,0", text.Address);
+        Assert.Equal("s0/e0/c0,1", empty.Address);
+        Assert.Equal("plain cell", text.Text);
+        Assert.Equal(expected, table.ToMarkdown());
+        Assert.Equal(expected, document.ToMarkdown());
+        Assert.Equal("supplied table", table.Markdown);
+        Assert.Equal("supplied root", document.Markdown);
+        Assert.Equal(version, document.Version);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("\t\r\n")]
+    public void Constructors_RejectWhitespaceRolesWithoutAttachingContent(string role)
+    {
+        DocumentTextElement text = new("cell", "plain cell");
+
+        Assert.Throws<ArgumentException>(nameof(role), () => new DocumentTableCell(text, role: role));
+        Assert.Throws<ArgumentException>(nameof(role), () => new DocumentTableCell(role: role));
+        Assert.Null(text.Address);
+        Assert.Null(text.ParentSection);
+        Assert.Null(text.OwningDocument);
+        Assert.Equal("cell", text.ToMarkdown());
+        Assert.Equal("plain cell", text.Text);
     }
 
     [Fact]
@@ -109,7 +164,7 @@ public class DocumentTableCellTests
     [InlineData(1, -1, "columnSpan")]
     public void Constructors_RejectNonPositiveSpans(int rowSpan, int columnSpan, string parameter)
     {
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "content");
+        DocumentTextElement text = new("content");
         Assert.Throws<ArgumentOutOfRangeException>(parameter, () => new DocumentTableCell(rowSpan, columnSpan));
         Assert.Throws<ArgumentOutOfRangeException>(parameter, () => new DocumentTableCell(text, rowSpan, columnSpan));
         Assert.Null(text.Address);
@@ -132,16 +187,16 @@ public class DocumentTableCellTests
         DocumentTableCell empty = new();
         empty.Sources.Add(new DocumentSourceReference(pdf, DocumentAnnotationTestData.Polygon()));
         empty.Sources.Add(new DocumentSourceReference(raster, rasterPolygon));
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "lO0  ??", "lO0  ??");
+        DocumentTextElement text = new("lO0  ??", "lO0  ??");
         DocumentTableCell ordinary = new(text);
-        text.Metadata["vendor unknown margin"] = -12.5;
+        document.Metadata["vendor unknown margin"] = -12.5;
         DocumentTableElement table = new("stored table", 1, 3);
         table.Cells[0, 1] = empty;
         table.Cells[0, 2] = ordinary;
         DocumentSection first = new("");
         DocumentSection second = new("");
-        first.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "first"));
-        second.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "second"));
+        first.Elements.Add(new DocumentTextElement("first"));
+        second.Elements.Add(new DocumentTextElement("second"));
         first.Elements.Add(table);
         document.Sections.Add(first);
         document.Sections.Add(second);
@@ -188,10 +243,10 @@ public class DocumentTableCellTests
         Assert.Same(output, sources[1].Page.SourceOutput);
         Assert.Same(output, Assert.Single(document.SourceOutputs));
         Assert.Empty(table.Cells.GetCoveringCell(0, 2)!.Content!.Sources);
-        Assert.Equal(-12.5, text.Metadata["vendor unknown margin"]);
+        Assert.Equal(-12.5, document.Metadata["vendor unknown margin"]);
         Assert.Equal("lO0  ??", text.Text);
-        Assert.Equal("lO0  ??", text.GetMarkdown());
-        Assert.Equal("stored table", table.GetMarkdown());
+        Assert.Equal("lO0  ??", text.Markdown);
+        Assert.Equal("stored table", table.Markdown);
         Assert.Equal($"first{Environment.NewLine}second{Environment.NewLine}|  |  | lO0  ?? |", document.ToMarkdown());
         Assert.Equal(version + 2, document.Version);
     }
