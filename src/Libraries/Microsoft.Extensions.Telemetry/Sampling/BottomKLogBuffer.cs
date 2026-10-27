@@ -129,7 +129,8 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
             _timeProvider.GetUtcNow(),
             attributes,
             logEntry.Exception,
-            logEntry.Formatter(logEntry.State, logEntry.Exception));
+            logEntry.Formatter(logEntry.State, logEntry.Exception),
+            scopeProvider: null);
 
         InsertResult result = pending.Reservoir!.Insert(bufferedLogger, pending.Admission, record, this);
         if (result != InsertResult.Inserted)
@@ -212,7 +213,14 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
 
         foreach (CategoryReservoir reservoir in _categories.Values)
         {
-            reservoir.Flush();
+            try
+            {
+                reservoir.Flush();
+            }
+            catch (Exception)
+            {
+                // Automatic flushing is best-effort; one category must not prevent the others from flushing.
+            }
         }
     }
 
@@ -380,56 +388,32 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
             foreach (SampledRecord<int, SerializedLogRecord> sampled in drained)
             {
                 SerializedLogRecord serialized = sampled.Payload;
-                var attributes = new List<KeyValuePair<string, object?>>(serialized.Attributes.Count + 1);
-
-                int originalFormatIndex = serialized.Attributes.Count;
-                for (int i = 0; i < serialized.Attributes.Count; i++)
+                List<KeyValuePair<string, object?>> attributes = serialized.Attributes;
+                for (int i = attributes.Count - 1; i >= 0; i--)
                 {
-                    if (string.Equals(serialized.Attributes[i].Key, OriginalFormatAttributeName, StringComparison.Ordinal))
+                    if (string.Equals(attributes[i].Key, SamplingCountAttributeName, StringComparison.Ordinal))
+                    {
+                        attributes.RemoveAt(i);
+                    }
+                }
+
+                int originalFormatIndex = attributes.Count;
+                for (int i = 0; i < attributes.Count; i++)
+                {
+                    if (string.Equals(attributes[i].Key, OriginalFormatAttributeName, StringComparison.Ordinal))
                     {
                         originalFormatIndex = i;
                         break;
                     }
                 }
 
-                for (int i = 0; i < originalFormatIndex; i++)
-                {
-                    if (!string.Equals(serialized.Attributes[i].Key, SamplingCountAttributeName, StringComparison.Ordinal))
-                    {
-                        attributes.Add(serialized.Attributes[i]);
-                    }
-                }
-
-                attributes.Add(new KeyValuePair<string, object?>(SamplingCountAttributeName, sampled.SamplingCount));
-
-                for (int i = originalFormatIndex; i < serialized.Attributes.Count; i++)
-                {
-                    if (!string.Equals(serialized.Attributes[i].Key, SamplingCountAttributeName, StringComparison.Ordinal))
-                    {
-                        attributes.Add(serialized.Attributes[i]);
-                    }
-                }
-
-                records.Add(new DeserializedLogRecord(
-                    serialized.Timestamp,
-                    serialized.LogLevel,
-                    serialized.EventId,
-                    serialized.Exception,
-                    serialized.FormattedMessage,
-                    attributes));
+                attributes.Insert(
+                    originalFormatIndex,
+                    new KeyValuePair<string, object?>(SamplingCountAttributeName, sampled.SamplingCount));
+                records.Add(serialized);
             }
 
-            try
-            {
-                bufferedLogger.LogRecords(records);
-            }
-            finally
-            {
-                foreach (SampledRecord<int, SerializedLogRecord> sampled in drained)
-                {
-                    SerializedLogRecordFactory.Return(sampled.Payload);
-                }
-            }
+            bufferedLogger.LogRecords(records);
         }
     }
 
