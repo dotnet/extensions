@@ -16,7 +16,6 @@ public abstract class DocumentElement
 {
     private readonly Guid _localId = Guid.NewGuid();
     private string _markdown;
-    private Dictionary<string, object?>? _metadata;
     private object? _parent;
     private Document? _document;
 
@@ -27,7 +26,6 @@ public abstract class DocumentElement
     protected DocumentElement(string markdown)
     {
         _markdown = Throw.IfNull(markdown);
-        Artifacts = new DocumentArtifactCollection(this);
         Sources = new DocumentSourceReferenceCollection(() => _document);
     }
 
@@ -60,7 +58,7 @@ public abstract class DocumentElement
     /// For sections and tables, this value is intentionally distinct from the semantic markdown projection returned by
     /// <see cref="ToMarkdown"/>.
     /// </remarks>
-    public string StoredMarkdown
+    public string Markdown
     {
         get => _markdown;
         set
@@ -92,29 +90,8 @@ public abstract class DocumentElement
         }
     }
 
-    /// <summary>
-    /// Gets a value indicating whether this element has metadata.
-    /// </summary>
-    internal bool HasMetadata => _metadata is { Count: > 0 };
-
-    /// <summary>
-    /// Gets the metadata associated with this element.
-    /// </summary>
-    public IDictionary<string, object?> Metadata => _metadata ??= new Dictionary<string, object?>(StringComparer.Ordinal);
-
     /// <summary>Gets optional page and region associations, excluded from Markdown projection.</summary>
     public IList<DocumentSourceReference> Sources { get; }
-
-    /// <summary>
-    /// Gets the artifacts associated with this element.
-    /// </summary>
-    public IList<DocumentArtifact> Artifacts { get; }
-
-    /// <summary>
-    /// Gets the stored markdown representation of this element.
-    /// </summary>
-    /// <returns>The stored markdown.</returns>
-    public virtual string GetMarkdown() => _markdown;
 
     /// <summary>
     /// Gets a markdown projection of the semantic content of this element.
@@ -191,13 +168,13 @@ public abstract class DocumentElement
             return;
         }
 
-        document.ValidateArtifacts(this);
+        document.ValidateOwnership(this);
         document.ValidateSources(Document.EnumerateSources(this));
         _document = document;
 
         try
         {
-            document.RegisterArtifacts(this);
+            document.RegisterSources(this);
 
             if (this is DocumentSection section)
             {
@@ -280,54 +257,44 @@ public sealed class DocumentSection : DocumentElement
 
     /// <inheritdoc/>
     public override string ToMarkdown()
-        => Elements.Count == 0 ? StoredMarkdown : string.Join(Environment.NewLine, Elements.Select(static element => element.ToMarkdown()));
+        => Elements.Count == 0 ? Markdown : string.Join(Environment.NewLine, Elements.Select(static element => element.ToMarkdown()));
 }
 
 /// <summary>
-/// Identifies the semantic role of a text element.
-/// </summary>
-public enum DocumentTextKind
-{
-    /// <summary>Paragraph content.</summary>
-    Paragraph,
-
-    /// <summary>Header content.</summary>
-    Header,
-
-    /// <summary>Footer content.</summary>
-    Footer
-}
-
-/// <summary>
-/// Represents paragraph, header, or footer text.
+/// Represents text in a document, with an optional semantic role.
 /// </summary>
 public sealed class DocumentTextElement : DocumentElement
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentTextElement"/> class.
     /// </summary>
-    /// <param name="kind">The semantic role of the text.</param>
     /// <param name="markdown">The stored markdown representation.</param>
     /// <param name="text">The plain-text content.</param>
-    public DocumentTextElement(DocumentTextKind kind, string markdown, string? text = null)
+    /// <param name="role">The optional semantic role, or <see langword="null"/> when unspecified.</param>
+    public DocumentTextElement(string markdown, string? text = null, string? role = null)
         : base(markdown)
     {
-        Kind = kind;
+        Role = role is null ? null : Throw.IfNullOrWhitespace(role);
         Text = text;
     }
 
     /// <summary>
-    /// Gets the semantic role of this text element.
-    /// </summary>
-    public DocumentTextKind Kind { get; }
-
-    /// <summary>
-    /// Gets or sets the header level. Values must be between 1 and 10 when specified.
+    /// Gets the optional semantic role of this text element.
     /// </summary>
     /// <remarks>
-    /// This property is meaningful for elements whose <see cref="Kind"/> is <see cref="DocumentTextKind.Header"/>.
+    /// Common roles are <c>heading</c> for a document heading, <c>pageHeader</c> for repeated page headers,
+    /// and <c>pageFooter</c> for repeated page footers. Custom roles are preserved without normalization.
+    /// Consumers should treat unspecified or unrecognized roles as ordinary text.
     /// </remarks>
-    public int? HeaderLevel
+    public string? Role { get; }
+
+    /// <summary>
+    /// Gets or sets the heading level. Values must be between 1 and 10 when specified.
+    /// </summary>
+    /// <remarks>
+    /// This property is meaningful for the <c>heading</c> role. An unspecified level does not imply a hierarchy level.
+    /// </remarks>
+    public int? HeadingLevel
     {
         get;
         set
@@ -438,36 +405,7 @@ public sealed class DocumentImageElement : DocumentElement
 
     /// <inheritdoc/>
     public override string ToMarkdown()
-        => Source is null ? StoredMarkdown : $"![{AlternativeText ?? string.Empty}]({Source})";
-}
-
-/// <summary>
-/// Represents an extension or unknown element without adding provider-specific vocabulary to the common model.
-/// </summary>
-public sealed class DocumentExtensionElement : DocumentElement
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentExtensionElement"/> class.
-    /// </summary>
-    /// <param name="type">An opaque extension type name.</param>
-    /// <param name="markdown">The stored markdown representation.</param>
-    /// <param name="value">An opaque provider-owned value.</param>
-    public DocumentExtensionElement(string type, string markdown, object? value = null)
-        : base(markdown)
-    {
-        Type = Throw.IfNullOrEmpty(type);
-        Value = value;
-    }
-
-    /// <summary>
-    /// Gets the opaque extension type name.
-    /// </summary>
-    public string Type { get; }
-
-    /// <summary>
-    /// Gets the opaque extension value.
-    /// </summary>
-    public object? Value { get; }
+        => Source is null ? Markdown : $"![{AlternativeText ?? string.Empty}]({Source})";
 }
 
 internal sealed class DocumentElementCollection : Collection<DocumentElement>
@@ -557,51 +495,5 @@ internal sealed class DocumentElementCollection : Collection<DocumentElement>
         {
             throw new InvalidOperationException("The element is already owned by a document hierarchy.");
         }
-    }
-}
-
-internal sealed class DocumentArtifactCollection : Collection<DocumentArtifact>
-{
-    private readonly DocumentElement _owner;
-
-    internal DocumentArtifactCollection(DocumentElement owner) => _owner = owner;
-
-    protected override void InsertItem(int index, DocumentArtifact item)
-    {
-        _ = Throw.IfNull(item);
-
-        _owner.OwningDocument?.ThrowIfDisposed();
-        _owner.OwningDocument?.RegisterArtifact(item);
-        base.InsertItem(index, item);
-        _owner.NotifyMutation();
-    }
-
-    protected override void SetItem(int index, DocumentArtifact item)
-    {
-        _ = Throw.IfNull(item);
-
-        _owner.OwningDocument?.ThrowIfDisposed();
-        if (ReferenceEquals(this[index], item))
-        {
-            return;
-        }
-
-        _owner.OwningDocument?.RegisterArtifact(item);
-        base.SetItem(index, item);
-        _owner.NotifyMutation();
-    }
-
-    protected override void RemoveItem(int index)
-    {
-        _owner.OwningDocument?.ThrowIfDisposed();
-        base.RemoveItem(index);
-        _owner.NotifyMutation();
-    }
-
-    protected override void ClearItems()
-    {
-        _owner.OwningDocument?.ThrowIfDisposed();
-        base.ClearItems();
-        _owner.NotifyMutation();
     }
 }

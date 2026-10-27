@@ -16,8 +16,6 @@ public partial class DocumentTests
     [InlineData("text", true)]
     [InlineData("image", false)]
     [InlineData("image", true)]
-    [InlineData("extension", false)]
-    [InlineData("extension", true)]
     [InlineData("table", false)]
     [InlineData("table", true)]
     [InlineData("empty-cell", false)]
@@ -30,14 +28,13 @@ public partial class DocumentTests
         DocumentSection section = new("");
         DocumentTableElement table = new("", 1, 2);
         DocumentTableCell empty = new();
-        DocumentTextElement cellText = new(DocumentTextKind.Paragraph, "cell");
+        DocumentTextElement cellText = new("cell");
         table.Cells[0, 0] = empty;
-        table.Cells.SetContent(0, 1, cellText);
+        table.Cells[0, 1] = new DocumentTableCell(cellText);
         DocumentElement element = owner switch
         {
-            "text" => new DocumentTextElement(DocumentTextKind.Paragraph, "visible"),
+            "text" => new DocumentTextElement("visible"),
             "image" => new DocumentImageElement("visible"),
-            "extension" => new DocumentExtensionElement("app", "visible"),
             _ => table
         };
         section.Elements.Add(element);
@@ -76,7 +73,7 @@ public partial class DocumentTests
         Assert.Same(artifact, Assert.Single(document.Artifacts));
         Assert.True(artifact.IsDocumentOwned);
         Assert.Equal(new byte[] { 31, 32 }, stream.ToArray());
-        Assert.Equal(owner is "text" or "image" or "extension" ? "visible" : "|  | cell |", document.ToMarkdown());
+        Assert.Equal(owner is "text" or "image" ? "visible" : "|  | cell |", document.ToMarkdown());
         sources.Clear();
         Assert.Same(page, Assert.Single(document.SourcePages));
         document.Dispose();
@@ -93,17 +90,15 @@ public partial class DocumentTests
         using Document document = new("application", "stored root");
         DocumentSection section = new("stored section");
         DocumentSection nested = new("stored nested");
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "**local**", "local");
+        DocumentTextElement text = new("**local**", "local");
         DocumentImageElement image = new("") { Source = new Uri("urn:local:image"), AlternativeText = "local diagram" };
-        var payload = new { category = "application", count = 2 };
-        DocumentExtensionElement extension = new("app", "extension", payload);
+        DocumentTextElement extension = new("extension", role: "application-extra");
         DocumentTableElement table = new("stored table", 1, 2);
-        DocumentTextElement cellText = new(DocumentTextKind.Paragraph, "cell|value", "cell value");
-        table.Cells.SetContent(0, 0, cellText);
+        DocumentTextElement cellText = new("cell|value", "cell value");
+        table.Cells[0, 0] = new DocumentTableCell(cellText);
         table.Cells[0, 1] = new DocumentTableCell();
-        DocumentAnnotationTestData.CountingStream stream = new(new byte[] { 7, 8 });
-        using DocumentArtifact artifact = new("image/png", stream);
-        image.Artifacts.Add(artifact);
+        image.Content = new byte[] { 7, 8 };
+        image.MediaType = "image/png";
         nested.Elements.Add(text);
         nested.Elements.Add(table);
         section.Elements.Add(nested);
@@ -112,19 +107,20 @@ public partial class DocumentTests
         document.Sections.Add(section);
 
         Assert.Equal($"**local**{Environment.NewLine}| cell\\|value |  |{Environment.NewLine}![local diagram](urn:local:image){Environment.NewLine}extension", document.ToMarkdown());
-        Assert.Equal("stored root", document.GetMarkdown());
+        Assert.Equal("stored root", document.Markdown);
         Assert.Equal("local", text.Text);
         Assert.Equal("cell value", cellText.Text);
-        Assert.Same(payload, extension.Value);
+        Assert.Equal("application-extra", extension.Role);
+        Assert.Equal(new byte[] { 7, 8 }, image.Content!.Value.ToArray());
         Assert.Equal(new DocumentElement[] { text, table, image, extension }, document.EnumerateContent());
         Assert.All(new DocumentElement[] { section, nested, text, table, cellText, image, extension }, element => Assert.Empty(element.Sources));
         Assert.All(table.Cells, cell => Assert.Empty(cell!.Sources));
         Assert.Empty(document.SourcePages);
         Assert.Empty(document.SourceOutputs);
-        Assert.True(artifact.IsDocumentOwned);
+        Assert.Empty(document.Artifacts);
         document.Dispose();
         document.Dispose();
-        Assert.Equal(1, stream.DisposeCount);
+        Assert.Equal(new byte[] { 7, 8 }, image.Content.Value.ToArray());
     }
 
     [Fact]
@@ -205,8 +201,8 @@ public partial class DocumentTests
         DocumentSourceReference localSource = new(new("local-frame", 1, sourceOutput: localOutput), rawRepresentation: native);
         DocumentSourceReference foreignSource = new(new("foreign-frame", 2, sourceOutput: foreignOutput), rawRepresentation: native);
         DocumentSection candidate = new("");
-        DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
-        DocumentTextElement last = new(DocumentTextKind.Paragraph, "last");
+        DocumentTextElement first = new("first");
+        DocumentTextElement last = new("last");
         first.Sources.Add(localSource);
         last.Sources.Add(foreignSource);
         candidate.Elements.Add(first);

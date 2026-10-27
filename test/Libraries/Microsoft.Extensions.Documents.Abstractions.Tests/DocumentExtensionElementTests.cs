@@ -10,50 +10,76 @@ namespace Microsoft.Extensions.Documents.Tests;
 public class DocumentExtensionElementTests
 {
     [Fact]
-    public void PreservesOpaqueTypeAndValue()
+    public void Cleanup_RemovesObsoletePublicTypesAndMembers()
     {
-        object value = new();
-        DocumentExtensionElement element = new("provider-extension", "stored extension", value);
+        var assembly = typeof(Document).Assembly;
+        foreach (string name in new[] { "DocumentArtifactCollection", "DocumentExtensionElement", "DocumentTextKind" })
+        {
+            Assert.Null(assembly.GetType("Microsoft.Extensions.Documents." + name));
+        }
 
-        Assert.Equal("provider-extension", element.Type);
-        Assert.Equal("stored extension", element.GetMarkdown());
-        Assert.Same(value, element.Value);
+        foreach (Type type in new[]
+        {
+            typeof(Document), typeof(DocumentElement), typeof(DocumentSection),
+            typeof(DocumentTextElement), typeof(DocumentImageElement), typeof(DocumentTableElement)
+        })
+        {
+            Assert.Null(type.GetProperty("StoredMarkdown"));
+            Assert.Null(type.GetMethod("GetMarkdown"));
+            Assert.Equal(typeof(string), type.GetProperty("Markdown")!.PropertyType);
+        }
+
+        foreach (string name in new[] { "Metadata", "HasMetadata", "Artifacts" })
+        {
+            Assert.Null(typeof(DocumentElement).GetProperty(name));
+            Assert.Null(typeof(DocumentElement).GetProperty(name,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic));
+        }
+
+        Assert.Null(typeof(DocumentTextElement).GetProperty("HeaderLevel"));
+        Assert.Null(typeof(DocumentTextElement).GetProperty("Kind"));
+        Assert.Equal(typeof(int?), typeof(DocumentTextElement).GetProperty("HeadingLevel")!.PropertyType);
+        Assert.Equal(typeof(string), typeof(DocumentTextElement).GetProperty("Role")!.PropertyType);
+        Assert.False(typeof(DocumentTextElement).GetProperty("Role")!.CanWrite);
+        var parameters = Assert.Single(typeof(DocumentTextElement).GetConstructors()).GetParameters();
+        Assert.Equal(3, parameters.Length);
+        Assert.Equal("markdown", parameters[0].Name);
+        Assert.Equal("text", parameters[1].Name);
+        Assert.Equal("role", parameters[2].Name);
+        Assert.All(parameters, parameter => Assert.Equal(typeof(string), parameter.ParameterType));
+        Assert.False(parameters[0].IsOptional);
+        Assert.True(parameters[1].IsOptional);
+        Assert.True(parameters[2].IsOptional);
+        Assert.Null(parameters[1].DefaultValue);
+        Assert.Null(parameters[2].DefaultValue);
+        Assert.Equal(typeof(System.Collections.Generic.IDictionary<string, object>),
+            typeof(Document).GetProperty("Metadata")!.PropertyType);
+        Assert.Null(typeof(Document).GetProperty("Artifacts"));
     }
 
     [Fact]
-    public void RejectsNullType()
-    {
-        Assert.Throws<ArgumentNullException>(
-            "type",
-            () => new DocumentExtensionElement(null!, "stored extension"));
-    }
-
-    [Fact]
-    public void RejectsEmptyType()
-    {
-        Assert.Throws<ArgumentException>(
-            "type",
-            () => new DocumentExtensionElement("", "stored extension"));
-    }
-
-    [Fact]
-    public void ExtensionAndSources_PreserveOpaqueNestedPayloadAndNativeObservations()
+    public void RootMetadataAndSources_PreserveOpaqueNestedPayloadAndNativeObservations()
     {
         using Document document = new("payload");
-        var payload = new { kind = "vendor-extra", nested = new { unknown = new object[] { 3, "x" } } };
-        var attributes = new { vendorFlag = "kept", provenance = "urn:synthetic:engine:v1" };
-        DocumentExtensionElement extension = new("vendor-extra", "visible **text**", payload) { Text = "visible text" };
-        DocumentSourceOutput output = new("operation-A", providerName: "synthetic", modelId: "engine:v1");
+        using DocumentAnnotationTestData.BorrowedNative nestedNative = new();
+        var payload = new { kind = "vendor-extra", nested = new { unknown = new object[] { 3, "x" }, native = nestedNative } };
+        var attributes = new { vendorFlag = "kept", provenance = "urn:synthetic:engine:v1", native = nestedNative };
+        DocumentTextElement extension = new("visible **text**", "visible text", "vendor-extra");
+        DocumentSourceOutput output = new("operation-A", payload, providerName: "synthetic", modelId: "engine:v1");
         DocumentSourceReference first = new(DocumentAnnotationTestData.PdfPage(output), DocumentAnnotationTestData.Polygon(), attributes);
         DocumentSourceReference second = new(new DocumentSourcePage("frame-2", 2, sourceOutput: output), DocumentAnnotationTestData.Polygon());
         extension.Sources.Add(first);
         extension.Sources.Add(second);
-        extension.Metadata["vendorFlag"] = "kept";
+        Assert.False(document.HasMetadata);
+        document.Metadata["vendor-extra"] = payload;
+        document.Metadata["vendorFlag"] = "kept";
         DocumentSection section = new("");
         section.Elements.Add(extension);
         document.Sections.Add(section);
 
-        Assert.Same(payload, extension.Value);
+        Assert.True(document.HasMetadata);
+        Assert.Same(payload, document.Metadata["vendor-extra"]);
+        Assert.Equal("vendor-extra", extension.Role);
         Assert.Equal(new object[] { 3, "x" }, payload.nested.unknown);
         Assert.Same(attributes, first.GetRawRepresentation());
         Assert.Equal("kept", attributes.vendorFlag);
@@ -62,9 +88,16 @@ public class DocumentExtensionElementTests
         Assert.Equal(new[] { first.Page, second.Page }, document.SourcePages);
         Assert.Same(output, Assert.Single(document.SourceOutputs));
         Assert.Same(extension, Assert.Single(document.EnumerateContent()));
-        Assert.Equal("kept", extension.Metadata["vendorFlag"]);
+        Assert.Equal("kept", document.Metadata["vendorFlag"]);
         Assert.Equal("visible **text**", document.ToMarkdown());
         Assert.Equal("visible text", extension.Text);
         Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<DocumentPoint>)first.Polygon).Clear());
+        document.Dispose();
+        document.Dispose();
+        Assert.Same(payload, output.GetRawRepresentation());
+        Assert.Same(attributes, first.GetRawRepresentation());
+        Assert.Same(nestedNative, payload.nested.native);
+        Assert.Same(nestedNative, attributes.native);
+        Assert.Equal(0, nestedNative.DisposeCount);
     }
 }

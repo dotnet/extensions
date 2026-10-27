@@ -26,9 +26,9 @@ public class DocumentOwnershipTests
         using DocumentArtifact firstArtifact = new("text/plain", firstStream);
         using DocumentArtifact secondArtifact = new("text/plain", secondStream);
         using DocumentArtifact lastArtifact = new("text/plain", lastStream);
-        section.Artifacts.Add(firstArtifact);
-        section.Artifacts.Add(secondArtifact);
-        section.Artifacts.Add(lastArtifact);
+        document.AddSourceOutput(new("first", rawContent: firstArtifact));
+        document.AddSourceOutput(new("second", rawContent: secondArtifact));
+        document.AddSourceOutput(new("last", rawContent: lastArtifact));
 
         Exception? error = Record.Exception(document.Dispose);
 
@@ -62,7 +62,7 @@ public class DocumentOwnershipTests
     {
         using Document document = new("self");
         DocumentSection section = new("root");
-        DocumentTextElement child = new(DocumentTextKind.Paragraph, "child");
+        DocumentTextElement child = new("child");
         section.Elements.Add(child);
         document.Sections.Add(section);
         long version = document.Version;

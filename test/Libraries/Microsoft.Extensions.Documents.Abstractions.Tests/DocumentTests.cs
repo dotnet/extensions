@@ -17,7 +17,7 @@ public partial class DocumentTests
         using Document document = new("document-id", "stored document");
 
         Assert.Equal("document-id", document.Identifier);
-        Assert.Equal("stored document", document.StoredMarkdown);
+        Assert.Equal("stored document", document.Markdown);
         Assert.Empty(document.Sections);
         Assert.Empty(document.Artifacts);
         Assert.False(document.HasMetadata);
@@ -34,26 +34,26 @@ public partial class DocumentTests
     }
 
     [Fact]
-    public void GetMarkdown_ReturnsStoredMarkdown()
+    public void Markdown_RetainsExactSuppliedValue()
     {
         using Document document = new("document", "stored markdown");
 
-        Assert.Equal("stored markdown", document.GetMarkdown());
+        Assert.Equal("stored markdown", document.Markdown);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void ToMarkdown_ReturnsStoredMarkdownOrEmptyWithoutSections(string? markdown)
+    public void ToMarkdown_ReturnsMarkdownOrEmptyWithoutSections(string? markdown)
     {
         using Document document = new("document", markdown);
 
         Assert.Equal(markdown ?? string.Empty, document.ToMarkdown());
-        Assert.Equal(markdown ?? string.Empty, document.GetMarkdown());
+        Assert.Equal(markdown, document.Markdown);
     }
 
     [Fact]
-    public void ToMarkdown_ProjectsSectionsInsteadOfStoredMarkdown()
+    public void ToMarkdown_ProjectsSectionsInsteadOfMarkdown()
     {
         using Document document = new("document", "stored document markdown");
         DocumentSection section = new("stored section markdown");
@@ -65,7 +65,7 @@ public partial class DocumentTests
 
         document.Sections.Add(section);
 
-        Assert.Equal("stored document markdown", document.GetMarkdown());
+        Assert.Equal("stored document markdown", document.Markdown);
         Assert.Equal("![semantic image](urn:image:semantic)", document.ToMarkdown());
     }
 
@@ -75,8 +75,8 @@ public partial class DocumentTests
         using Document document = new("document", "stored document markdown");
         DocumentSection first = new("stored first");
         DocumentSection second = new("stored second");
-        first.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "first semantic"));
-        second.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "second semantic"));
+        first.Elements.Add(new DocumentTextElement("first semantic"));
+        second.Elements.Add(new DocumentTextElement("second semantic"));
         document.Sections.Add(first);
         document.Sections.Add(second);
 
@@ -89,7 +89,7 @@ public partial class DocumentTests
         using Document document = new("document", "stored markdown");
         long version = document.Version;
 
-        document.StoredMarkdown = "stored markdown";
+        document.Markdown = "stored markdown";
 
         Assert.Equal(version, document.Version);
     }
@@ -100,10 +100,10 @@ public partial class DocumentTests
         using Document document = new("document", "stored markdown");
         long version = document.Version;
 
-        document.StoredMarkdown = "updated markdown";
+        document.Markdown = "updated markdown";
 
         Assert.Equal(version + 1, document.Version);
-        Assert.Equal("updated markdown", document.StoredMarkdown);
+        Assert.Equal("updated markdown", document.Markdown);
     }
 
     [Fact]
@@ -198,8 +198,8 @@ public partial class DocumentTests
         using Document document = new("document");
         DocumentSection section = new("section");
         document.Sections.Add(section);
-        DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
-        DocumentTextElement replacement = new(DocumentTextKind.Paragraph, "replacement");
+        DocumentTextElement first = new("first");
+        DocumentTextElement replacement = new("replacement");
 
         AssertVersionIncrement(document, () => section.Elements.Add(first));
         AssertVersionIncrement(document, () => section.Elements[0] = replacement);
@@ -209,8 +209,8 @@ public partial class DocumentTests
         AssertVersionIncrement(document, () => section.Elements.RemoveAt(0));
         Assert.Null(replacement.Address);
 
-        DocumentTextElement firstToClear = new(DocumentTextKind.Paragraph, "first to clear");
-        DocumentTextElement secondToClear = new(DocumentTextKind.Paragraph, "second to clear");
+        DocumentTextElement firstToClear = new("first to clear");
+        DocumentTextElement secondToClear = new("second to clear");
         section.Elements.Add(firstToClear);
         section.Elements.Add(secondToClear);
         AssertVersionIncrement(document, () => section.Elements.Clear());
@@ -224,14 +224,14 @@ public partial class DocumentTests
     {
         using Document document = new("document");
         DocumentSection first = new("first");
-        DocumentTextElement firstText = new(DocumentTextKind.Paragraph, "first text");
+        DocumentTextElement firstText = new("first text");
         DocumentSection nested = new("nested");
-        DocumentTextElement nestedText = new(DocumentTextKind.Paragraph, "nested text");
+        DocumentTextElement nestedText = new("nested text");
         DocumentImageElement image = new("image");
-        DocumentExtensionElement extension = new("extension-type", "extension");
+        DocumentTextElement extension = new("extension", role: "application-extra");
         DocumentTableElement table = new("table", 1, 1);
         DocumentSection second = new("second");
-        DocumentTextElement secondText = new(DocumentTextKind.Paragraph, "second text");
+        DocumentTextElement secondText = new("second text");
 
         nested.Elements.Add(nestedText);
         first.Elements.Add(firstText);
@@ -257,7 +257,7 @@ public partial class DocumentTests
         DocumentSection root = new("root");
         DocumentSection nested = new("nested");
         root.Elements.Add(nested);
-        nested.Elements.Add(new DocumentTextElement(DocumentTextKind.Paragraph, "content"));
+        nested.Elements.Add(new DocumentTextElement("content"));
         document.Sections.Add(root);
 
         DocumentElement[] content = document.EnumerateContent().ToArray();
@@ -272,10 +272,10 @@ public partial class DocumentTests
         using Document document = new("document");
         DocumentSection first = new("first");
         DocumentSection nested = new("nested");
-        DocumentTextElement firstText = new(DocumentTextKind.Paragraph, "first text");
-        DocumentTextElement nestedText = new(DocumentTextKind.Paragraph, "nested text");
+        DocumentTextElement firstText = new("first text");
+        DocumentTextElement nestedText = new("nested text");
         DocumentSection second = new("second");
-        DocumentTextElement secondText = new(DocumentTextKind.Paragraph, "second text");
+        DocumentTextElement secondText = new("second text");
 
         first.Elements.Add(firstText);
         first.Elements.Add(nested);
@@ -298,7 +298,7 @@ public partial class DocumentTests
         using Document document = new("document");
         DocumentSection first = new("first");
         DocumentSection second = new("second");
-        DocumentTextElement element = new(DocumentTextKind.Paragraph, "content");
+        DocumentTextElement element = new("content");
 
         Assert.Null(element.Address);
         first.Elements.Add(element);
@@ -319,8 +319,8 @@ public partial class DocumentTests
         using Document document = new("document");
         DocumentSection section = new("section");
         DocumentTableElement table = new("table", 2, 3);
-        DocumentTextElement content = new(DocumentTextKind.Paragraph, "cell");
-        table.Cells.SetContent(1, 2, content);
+        DocumentTextElement content = new("cell");
+        table.Cells[1, 2] = new DocumentTableCell(content);
         section.Elements.Add(table);
         document.Sections.Add(section);
 
@@ -332,8 +332,8 @@ public partial class DocumentTests
     [Fact]
     public void LocalId_IsDistinctForDocumentElements()
     {
-        DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
-        DocumentTextElement second = new(DocumentTextKind.Paragraph, "second");
+        DocumentTextElement first = new("first");
+        DocumentTextElement second = new("second");
 
         Assert.NotEqual(Guid.Empty, first.LocalId);
         Assert.NotEqual(Guid.Empty, second.LocalId);
@@ -341,35 +341,35 @@ public partial class DocumentTests
     }
 
     [Fact]
-    public void Artifacts_RegistersArtifactAddedBeforeElementAttachment()
+    public void SourceRawBody_RegistersArtifactAddedBeforeElementAttachment()
     {
         using Document document = new("document");
         DocumentSection section = new("section");
-        DocumentTextElement element = new(DocumentTextKind.Paragraph, "content");
+        DocumentTextElement element = new("content");
         using MemoryStream stream = new(new byte[] { 1 });
         using DocumentArtifact artifact = new("application/octet-stream", stream);
 
-        element.Artifacts.Add(artifact);
+        element.Sources.Add(new(new("page", 1, sourceOutput: new("operation", rawContent: artifact))));
         section.Elements.Add(element);
         document.Sections.Add(section);
 
         Assert.Single(document.Artifacts);
         Assert.Same(artifact, document.Artifacts.Single());
-        Assert.Same(artifact, element.Artifacts[0]);
+        Assert.Same(artifact, element.Sources[0].Page.SourceOutput!.GetRawContent());
     }
 
     [Fact]
-    public void Artifacts_RegistersArtifactAddedAfterElementAttachment()
+    public void SourceRawBody_RegistersArtifactAddedAfterElementAttachment()
     {
         using Document document = new("document");
         DocumentSection section = new("section");
-        DocumentTextElement element = new(DocumentTextKind.Paragraph, "content");
+        DocumentTextElement element = new("content");
         section.Elements.Add(element);
         document.Sections.Add(section);
         using MemoryStream stream = new(new byte[] { 2 });
         using DocumentArtifact artifact = new("application/octet-stream", stream);
 
-        element.Artifacts.Add(artifact);
+        element.Sources.Add(new(new("page", 1, sourceOutput: new("operation", rawContent: artifact))));
 
         Assert.Single(document.Artifacts);
         Assert.Same(artifact, document.Artifacts.Single());
@@ -382,8 +382,8 @@ public partial class DocumentTests
         using Document secondDocument = new("second document");
         DocumentSection firstSection = new("first section");
         DocumentSection secondSection = new("second section");
-        DocumentTextElement firstElement = new(DocumentTextKind.Paragraph, "first content");
-        DocumentTextElement secondElement = new(DocumentTextKind.Paragraph, "second content");
+        DocumentTextElement firstElement = new("first content");
+        DocumentTextElement secondElement = new("second content");
         using MemoryStream stream = new(new byte[] { 3 });
         using DocumentArtifact artifact = new("application/octet-stream", stream);
 
@@ -391,14 +391,18 @@ public partial class DocumentTests
         firstDocument.Sections.Add(firstSection);
         secondSection.Elements.Add(secondElement);
         secondDocument.Sections.Add(secondSection);
-        firstElement.Artifacts.Add(artifact);
+        DocumentSourceOutput output = new("operation", rawContent: artifact);
+        DocumentSourceReference source = new(new("page", 1, sourceOutput: output));
+        firstElement.Sources.Add(source);
 
-        Assert.Throws<InvalidOperationException>(() => secondElement.Artifacts.Add(artifact));
+        Assert.Throws<InvalidOperationException>(() => secondElement.Sources.Add(source));
 
         Assert.Single(firstDocument.Artifacts);
         Assert.Empty(secondDocument.Artifacts);
-        Assert.Same(artifact, firstElement.Artifacts[0]);
-        Assert.Empty(secondElement.Artifacts);
+        Assert.Same(artifact, firstElement.Sources[0].Page.SourceOutput!.GetRawContent());
+        Assert.Empty(secondElement.Sources);
+        Assert.Empty(secondDocument.SourcePages);
+        Assert.Empty(secondDocument.SourceOutputs);
 
         firstDocument.Dispose();
         secondDocument.Dispose();
@@ -409,18 +413,18 @@ public partial class DocumentTests
     {
         using Document document = new("document");
         DocumentSection section = new("section");
-        DocumentTextElement beforeElement = new(DocumentTextKind.Paragraph, "before");
-        DocumentTextElement afterElement = new(DocumentTextKind.Paragraph, "after");
+        DocumentTextElement beforeElement = new("before");
+        DocumentTextElement afterElement = new("after");
         using MemoryStream beforeStream = new(new byte[] { 4 });
         using MemoryStream afterStream = new(new byte[] { 5 });
         using DocumentArtifact beforeArtifact = new("application/octet-stream", beforeStream);
         using DocumentArtifact afterArtifact = new("application/octet-stream", afterStream);
 
-        beforeElement.Artifacts.Add(beforeArtifact);
+        beforeElement.Sources.Add(new(new("before-page", 1, sourceOutput: new("before-operation", rawContent: beforeArtifact))));
         section.Elements.Add(beforeElement);
         document.Sections.Add(section);
         section.Elements.Add(afterElement);
-        afterElement.Artifacts.Add(afterArtifact);
+        afterElement.Sources.Add(new(new("after-page", 2, sourceOutput: new("after-operation", rawContent: afterArtifact))));
 
         document.Dispose();
 
@@ -457,15 +461,15 @@ public partial class DocumentTests
         DocumentSection section = new("section");
         DocumentSection replacement = new("replacement");
 
-        AssertVersionIncrement(document, () => document.StoredMarkdown = "document markdown");
+        AssertVersionIncrement(document, () => document.Markdown = "document markdown");
         AssertVersionIncrement(document, () => document.Sections.Add(section));
         AssertVersionIncrement(document, () => document.Sections[0] = replacement);
         AssertVersionIncrement(document, () => document.Sections.RemoveAt(0));
 
         DocumentSection sectionToClear = new("section to clear");
         document.Sections.Add(sectionToClear);
-        DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
-        DocumentTextElement second = new(DocumentTextKind.Paragraph, "second");
+        DocumentTextElement first = new("first");
+        DocumentTextElement second = new("second");
         AssertVersionIncrement(document, () => sectionToClear.Elements.Add(first));
         AssertVersionIncrement(document, () => sectionToClear.Elements[0] = second);
         AssertVersionIncrement(document, () => sectionToClear.Elements.RemoveAt(0));
@@ -479,7 +483,7 @@ public partial class DocumentTests
     {
         using Document document = new("document");
         DocumentSection section = new("section");
-        DocumentTextElement text = new(DocumentTextKind.Header, "stored text", "plain text");
+        DocumentTextElement text = new("stored text", "plain text", role: "heading");
         DocumentImageElement image = new("stored image")
         {
             Content = new byte[] { 1, 2 },
@@ -492,10 +496,10 @@ public partial class DocumentTests
         section.Elements.Add(image);
         document.Sections.Add(section);
 
-        AssertVersionIncrement(document, () => text.StoredMarkdown = "updated text");
+        AssertVersionIncrement(document, () => text.Markdown = "updated text");
         AssertVersionIncrement(document, () => text.Text = "updated plain text");
-        AssertVersionIncrement(document, () => text.HeaderLevel = 2);
-        AssertVersionIncrement(document, () => image.StoredMarkdown = "updated image");
+        AssertVersionIncrement(document, () => text.HeadingLevel = 2);
+        AssertVersionIncrement(document, () => image.Markdown = "updated image");
         AssertVersionIncrement(document, () => image.Text = "updated image text");
         AssertVersionIncrement(document, () => image.Content = new byte[] { 3, 4 });
         AssertVersionIncrement(document, () => image.MediaType = "image/jpeg");
@@ -504,31 +508,41 @@ public partial class DocumentTests
     }
 
     [Fact]
-    public void Version_IncrementsForSupportedTableAndArtifactEdits()
+    public void Version_IncrementsForTableEditsButNotSourceBodyRegistration()
     {
         using Document document = new("document");
         DocumentSection section = new("section");
         DocumentTableElement table = new("table", 1, 1);
-        DocumentTextElement firstCellContent = new(DocumentTextKind.Paragraph, "first");
-        DocumentTextElement replacementCellContent = new(DocumentTextKind.Paragraph, "replacement");
-        DocumentTextElement artifactOwner = new(DocumentTextKind.Paragraph, "artifact owner");
+        DocumentTextElement firstCellContent = new("first");
+        DocumentTextElement replacementCellContent = new("replacement");
+        DocumentTextElement artifactOwner = new("artifact owner");
         section.Elements.Add(table);
         section.Elements.Add(artifactOwner);
         document.Sections.Add(section);
 
-        AssertVersionIncrement(document, () => table.Cells.SetContent(0, 0, firstCellContent));
-        AssertVersionIncrement(document, () => table.Cells.SetContent(0, 0, replacementCellContent));
-        AssertVersionIncrement(document, () => table.Cells.SetContent(0, 0, null));
+        AssertVersionIncrement(document, () => table.Cells[0, 0] = new DocumentTableCell(firstCellContent));
+        AssertVersionIncrement(document, () => table.Cells[0, 0] = new DocumentTableCell(replacementCellContent));
+        AssertVersionIncrement(document, () => table.Cells[0, 0] = null);
 
         using MemoryStream firstStream = new(new byte[] { 6 });
         using MemoryStream secondStream = new(new byte[] { 7 });
         using DocumentArtifact firstArtifact = new("application/octet-stream", firstStream);
         using DocumentArtifact secondArtifact = new("application/octet-stream", secondStream);
-        AssertVersionIncrement(document, () => artifactOwner.Artifacts.Add(firstArtifact));
-        AssertVersionIncrement(document, () => artifactOwner.Artifacts.Remove(firstArtifact));
-        artifactOwner.Artifacts.Add(firstArtifact);
-        artifactOwner.Artifacts.Add(secondArtifact);
-        AssertVersionIncrement(document, () => artifactOwner.Artifacts.Clear());
+        DocumentSourceReference first = new(new("first-page", 1, sourceOutput: new("first-operation", rawContent: firstArtifact)));
+        DocumentSourceReference second = new(new("second-page", 2, sourceOutput: new("second-operation", rawContent: secondArtifact)));
+        long version = document.Version;
+        artifactOwner.Sources.Add(first);
+        artifactOwner.Sources.Remove(first);
+        artifactOwner.Sources.Add(first);
+        artifactOwner.Sources.Add(second);
+        artifactOwner.Sources.Clear();
+        Assert.Equal(version, document.Version);
+        Assert.Empty(artifactOwner.Sources);
+        Assert.Equal(new[] { first.Page, second.Page }, document.SourcePages);
+        Assert.Equal(2, document.Artifacts.Count);
+        Assert.Contains(firstArtifact, document.Artifacts);
+        Assert.Contains(secondArtifact, document.Artifacts);
+        Assert.Equal("|  |" + Environment.NewLine + "artifact owner", document.ToMarkdown());
 
         document.Dispose();
     }
@@ -538,9 +552,9 @@ public partial class DocumentTests
     {
         using Document document = new("document", "stored document");
         DocumentSection section = new("section");
-        DocumentTextElement text = new(DocumentTextKind.Header, "stored text", "plain text")
+        DocumentTextElement text = new("stored text", "plain text", role: "heading")
         {
-            HeaderLevel = 2
+            HeadingLevel = 2
         };
         ReadOnlyMemory<byte> imageContent = new byte[] { 8, 9 };
         Uri imageSource = new("urn:image:same");
@@ -556,11 +570,11 @@ public partial class DocumentTests
         document.Sections.Add(section);
         long version = document.Version;
 
-        document.StoredMarkdown = "stored document";
-        text.StoredMarkdown = "stored text";
+        document.Markdown = "stored document";
+        text.Markdown = "stored text";
         text.Text = "plain text";
-        text.HeaderLevel = 2;
-        image.StoredMarkdown = "stored image";
+        text.HeadingLevel = 2;
+        image.Markdown = "stored image";
         image.Text = null;
         image.Content = imageContent;
         image.MediaType = "image/png";
@@ -576,7 +590,7 @@ public partial class DocumentTests
         using Document document = new("document");
         DocumentSection section = new("section");
         DocumentTableElement table = new("table", 1, 1);
-        table.Cells.SetContent(0, 0, new DocumentTextElement(DocumentTextKind.Paragraph, "cell"));
+        table.Cells[0, 0] = new DocumentTableCell(new DocumentTextElement("cell"));
         section.Elements.Add(table);
         document.Sections.Add(section);
         DocumentTableCell cell = table.Cells[0, 0]!;
@@ -595,7 +609,7 @@ public partial class DocumentTests
         document.Sections.Add(new DocumentSection("section"));
         document.Dispose();
 
-        Assert.Throws<ObjectDisposedException>(() => document.StoredMarkdown = "updated");
+        Assert.Throws<ObjectDisposedException>(() => document.Markdown = "updated");
         Assert.Throws<ObjectDisposedException>(() => document.Sections.Add(new DocumentSection("added")));
         Assert.Throws<ObjectDisposedException>(() => document.Sections[0] = new DocumentSection("replacement"));
         Assert.Throws<ObjectDisposedException>(() => document.Sections.RemoveAt(0));
@@ -610,20 +624,21 @@ public partial class DocumentTests
     {
         using Document document = new("document");
         DocumentSection section = new("section");
-        DocumentTextElement text = new(DocumentTextKind.Header, "text", "plain");
+        DocumentTextElement text = new("text", "plain", role: "heading");
         DocumentImageElement image = new("image");
         using MemoryStream existingStream = new(new byte[] { 11 });
         using DocumentArtifact existingArtifact = new("application/octet-stream", existingStream);
         section.Elements.Add(text);
         section.Elements.Add(image);
-        text.Artifacts.Add(existingArtifact);
+        DocumentSourceReference existing = new(new("existing-page", 1, sourceOutput: new("existing-operation", rawContent: existingArtifact)));
+        text.Sources.Add(existing);
         document.Sections.Add(section);
         document.Dispose();
 
-        Assert.Throws<ObjectDisposedException>(() => text.StoredMarkdown = "updated");
+        Assert.Throws<ObjectDisposedException>(() => text.Markdown = "updated");
         Assert.Throws<ObjectDisposedException>(() => text.Text = "updated");
-        Assert.Throws<ObjectDisposedException>(() => text.HeaderLevel = 2);
-        Assert.Throws<ObjectDisposedException>(() => image.StoredMarkdown = "updated");
+        Assert.Throws<ObjectDisposedException>(() => text.HeadingLevel = 2);
+        Assert.Throws<ObjectDisposedException>(() => image.Markdown = "updated");
         Assert.Throws<ObjectDisposedException>(() => image.Text = "updated");
         Assert.Throws<ObjectDisposedException>(() => image.Content = new byte[] { 10 });
         Assert.Throws<ObjectDisposedException>(() => image.MediaType = "image/png");
@@ -633,12 +648,16 @@ public partial class DocumentTests
         using MemoryStream newStream = new(new byte[] { 12 });
         using DocumentArtifact newArtifact = new("application/octet-stream", newStream);
 
-        Assert.Throws<ObjectDisposedException>(() => text.Artifacts.Add(newArtifact));
-        Assert.Throws<ObjectDisposedException>(() => text.Artifacts.Remove(existingArtifact));
-        Assert.Throws<ObjectDisposedException>(() => text.Artifacts.Clear());
+        DocumentSourceReference candidate = new(new("new-page", 2, sourceOutput: new("new-operation", rawContent: newArtifact)));
+        Assert.Throws<ObjectDisposedException>(() => text.Sources.Add(candidate));
+        Assert.Throws<ObjectDisposedException>(() => text.Sources.Remove(existing));
+        Assert.Throws<ObjectDisposedException>(() => text.Sources.Clear());
 
-        Assert.Single(text.Artifacts);
-        Assert.Same(existingArtifact, text.Artifacts[0]);
+        Assert.Same(existing, Assert.Single(text.Sources));
+        Assert.Same(existingArtifact, text.Sources[0].Page.SourceOutput!.GetRawContent());
+        Assert.False(newArtifact.IsDocumentOwned);
+        Assert.False(newArtifact.IsDisposed);
+        Assert.Equal(new byte[] { 12 }, newStream.ToArray());
     }
 
     [Fact]
@@ -647,22 +666,24 @@ public partial class DocumentTests
         using Document document = new("document");
         DocumentSection section = new("section");
         DocumentTableElement table = new("table", 1, 1);
-        DocumentTextElement original = new(DocumentTextKind.Paragraph, "original");
-        table.Cells.SetContent(0, 0, original);
+        DocumentTextElement original = new("original");
+        table.Cells[0, 0] = new DocumentTableCell(original);
         section.Elements.Add(table);
         document.Sections.Add(section);
         DocumentTableCell originalCell = table.Cells[0, 0]!;
         document.Dispose();
 
-        DocumentTextElement replacement = new(DocumentTextKind.Paragraph, "replacement");
-        Assert.Throws<ObjectDisposedException>(() => table.Cells.SetContent(0, 0, replacement));
-        Assert.Throws<ObjectDisposedException>(() => table.Cells[0, 0] = new DocumentTableCell(replacement));
+        DocumentTextElement replacement = new("replacement");
+        DocumentTableCell rejectedCell = new(replacement);
+        Assert.Throws<ObjectDisposedException>(() => table.Cells[0, 0] = rejectedCell);
         Assert.Throws<ObjectDisposedException>(() => table.Cells[0, 0] = null);
 
         Assert.Same(originalCell, table.Cells[0, 0]);
         Assert.Same(original, originalCell.Content);
         Assert.Equal("s0/e0/c0,0", original.Address);
         Assert.Null(replacement.Address);
+        Assert.Null(rejectedCell.Table);
+        Assert.Same(replacement, rejectedCell.Content);
     }
 
     [Fact]
@@ -671,14 +692,14 @@ public partial class DocumentTests
         using Document document = new("document");
         DocumentSection section = new("section");
         DocumentTableElement table = new("table", 1, 2);
-        DocumentTextElement content = new(DocumentTextKind.Paragraph, "content");
-        table.Cells.SetContent(0, 0, content);
+        DocumentTextElement content = new("content");
+        table.Cells[0, 0] = new DocumentTableCell(content);
         section.Elements.Add(table);
         document.Sections.Add(section);
         DocumentSection invalidSection = new("invalid section");
 
-        Assert.Throws<InvalidOperationException>(() => table.Cells.SetContent(0, 1, invalidSection));
-        Assert.Throws<InvalidOperationException>(() => table.Cells.SetContent(0, 1, content));
+        Assert.Throws<InvalidOperationException>(() => table.Cells[0, 1] = new DocumentTableCell(invalidSection));
+        Assert.Throws<InvalidOperationException>(() => table.Cells[0, 1] = new DocumentTableCell(content));
 
         Assert.Same(content, table.Cells[0, 0]!.Content);
         Assert.Null(table.Cells[0, 1]);
@@ -702,8 +723,8 @@ public partial class DocumentTests
         DocumentSourceOutput output = new("operation-A");
         DocumentSourcePage page7 = DocumentAnnotationTestData.PdfPage(output);
         DocumentSourcePage page2 = new("urn:frame:page2", 2, sourceOutput: output);
-        DocumentTextElement text7 = new(DocumentTextKind.Paragraph, "same text");
-        DocumentTextElement text2 = new(DocumentTextKind.Paragraph, "same text");
+        DocumentTextElement text7 = new("same text");
+        DocumentTextElement text2 = new("same text");
         DocumentSourceReference region = new(page7, DocumentAnnotationTestData.Polygon());
         text7.Sources.Add(region);
         text2.Sources.Add(new DocumentSourceReference(page2, DocumentAnnotationTestData.Polygon()));
@@ -739,7 +760,7 @@ public partial class DocumentTests
         document.AddSourcePage(page);
         document.Sections.Add(new DocumentSection(""));
 
-        Assert.Equal("", document.GetMarkdown());
+        Assert.Equal("", document.Markdown);
         Assert.Equal("", document.ToMarkdown());
         Assert.Empty(document.EnumerateContent());
         Assert.Same(page, Assert.Single(document.SourcePages));
@@ -775,7 +796,7 @@ public partial class DocumentTests
         Assert.Same(artifact, Assert.Single(document.Artifacts));
         Assert.Same(stream, page2.SourceOutput!.GetRawContent()!.Content);
         Assert.Equal(DocumentAnnotationTestData.OriginalBytes(), stream.ToArray());
-        Assert.Equal("visible", document.GetMarkdown());
+        Assert.Equal("visible", document.Markdown);
         Assert.Equal("visible", document.ToMarkdown());
         Assert.Empty(document.EnumerateContent());
         Assert.Equal(0, document.Version);
@@ -790,7 +811,7 @@ public partial class DocumentTests
     {
         using Document document = new("shared-annotations");
         DocumentSection section = new("");
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible **text**", "visible text");
+        DocumentTextElement text = new("visible **text**", "visible text");
         section.Elements.Add(text);
         document.Sections.Add(section);
         var payload = new { target = text.LocalId, nested = new { unknown = new object[] { 3, "x" } }, vendorFlag = "kept" };
@@ -849,7 +870,7 @@ public partial class DocumentTests
         table.Sources.Clear();
         Assert.Equal(version, document.Version);
         Assert.Equal(new[] { page7, page2 }, document.SourcePages);
-        table.Cells.SetContent(0, 0, new DocumentTextElement(DocumentTextKind.Paragraph, "real mutation"));
+        table.Cells[0, 0] = new DocumentTableCell(new DocumentTextElement("real mutation"));
         Assert.Equal(version + 1, document.Version);
         Assert.Equal($"| real mutation |  |{Environment.NewLine}|  |  |", document.ToMarkdown());
     }
@@ -1008,7 +1029,7 @@ public partial class DocumentTests
         using Document document = new("late-distinct-sources");
         DocumentSection section = new("");
         DocumentTableElement table = new("", 1, 1);
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible **value**", "visible value");
+        DocumentTextElement text = new("visible **value**", "visible value");
         DocumentTableCell cell = new(text);
         table.Cells[0, 0] = cell;
         section.Elements.Add(table);

@@ -26,10 +26,6 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "string Microsoft.Extensions.Documents.Document.GetMarkdown();",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "string Microsoft.Extensions.Documents.Document.ToMarkdown();",
           "Stage": "Experimental"
         }
@@ -37,6 +33,10 @@
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Documents.Document.Identifier { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Documents.Document.Markdown { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -53,10 +53,6 @@
         },
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Documents.DocumentSourcePage> Microsoft.Extensions.Documents.Document.SourcePages { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.Documents.Document.StoredMarkdown { get; set; }",
           "Stage": "Experimental"
         }
       ]
@@ -156,21 +152,13 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "virtual string Microsoft.Extensions.Documents.DocumentElement.GetMarkdown();",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "virtual string Microsoft.Extensions.Documents.DocumentElement.ToMarkdown();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Documents.DocumentArtifact> Microsoft.Extensions.Documents.DocumentElement.Artifacts { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IDictionary<string, object?> Microsoft.Extensions.Documents.DocumentElement.Metadata { get; }",
+          "Member": "string Microsoft.Extensions.Documents.DocumentElement.Markdown { get; set; }",
           "Stage": "Experimental"
         },
         {
@@ -182,31 +170,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "string Microsoft.Extensions.Documents.DocumentElement.StoredMarkdown { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "string? Microsoft.Extensions.Documents.DocumentElement.Text { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.Documents.DocumentExtensionElement : Microsoft.Extensions.Documents.DocumentElement",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Documents.DocumentExtensionElement.DocumentExtensionElement(string type, string markdown, object? value = null);",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.Documents.DocumentExtensionElement.Type { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "object? Microsoft.Extensions.Documents.DocumentExtensionElement.Value { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -487,11 +451,11 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Documents.DocumentTableCell.DocumentTableCell(Microsoft.Extensions.Documents.DocumentElement content, int rowSpan = 1, int columnSpan = 1, string? kind = null);",
+          "Member": "Microsoft.Extensions.Documents.DocumentTableCell.DocumentTableCell(Microsoft.Extensions.Documents.DocumentElement content, int rowSpan = 1, int columnSpan = 1, string? role = null);",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.Documents.DocumentTableCell.DocumentTableCell(int rowSpan = 1, int columnSpan = 1, string? kind = null);",
+          "Member": "Microsoft.Extensions.Documents.DocumentTableCell.DocumentTableCell(int rowSpan = 1, int columnSpan = 1, string? role = null);",
           "Stage": "Experimental"
         }
       ],
@@ -509,7 +473,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "string? Microsoft.Extensions.Documents.DocumentTableCell.Kind { get; }",
+          "Member": "string? Microsoft.Extensions.Documents.DocumentTableCell.Role { get; }",
           "Stage": "Experimental"
         },
         {
@@ -531,19 +495,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Documents.DocumentTableCell? Microsoft.Extensions.Documents.DocumentTableCellCollection.GetCoveringCell(int row, int column);",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "System.Collections.Generic.IEnumerator<Microsoft.Extensions.Documents.DocumentTableCell?> Microsoft.Extensions.Documents.DocumentTableCellCollection.GetEnumerator();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Documents.DocumentTableCellCollection.IsCovered(int row, int column);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Documents.DocumentTableCellCollection.SetContent(int row, int column, Microsoft.Extensions.Documents.DocumentElement? content);",
           "Stage": "Experimental"
         }
       ],
@@ -587,45 +539,18 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Documents.DocumentTextElement.DocumentTextElement(Microsoft.Extensions.Documents.DocumentTextKind kind, string markdown, string? text = null);",
+          "Member": "Microsoft.Extensions.Documents.DocumentTextElement.DocumentTextElement(string markdown, string? text = null, string? role = null);",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "int? Microsoft.Extensions.Documents.DocumentTextElement.HeaderLevel { get; set; }",
+          "Member": "int? Microsoft.Extensions.Documents.DocumentTextElement.HeadingLevel { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.Documents.DocumentTextKind Microsoft.Extensions.Documents.DocumentTextElement.Kind { get; }",
+          "Member": "string? Microsoft.Extensions.Documents.DocumentTextElement.Role { get; }",
           "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "enum Microsoft.Extensions.Documents.DocumentTextKind",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Documents.DocumentTextKind.DocumentTextKind();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const Microsoft.Extensions.Documents.DocumentTextKind Microsoft.Extensions.Documents.DocumentTextKind.Footer",
-          "Stage": "Experimental",
-          "Value": "2"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Documents.DocumentTextKind Microsoft.Extensions.Documents.DocumentTextKind.Header",
-          "Stage": "Experimental",
-          "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Documents.DocumentTextKind Microsoft.Extensions.Documents.DocumentTextKind.Paragraph",
-          "Stage": "Experimental",
-          "Value": "0"
         }
       ]
     }

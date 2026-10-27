@@ -43,6 +43,35 @@ public class DocumentReferencesTests
         Assert.False(typeof(DocumentSourceReference).GetProperty("Polygon")!.CanWrite);
         Assert.False(typeof(Document).GetProperty("SourcePages")!.CanWrite);
         Assert.False(typeof(Document).GetProperty("SourceOutputs")!.CanWrite);
+        foreach (string name in new[] { "SetContent", "GetCoveringCell", "IsCovered" })
+        {
+            Assert.Null(typeof(DocumentTableCellCollection).GetMethod(name));
+        }
+
+        foreach (string name in new[] { "GetCoveringCell", "IsCovered" })
+        {
+            var method = typeof(DocumentTableCellCollection).GetMethod(name,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            Assert.True(method.IsAssembly);
+        }
+
+        Assert.Null(typeof(DocumentTableCell).GetProperty("Kind"));
+        Assert.Null(typeof(DocumentTableCell).GetProperty("CellKind"));
+        Assert.Equal(typeof(string), typeof(DocumentTableCell).GetProperty("Role")!.PropertyType);
+        Assert.False(typeof(DocumentTableCell).GetProperty("Role")!.CanWrite);
+        var indexer = typeof(DocumentTableCellCollection).GetProperty("Item")!;
+        Assert.Equal(typeof(DocumentTableCell), indexer.PropertyType);
+        Assert.True(indexer.CanRead);
+        Assert.True(indexer.CanWrite);
+        Assert.All(typeof(DocumentTableCell).GetConstructors(), constructor =>
+        {
+            var parameters = constructor.GetParameters();
+            var role = parameters[parameters.Length - 1];
+            Assert.Equal("role", role.Name);
+            Assert.Equal(typeof(string), role.ParameterType);
+            Assert.True(role.IsOptional);
+            Assert.Null(role.DefaultValue);
+        });
     }
 
     [Theory]
@@ -154,7 +183,7 @@ public class DocumentReferencesTests
         DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
         DocumentSourceReference region = new(page, supplied);
         supplied[0] = new DocumentPoint(999, 999);
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible");
+        DocumentTextElement text = new("visible");
         text.Sources.Add(region);
         DocumentSection section = new("");
         section.Elements.Add(text);
@@ -249,7 +278,7 @@ public class DocumentReferencesTests
         Assert.Throws<ArgumentOutOfRangeException>("coordinateOrigin", () => new DocumentSourcePage("frame", 1, coordinateOrigin: (DocumentCoordinateOrigin)99));
         Assert.Throws<ArgumentNullException>("page", () => new DocumentSourceReference(null!));
         Assert.Throws<ArgumentException>("polygon", () => new DocumentSourceReference(page, new[] { new DocumentPoint(1, 2), new DocumentPoint(3, 4) }));
-        DocumentTextElement text = new(DocumentTextKind.Paragraph, "visible");
+        DocumentTextElement text = new("visible");
         DocumentTableCell cell = new();
         Assert.Throws<ArgumentNullException>(() => text.Sources.Add(null!));
         Assert.Throws<ArgumentNullException>(() => cell.Sources.Add(null!));

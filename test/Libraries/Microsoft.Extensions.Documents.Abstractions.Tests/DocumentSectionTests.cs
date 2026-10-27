@@ -15,14 +15,14 @@ public class DocumentSectionTests
     {
         DocumentSection section = new("stored section markdown");
 
-        Assert.Equal("stored section markdown", section.StoredMarkdown);
+        Assert.Equal("stored section markdown", section.Markdown);
         Assert.Empty(section.Elements);
         Assert.Null(section.ParentSection);
         Assert.Null(section.Address);
     }
 
     [Fact]
-    public void ToMarkdown_ReturnsStoredMarkdownWhenSectionIsEmpty()
+    public void ToMarkdown_ReturnsMarkdownWhenSectionIsEmpty()
     {
         DocumentSection section = new("stored section markdown");
 
@@ -34,11 +34,11 @@ public class DocumentSectionTests
     {
         using Document document = new("document");
         DocumentSection root = new("root");
-        DocumentTextElement first = new(DocumentTextKind.Paragraph, "first");
+        DocumentTextElement first = new("first");
         DocumentSection nested = new("nested");
-        DocumentTextElement nestedFirst = new(DocumentTextKind.Paragraph, "nested-first");
-        DocumentTextElement nestedLast = new(DocumentTextKind.Paragraph, "nested-last");
-        DocumentTextElement last = new(DocumentTextKind.Paragraph, "last");
+        DocumentTextElement nestedFirst = new("nested-first");
+        DocumentTextElement nestedLast = new("nested-last");
+        DocumentTextElement last = new("last");
 
         nested.Elements.Add(nestedFirst);
         nested.Elements.Add(nestedLast);
@@ -74,11 +74,11 @@ public class DocumentSectionTests
     {
         using Document document = new("document");
         DocumentSection oldSection = new("old");
-        DocumentTextElement oldContent = new(DocumentTextKind.Paragraph, "old content");
+        DocumentTextElement oldContent = new("old content");
         oldSection.Elements.Add(oldContent);
         DocumentSection secondSection = new("second");
         DocumentSection replacement = new("replacement");
-        DocumentTextElement replacementContent = new(DocumentTextKind.Paragraph, "replacement content");
+        DocumentTextElement replacementContent = new("replacement content");
         replacement.Elements.Add(replacementContent);
 
         document.Sections.Add(oldSection);

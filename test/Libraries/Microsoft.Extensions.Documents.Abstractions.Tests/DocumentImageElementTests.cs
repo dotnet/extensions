@@ -38,11 +38,11 @@ public class DocumentImageElementTests
         };
 
         Assert.Equal("![a diagram](urn:image:opaque-8)", image.ToMarkdown());
-        Assert.Equal("stored image", image.GetMarkdown());
+        Assert.Equal("stored image", image.Markdown);
     }
 
     [Fact]
-    public void ToMarkdown_UsesStoredMarkdownWithoutSource()
+    public void ToMarkdown_UsesMarkdownWithoutSource()
     {
         DocumentImageElement image = new("stored image markdown")
         {
@@ -121,8 +121,8 @@ public class DocumentImageElementTests
             Source = source,
             AlternativeText = "diagram only"
         };
-        image.Artifacts.Add(artifact);
-        DocumentSourcePage page = DocumentAnnotationTestData.PdfPage();
+        DocumentSourceOutput output = new("image-operation", rawContent: artifact);
+        DocumentSourcePage page = DocumentAnnotationTestData.PdfPage(output);
         image.Sources.Add(new DocumentSourceReference(page, DocumentAnnotationTestData.Polygon()));
         DocumentSection section = new("");
         section.Elements.Add(image);
@@ -135,11 +135,12 @@ public class DocumentImageElementTests
         Assert.Same(source, artifact.Source);
         Assert.Equal("diagram only", image.AlternativeText);
         Assert.Null(image.Text);
-        Assert.Equal("", image.GetMarkdown());
-        Assert.Equal("", document.GetMarkdown());
+        Assert.Equal("", image.Markdown);
+        Assert.Equal("", document.Markdown);
         Assert.Equal("![diagram only](urn:image:page7)", document.ToMarkdown());
         Assert.Same(image, Assert.Single(document.EnumerateContent()));
         Assert.Same(page, Assert.Single(document.SourcePages));
+        Assert.Same(artifact, Assert.Single(document.SourceOutputs).GetRawContent());
         document.Dispose();
         document.Dispose();
         Assert.Equal(1, stream.DisposeCount);
