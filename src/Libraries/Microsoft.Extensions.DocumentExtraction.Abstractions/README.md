@@ -1,104 +1,83 @@
 # Microsoft.Extensions.DocumentExtraction.Abstractions
 
-This experimental package defines the extraction-side contract over
-`Microsoft.Extensions.Documents.Abstractions`. Providers stream page envelopes
-containing semantic observations; `DocumentExtractionDocumentBuilder` explicitly
-finalizes those observations into the existing `Documents.Document` model.
-It does not define a second canonical tree.
+This experimental package defines a small extraction capability over the standalone
+`Microsoft.Extensions.Documents.Abstractions` exchange model. It does not define a
+second document tree or require an authoring, page-streaming or observation protocol.
 
-Finalization sorts out-of-order pages and observations, rejects duplicate page
-numbers and provider observation identifiers, validates table-cell ownership,
-and preserves equal text and duplicate ordered source references. Typed
-`DocumentSourceReference` instances and document-owned artifacts are associated
-with the resulting `Documents` elements. The builder owns artifacts until successful finalization;
-the finalized result owns them afterward and disposes them with its document.
-Cleanup attempts every eligible artifact even when a stream throws. A failed
-`Build()` preserves its original error; if cleanup also fails, an
-`AggregateException` contains the original error first and the cleanup failures.
-Builder disposal reports cleanup failures in an `AggregateException`. Artifacts
-already owned by another document remain that document's responsibility.
-Page-sequence finalization also preserves enumeration failures or cancellation
-ahead of any artifact-cleanup failures rather than replacing the primary error.
+The primary operation is:
 
-Unknown, list, barcode, and provider-specific observations can preserve opaque
-structured values through `DocumentExtractionExtension.Value`, without flattening
-them into Markdown. Provider-specific confidence, detections and transforms belong
-in page or observation `Metadata`, not generalized annotation or normalized
-detection schemas. This is transport, not first-class list/item/nesting. The
-package has no provider, AI, Azure, or MEDI dependencies and does not fabricate
-grounding or recognize detections.
+```csharp
+Task<Document> ExtractAsync(
+    Stream document,
+    string identifier,
+    string mediaType,
+    DocumentExtractionOptions? options = null,
+    CancellationToken cancellationToken = default);
+```
 
-`IDocumentExtractionClient.ExtractPagesAsync(Stream, identifier, mediaType,
-DocumentExtractionOptions?, CancellationToken)` is the single provider operation. The `ExtractAsync`
-extension consumes that same page sequence and returns a disposable result.
-The caller owns the input stream; dispose the result to release its document
-and registered artifact streams. Page enumeration does not guarantee incremental
-network extraction: a provider may finish a remote operation before yielding pages.
+An adapter returns the canonical `Microsoft.Extensions.Documents.Document` directly.
+The caller owns the input stream and the returned document. Disposing the document
+releases its registered original-response body streams, never borrowed native SDK
+objects. Adapters own partial-result cleanup on failure or cancellation, must attempt
+every acquired body, and must preserve the primary error if cleanup also fails.
+They must honor cancellation without disposing the caller's input.
 
-## Layout and finalization
+Documents can be constructed or consumed without Extraction. Extraction depends on
+Documents, not MEDI, AI or provider SDK packages. MEDI or another consumer can accept
+the same shared document from any producer without requiring Extraction. The
+packages compose through the exchanged document rather than a mandatory pipeline.
 
-Source-page frames retain the reported page number, dimensions, coordinate unit
-and origin separately from the assembled page order. `Sources` on pages,
-observations and table cells carry typed page references and exact ordered polygons
-into the shared document. A source reference without polygon vertices identifies
-only a page, not a precise location. Unknown units remain unknown.
-Table cells preserve positive row/column spans, producer roles, empty anchors
-and sources independently of content. Blank/image-only pages remain sections
-without invented Markdown. Stored document Markdown is assembled only when every
-page supplied it; semantic projection remains separate.
+## Mapping and source fidelity
 
-Source lists are snapshotted at construction. Page sources are copied to the
-canonical section and precede each observation's sources on its canonical element,
-including nested table-cell content; supplied order and multiplicity are preserved.
-`SourcePage` and `SourceOutputs` retain real blank-page frames and source operations
-even when no observation refers to them. Source references also register their
-frames and operations when attached to the document.
+Adapters map provider output to shared text, image, table and section elements.
+Text roles such as `heading`, `pageHeader`, `pageFooter`, custom roles and optional
+heading levels are preserved without inventing unspecified information.
+Exact supplied `Markdown` is distinct from `ToMarkdown()`, the projection of the
+current document structure.
 
-Page and observation metadata dictionaries are snapshotted with ordinal keys;
-opaque values remain borrowed. Finalization copies page entries to section
-`Metadata` and observation entries to element `Metadata`, including nested content.
-No normalized provider-specific schema, metadata-presence flag or automatic
-projection/logging of this extension data is introduced.
+Typed `Sources` retain source pages, coordinate frames and ordered polygons, with
+explicit native-object access. A source without a polygon identifies a page, not a
+precise location. Adapters register real blank-page frames and source operations
+even when no element refers to them. Table spans, roles and sources are independent
+of whether a cell has content.
+
+The Extraction contract has no staged element metadata, arbitrary semantic-artifact
+bags, generalized detections or extension-element schema. Specialized SDK data is
+available through borrowed native source objects; document-level metadata remains
+available for consumers to populate explicitly. No source association establishes
+verified grounding or calibrated confidence.
 
 ## Per-call options and break-glass output
 
 `DocumentExtractionOptions` provides an optional model override and an
-adapter-specific `AdditionalProperties` dictionary. An absent override uses
-documented provider defaults. Providers must reject unsupported explicit settings,
-create fresh requests per operation and avoid mutating shared defaults. Typed
-provider feature settings belong to adapters, not Documents. `ExtractAsync`
-clones the options and dictionary entries before forwarding; opaque values remain
-borrowed and callers must not mutate them while the operation is in flight.
-Direct `ExtractPagesAsync` callers must follow the provider's snapshot contract.
+adapter-specific `AdditionalProperties` dictionary. Providers must reject unsupported
+explicit settings, create fresh requests per operation, and avoid mutating caller
+arguments or shared defaults. Implementations must snapshot options before
+asynchronous work. `DelegatingDocumentExtractionClient` copies scalar values and
+dictionary entries before forwarding; opaque values remain borrowed and callers
+must not mutate them while an operation is in flight.
 
-`CaptureRawContent` defaults to `false`, including when options are absent.
-It controls only retention of available original detached response content in a
-per-operation `DocumentSourceOutput`, never a mutable client "last response".
-Supplied native SDK results and native source-reference representations remain available
-by identity independently of this option; native inspection never requires body
-capture. Native objects are borrowed and are never implicitly disposed.
-Disabling content capture prevents the separate original-content artifact; it is
-not redaction and does not strip sensitive or content-bearing fields from retained
-native SDK objects, which may themselves contain response data.
-Set the flag to `true` to opt into original body retention. Unavailable native/body
-data is explicitly reported, not manufactured by serializing mapped objects.
-Content availability may be `Disabled`; a native getter returning `null` reports
-that the native representation is unavailable. Providers must distinguish unsupported explicit
-settings (which they reject) from legitimately unavailable source output (which
-they report honestly even when capture is requested). Finalization rejects retained
-original content when capture is off, including nested source associations, and
-releases new unowned artifacts instead of silently returning retained data.
+`CaptureRawContent` defaults to `false`, including when options are absent. It
+controls only a separate original detached response-content artifact. Supplied
+native SDK results and source-reference representations remain inspectable by
+identity independently of this option and are never implicitly disposed.
+Disabling capture is not redaction: retained native objects may themselves contain
+sensitive fields or response data.
 
-Multiple pages may reference one operation. Finalization registers its raw-content
-artifact once under document ownership; semantic observation artifact duplication
-is still rejected. Disposing the result disposes owned streams, never borrowed
-native results/values or artifacts already owned by another document. Raw output
-is accessed explicitly through `GetRawRepresentation()`/`GetRawContent()` and
-does not automatically enter Markdown, logs, embeddings or ingestion records.
+Adapters must not retain original body artifacts when capture is off, including
+through nested source associations. When capture is on, they retain only actual
+available response bytes, not serialization of mapped objects. `ContentStatus`
+honestly distinguishes `Disabled`, `Unavailable` and `Retained`; a native getter
+returning `null` means that representation was not supplied. Unsupported explicit
+settings are errors, not the same as legitimately unavailable output.
+
+Successful source-body registration transfers ownership to the returned document.
+Shared operation bodies are owned once. Borrowed native objects and bodies already
+owned by another document must not be implicitly disposed during failed extraction.
+Raw output is accessed explicitly through `GetRawRepresentation()`/`GetRawContent()`
+and must not automatically enter Markdown, logs, embeddings or ingestion records.
 Providers must not capture request credentials or authorization headers.
 
-All public APIs are experimental under `MEDE0001`. The shared Documents APIs
-use the separate `EXTEXP0019` diagnostic. Both surfaces are provisional pending
-API review. The package deliberately excludes the old extraction-owned tree,
-usage/progress APIs, configuration/OTel middleware, URI fetching and AI content
-overloads. Restoring information fidelity does not restore those operational APIs.
+All public Extraction APIs are experimental under `MEDE0001`; shared Documents uses
+`EXTEXP0019`. The package does not include provider implementations, MEDI adapters,
+URI fetching, progress/usage APIs, configuration middleware or OpenTelemetry.

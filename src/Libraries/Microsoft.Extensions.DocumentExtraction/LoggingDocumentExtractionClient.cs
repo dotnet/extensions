@@ -2,17 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Documents;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DocumentExtraction;
 
 /// <summary>
-/// Logs extraction lifecycle events without logging source content, metadata values, artifacts, or provider state.
+/// Logs extraction lifecycle events without logging source content, roles, artifacts, or provider state.
 /// </summary>
 public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtractionClient
 {
@@ -28,96 +27,72 @@ public partial class LoggingDocumentExtractionClient : DelegatingDocumentExtract
     }
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<DocumentExtractionPage> ExtractPagesAsync(
+    public override async Task<Document> ExtractAsync(
         System.IO.Stream document,
         string identifier,
         string mediaType,
         DocumentExtractionOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         LogInvoked();
 
-        IAsyncEnumerator<DocumentExtractionPage>? enumerator = null;
+        Document result;
         try
         {
-            enumerator = base.ExtractPagesAsync(document, identifier, mediaType, options, cancellationToken)
-                .GetAsyncEnumerator(cancellationToken);
+            result = await base.ExtractAsync(document, identifier, mediaType, options, cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException failure)
         {
-            LogCanceled();
+            LogFailure(failure, canceled: true);
             throw;
         }
-        catch (Exception)
+        catch (Exception failure)
         {
-            LogFailed();
+            LogFailure(failure, canceled: false);
             throw;
         }
 
-        bool failed = false;
         try
         {
-            while (true)
-            {
-                DocumentExtractionPage page;
-                try
-                {
-                    if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
-                    {
-                        break;
-                    }
-
-                    page = enumerator.Current;
-                }
-                catch (OperationCanceledException cancellation)
-                {
-                    failed = true;
-                    LogCanceled();
-                    await DisposeAfterFailureAsync(enumerator, cancellation).ConfigureAwait(false);
-                    throw;
-                }
-                catch (Exception error)
-                {
-                    failed = true;
-                    LogFailed();
-                    await DisposeAfterFailureAsync(enumerator, error).ConfigureAwait(false);
-                    throw;
-                }
-
-                LogPageReceived(page.PageNumber, page.Observations.Count);
-                yield return page;
-            }
-
             LogCompleted();
+            return result;
         }
-        finally
+        catch (Exception failure)
         {
-            if (!failed)
+            try
             {
-                await enumerator.DisposeAsync().ConfigureAwait(false);
+                result.Dispose();
             }
+            catch (Exception cleanupFailure)
+            {
+                throw new AggregateException(failure, cleanupFailure);
+            }
+
+            throw;
         }
     }
 
-#pragma warning disable EA0014 // IAsyncDisposable.DisposeAsync doesn't support cancellation.
-    private static async ValueTask DisposeAfterFailureAsync(IAsyncEnumerator<DocumentExtractionPage> enumerator, Exception failure)
+    private void LogFailure(Exception failure, bool canceled)
     {
         try
         {
-            await enumerator.DisposeAsync().ConfigureAwait(false);
+            if (canceled)
+            {
+                LogCanceled();
+            }
+            else
+            {
+                LogFailed();
+            }
         }
-        catch (Exception cleanupFailure)
+        catch (Exception loggingFailure)
         {
-            throw new AggregateException(failure, cleanupFailure);
+            throw new AggregateException(failure, loggingFailure);
         }
     }
-#pragma warning restore EA0014
 
     [LoggerMessage(LogLevel.Debug, "Document extraction invoked.")]
     private partial void LogInvoked();
-
-    [LoggerMessage(LogLevel.Debug, "Document extraction received page {PageNumber} with {ObservationCount} observations.")]
-    private partial void LogPageReceived(int pageNumber, int observationCount);
 
     [LoggerMessage(LogLevel.Debug, "Document extraction completed.")]
     private partial void LogCompleted();

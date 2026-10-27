@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Documents;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DocumentExtraction;
@@ -29,13 +30,18 @@ public class DelegatingDocumentExtractionClient : IDocumentExtractionClient
     protected IDocumentExtractionClient InnerClient { get; }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<DocumentExtractionPage> ExtractPagesAsync(
+    public virtual Task<Document> ExtractAsync(
         Stream document,
         string identifier,
         string mediaType,
         DocumentExtractionOptions? options = null,
         CancellationToken cancellationToken = default)
-        => InnerClient.ExtractPagesAsync(document, identifier, mediaType, options, cancellationToken);
+    {
+        _ = Throw.IfNull(document);
+        _ = Throw.IfNullOrEmpty(identifier);
+        _ = Throw.IfNullOrEmpty(mediaType);
+        return InnerClient.ExtractAsync(document, identifier, mediaType, options?.Clone(), cancellationToken);
+    }
 
     /// <inheritdoc />
     public virtual object? GetService(Type serviceType, object? serviceKey = null)

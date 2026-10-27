@@ -1,69 +1,52 @@
 # Microsoft.Extensions.DocumentExtraction
 
-These experimental packages define the extraction-side waist for the neutral
-`Microsoft.Extensions.Documents.Abstractions` model.
+These experimental packages provide a small extraction capability and optional
+composition middleware over the standalone shared Documents exchange model.
 
-`Microsoft.Extensions.DocumentExtraction.Abstractions` contains a streaming
-`IDocumentExtractionClient`, page and observation contracts, and
-`DocumentExtractionDocumentBuilder`. The builder accepts pages in any arrival
-order, sorts them and their observations during explicit finalization, rejects
-duplicate page numbers and provider observation identifiers, preserves equal
-text from different observations, and preserves typed page/polygon source references
-without asserting grounding. It maps tables, images, and unknown/list/barcode
-extensions into the existing `Documents` element types. `DocumentArtifact`
-instances are transferred to the finalized `DocumentExtractionResult` and are
-disposed when the result is disposed or finalization fails.
+`Microsoft.Extensions.DocumentExtraction.Abstractions` defines
+`IDocumentExtractionClient.ExtractAsync(Stream, identifier, mediaType, options,
+cancellationToken)`, returning `Task<Microsoft.Extensions.Documents.Document>`
+directly. There is no required public page/observation staging model, finalization
+builder or result wrapper. Adapters build the canonical document and own cleanup
+of partial results on failure or cancellation; the caller owns the successful
+document and its registered original-response streams.
 
-Typed source references retain reported polygon geometry and coordinate frames;
-tables retain spans/roles and empty anchors independently of cell content.
-Page and observation `Metadata` snapshots transport provider-specific confidence,
-detections and transforms without introducing normalized provider schemas.
-Finalization copies page metadata to the canonical section and observation metadata
-to its element, including nested content. Dictionary keys use ordinal comparison
-and opaque values remain borrowed. Structured extension values remain separate
-from Markdown. Source operations provide
-explicit native-result/original-response inspection without entering semantic
-projections. Original response artifacts are deduplicated across pages and owned
-once; borrowed native objects and artifacts owned by another document are not
-disposed on failure.
+`Microsoft.Extensions.DocumentExtraction` supplies the optional
+`DocumentExtractionClientBuilder`, dependency-injection registration and lifecycle
+logging. Delegation snapshots per-call options without mutating arguments or
+shared defaults. Logging records only invocation, completion, cancellation and
+failure; it does not serialize documents, source references, roles, options,
+exceptions, credentials or provider payloads. The returned document and original
+failure/cancellation are forwarded unchanged.
 
-`Microsoft.Extensions.DocumentExtraction` contains the optional
-`DocumentExtractionClientBuilder`, dependency-injection registration, delegation,
-and lifecycle logging middleware. Logging is intentionally limited to lifecycle,
-page-number, and observation-count fields; source content, metadata values,
-artifacts, credentials, and raw provider payloads are never serialized or
-logged.
-If enumeration and enumerator disposal both fail, logging middleware reports
-both failures in an `AggregateException`, with the original enumeration error
-or cancellation first.
+Documents works without Extraction. Extraction depends on Documents, not MEDI.
+MEDI and other consumers can accept the same shared document from any producer
+without requiring an Extraction client. Composition is optional: these libraries
+can be used independently and work together through the exchanged document.
 
-The packages do not include provider clients, provider SDKs, AI dependencies,
-MEDI/DataIngestion integration, source fetching, or package publication.
+Provider mappings preserve nullable/custom text roles and heading levels, images,
+table spans and cell roles, typed source geometry and blank-page registration.
+Exact supplied `Markdown` remains separate from `ToMarkdown()`, the projection of
+the current structure. Native source objects preserve specialized SDK information
+without adding generic element metadata, arbitrary artifact bags or normalized
+provider-specific schemas.
 
-The selected baseline is builder/DI/delegation/lifecycle logging, not the old
-options-configuration or OpenTelemetry middleware. Public APIs use experimental
-diagnostic `MEDE0001`; the shared Documents dependency uses `EXTEXP0019`.
-Production targets are net10.0, net9.0, net8.0, net462, and netstandard2.0.
+`CaptureRawContent` defaults to `false`, including absent options. Native SDK
+objects remain inspectable independently and are borrowed, never implicitly
+disposed. Disabling capture is not redaction: native objects may contain response
+data even without a separate original-content artifact. Adapters enforce the body
+policy on every source path and transfer available opted-in original body ownership
+to the successful document. Capture does not manufacture missing bytes by
+serializing mapped objects. Unsupported explicit settings must be rejected,
+separately from legitimately unavailable native/body output.
 
-Per-call `DocumentExtractionOptions` forwards model/adapter-specific overrides
-and `CaptureRawContent` (default `false`, also when options are absent) through
-delegation and lifecycle logging.
-Logging does not serialize options, source references, metadata or raw output. Providers must
-reject unsupported explicit settings and use fresh requests without mutating
-client defaults. Native SDK results and source-reference objects remain available
-independently of this setting and are borrowed, never implicitly disposed.
-Disabling capture is not redaction: retained native objects may themselves contain
-sensitive fields or response data even without a separate original-content artifact.
-Set capture to `true` to retain available original detached response content;
-finalization rejects retained body artifacts when capture is off, including nested
-source associations. Capture never manufactures unavailable response bytes by
-serializing mapped objects. Providers must distinguish unsupported explicit
-settings from legitimately unavailable native/body output. The generic seam does
-not define provider feature flags or restore configuration middleware.
+The packages do not include provider clients, provider SDK dependencies, AI
+dependencies, MEDI integration, source fetching or package publication.
+Production targets are net10.0, net9.0, net8.0, net462 and netstandard2.0.
+Public APIs use experimental diagnostic `MEDE0001`; Documents uses `EXTEXP0019`.
 
-PR #7588 temporarily includes the Documents prerequisite from PR #7835,
-including its layout-fidelity correction. After that prerequisite merges,
-reconcile with main while preserving this PR's history and incorporating any
-reviewed Documents API changes. Local development candidates are provisional,
-not API-approved or published packages, and do not establish provider acceptance
-or MEDI end-to-end compatibility.
+PR #7588 temporarily includes the Documents prerequisite from PR #7835.
+After that prerequisite merges, reconcile with main while preserving this PR's
+history and incorporating reviewed Documents changes. Local candidates are
+provisional, not API-approved or published packages. In-memory validation is not
+live-provider, full-application or MEDI end-to-end acceptance.
