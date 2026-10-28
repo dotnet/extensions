@@ -15,13 +15,13 @@
       ]
     },
     "microsoft.visualstudio.slngen.tool": {
-      "version": "12.0.53",
+      "version": "12.0.58",
       "commands": [
         "slngen"
       ]
     },
     "PowerShell": {
-      "version": "7.6.7",
+      "version": "7.6.9",
       "commands": [
         "pwsh"
       ]
