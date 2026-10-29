@@ -146,7 +146,7 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
         var budgetEvent = _events.Should().ContainSingle(e => e.Event.EventName == RetryBudgetStrategy.BudgetExhaustedEventName).Subject;
         budgetEvent.Event.Severity.Should().Be(ResilienceEventSeverity.Warning);
         budgetEvent.Source.StrategyName.Should().Be("my-retry");
-        budgetEvent.Arguments.Should().Be(new OnRetryBudgetExhaustedArguments(1));
+        budgetEvent.Arguments.Should().BeOfType<OnRetryBudgetExhaustedArguments>().Which.AttemptNumber.Should().Be(1);
         budgetEvent.Outcome!.Value.Result.Should().BeOfType<HttpResponseMessage>();
     }
 

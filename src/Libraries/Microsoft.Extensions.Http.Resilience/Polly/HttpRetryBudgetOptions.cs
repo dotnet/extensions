@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// of retries in the window is below <see cref="RetryRatio"/> multiplied by the number of requests, rounded down.
 /// At least one retry per window is always allowed, unless <see cref="RetryRatio"/> is 0, which suppresses every retry.
 /// When the budget is exhausted, the outcome that would have been retried is returned to the caller instead and the
-/// <c>OnRetryBudgetExhausted</c> resilience event is reported.
+/// <c>OnRetryBudgetExhausted</c> resilience event is reported with <see cref="OnRetryBudgetExhaustedArguments"/>.
 /// <para>
 /// The budget prevents retry storms: when a dependency is degraded, retries can multiply the load on it by up to
 /// <c>MaxRetryAttempts + 1</c>. A budget caps that amplification to roughly <c>1 + RetryRatio</c>.

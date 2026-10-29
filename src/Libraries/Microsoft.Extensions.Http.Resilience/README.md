@@ -89,6 +89,8 @@ clientBuilder.AddResilienceHandler("myHandler", b =>
 
 Each retry that the budget denies is logged as a warning and counted by the `resilience.polly.strategy.events` metric (meter `Polly`) with the `event.name` tag set to `OnRetryBudgetExhausted`. The `pipeline.name`, `strategy.name` and `error.type` tags identify the client and the failure that wasn't retried, so you can alert when retries are being shed.
 
+Telemetry listeners can inspect the event's immutable `OnRetryBudgetExhaustedArguments` to get the zero-based `AttemptNumber` whose retry was denied.
+
 ### Custom Resilience
 
 For more granular control a custom pipeline can be constructed.
