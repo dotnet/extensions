@@ -504,21 +504,20 @@ public class StampedeTests : IClassFixture<TestEventListener>
         // regression: a miss with DisableUnderlyingData used to complete every joined caller with one shared item
         // that held a single reservation, so each extra caller over-released it
         using var scope = GetDefaultCache(out var cache);
-        var key = $"{nameof(JoinedCallersWithoutUnderlyingDataBalanceReservationsAsync)}_{typeof(T).Name}_{callerCount}";
         const HybridCacheEntryFlags Flags = HybridCacheEntryFlags.DisableDistributedCache | HybridCacheEntryFlags.DisableLocalCache
             | HybridCacheEntryFlags.DisableUnderlyingData;
 
-        Assert.True(cache.GetOrCreateStampedeState<int, T>(key, Flags, out var stampede, canBeCanceled: true, tags: null));
+        Assert.True(cache.GetOrCreateStampedeState<int, T>(Me(), Flags, out var stampede, canBeCanceled: true, tags: null));
         for (int i = 1; i < callerCount; i++)
         {
-            Assert.False(cache.GetOrCreateStampedeState<int, T>(key, Flags, out var joined, canBeCanceled: true, tags: null));
+            Assert.False(cache.GetOrCreateStampedeState<int, T>(Me(), Flags, out var joined, canBeCanceled: true, tags: null));
             Assert.Same(stampede, joined);
         }
 
-        Assert.Equal(callerCount, cache.DebugGetCallerCount(key, Flags));
+        Assert.Equal(callerCount, cache.DebugGetCallerCount(Me(), Flags));
 
         await stampede.ExecuteDirectAsync(0, static (_, _) => throw new InvalidOperationException("Underlying data should not be invoked"), options: null);
-        Assert.Equal(0, cache.DebugGetCallerCount(key, Flags)); // no longer an active operation
+        Assert.Equal(0, cache.DebugGetCallerCount(Me(), Flags)); // no longer an active operation
 
         // every caller must receive an item that holds a reservation for it
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
