@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -77,11 +78,12 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     /// <remarks>
     /// The budget is applied by the standard resilience handler and by
     /// <see cref="HttpRetryResiliencePipelineBuilderExtensions.AddRetryWithBudget(ResiliencePipelineBuilder{HttpResponseMessage}, HttpRetryStrategyOptions)"/>.
-    /// It's ignored by
-    /// <see cref="RetryResiliencePipelineBuilderExtensions.AddRetry{TResult}(ResiliencePipelineBuilder{TResult}, RetryStrategyOptions{TResult})"/>.
+    /// <see cref="RetryResiliencePipelineBuilderExtensions.AddRetry{TResult}(ResiliencePipelineBuilder{TResult}, RetryStrategyOptions{TResult})"/>
+    /// can't apply the budget, so it throws a <see cref="ValidationException"/> when the budget is set, instead of ignoring it.
     /// See <see cref="HttpRetryBudgetOptions"/> for more details.
     /// </remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
     [ValidateObjectMembers]
+    [RetryBudgetApplied]
     public HttpRetryBudgetOptions? RetryBudget { get; set; }
 }

@@ -23,7 +23,8 @@ public static class HttpRetryResiliencePipelineBuilderExtensions
     /// <summary>
     /// Adds a retry strategy limited by a retry budget to the builder. Use this method instead of
     /// <see cref="RetryResiliencePipelineBuilderExtensions.AddRetry{TResult}(ResiliencePipelineBuilder{TResult}, RetryStrategyOptions{TResult})"/>
-    /// in custom pipelines, because <c>AddRetry</c> ignores <see cref="HttpRetryStrategyOptions.RetryBudget"/>.
+    /// in custom pipelines, because <c>AddRetry</c> can't apply <see cref="HttpRetryStrategyOptions.RetryBudget"/> and rejects
+    /// options that set it.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="options">The retry strategy options.</param>
@@ -102,6 +103,8 @@ public static class HttpRetryResiliencePipelineBuilderExtensions
             context => new RetryBudgetStrategy(new RetryBudget(retryRatio, samplingDuration, minimumThroughput, context.TimeProvider), context.Telemetry),
             new RetryBudgetStrategyOptions { Name = options.Name });
 
-        return RetryResiliencePipelineBuilderExtensions.AddRetry(builder, CreateBudgetedCopy(options, budgetOptions));
+        var budgetedOptions = CreateBudgetedCopy(options, budgetOptions);
+
+        return RetryBudgetValidationScope.ValidateWithBudgetApplied(() => RetryResiliencePipelineBuilderExtensions.AddRetry(builder, budgetedOptions));
     }
 }

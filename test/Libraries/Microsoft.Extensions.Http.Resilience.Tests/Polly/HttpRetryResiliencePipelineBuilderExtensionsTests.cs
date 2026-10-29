@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Polly;
 using Polly.Retry;
@@ -100,6 +101,36 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
         var exception = Assert.Throws<ValidationException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(options));
 
         exception.Message.Should().Contain("ShouldHandle");
+    }
+
+    [Theory]
+    [InlineData("property")]
+    [InlineData("extension")]
+    [InlineData("configuration")]
+    public void AddRetry_WithBudget_ThrowsInsteadOfIgnoringIt(string source)
+    {
+        var options = new HttpRetryStrategyOptions();
+
+        switch (source)
+        {
+            case "property":
+                options.RetryBudget = new();
+                break;
+            case "extension":
+                options.UseBudgetedRetries();
+                break;
+            default:
+                new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string?> { ["RetryBudget:RetryRatio"] = "0.2" })
+                    .Build()
+                    .Bind(options);
+                break;
+        }
+
+        _ = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(options);
+        var exception = Assert.Throws<ValidationException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetry(options));
+
+        exception.Message.Should().Contain("AddRetryWithBudget");
     }
 
     [Fact]

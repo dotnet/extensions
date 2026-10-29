@@ -84,7 +84,7 @@ clientBuilder.AddStandardResilienceHandler().Configure(o =>
 });
 ```
 
-In a custom pipeline, use `AddRetryWithBudget` to add retries with the budget, without circuit breakers, timeouts or rate limiting. Polly's `AddRetry` ignores `HttpRetryStrategyOptions.RetryBudget`, so it doesn't apply the budget. When `RetryBudget` isn't set, `AddRetryWithBudget` uses the default budget:
+In a custom pipeline, use `AddRetryWithBudget` to add retries with the budget, without circuit breakers, timeouts or rate limiting. Polly's `AddRetry` can't apply the budget, so it throws a `ValidationException` when `HttpRetryStrategyOptions.RetryBudget` is set, whether directly, through `UseBudgetedRetries`, or from configuration. When `RetryBudget` isn't set, `AddRetryWithBudget` uses the default budget:
 
 ```csharp
 clientBuilder.AddResilienceHandler("retry", b =>

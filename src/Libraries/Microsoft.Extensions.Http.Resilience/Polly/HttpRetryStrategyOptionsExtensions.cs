@@ -31,7 +31,8 @@ public static class HttpRetryStrategyOptionsExtensions
     /// with default values, overwriting any existing budget. Other retry options are not changed.
     /// Values set after calling this method take precedence. Use
     /// <see cref="HttpRetryResiliencePipelineBuilderExtensions.AddRetryWithBudget(ResiliencePipelineBuilder{HttpResponseMessage}, HttpRetryStrategyOptions)"/>
-    /// to apply the retry budget in custom pipelines.
+    /// to apply the retry budget in custom pipelines. Polly's <c>AddRetry</c> can't apply it and throws a
+    /// <see cref="System.ComponentModel.DataAnnotations.ValidationException"/> instead.
     /// </remarks>
     public static void UseBudgetedRetries(this HttpRetryStrategyOptions options)
     {
