@@ -19,7 +19,6 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static partial class ResilienceHttpClientBuilderExtensions
 {
     private const string StandardIdentifier = "standard";
-    private const int BudgetedMaxRetryAttempts = 2;
 
     /// <summary>
     /// Adds a standard resilience handler that uses multiple resilience strategies with default options to send the requests and handle any transient errors.
@@ -119,16 +118,10 @@ public static partial class ResilienceHttpClientBuilderExtensions
 
         if (retryPreset == HttpRetryPreset.Budgeted)
         {
-            _ = pipelineBuilder.Configure(ApplyBudgetedRetryPreset);
+            _ = pipelineBuilder.Configure(static options => HttpRetryResiliencePipelineBuilderExtensions.ApplyBudgetedPreset(options.Retry));
         }
 
         return pipelineBuilder;
-    }
-
-    private static void ApplyBudgetedRetryPreset(HttpStandardResilienceOptions options)
-    {
-        options.Retry.MaxRetryAttempts = BudgetedMaxRetryAttempts;
-        options.Retry.RetryBudget = new HttpRetryBudgetOptions();
     }
 
     private sealed record HttpStandardResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpStandardResiliencePipelineBuilder;

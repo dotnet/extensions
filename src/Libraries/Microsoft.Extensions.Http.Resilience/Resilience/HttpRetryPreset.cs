@@ -7,13 +7,13 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Selects the retry defaults applied by the standard resilience handler.
+/// Selects the retry defaults applied by HTTP retry strategies and the standard resilience handler.
 /// </summary>
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
 public enum HttpRetryPreset
 {
     /// <summary>
-    /// The default retry behavior of <see cref="HttpStandardResilienceOptions.Retry"/>, without any changes.
+    /// The default behavior of <see cref="HttpRetryStrategyOptions"/>, without any changes.
     /// </summary>
     Standard = 0,
 

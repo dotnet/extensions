@@ -68,7 +68,16 @@ clientBuilder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted).Configure(o
 });
 ```
 
-The budget can also be enabled on its own, either in the standard pipeline through `o.Retry.RetryBudget = new HttpRetryBudgetOptions()` or in a custom pipeline through `AddHttpRetry`:
+The same retry preset can be used in a custom pipeline without adding circuit breakers, timeouts or rate limiting:
+
+```csharp
+clientBuilder.AddResilienceHandler("retry", b =>
+{
+    b.AddHttpRetry(HttpRetryPreset.Budgeted);
+});
+```
+
+The budget can also be enabled on its own, either in the standard pipeline through `o.Retry.RetryBudget = new HttpRetryBudgetOptions()` or with explicit options in a custom pipeline through `AddHttpRetry`:
 
 ```csharp
 clientBuilder.AddResilienceHandler("myHandler", b =>

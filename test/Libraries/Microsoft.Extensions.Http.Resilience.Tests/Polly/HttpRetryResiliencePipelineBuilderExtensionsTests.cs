@@ -29,6 +29,38 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
     {
         Assert.Throws<ArgumentNullException>(() => HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(null!, new HttpRetryStrategyOptions()));
         Assert.Throws<ArgumentNullException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(null!));
+        Assert.Throws<ArgumentNullException>(() => HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(null!, HttpRetryPreset.Budgeted));
+    }
+
+    [Fact]
+    public void AddHttpRetry_UndefinedPreset_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry((HttpRetryPreset)42));
+    }
+
+    [Theory]
+    [InlineData(HttpRetryPreset.Standard, 1, 3)]
+    [InlineData(HttpRetryPreset.Budgeted, 2, 2)]
+    public void AddHttpRetry_Preset_AddsExpectedStrategies(HttpRetryPreset retryPreset, int strategyCount, int maxRetryAttempts)
+    {
+        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(retryPreset).Build().GetPipelineDescriptor();
+
+        descriptor.Strategies.Should().HaveCount(strategyCount);
+        var options = descriptor.Strategies.Last().Options.Should().BeOfType<HttpRetryStrategyOptions>().Which;
+        options.MaxRetryAttempts.Should().Be(maxRetryAttempts);
+        options.ShouldRetryAfterHeader.Should().BeTrue();
+        options.BackoffType.Should().Be(DelayBackoffType.Exponential);
+        options.UseJitter.Should().BeTrue();
+
+        if (retryPreset == HttpRetryPreset.Budgeted)
+        {
+            descriptor.Strategies[0].Options.Should().BeOfType<RetryBudgetStrategyOptions>();
+            options.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
+        }
+        else
+        {
+            options.RetryBudget.Should().BeNull();
+        }
     }
 
     [Fact]
