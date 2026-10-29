@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
@@ -19,34 +18,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class HttpRetryResiliencePipelineBuilderExtensions
 {
-    private const int BudgetedMaxRetryAttempts = 2;
     private static readonly HttpRetryBudgetOptionsValidator _budgetValidator = new();
-
-    /// <summary>
-    /// Adds an HTTP retry strategy with the selected retry preset, including the retry budget if enabled by the preset.
-    /// </summary>
-    /// <param name="builder">The builder instance.</param>
-    /// <param name="retryPreset">The retry preset to apply.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <remarks>
-    /// This method only adds retry handling and, when enabled, its retry budget.
-    /// It doesn't add circuit breakers, timeouts, or rate limiters.
-    /// Use the overload accepting <see cref="HttpRetryStrategyOptions"/> to customize the retry options.
-    /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="retryPreset"/> isn't a defined <see cref="HttpRetryPreset"/> value.</exception>
-    public static ResiliencePipelineBuilder<HttpResponseMessage> AddHttpRetry(this ResiliencePipelineBuilder<HttpResponseMessage> builder, HttpRetryPreset retryPreset)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfOutOfRange(retryPreset);
-
-        var options = new HttpRetryStrategyOptions();
-        if (retryPreset == HttpRetryPreset.Budgeted)
-        {
-            ApplyBudgetedPreset(options);
-        }
-
-        return builder.AddHttpRetry(options);
-    }
 
     /// <summary>
     /// Adds a retry strategy configured by <see cref="HttpRetryStrategyOptions"/> to the builder, including the retry budget if one is configured.
@@ -97,12 +69,6 @@ public static class HttpRetryResiliencePipelineBuilderExtensions
             new RetryBudgetStrategyOptions { Name = options.Name });
 
         return RetryResiliencePipelineBuilderExtensions.AddRetry(builder, CreateBudgetedCopy(options));
-    }
-
-    internal static void ApplyBudgetedPreset(HttpRetryStrategyOptions options)
-    {
-        options.MaxRetryAttempts = BudgetedMaxRetryAttempts;
-        options.RetryBudget = new HttpRetryBudgetOptions();
     }
 
     // The options instance can be shared by multiple pipelines (for example, with SelectPipelineByAuthority),

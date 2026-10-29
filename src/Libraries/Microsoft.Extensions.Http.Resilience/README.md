@@ -57,27 +57,31 @@ clientBuilder.AddStandardHedgingHandler().Configure(o =>
 
 A retry budget limits retries to a ratio of the requests sent over a sliding window. When a dependency is degraded, retries can multiply the load on it by up to `MaxRetryAttempts + 1`; a budget caps that amplification to roughly `1 + RetryRatio`. When the budget is exhausted, the failed outcome is returned without a retry and the `OnRetryBudgetExhausted` resilience event is reported.
 
-The `Budgeted` retry preset of the standard resilience pipeline enables the budget and lowers `MaxRetryAttempts` to 2. Circuit-breaker, timeout and rate-limiter defaults are unchanged. Options configured afterwards take precedence over the preset.
+`UseBudgetedRetries()` enables the budget with its default values and lowers `MaxRetryAttempts` to 2. It only changes retry options and composes with other retry extensions, such as `DisableForUnsafeHttpMethods()`. Values set afterwards take precedence.
 
 ```csharp
 var clientBuilder = services.AddHttpClient("MyClient");
 
-clientBuilder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted).Configure(o =>
+clientBuilder.AddStandardResilienceHandler().Configure(o =>
 {
+    o.Retry.UseBudgetedRetries();
     o.Retry.RetryBudget!.RetryRatio = 0.2;
 });
 ```
 
-The same retry preset can be used in a custom pipeline without adding circuit breakers, timeouts or rate limiting:
+In a custom pipeline, use `AddHttpRetry` to add retries with the budget, without circuit breakers, timeouts or rate limiting:
 
 ```csharp
+var retryOptions = new HttpRetryStrategyOptions();
+retryOptions.UseBudgetedRetries();
+
 clientBuilder.AddResilienceHandler("retry", b =>
 {
-    b.AddHttpRetry(HttpRetryPreset.Budgeted);
+    b.AddHttpRetry(retryOptions);
 });
 ```
 
-The budget can also be enabled on its own, either in the standard pipeline through `o.Retry.RetryBudget = new HttpRetryBudgetOptions()` or with explicit options in a custom pipeline through `AddHttpRetry`:
+The budget can also be enabled on its own by setting `RetryBudget`:
 
 ```csharp
 clientBuilder.AddResilienceHandler("myHandler", b =>

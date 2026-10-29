@@ -150,35 +150,9 @@
       ]
     },
     {
-      "Type": "enum Microsoft.Extensions.Http.Resilience.HttpRetryPreset",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpRetryPreset.HttpRetryPreset();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const Microsoft.Extensions.Http.Resilience.HttpRetryPreset Microsoft.Extensions.Http.Resilience.HttpRetryPreset.Budgeted",
-          "Stage": "Experimental",
-          "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Http.Resilience.HttpRetryPreset Microsoft.Extensions.Http.Resilience.HttpRetryPreset.Standard",
-          "Stage": "Experimental",
-          "Value": "0"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Http.Resilience.HttpRetryResiliencePipelineBuilderExtensions",
       "Stage": "Experimental",
       "Methods": [
-        {
-          "Member": "static Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(this Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> builder, Microsoft.Extensions.Http.Resilience.HttpRetryPreset retryPreset);",
-          "Stage": "Experimental"
-        },
         {
           "Member": "static Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(this Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> builder, Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions options);",
           "Stage": "Experimental"
@@ -215,6 +189,10 @@
         },
         {
           "Member": "static void Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptionsExtensions.DisableForUnsafeHttpMethods(this Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptionsExtensions.UseBudgetedRetries(this Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions options);",
           "Stage": "Experimental"
         }
       ]
@@ -492,10 +470,6 @@
         {
           "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.DependencyInjection.ResilienceHttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
           "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.DependencyInjection.ResilienceHttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Http.Resilience.HttpRetryPreset retryPreset);",
-          "Stage": "Experimental"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.ResilienceHttpClientBuilderExtensions.RemoveAllResilienceHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",

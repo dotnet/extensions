@@ -21,38 +21,10 @@ namespace Microsoft.Extensions.Http.Resilience.Test;
 public sealed partial class HttpClientBuilderExtensionsTests
 {
     [Fact]
-    public void AddStandardResilienceHandler_RetryPreset_NullBuilder_Throws()
-    {
-        Assert.Throws<ArgumentNullException>(() => ((IHttpClientBuilder)null!).AddStandardResilienceHandler(HttpRetryPreset.Budgeted));
-    }
-
-    [Fact]
-    public void AddStandardResilienceHandler_RetryPreset_UndefinedValue_Throws()
-    {
-        var builder = new ServiceCollection().AddHttpClient("test");
-
-        Assert.Throws<ArgumentOutOfRangeException>(() => builder.AddStandardResilienceHandler((HttpRetryPreset)42));
-    }
-
-    [Fact]
-    public void AddStandardResilienceHandler_StandardRetryPreset_SameAsDefaultOverload()
+    public void AddStandardResilienceHandler_BudgetedRetries_OnlyChangesRetryOptions()
     {
         var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
-        builder.AddStandardResilienceHandler(HttpRetryPreset.Standard);
-
-        var options = GetStandardOptions(builder.Services);
-        options.Retry.MaxRetryAttempts.Should().Be(3);
-        options.Retry.RetryBudget.Should().BeNull();
-        options.CircuitBreaker.FailureRatio.Should().Be(0.1);
-
-        GetPipeline(builder.Services, "test-standard").GetPipelineDescriptor().Strategies.Should().HaveCount(5);
-    }
-
-    [Fact]
-    public void AddStandardResilienceHandler_BudgetedRetryPreset_OnlyChangesRetryDefaults()
-    {
-        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
-        builder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted);
+        builder.AddStandardResilienceHandler(o => o.Retry.UseBudgetedRetries());
 
         var options = GetStandardOptions(builder.Services);
         options.Retry.MaxRetryAttempts.Should().Be(2);
@@ -74,11 +46,12 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddStandardResilienceHandler_BudgetedRetryPreset_LaterConfigurationTakesPrecedence()
+    public void AddStandardResilienceHandler_BudgetedRetries_LaterConfigurationTakesPrecedence()
     {
         var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
-        builder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted).Configure(o =>
+        builder.AddStandardResilienceHandler(o =>
         {
+            o.Retry.UseBudgetedRetries();
             o.Retry.MaxRetryAttempts = 5;
             o.Retry.RetryBudget!.RetryRatio = 0.2;
         });
@@ -89,16 +62,16 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddStandardResilienceHandler_BudgetedRetryPreset_BudgetCanBeDisabled()
+    public void AddStandardResilienceHandler_BudgetedRetries_BudgetCanBeDisabled()
     {
         var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
-        builder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted).Configure(o => o.Retry.RetryBudget = null);
+        builder.AddStandardResilienceHandler(o => o.Retry.UseBudgetedRetries()).Configure(o => o.Retry.RetryBudget = null);
 
         GetPipeline(builder.Services, "test-standard").GetPipelineDescriptor().Strategies.Should().HaveCount(5);
     }
 
     [Fact]
-    public void AddStandardResilienceHandler_BudgetedRetryPreset_ConfigurationOverridesBudget()
+    public void AddStandardResilienceHandler_BudgetedRetries_ConfigurationOverridesBudget()
     {
         var section = ConfigurationStubFactory.Create(
             new Dictionary<string, string?>
@@ -108,7 +81,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             }).GetSection("standard");
 
         var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
-        builder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted).Configure(section);
+        builder.AddStandardResilienceHandler(o => o.Retry.UseBudgetedRetries()).Configure(section);
 
         var budget = GetStandardOptions(builder.Services).Retry.RetryBudget!;
         budget.RetryRatio.Should().Be(0.25);
@@ -161,7 +134,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             },
             out var reloadAction).GetSection("standard");
 
-        _builder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted).Configure(config).Configure(options =>
+        _builder.AddStandardResilienceHandler(o => o.Retry.UseBudgetedRetries()).Configure(config).Configure(options =>
         {
             options.Retry.Delay = TimeSpan.Zero;
             options.CircuitBreaker.MinimumThroughput = 1000;
@@ -216,9 +189,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var client = new ServiceCollection()
             .AddHttpClient(ClientName)
             .ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError))
-            .AddStandardResilienceHandler(HttpRetryPreset.Budgeted)
+            .AddStandardResilienceHandler()
             .Configure(options =>
             {
+                options.Retry.UseBudgetedRetries();
                 options.Retry.Delay = TimeSpan.Zero;
                 options.Retry.RetryBudget!.RetryRatio = 0.5;
                 options.Retry.RetryBudget.MinimumThroughput = 1;

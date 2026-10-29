@@ -29,38 +29,19 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
     {
         Assert.Throws<ArgumentNullException>(() => HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(null!, new HttpRetryStrategyOptions()));
         Assert.Throws<ArgumentNullException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(null!));
-        Assert.Throws<ArgumentNullException>(() => HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(null!, HttpRetryPreset.Budgeted));
     }
 
     [Fact]
-    public void AddHttpRetry_UndefinedPreset_Throws()
+    public void AddHttpRetry_BudgetedRetries_AddsBudgetAndRetry()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry((HttpRetryPreset)42));
-    }
+        var options = new HttpRetryStrategyOptions();
+        options.UseBudgetedRetries();
 
-    [Theory]
-    [InlineData(HttpRetryPreset.Standard, 1, 3)]
-    [InlineData(HttpRetryPreset.Budgeted, 2, 2)]
-    public void AddHttpRetry_Preset_AddsExpectedStrategies(HttpRetryPreset retryPreset, int strategyCount, int maxRetryAttempts)
-    {
-        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(retryPreset).Build().GetPipelineDescriptor();
+        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(options).Build().GetPipelineDescriptor();
 
-        descriptor.Strategies.Should().HaveCount(strategyCount);
-        var options = descriptor.Strategies.Last().Options.Should().BeOfType<HttpRetryStrategyOptions>().Which;
-        options.MaxRetryAttempts.Should().Be(maxRetryAttempts);
-        options.ShouldRetryAfterHeader.Should().BeTrue();
-        options.BackoffType.Should().Be(DelayBackoffType.Exponential);
-        options.UseJitter.Should().BeTrue();
-
-        if (retryPreset == HttpRetryPreset.Budgeted)
-        {
-            descriptor.Strategies[0].Options.Should().BeOfType<RetryBudgetStrategyOptions>();
-            options.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
-        }
-        else
-        {
-            options.RetryBudget.Should().BeNull();
-        }
+        descriptor.Strategies.Should().HaveCount(2);
+        descriptor.Strategies[0].Options.Should().BeOfType<RetryBudgetStrategyOptions>();
+        descriptor.Strategies[1].Options.Should().BeOfType<HttpRetryStrategyOptions>().Which.MaxRetryAttempts.Should().Be(2);
     }
 
     [Fact]

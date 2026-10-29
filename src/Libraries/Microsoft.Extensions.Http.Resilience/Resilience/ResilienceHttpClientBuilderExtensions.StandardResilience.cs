@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +9,6 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -93,35 +91,6 @@ public static partial class ResilienceHttpClientBuilderExtensions
         _ = builder.ConfigureHttpClient(client => client.Timeout = Timeout.InfiniteTimeSpan);
 
         return new HttpStandardResiliencePipelineBuilder(optionsName, builder.Services);
-    }
-
-    /// <summary>
-    /// Adds a standard resilience handler that uses multiple resilience strategies with the selected retry preset to send the requests and handle any transient errors.
-    /// </summary>
-    /// <param name="builder">The builder instance.</param>
-    /// <param name="retryPreset">The retry preset to apply.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <remarks>
-    /// The retry defaults are applied before any other configuration, so options configured later through
-    /// <c>Configure</c> or bound from configuration take precedence.
-    /// Other resilience strategies retain their existing defaults.
-    /// See <see cref="HttpRetryPreset"/> for the values of each retry preset.
-    /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="retryPreset"/> isn't a defined <see cref="HttpRetryPreset"/> value.</exception>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
-    public static IHttpStandardResiliencePipelineBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder, HttpRetryPreset retryPreset)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfOutOfRange(retryPreset);
-
-        var pipelineBuilder = builder.AddStandardResilienceHandler();
-
-        if (retryPreset == HttpRetryPreset.Budgeted)
-        {
-            _ = pipelineBuilder.Configure(static options => HttpRetryResiliencePipelineBuilderExtensions.ApplyBudgetedPreset(options.Retry));
-        }
-
-        return pipelineBuilder;
     }
 
     private sealed record HttpStandardResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpStandardResiliencePipelineBuilder;

@@ -17,10 +17,34 @@ namespace Microsoft.Extensions.Http.Resilience;
 [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class HttpRetryStrategyOptionsExtensions
 {
+    private const int BudgetedMaxRetryAttempts = 2;
+
 #if !NET8_0_OR_GREATER
     private static readonly HttpMethod _connect = new("CONNECT");
     private static readonly HttpMethod _patch = new("PATCH");
 #endif
+
+    /// <summary>
+    /// Configures retries to reduce the extra load that they put on a degraded dependency.
+    /// </summary>
+    /// <param name="options">The retry strategy options.</param>
+    /// <remarks>
+    /// This method overwrites the following options:
+    /// <list type="bullet">
+    /// <item><description><see cref="RetryStrategyOptions{TResult}.MaxRetryAttempts"/> is set to 2.</description></item>
+    /// <item><description><see cref="HttpRetryStrategyOptions.RetryBudget"/> is set to a new <see cref="HttpRetryBudgetOptions"/> instance with default values.</description></item>
+    /// </list>
+    /// Values set after calling this method take precedence. Use
+    /// <see cref="HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(ResiliencePipelineBuilder{HttpResponseMessage}, HttpRetryStrategyOptions)"/>
+    /// to apply the retry budget in custom pipelines.
+    /// </remarks>
+    public static void UseBudgetedRetries(this HttpRetryStrategyOptions options)
+    {
+        _ = Throw.IfNull(options);
+
+        options.MaxRetryAttempts = BudgetedMaxRetryAttempts;
+        options.RetryBudget = new HttpRetryBudgetOptions();
+    }
 
     /// <summary>
     /// Disables retry attempts for POST, PATCH, PUT, DELETE, and CONNECT HTTP methods.
