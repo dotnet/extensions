@@ -190,6 +190,43 @@ public class RetryBudgetTests
     }
 
     [Fact]
+    public void Increment_DelayedWriter_DoesNotResetNewerEpoch()
+    {
+        var budget = CreateBudget(retryRatio: 0.1, minimumThroughput: 10);
+
+        // A writer reads epoch 0, then pauses for a full window while other writers reuse the bucket for epoch 10.
+        _timeProvider.Advance(_window);
+        RecordRequests(budget, 100);
+        CountAllowedRetries(budget, 20).Should().Be(10);
+
+        budget.Increment(0, RetryBudget.RequestsOffset);
+        budget.Increment(0, RetryBudget.RetriesOffset);
+
+        // The exhausted budget stays exhausted, and the delayed samples count toward the newer epoch.
+        budget.TryAcquireRetry().Should().BeFalse();
+        var counters = (long[])typeof(RetryBudget).GetField("_counters", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(budget)!;
+        counters[RetryBudget.RequestsOffset].Should().Be((10L << 32) | 101);
+        counters[RetryBudget.RetriesOffset].Should().Be((10L << 32) | 11);
+    }
+
+    [Fact]
+    public void Increment_DelayedWriter_DoesNotResetNewerEpochAcrossWrapAround()
+    {
+        var window = TimeSpan.FromSeconds(1);
+        var bucket = TimeSpan.FromTicks(window.Ticks / RetryBudget.BucketCount);
+        var budget = new RetryBudget(0.1, window, 10, _timeProvider);
+
+        // The delayed writer read epoch uint.MaxValue - 1 (bucket 4); the bucket was then reused for epoch 14 after the wrap.
+        _timeProvider.Advance(TimeSpan.FromTicks(bucket.Ticks * (((long)uint.MaxValue) + 15)));
+        RecordRequests(budget, 100);
+        CountAllowedRetries(budget, 20).Should().Be(10);
+
+        budget.Increment(uint.MaxValue - 1, RetryBudget.RequestsOffset);
+
+        budget.TryAcquireRetry().Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ConcurrentRecordRequest_DoesNotLoseUpdates()
     {
         const int Threads = 8;

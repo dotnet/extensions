@@ -14,7 +14,8 @@ namespace Microsoft.Extensions.Http.Resilience.Internal;
 /// stored next to each other so that a decision reads them in a single pass. Each counter packs its epoch (upper 32 bits)
 /// and its count (lower 32 bits) into a single <see cref="long"/>. While the epoch is current, the counter is updated with
 /// a single atomic increment; a compare-and-swap is only needed to reset a counter for a new epoch.
-/// A counter whose epoch is older than the window is lazily reset on the next write and ignored on reads.
+/// A counter whose epoch is older than the window is lazily reset on the next write and ignored on reads. A delayed writer
+/// never resets a counter that was already reused for a newer epoch; its increment lands in that newer epoch instead.
 /// The check and the increment in <see cref="TryAcquireRetry"/> are not atomic, so concurrent retry decisions
 /// can slightly overshoot the configured ratio. This is acceptable for a load-shedding heuristic.
 /// </remarks>
@@ -28,8 +29,8 @@ internal sealed class RetryBudget
     // Below this count, a plain atomic increment can't carry into the epoch bits, even with many concurrent writers.
     private const long FastPathCountLimit = CountMask >> 1;
 
-    private const int RequestsOffset = 0;
-    private const int RetriesOffset = 1;
+    internal const int RequestsOffset = 0;
+    internal const int RetriesOffset = 1;
     private const int CountersPerBucket = 2;
 
     private readonly long[] _counters = new long[BucketCount * CountersPerBucket];
@@ -80,16 +81,24 @@ internal sealed class RetryBudget
     // Unsigned subtraction handles epoch wrap-around; future epochs (from a racing writer) wrap to large values and are skipped.
     private static long GetLiveCount(long value, uint epoch) => unchecked(epoch - GetEpoch(value)) < BucketCount ? GetCount(value) : 0;
 
-    private void Increment(uint epoch, int offset)
+    internal void Increment(uint epoch, int offset)
     {
         ref long counter = ref _counters[((int)(epoch % BucketCount) * CountersPerBucket) + offset];
 
         while (true)
         {
             var current = Volatile.Read(ref counter);
+            var currentEpoch = GetEpoch(current);
             long count = 1;
 
-            if (GetEpoch(current) == epoch)
+            if (currentEpoch != epoch && IsNewer(currentEpoch, epoch))
+            {
+                // This writer was delayed long enough for another writer to reuse the bucket for a newer epoch.
+                // Resetting it would discard that newer data, so the increment lands in the newer epoch instead.
+                epoch = currentEpoch;
+            }
+
+            if (currentEpoch == epoch)
             {
                 count = GetCount(current);
 
@@ -117,6 +126,14 @@ internal sealed class RetryBudget
                 return;
             }
         }
+    }
+
+    // Distances are measured back from the current epoch with unsigned subtraction, so this handles wrap-around and
+    // treats a counter that was never written (epoch 0) as older, however much time has passed.
+    private bool IsNewer(uint epoch, uint than)
+    {
+        var now = GetCurrentEpoch();
+        return unchecked(now - epoch) < unchecked(now - than);
     }
 
     private void Sum(uint epoch, out long requests, out long retries)

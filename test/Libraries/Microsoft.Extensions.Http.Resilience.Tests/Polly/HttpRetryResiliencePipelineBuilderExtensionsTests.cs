@@ -93,6 +93,16 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
     }
 
     [Fact]
+    public void AddRetryWithBudget_NullShouldHandle_ThrowsAtRegistration()
+    {
+        var options = new HttpRetryStrategyOptions { ShouldHandle = null! };
+
+        var exception = Assert.Throws<ValidationException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(options));
+
+        exception.Message.Should().Contain("ShouldHandle");
+    }
+
+    [Fact]
     public void CreateBudgetedCopy_CopiesAllProperties()
     {
         Func<OnRetryArguments<HttpResponseMessage>, ValueTask> onRetry = _ => default;

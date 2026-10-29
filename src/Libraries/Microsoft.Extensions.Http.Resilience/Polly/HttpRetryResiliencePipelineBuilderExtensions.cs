@@ -71,7 +71,9 @@ public static class HttpRetryResiliencePipelineBuilderExtensions
             OnRetry = options.OnRetry,
             Randomizer = options.Randomizer,
             RetryBudget = budgetOptions,
-            ShouldHandle = RetryBudgetStrategy.WrapShouldHandle(options.ShouldHandle, options.MaxRetryAttempts),
+
+            // A null predicate is kept as null so that Polly's options validation rejects it at registration.
+            ShouldHandle = options.ShouldHandle is null ? null! : RetryBudgetStrategy.WrapShouldHandle(options.ShouldHandle, options.MaxRetryAttempts),
         };
     }
 
