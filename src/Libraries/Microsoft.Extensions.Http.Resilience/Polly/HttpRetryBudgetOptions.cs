@@ -33,8 +33,8 @@ namespace Microsoft.Extensions.Http.Resilience;
 public class HttpRetryBudgetOptions
 {
     private const double DefaultRetryRatio = 0.1;
-    private const int DefaultMinimumThroughput = 100;
-    private static readonly TimeSpan _defaultSamplingDuration = TimeSpan.FromSeconds(30);
+    private const int DefaultMinimumThroughput = 10;
+    private static readonly TimeSpan _defaultSamplingDuration = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// Gets or sets the maximum ratio of retries to requests within the sampling window.
@@ -50,7 +50,7 @@ public class HttpRetryBudgetOptions
     /// Gets or sets the duration of the sliding window used to track requests and retries.
     /// </summary>
     /// <value>
-    /// The default value is 30 seconds. The value must be between 1 second and 1 day.
+    /// The default value is 10 seconds. The value must be between 1 second and 1 day.
     /// </value>
     [TimeSpan("00:00:01", "1.00:00:00")]
     public TimeSpan SamplingDuration { get; set; } = _defaultSamplingDuration;
@@ -59,7 +59,7 @@ public class HttpRetryBudgetOptions
     /// Gets or sets the minimum number of requests within the sampling window before the budget is enforced.
     /// </summary>
     /// <value>
-    /// The default value is 100. The value must be 1 or greater.
+    /// The default value is 10. The value must be 1 or greater.
     /// </value>
     /// <remarks>
     /// Below this throughput, retries are not limited by the budget, unless <see cref="RetryRatio"/> is 0. This keeps

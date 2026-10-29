@@ -78,8 +78,8 @@ clientBuilder.AddResilienceHandler("myHandler", b =>
         RetryBudget = new HttpRetryBudgetOptions
         {
             RetryRatio = 0.1,
-            SamplingDuration = TimeSpan.FromSeconds(30),
-            MinimumThroughput = 100,
+            SamplingDuration = TimeSpan.FromSeconds(10),
+            MinimumThroughput = 10,
         },
     });
 });

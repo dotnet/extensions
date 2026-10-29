@@ -109,7 +109,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var budget = GetStandardOptions(builder.Services).Retry.RetryBudget!;
         budget.RetryRatio.Should().Be(0.25);
         budget.MinimumThroughput.Should().Be(20);
-        budget.SamplingDuration.Should().Be(TimeSpan.FromSeconds(30));
+        budget.SamplingDuration.Should().Be(TimeSpan.FromSeconds(10));
     }
 
     [Fact]
@@ -118,14 +118,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var section = ConfigurationStubFactory.Create(
             new Dictionary<string, string?>
             {
-                { "standard:Retry:RetryBudget:SamplingDuration", "00:00:10" },
+                { "standard:Retry:RetryBudget:SamplingDuration", "00:00:20" },
             }).GetSection("standard");
 
         var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
         builder.AddStandardResilienceHandler(section);
 
         var budget = GetStandardOptions(builder.Services).Retry.RetryBudget!;
-        budget.SamplingDuration.Should().Be(TimeSpan.FromSeconds(10));
+        budget.SamplingDuration.Should().Be(TimeSpan.FromSeconds(20));
         budget.RetryRatio.Should().Be(0.1);
 
         GetPipeline(builder.Services, "test-standard").GetPipelineDescriptor().Strategies.Should().HaveCount(6);

@@ -16,8 +16,8 @@ public class HttpRetryBudgetOptionsTests
         var options = new HttpRetryBudgetOptions();
 
         options.RetryRatio.Should().Be(0.1);
-        options.SamplingDuration.Should().Be(TimeSpan.FromSeconds(30));
-        options.MinimumThroughput.Should().Be(100);
+        options.SamplingDuration.Should().Be(TimeSpan.FromSeconds(10));
+        options.MinimumThroughput.Should().Be(10);
     }
 
     [Fact]
