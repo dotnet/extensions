@@ -21,10 +21,17 @@ namespace Microsoft.Extensions.Http.Resilience.Test;
 public sealed partial class HttpClientBuilderExtensionsTests
 {
     [Fact]
+    public void UseBudgetedRetries_BuilderIsNull_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => ((IHttpStandardResiliencePipelineBuilder)null!).UseBudgetedRetries());
+    }
+
+    [Fact]
     public void AddStandardResilienceHandler_BudgetedRetries_OnlyChangesRetryOptions()
     {
         var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
-        builder.AddStandardResilienceHandler(o => o.Retry.UseBudgetedRetries());
+        var pipelineBuilder = builder.AddStandardResilienceHandler();
+        pipelineBuilder.UseBudgetedRetries().Should().BeSameAs(pipelineBuilder);
 
         var options = GetStandardOptions(builder.Services);
         options.Retry.MaxRetryAttempts.Should().Be(2);
@@ -81,12 +88,30 @@ public sealed partial class HttpClientBuilderExtensionsTests
             }).GetSection("standard");
 
         var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
-        builder.AddStandardResilienceHandler(o => o.Retry.UseBudgetedRetries()).Configure(section);
+        builder.AddStandardResilienceHandler().UseBudgetedRetries().Configure(section);
 
         var budget = GetStandardOptions(builder.Services).Retry.RetryBudget!;
         budget.RetryRatio.Should().Be(0.25);
         budget.MinimumThroughput.Should().Be(20);
         budget.SamplingDuration.Should().Be(TimeSpan.FromSeconds(10));
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_BudgetedRetriesAfterConfiguration_OverwritesRetryAttemptsAndBudget()
+    {
+        var section = ConfigurationStubFactory.Create(
+            new Dictionary<string, string?>
+            {
+                { "standard:Retry:MaxRetryAttempts", "5" },
+                { "standard:Retry:RetryBudget:RetryRatio", "0.25" },
+            }).GetSection("standard");
+
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
+        builder.AddStandardResilienceHandler(section).UseBudgetedRetries();
+
+        var retry = GetStandardOptions(builder.Services).Retry;
+        retry.MaxRetryAttempts.Should().Be(2);
+        retry.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
     }
 
     [Fact]

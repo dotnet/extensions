@@ -62,10 +62,25 @@ A retry budget limits retries to a ratio of the requests sent over a sliding win
 ```csharp
 var clientBuilder = services.AddHttpClient("MyClient");
 
+clientBuilder.AddStandardResilienceHandler().UseBudgetedRetries();
+```
+
+Options are applied in registration order, so call `UseBudgetedRetries()` before `Configure(...)` to let configuration override the budget values:
+
+```csharp
+clientBuilder
+    .AddStandardResilienceHandler()
+    .UseBudgetedRetries()
+    .Configure(configuration.GetSection("MyClient:Resilience"));
+```
+
+It can also be applied to the retry options directly, for example to combine it with other retry changes:
+
+```csharp
 clientBuilder.AddStandardResilienceHandler().Configure(o =>
 {
     o.Retry.UseBudgetedRetries();
-    o.Retry.RetryBudget!.RetryRatio = 0.2;
+    o.Retry.DisableForUnsafeHttpMethods();
 });
 ```
 
