@@ -57,12 +57,12 @@ clientBuilder.AddStandardHedgingHandler().Configure(o =>
 
 A retry budget limits retries to a ratio of the requests sent over a sliding window. When a dependency is degraded, retries can multiply the load on it by up to `MaxRetryAttempts + 1`; a budget caps that amplification to roughly `1 + RetryRatio`. When the budget is exhausted, the failed outcome is returned without a retry and the `OnRetryBudgetExhausted` resilience event is reported.
 
-The `Conservative` defaults of the standard resilience pipeline enable the budget, lower `MaxRetryAttempts` to 2 and raise the circuit breaker `FailureRatio` to 0.5. Options configured afterwards take precedence over the defaults.
+The `Budgeted` retry preset of the standard resilience pipeline enables the budget and lowers `MaxRetryAttempts` to 2. Circuit-breaker, timeout and rate-limiter defaults are unchanged. Options configured afterwards take precedence over the preset.
 
 ```csharp
 var clientBuilder = services.AddHttpClient("MyClient");
 
-clientBuilder.AddStandardResilienceHandler(HttpResilienceDefaults.Conservative).Configure(o =>
+clientBuilder.AddStandardResilienceHandler(HttpRetryPreset.Budgeted).Configure(o =>
 {
     o.Retry.RetryBudget!.RetryRatio = 0.2;
 });

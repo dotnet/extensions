@@ -98,28 +98,6 @@
       ]
     },
     {
-      "Type": "enum Microsoft.Extensions.Http.Resilience.HttpResilienceDefaults",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpResilienceDefaults.HttpResilienceDefaults();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const Microsoft.Extensions.Http.Resilience.HttpResilienceDefaults Microsoft.Extensions.Http.Resilience.HttpResilienceDefaults.Conservative",
-          "Stage": "Experimental",
-          "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Http.Resilience.HttpResilienceDefaults Microsoft.Extensions.Http.Resilience.HttpResilienceDefaults.Standard",
-          "Stage": "Experimental",
-          "Value": "0"
-        }
-      ]
-    },
-    {
       "Type": "static class System.Net.Http.HttpResilienceHttpRequestMessageExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -168,6 +146,28 @@
         {
           "Member": "System.TimeSpan Microsoft.Extensions.Http.Resilience.HttpRetryBudgetOptions.SamplingDuration { get; set; }",
           "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.Http.Resilience.HttpRetryPreset",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpRetryPreset.HttpRetryPreset();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Http.Resilience.HttpRetryPreset Microsoft.Extensions.Http.Resilience.HttpRetryPreset.Budgeted",
+          "Stage": "Experimental",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Http.Resilience.HttpRetryPreset Microsoft.Extensions.Http.Resilience.HttpRetryPreset.Standard",
+          "Stage": "Experimental",
+          "Value": "0"
         }
       ]
     },
@@ -490,7 +490,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.DependencyInjection.ResilienceHttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Http.Resilience.HttpResilienceDefaults defaults);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.DependencyInjection.ResilienceHttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Http.Resilience.HttpRetryPreset retryPreset);",
           "Stage": "Experimental"
         },
         {
