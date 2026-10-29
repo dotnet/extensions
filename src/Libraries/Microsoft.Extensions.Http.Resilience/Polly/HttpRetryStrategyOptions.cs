@@ -75,9 +75,9 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     /// The default value is <see langword="null"/>, which means retries are not limited by a budget.
     /// </value>
     /// <remarks>
-    /// The budget is only applied when the options are added through
-    /// <see cref="HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(ResiliencePipelineBuilder{HttpResponseMessage}, HttpRetryStrategyOptions)"/>,
-    /// which is what the standard resilience handler uses. It's ignored by
+    /// The budget is applied by the standard resilience handler and by
+    /// <see cref="HttpRetryResiliencePipelineBuilderExtensions.AddRetryWithBudget(ResiliencePipelineBuilder{HttpResponseMessage}, HttpRetryStrategyOptions)"/>.
+    /// It's ignored by
     /// <see cref="RetryResiliencePipelineBuilderExtensions.AddRetry{TResult}(ResiliencePipelineBuilder{TResult}, RetryStrategyOptions{TResult})"/>.
     /// See <see cref="HttpRetryBudgetOptions"/> for more details.
     /// </remarks>

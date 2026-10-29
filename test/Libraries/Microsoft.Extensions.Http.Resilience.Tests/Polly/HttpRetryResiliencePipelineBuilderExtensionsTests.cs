@@ -25,65 +25,69 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
     private int _attempts;
 
     [Fact]
-    public void AddHttpRetry_NullArguments_Throw()
+    public void AddRetryWithBudget_NullArguments_Throw()
     {
-        Assert.Throws<ArgumentNullException>(() => HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(null!, new HttpRetryStrategyOptions()));
-        Assert.Throws<ArgumentNullException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(null!));
+        Assert.Throws<ArgumentNullException>(() => HttpRetryResiliencePipelineBuilderExtensions.AddRetryWithBudget(null!, new HttpRetryStrategyOptions()));
+        Assert.Throws<ArgumentNullException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(null!));
     }
 
     [Fact]
-    public void AddHttpRetry_BudgetedRetries_AddsBudgetAndRetry()
+    public void AddRetryWithBudget_NoBudget_UsesDefaultBudgetWithoutMutatingOptions()
     {
-        var options = new HttpRetryStrategyOptions();
-        options.UseBudgetedRetries();
+        var options = new HttpRetryStrategyOptions { MaxRetryAttempts = 5 };
 
-        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(options).Build().GetPipelineDescriptor();
+        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(options).Build().GetPipelineDescriptor();
 
         descriptor.Strategies.Should().HaveCount(2);
         descriptor.Strategies[0].Options.Should().BeOfType<RetryBudgetStrategyOptions>();
-        descriptor.Strategies[1].Options.Should().BeOfType<HttpRetryStrategyOptions>().Which.MaxRetryAttempts.Should().Be(2);
+        var retry = descriptor.Strategies[1].Options.Should().BeOfType<HttpRetryStrategyOptions>().Subject;
+        retry.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
+        retry.MaxRetryAttempts.Should().Be(5);
+        options.RetryBudget.Should().BeNull();
     }
 
     [Fact]
-    public void AddHttpRetry_NoBudget_AddsRetryOnly()
+    public void AddRetryWithOptionalBudget_NoBudget_AddsRetryOnly()
     {
         var options = new HttpRetryStrategyOptions();
 
-        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(options).Build().GetPipelineDescriptor();
+        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithOptionalBudget(options).Build().GetPipelineDescriptor();
 
         descriptor.Strategies.Should().ContainSingle();
         descriptor.Strategies[0].Options.Should().BeSameAs(options);
     }
 
     [Fact]
-    public void AddHttpRetry_WithBudget_AddsBudgetBeforeRetry()
+    public void AddRetryWithBudget_WithBudget_AddsBudgetBeforeRetry()
     {
         var options = new HttpRetryStrategyOptions { Name = "my-retry", RetryBudget = new() };
 
-        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(options).Build().GetPipelineDescriptor();
+        var descriptor = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(options).Build().GetPipelineDescriptor();
 
         descriptor.Strategies.Should().HaveCount(2);
         descriptor.Strategies[0].Options.Should().BeOfType<RetryBudgetStrategyOptions>().Which.Name.Should().Be("my-retry");
-        descriptor.Strategies[1].Options.Should().BeOfType<HttpRetryStrategyOptions>().Which.Should().NotBeSameAs(options);
+        var retry = descriptor.Strategies[1].Options.Should().BeOfType<HttpRetryStrategyOptions>().Subject;
+        retry.Should().NotBeSameAs(options);
+        retry.RetryBudget.Should().BeSameAs(options.RetryBudget);
     }
 
     [Fact]
-    public void AddHttpRetry_WithBudget_DoesNotMutateOptions()
+    public void AddRetryWithBudget_WithBudget_DoesNotMutateOptions()
     {
         var options = new HttpRetryStrategyOptions { RetryBudget = new() };
         var shouldHandle = options.ShouldHandle;
 
-        _ = new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(options).Build();
+        _ = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(options).Build();
 
         options.ShouldHandle.Should().BeSameAs(shouldHandle);
     }
 
     [Fact]
-    public void AddHttpRetry_InvalidBudget_Throws()
+    public void AddRetryWithBudget_InvalidBudget_Throws()
     {
         var options = new HttpRetryStrategyOptions { Name = "my-retry", RetryBudget = new() { RetryRatio = 2 } };
 
-        var exception = Assert.Throws<ValidationException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddHttpRetry(options));
+        var exception = Assert.Throws<ValidationException>(() => new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetryWithBudget(options));
 
         exception.Message.Should().Contain("RetryRatio");
     }
@@ -109,7 +113,7 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
             RetryBudget = new(),
         };
 
-        var copy = HttpRetryResiliencePipelineBuilderExtensions.CreateBudgetedCopy(options);
+        var copy = HttpRetryResiliencePipelineBuilderExtensions.CreateBudgetedCopy(options, options.RetryBudget);
 
         // Fails when a property is added to the options, so that the copy is updated too.
         var properties = typeof(HttpRetryStrategyOptions).GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanWrite).ToList();
@@ -140,7 +144,7 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
     {
         var options = new HttpRetryStrategyOptions();
 
-        var copy = HttpRetryResiliencePipelineBuilderExtensions.CreateBudgetedCopy(options);
+        var copy = HttpRetryResiliencePipelineBuilderExtensions.CreateBudgetedCopy(options, new HttpRetryBudgetOptions());
 
         copy.ShouldRetryAfterHeader.Should().BeTrue();
         copy.DelayGenerator.Should().BeSameAs(options.DelayGenerator);
@@ -236,7 +240,7 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
     {
         var outer = CreatePipeline(new() { RetryRatio = 0 });
         var inner = new ResiliencePipelineBuilder<HttpResponseMessage>()
-            .AddHttpRetry(new HttpRetryStrategyOptions
+            .AddRetryWithBudget(new HttpRetryStrategyOptions
             {
                 Delay = TimeSpan.Zero,
                 ShouldHandle = _ => new ValueTask<bool>(false),
@@ -310,7 +314,7 @@ public class HttpRetryResiliencePipelineBuilderExtensionsTests
         telemetry.TelemetryListeners.Add(new Listener(_events));
 
         return new ResiliencePipelineBuilder<HttpResponseMessage>()
-            .AddHttpRetry(options)
+            .AddRetryWithBudget(options)
             .ConfigureTelemetry(telemetry)
             .Build();
     }

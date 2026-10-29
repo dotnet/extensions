@@ -154,7 +154,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.HttpRetryResiliencePipelineBuilderExtensions.AddHttpRetry(this Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> builder, Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions options);",
+          "Member": "static Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.HttpRetryResiliencePipelineBuilderExtensions.AddRetryWithBudget(this Polly.ResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage> builder, Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions options);",
           "Stage": "Experimental"
         }
       ]

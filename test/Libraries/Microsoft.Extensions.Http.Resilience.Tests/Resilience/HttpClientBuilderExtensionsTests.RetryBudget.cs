@@ -34,9 +34,9 @@ public sealed partial class HttpClientBuilderExtensionsTests
         pipelineBuilder.UseBudgetedRetries().Should().BeSameAs(pipelineBuilder);
 
         var options = GetStandardOptions(builder.Services);
-        options.Retry.MaxRetryAttempts.Should().Be(2);
-        options.Retry.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
         var defaults = new HttpStandardResilienceOptions();
+        options.Retry.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
+        options.Retry.MaxRetryAttempts.Should().Be(defaults.Retry.MaxRetryAttempts);
         options.CircuitBreaker.Should().BeEquivalentTo(defaults.CircuitBreaker);
         options.RateLimiter.Should().BeEquivalentTo(defaults.RateLimiter);
         options.TotalRequestTimeout.Should().BeEquivalentTo(defaults.TotalRequestTimeout);
@@ -97,7 +97,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddStandardResilienceHandler_BudgetedRetriesAfterConfiguration_OverwritesRetryAttemptsAndBudget()
+    public void AddStandardResilienceHandler_BudgetedRetriesAfterConfiguration_OverwritesBudgetOnly()
     {
         var section = ConfigurationStubFactory.Create(
             new Dictionary<string, string?>
@@ -110,7 +110,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         builder.AddStandardResilienceHandler(section).UseBudgetedRetries();
 
         var retry = GetStandardOptions(builder.Services).Retry;
-        retry.MaxRetryAttempts.Should().Be(2);
+        retry.MaxRetryAttempts.Should().Be(5);
         retry.RetryBudget.Should().BeEquivalentTo(new HttpRetryBudgetOptions());
     }
 
@@ -161,6 +161,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         _builder.AddStandardResilienceHandler(o => o.Retry.UseBudgetedRetries()).Configure(config).Configure(options =>
         {
+            options.Retry.MaxRetryAttempts = 2;
             options.Retry.Delay = TimeSpan.Zero;
             options.CircuitBreaker.MinimumThroughput = 1000;
         });
@@ -218,6 +219,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             .Configure(options =>
             {
                 options.Retry.UseBudgetedRetries();
+                options.Retry.MaxRetryAttempts = 2;
                 options.Retry.Delay = TimeSpan.Zero;
                 options.Retry.RetryBudget!.RetryRatio = 0.5;
                 options.Retry.RetryBudget.MinimumThroughput = 1;

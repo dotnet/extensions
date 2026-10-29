@@ -118,7 +118,7 @@ public class HttpRetryStrategyOptionsExtensionsTests
     }
 
     [Fact]
-    public void UseBudgetedRetries_OverwritesAttemptsAndBudget_PreservesOtherOptions()
+    public void UseBudgetedRetries_OverwritesBudget_PreservesOtherOptions()
     {
         var options = new HttpRetryStrategyOptions
         {
@@ -131,7 +131,7 @@ public class HttpRetryStrategyOptionsExtensionsTests
 
         options.UseBudgetedRetries();
 
-        Assert.Equal(2, options.MaxRetryAttempts);
+        Assert.Equal(5, options.MaxRetryAttempts);
         Assert.Equal(new HttpRetryBudgetOptions().RetryRatio, options.RetryBudget!.RetryRatio);
         Assert.Equal(TimeSpan.FromSeconds(1), options.Delay);
         Assert.Same(shouldHandle, options.ShouldHandle);

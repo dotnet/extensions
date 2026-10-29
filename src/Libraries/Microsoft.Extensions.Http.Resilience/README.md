@@ -57,7 +57,7 @@ clientBuilder.AddStandardHedgingHandler().Configure(o =>
 
 A retry budget limits retries to a ratio of the requests sent over a sliding window. When a dependency is degraded, retries can multiply the load on it by up to `MaxRetryAttempts + 1`; a budget caps that amplification to roughly `1 + RetryRatio`. When the budget is exhausted, the failed outcome is returned without a retry and the `OnRetryBudgetExhausted` resilience event is reported.
 
-`UseBudgetedRetries()` enables the budget with its default values and lowers `MaxRetryAttempts` to 2. It only changes retry options and composes with other retry extensions, such as `DisableForUnsafeHttpMethods()`. Values set afterwards take precedence.
+`UseBudgetedRetries()` enables the budget with its default values. It only changes the retry budget and composes with other retry extensions, such as `DisableForUnsafeHttpMethods()`. Values set afterwards take precedence.
 
 ```csharp
 var clientBuilder = services.AddHttpClient("MyClient");
@@ -84,36 +84,33 @@ clientBuilder.AddStandardResilienceHandler().Configure(o =>
 });
 ```
 
-In a custom pipeline, use `AddHttpRetry` to add retries with the budget, without circuit breakers, timeouts or rate limiting:
+In a custom pipeline, use `AddRetryWithBudget` to add retries with the budget, without circuit breakers, timeouts or rate limiting. Polly's `AddRetry` ignores `HttpRetryStrategyOptions.RetryBudget`, so it doesn't apply the budget. When `RetryBudget` isn't set, `AddRetryWithBudget` uses the default budget:
 
 ```csharp
-var retryOptions = new HttpRetryStrategyOptions();
-retryOptions.UseBudgetedRetries();
-
 clientBuilder.AddResilienceHandler("retry", b =>
 {
-    b.AddHttpRetry(retryOptions);
+    b.AddRetryWithBudget(new HttpRetryStrategyOptions());
 });
 ```
 
-The budget can also be enabled on its own by setting `RetryBudget`:
+Set `RetryBudget` to customize the budget:
 
 ```csharp
 clientBuilder.AddResilienceHandler("myHandler", b =>
 {
-    b.AddHttpRetry(new HttpRetryStrategyOptions
+    b.AddRetryWithBudget(new HttpRetryStrategyOptions
     {
         RetryBudget = new HttpRetryBudgetOptions
         {
-            RetryRatio = 0.1,
-            SamplingDuration = TimeSpan.FromSeconds(10),
-            MinimumThroughput = 10,
+            RetryRatio = 0.2,
+            SamplingDuration = TimeSpan.FromSeconds(30),
+            MinimumThroughput = 20,
         },
     });
 });
 ```
 
-`AddRetry` ignores `HttpRetryStrategyOptions.RetryBudget`, so use `AddHttpRetry` when building custom pipelines. These APIs are experimental and require suppressing the `EXTEXP0001` diagnostic.
+These APIs are experimental and require suppressing the `EXTEXP0001` diagnostic.
 
 Each retry that the budget denies is logged as a warning and counted by the `resilience.polly.strategy.events` metric (meter `Polly`) with the `event.name` tag set to `OnRetryBudgetExhausted`. The `pipeline.name`, `strategy.name` and `error.type` tags identify the client and the failure that wasn't retried, so you can alert when retries are being shed.
 

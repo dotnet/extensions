@@ -77,16 +77,15 @@ public static class HttpStandardResiliencePipelineBuilderExtensions
     }
 
     /// <summary>
-    /// Enables a retry budget with default values and lowers the maximum number of retry attempts for the standard resilience pipeline.
+    /// Enables a retry budget with default values for the standard resilience pipeline.
     /// </summary>
     /// <param name="builder">The pipeline builder.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// This method applies <see cref="HttpRetryStrategyOptionsExtensions.UseBudgetedRetries(HttpRetryStrategyOptions)"/> to
-    /// <see cref="HttpStandardResilienceOptions.Retry"/>. Options are configured in registration order, so configuration
-    /// registered before this call, including configuration sections passed to <c>AddStandardResilienceHandler</c>, is overwritten
-    /// for <see cref="Polly.Retry.RetryStrategyOptions{TResult}.MaxRetryAttempts"/> and <see cref="HttpRetryStrategyOptions.RetryBudget"/>.
-    /// Configuration registered after this call takes precedence.
+    /// <see cref="HttpStandardResilienceOptions.Retry"/>. Options are configured in registration order, so a
+    /// <see cref="HttpRetryStrategyOptions.RetryBudget"/> configured before this call, including through configuration sections
+    /// passed to <c>AddStandardResilienceHandler</c>, is overwritten. Configuration registered after this call takes precedence.
     /// </remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IHttpStandardResiliencePipelineBuilder UseBudgetedRetries(this IHttpStandardResiliencePipelineBuilder builder)
