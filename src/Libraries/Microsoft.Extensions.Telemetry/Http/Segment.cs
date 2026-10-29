@@ -39,12 +39,12 @@ internal readonly struct Segment
     }
 
     /// <summary>
-    /// Gets start index of the segment.
+    /// Gets start index of the segment. An escaped brace "{{" or "}}" in a literal counts as one character.
     /// </summary>
     public int Start { get; }
 
     /// <summary>
-    /// Gets end index of the segment.
+    /// Gets end index of the segment. An escaped brace "{{" or "}}" in a literal counts as one character.
     /// </summary>
     public int End { get; }
 

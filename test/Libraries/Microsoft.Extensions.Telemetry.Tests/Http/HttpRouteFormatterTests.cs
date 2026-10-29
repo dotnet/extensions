@@ -510,6 +510,23 @@ public class HttpRouteFormatterTests
         Assert.Equal(expectedPath, httpFormatter.Format(httpRoute, httpPath, HttpRouteParameterRedactionMode.Loose, parametersToRedact));
     }
 
+    [Theory]
+    [InlineData("/a/{id:regex(^\\d{{3}}$)}.{token}", "/a/123.secret", "a/123.[REDACTED]")]
+    [InlineData("/a/{id:regex(^\\d{{3}}$)}/{token}", "/a/123/secret", "a/123/[REDACTED]")]
+    [InlineData("/b{{c}}/{id}/{token}", "/b{c}/123/secret", "b{c}/123/[REDACTED]")]
+    public void Format_RouteHasEscapedBraces_ReturnsCorrectlyRedactedPath(string httpRoute, string httpPath, string expectedPath)
+    {
+        HttpRouteFormatter httpFormatter = CreateHttpRouteFormatter("[REDACTED]");
+        Dictionary<string, DataClassification> parametersToRedact = new()
+        {
+            { "id", DataClassification.None },
+            { "token", FakeTaxonomy.PrivateData },
+        };
+
+        Assert.Equal(expectedPath, httpFormatter.Format(httpRoute, httpPath, HttpRouteParameterRedactionMode.Strict, parametersToRedact));
+        Assert.Equal(expectedPath, httpFormatter.Format(httpRoute, httpPath, HttpRouteParameterRedactionMode.Loose, parametersToRedact));
+    }
+
     private static HttpRouteFormatter CreateHttpRouteFormatter(string redactionFormat = "Redacted:{0}")
     {
         var redactorProvider = new FakeRedactorProvider(
