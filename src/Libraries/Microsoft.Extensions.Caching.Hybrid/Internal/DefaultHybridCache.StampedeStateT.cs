@@ -420,7 +420,7 @@ internal partial class DefaultHybridCache
         {
             if (_result is not null)
             {
-                Cache.RemoveStampedeState(in Key);
+                Cache.RemoveStampedeState(this);
                 _ = _result.TrySetException(ex);
             }
         }
@@ -430,7 +430,7 @@ internal partial class DefaultHybridCache
             // note we don't store this dummy result in L1 or L2
             if (_result is not null)
             {
-                Cache.RemoveStampedeState(in Key);
+                Cache.RemoveStampedeState(this);
                 _ = _result.TrySetResult(ImmutableCacheItem<T>.GetReservedShared());
             }
         }
@@ -532,7 +532,7 @@ internal partial class DefaultHybridCache
 
             if (_result is not null)
             {
-                Cache.RemoveStampedeState(in Key);
+                Cache.RemoveStampedeState(this);
                 _ = _result.TrySetResult(value);
             }
         }
