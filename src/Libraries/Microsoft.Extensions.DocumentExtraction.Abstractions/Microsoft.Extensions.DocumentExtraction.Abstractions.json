@@ -1,0 +1,79 @@
+{
+  "Name": "Microsoft.Extensions.DocumentExtraction.Abstractions, Version=10.10.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient : Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.DelegatingDocumentExtractionClient(Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient innerClient);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task<Microsoft.Extensions.Documents.Document> Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.ExtractAsync(System.IO.Stream document, string identifier, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual object? Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient Microsoft.Extensions.DocumentExtraction.DelegatingDocumentExtractionClient.InnerClient { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.DocumentExtractionOptions();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.Clone();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, object?> Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.AdditionalProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.CaptureRawContent { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions.ModelId { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient : System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.Documents.Document> Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient.ExtractAsync(System.IO.Stream document, string identifier, string mediaType, Microsoft.Extensions.DocumentExtraction.DocumentExtractionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.DocumentExtraction.IDocumentExtractionClient.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}
