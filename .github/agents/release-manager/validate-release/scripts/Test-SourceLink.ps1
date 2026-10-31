@@ -112,9 +112,26 @@ public sealed class ReleasePdbInspection
 '@
 }
 
+function Resolve-ReleaseTool {
+    param([string]$Tool)
+    $command = Get-Command -Name $Tool -CommandType Application -ErrorAction SilentlyContinue
+    if ($command) {
+        $toolPath = $command.Source
+    }
+    else {
+        $toolName = if ($IsWindows) { "$Tool.exe" } else { $Tool }
+        $toolPath = Join-Path (Join-Path $HOME '.dotnet') (Join-Path 'tools' $toolName)
+        if (-not (Test-Path -LiteralPath $toolPath -PathType Leaf)) {
+            throw "Required tool '$Tool' was not found on PATH or at '$toolPath'. Install it with dotnet tool install -g $Tool."
+        }
+    }
+    return $toolPath
+}
+
 function Invoke-ReleaseTool {
     param([string]$Tool, [string[]]$Arguments)
-    $output = & $Tool @Arguments 2>&1 | Out-String
+    $toolPath = Resolve-ReleaseTool -Tool $Tool
+    $output = & $toolPath @Arguments 2>&1 | Out-String
     [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $output }
 }
 
@@ -172,6 +189,7 @@ function Test-ReleasePdb {
             -not [Uri]::TryCreate($entry.Value, [UriKind]::Absolute, [ref]$uri) -or
             $uri.Scheme -ne 'https' -or
             ([regex]::Matches($entry.Key, '\*').Count -gt 1) -or
+            ($entry.Key.Contains('*') -and -not $entry.Key.EndsWith('*')) -or
             ([regex]::Matches($entry.Key, '\*').Count -ne [regex]::Matches($entry.Value, '\*').Count)) {
             $result.Result = 'metadata-invalid'
             $result.Detail = "Unusable Source Link mapping: $($entry.Key)"
@@ -180,7 +198,7 @@ function Test-ReleasePdb {
     }
     foreach ($document in $inspection.ExternalDocuments) {
         $covered = @($mapping.documents.Keys | Where-Object {
-            $document -cmatch ('^' + [regex]::Escape($_).Replace('\*', '.*') + '$')
+            $document -match ('^' + [regex]::Escape($_).Replace('\*', '.*') + '$')
         })
         if ($covered.Count -eq 0) {
             $result.Result = 'metadata-invalid'
@@ -341,7 +359,7 @@ if ($MyInvocation.InvocationName -ne '.') {
     }
     catch {
         $report.Errors = @($_.Exception.Message)
-        Write-Warning "Verification could not complete: $($_.Exception.Message)"
+        [Console]::Error.WriteLine("Verification could not complete: $($_.Exception.Message)")
     }
     finally {
         $report.Results = $rows.ToArray()
@@ -352,7 +370,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         else {
             $report | ConvertTo-Json -Depth 12 | Write-Output
         }
-        if ($report.Partial) { Write-Warning 'Partial sweep (-Max): not release sign-off evidence.' }
+        if ($report.Partial) { [Console]::Error.WriteLine('Partial sweep (-Max): not release sign-off evidence.') }
     }
     exit $exitCode
 }
