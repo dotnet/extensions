@@ -61,12 +61,12 @@ internal static class DiagnosticIds
         internal const string AIRealTime = AIExperiments;
         internal const string AIFiles = AIExperiments;
         internal const string AIOpenAIRequestPolicies = AIExperiments;
+        internal const string AIRoutingChat = AIExperiments;
 
         // These diagnostic IDs are defined by the OpenAI package for its experimental APIs.
         // We use the same IDs so consumers do not need to suppress additional diagnostics
         // when using the experimental OpenAI APIs.
         internal const string AIOpenAIResponses = "OPENAI001";
-        internal const string AIOpenAIAssistants = "OPENAI001";
         internal const string AIOpenAIImageClient = "OPENAI001";
         internal const string AIOpenAIAudio = "OPENAI001";
         internal const string AIOpenAIReasoning = "OPENAI001";
@@ -159,10 +159,13 @@ internal static class DiagnosticIds
     {
         internal const string NonObservableResourceMonitoringApiDiagId = "EXTOBS0001";
         internal const string ObsoleteTelemetryApiDiagId = "EXTOBS0002";
+        internal const string HybridCacheDisableCompressionDiagId = "EXTOBS0003";
         internal const string NonObservableResourceMonitoringApiMessage =
             "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
         internal const string ObsoleteTelemetryApiMessage =
             "This API is obsolete and will be removed in a future version. Instead of the AddServiceLogEnricher() methods, consider using the respective AddApplicationLogEnricher() methods.";
+        internal const string HybridCacheDisableCompressionMessage =
+            "HybridCache does not provide built-in compression, so this option doesn't do anything.";
     }
 }
 

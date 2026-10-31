@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -43,6 +44,7 @@ internal static partial class JsonUtilities
     [JsonSerializable(typeof(ScenarioRunResult))]
     [JsonSerializable(typeof(Dataset))]
     [JsonSerializable(typeof(CacheEntry))]
+    [JsonSerializable(typeof(IReadOnlyList<AIContent>))]
     [JsonSourceGenerationOptions(
         Converters = [
             typeof(CamelCaseEnumConverter<EvaluationDiagnosticSeverity>),

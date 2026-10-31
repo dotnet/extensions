@@ -36,7 +36,7 @@ public class AIAgentWebAPIExecutionTests : TemplateExecutionTestBase<AIAgentWebA
     public static IEnumerable<object[]> GetSupportedProjectConfigurations()
     {
         (string name, string[] values)[] allOptionValues = [
-            ("--provider",          ["azureopenai", "githubmodels", "ollama", "openai"]),
+            ("--provider",          ["azureopenai", "ollama", "openai"]),
             ("--managed-identity",  ["true", "false"]),
             ("--framework",         ["net8.0", "net9.0", "net10.0"])
         ];
