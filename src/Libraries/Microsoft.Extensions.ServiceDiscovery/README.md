@@ -274,7 +274,3 @@ Named endpoints are not currently supported for services deployed to Azure Conta
 ## Feedback & contributing
 
 https://github.com/dotnet/aspire
-
-## Supported Platforms
-
-This package is supported on .NET Framework 4.6.2 and later.
