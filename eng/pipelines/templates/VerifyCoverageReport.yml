@@ -36,7 +36,11 @@ steps:
       reportDirectory: ./CoverageResultsHtml
 
   - pwsh: |
-        $(Build.SourcesDirectory)/eng/scripts/ValidateProjectCoverage.ps1 -CoberturaReportXml $(Build.SourcesDirectory)/CoverageResultsHtml/Cobertura.xml
+        $arguments = @{}
+        if ($env:SYSTEM_TEAMPROJECT -eq 'public' -and $env:BUILD_REASON -eq 'PullRequest') {
+            $arguments.PullRequestBase = 'HEAD^1'
+        }
+        $(Build.SourcesDirectory)/eng/scripts/ValidateProjectCoverage.ps1 -CoberturaReportXml $(Build.SourcesDirectory)/CoverageResultsHtml/Cobertura.xml @arguments
     displayName: Check per-project coverage
 
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), eq(variables['Build.Reason'], 'PullRequest')) }}:
