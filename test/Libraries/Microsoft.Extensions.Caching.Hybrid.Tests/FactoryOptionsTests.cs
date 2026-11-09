@@ -18,10 +18,10 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 // Covers mutations the factory makes to the HybridCacheEntryContext it is handed.
 public class FactoryOptionsTests(ITestOutputHelper log) : IClassFixture<TestEventListener>
 {
-    private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
+    private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? configureServices = null)
     {
         var services = new ServiceCollection();
-        config?.Invoke(services);
+        configureServices?.Invoke(services);
         services.AddHybridCache();
         ServiceProvider provider = services.BuildServiceProvider();
         cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());

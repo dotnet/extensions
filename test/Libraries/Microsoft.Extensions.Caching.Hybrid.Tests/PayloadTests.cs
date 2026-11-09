@@ -93,8 +93,7 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
+    [CombinatorialData]
     public async Task LocalCacheSize_FromL2_Honored(bool mutable)
     {
         // .NET 8/9 must honor size metadata from newer L2 writers even without the public LocalSize API.
@@ -445,10 +444,7 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
     }
 
     [Theory]
-    [InlineData(FactoryMutation.MutateNonFlags)]
-    [InlineData(FactoryMutation.SetFlagsToNone)]
-    [InlineData(FactoryMutation.SetFlagsReadSideOnly)]
-    [InlineData(FactoryMutation.CallerDisabledL2Write_FactoryClears)]
+    [CombinatorialData]
     public async Task MalformedKey_DoesNotWriteToL2_EvenWhenFactoryMutatesOptions(FactoryMutation mutation)
     {
         // When the key fails unicode validation, make sure the (corrupted) key/tags are not persisted to L2.

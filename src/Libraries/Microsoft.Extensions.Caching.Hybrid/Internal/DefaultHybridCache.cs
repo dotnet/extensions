@@ -262,7 +262,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
             }
         }
 
-        if (GetOrCreateStampedeState(key, flags, out stampede, canBeCanceled, tags))
+        bool isNewStampede = GetOrCreateStampedeState(key, flags, out stampede, canBeCanceled, tags);
+        if (isNewStampede)
         {
             return GetOrCreateOutcome.NewStampede;
         }
