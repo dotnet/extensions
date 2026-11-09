@@ -47,18 +47,127 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
 
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+        try
+        {
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
 
-        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
+            Assert.Equal(expectedLength, actualLength);
 
-        Assert.Equal(expectedLength, actualLength);
+            clock.Add(TimeSpan.FromSeconds(10));
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
+            log.WriteLine($"Entropy: {parsed.Entropy}; Flags: {parsed.Flags}");
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+            Assert.True(parsed.Payload.SequenceEqual(bytes));
+            Assert.True(parsed.PendingTags.IsEmpty);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
+    }
 
-        clock.Add(TimeSpan.FromSeconds(10));
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
-        log.WriteLine($"Entropy: {parsed.Entropy}; Flags: {parsed.Flags}");
+    [Theory]
+    [InlineData(null)]
+    [InlineData(0L)]
+    [InlineData(42L)]
+    [InlineData(long.MaxValue)]
+    public void RoundTrip_LocalCacheSize(long? localCacheSize)
+    {
+        using var provider = GetDefaultCache(out var cache);
+
+        byte[] bytes = new byte[64];
+        new Random().NextBytes(bytes);
+
+        string key = "k";
+        TagSet tags = TagSet.Empty;
+        int maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
+        byte[] oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+
+        try
+        {
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes), localCacheSize: localCacheSize);
+
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache,
+                out var parsed, out _);
+
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+            Assert.True(parsed.Payload.SequenceEqual(bytes));
+            Assert.True(parsed.PendingTags.IsEmpty);
+            Assert.Equal(localCacheSize, parsed.LocalCacheSize);
+            Assert.Equal(localCacheSize is not null, (parsed.Flags & HybridCachePayload.PayloadFlags.HasLocalSize) != 0);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public async Task LocalCacheSize_FromL2_Honored(bool mutable)
+    {
+        // .NET 8/9 must honor size metadata from newer L2 writers even without the public LocalSize API.
+        var backend = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+        using var provider = GetDefaultCache(out var cache, config =>
+        {
+            config.AddMemoryCache(options => options.SizeLimit = 5);
+            config.AddSingleton<IDistributedCache>(new LoggingCache(log, backend));
+        });
+
+        string key = nameof(LocalCacheSize_FromL2_Honored);
+        string value = new('x', 256);
+        byte[] payload = HybridCachePayload.Encoding.GetBytes(value);
+        byte[] framed = new byte[HybridCachePayload.GetMaxBytes(key, TagSet.Empty, payload.Length)];
+        int length = HybridCachePayload.Write(framed, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1),
+            HybridCachePayload.PayloadFlags.None, TagSet.Empty, new(payload), localCacheSize: 1);
+        backend.Set(key, framed.AsSpan(0, length).ToArray());
+
+        if (mutable)
+        {
+            await AssertCachedAsync(payload);
+        }
+        else
+        {
+            await AssertCachedAsync(value);
+        }
+
+        async Task AssertCachedAsync<T>(T expected)
+        {
+            T first = await cache.GetOrCreateAsync<T>(key, static _ => throw new InvalidOperationException("Expected an L2 hit."));
+            Assert.Equal(expected, first);
+
+            backend.Remove(key);
+            T second = await cache.GetOrCreateAsync<T>(key, static _ => throw new InvalidOperationException("Expected an L1 hit."));
+            Assert.Equal(expected, second);
+        }
+    }
+
+    // Guards the v1 wire format. This test pins a literal v1 byte sequence and asserts the reader
+    // still accepts it.
+    //
+    // The bytes below were produced by `HybridCachePayload.Write` with:
+    //   key="frozen-key", tags=Empty, payload=[0x01..0x08],
+    //   creationTime = 638000000000000000 ticks (~2023-01-30 UTC),
+    //   duration = TimeSpan.FromDays(36500) (100 years headroom so the payload stays valid).
+    [Fact]
+    public void V1_FrozenBytes_StillReadable()
+    {
+        using var provider = GetDefaultCache(out var cache);
+
+        byte[] frozen = Convert.FromBase64String(
+            "AwGPlwAAs6aeodoIAAiAgIztsrqCOAAKZnJvemVuLWtleQECAwQFBgcIAwE=");
+
+        var result = HybridCachePayload.TryParse(
+            new(frozen), "frozen-key", TagSet.Empty, cache,
+            out var parsed, out _);
+
         Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
-        Assert.True(parsed.Payload.SequenceEqual(bytes));
+        Assert.True(parsed.Payload.AsSpan().SequenceEqual<byte>([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]));
         Assert.True(parsed.PendingTags.IsEmpty);
+        Assert.Null(parsed.LocalCacheSize);
+        Assert.Equal(HybridCachePayload.PayloadFlags.None, parsed.Flags & HybridCachePayload.PayloadFlags.HasLocalSize);
+        Assert.True(parsed.RemainingTime > TimeSpan.Zero, "v1 frozen entry should not be expired (100-year duration).");
     }
 
     [Fact]
@@ -77,22 +186,28 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         var tags = TagSet.Create(["some_tag"]);
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+        try
+        {
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
+            Assert.Equal(1063, actualLength);
 
-        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
-        Assert.Equal(1063, actualLength);
+            clock.Add(TimeSpan.FromSeconds(58));
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+            Assert.True(parsed.Payload.SequenceEqual(bytes));
+            Assert.True(parsed.PendingTags.IsEmpty);
 
-        clock.Add(TimeSpan.FromSeconds(58));
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
-        Assert.True(parsed.Payload.SequenceEqual(bytes));
-        Assert.True(parsed.PendingTags.IsEmpty);
-
-        clock.Add(TimeSpan.FromSeconds(4));
-        result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.ExpiredByEntry, result);
-        Assert.Equal(0, parsed.Payload.Count);
-        Assert.True(parsed.PendingTags.IsEmpty);
+            clock.Add(TimeSpan.FromSeconds(4));
+            result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.ExpiredByEntry, result);
+            Assert.Equal(0, parsed.Payload.Count);
+            Assert.True(parsed.PendingTags.IsEmpty);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
     }
 
     [Fact]
@@ -111,18 +226,24 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         var tags = TagSet.Create(["some_tag"]);
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+        try
+        {
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
+            Assert.Equal(1063, actualLength);
 
-        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
-        Assert.Equal(1063, actualLength);
+            clock.Add(TimeSpan.FromSeconds(2));
+            await cache.RemoveByTagAsync("*");
 
-        clock.Add(TimeSpan.FromSeconds(2));
-        await cache.RemoveByTagAsync("*");
-
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.ExpiredByWildcard, result);
-        Assert.Equal(0, parsed.Payload.Count);
-        Assert.True(parsed.PendingTags.IsEmpty);
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.ExpiredByWildcard, result);
+            Assert.Equal(0, parsed.Payload.Count);
+            Assert.True(parsed.PendingTags.IsEmpty);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
     }
 
     [Fact]
@@ -141,24 +262,30 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         var tags = TagSet.Create(["some_tag"]);
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+        try
+        {
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
+            Assert.Equal(1063, actualLength);
 
-        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
-        Assert.Equal(1063, actualLength);
+            clock.Add(TimeSpan.FromSeconds(2));
+            await cache.RemoveByTagAsync("other_tag");
 
-        clock.Add(TimeSpan.FromSeconds(2));
-        await cache.RemoveByTagAsync("other_tag");
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+            Assert.True(parsed.Payload.SequenceEqual(bytes));
+            Assert.True(parsed.PendingTags.IsEmpty);
 
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
-        Assert.True(parsed.Payload.SequenceEqual(bytes));
-        Assert.True(parsed.PendingTags.IsEmpty);
-
-        await cache.RemoveByTagAsync("some_tag");
-        result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.ExpiredByTag, result);
-        Assert.Equal(0, parsed.Payload.Count);
-        Assert.True(parsed.PendingTags.IsEmpty);
+            await cache.RemoveByTagAsync("some_tag");
+            result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.ExpiredByTag, result);
+            Assert.Equal(0, parsed.Payload.Count);
+            Assert.True(parsed.PendingTags.IsEmpty);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
     }
 
     [Fact]
@@ -177,25 +304,31 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         var tags = TagSet.Create(["some_tag"]);
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+        try
+        {
+            var creation = cache.CurrentTimestamp();
+            int actualLength = HybridCachePayload.Write(oversized, key, creation, TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
+            Assert.Equal(1063, actualLength);
 
-        var creation = cache.CurrentTimestamp();
-        int actualLength = HybridCachePayload.Write(oversized, key, creation, TimeSpan.FromMinutes(1), 0, tags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
-        Assert.Equal(1063, actualLength);
+            clock.Add(TimeSpan.FromSeconds(2));
 
-        clock.Add(TimeSpan.FromSeconds(2));
+            var tcs = new TaskCompletionSource<long>();
+            cache.DebugInvalidateTag("some_tag", tcs.Task);
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+            Assert.True(parsed.Payload.SequenceEqual(bytes));
+            Assert.Equal(1, parsed.PendingTags.Count);
+            Assert.Equal("some_tag", parsed.PendingTags[0]);
+            Assert.Equal(creation, parsed.CreationTime);
 
-        var tcs = new TaskCompletionSource<long>();
-        cache.DebugInvalidateTag("some_tag", tcs.Task);
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, tags, cache, out var parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
-        Assert.True(parsed.Payload.SequenceEqual(bytes));
-        Assert.Equal(1, parsed.PendingTags.Count);
-        Assert.Equal("some_tag", parsed.PendingTags[0]);
-        Assert.Equal(creation, parsed.CreationTime);
-
-        tcs.SetResult(cache.CurrentTimestamp());
-        Assert.True(await cache.IsAnyTagExpiredAsync(parsed.PendingTags, creation));
+            tcs.SetResult(cache.CurrentTimestamp());
+            Assert.True(await cache.IsAnyTagExpiredAsync(parsed.PendingTags, creation));
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
     }
 
     [Fact]
@@ -217,8 +350,11 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
     }
 
     [Fact]
-    public void RoundTrip_Truncated()
+    public void RoundTrip_TruncatedAtEveryLength_NeverThrows()
     {
+        // Truncating the payload at *every* prefix length must surface as a clean parse result
+        // (never an exception that becomes ParseFault). In particular, a buffer that ends in the
+        // middle of a varint must not read past the end of the span.
         var clock = new FakeTime();
         using var provider = GetDefaultCache(out var cache, config =>
         {
@@ -232,15 +368,28 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         var tags = TagSet.Create(["some_tag"]);
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+        try
+        {
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
+            Assert.Equal(1063, actualLength);
 
-        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
-        Assert.Equal(1063, actualLength);
+            for (int truncatedLength = 0; truncatedLength < actualLength; truncatedLength++)
+            {
+                var result = HybridCachePayload.TryParse(
+                    new(oversized, 0, truncatedLength), key, tags, cache,
+                    out var parsed, out var fault);
 
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength - 1), key, tags, cache, out var parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.InvalidData, result);
-        Assert.Equal(0, parsed.Payload.Count);
-        Assert.True(parsed.PendingTags.IsEmpty);
+                Assert.Null(fault);
+                Assert.NotEqual(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+                Assert.Equal(0, parsed.Payload.Count);
+                Assert.True(parsed.PendingTags.IsEmpty);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
     }
 
     [Fact]
@@ -259,15 +408,21 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         var tags = TagSet.Create(["some_tag"]);
         var maxLen = HybridCachePayload.GetMaxBytes(key, tags, bytes.Length) + 1;
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
+        try
+        {
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
+            Assert.Equal(1063, actualLength);
 
-        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, tags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
-        Assert.Equal(1063, actualLength);
-
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength + 1), key, tags, cache, out var parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.InvalidData, result);
-        Assert.Equal(0, parsed.Payload.Count);
-        Assert.True(parsed.PendingTags.IsEmpty);
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength + 1), key, tags, cache, out var parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.InvalidData, result);
+            Assert.Equal(0, parsed.Payload.Count);
+            Assert.True(parsed.PendingTags.IsEmpty);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
     }
 
     [Fact]
@@ -324,6 +479,82 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
         collector.AssertErrors([Log.IdTagInvalidUnicode]);
     }
 
+#if RUNTIME_PACKAGES_11_OR_GREATER
+    public enum FactoryMutation
+    {
+        MutateNonFlags,
+        SetFlagsToNone,
+        SetFlagsReadSideOnly,
+        CallerDisabledL2Write_FactoryClears,
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public async Task MalformedKey_DoesNotWriteToL2_EvenWhenFactoryMutatesOptions(FactoryMutation mutation)
+    {
+        // When the key fails unicode validation, make sure the (corrupted) key/tags are not persisted to L2.
+        using var collector = new LogCollector();
+        MemoryDistributedCache? localCache = null;
+        using var provider = GetDefaultCache(out var cache, config =>
+        {
+            localCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+            config.AddSingleton<IDistributedCache>(new LoggingCache(log, localCache));
+            config.AddLogging(options =>
+            {
+                options.ClearProviders();
+                options.AddProvider(collector);
+            });
+        });
+
+        Assert.NotNull(localCache);
+
+        string key = "my\uD801\uD802key"; // malformed unicode
+        string[] tags = ["mytag"];
+
+        HybridCacheEntryFlags callerFlags = mutation == FactoryMutation.CallerDisabledL2Write_FactoryClears
+            ? HybridCacheEntryFlags.DisableDistributedCacheWrite
+            : HybridCacheEntryFlags.None;
+
+        _ = await cache.GetOrCreateAsync(
+            key,
+            (entryOptions, _) =>
+            {
+                switch (mutation)
+                {
+                    case FactoryMutation.MutateNonFlags:
+                        entryOptions.LocalSize = 1234;
+                        break;
+                    case FactoryMutation.SetFlagsToNone:
+                        entryOptions.Flags = HybridCacheEntryFlags.None;
+                        break;
+                    case FactoryMutation.SetFlagsReadSideOnly:
+                        entryOptions.Flags = HybridCacheEntryFlags.DisableLocalCacheRead;
+                        break;
+                    case FactoryMutation.CallerDisabledL2Write_FactoryClears:
+                        entryOptions.Flags = HybridCacheEntryFlags.None;
+                        break;
+                }
+
+                return new ValueTask<Guid>(Guid.NewGuid());
+            },
+            options: new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1), Flags = callerFlags },
+            tags: tags);
+
+        // Wait until the unicode-validation log fires (synchronous, inside BackgroundFetchAsync,
+        // just before the L2 write decision); then give the background work a brief moment
+        // to flush any erroneous L2 SetAsync.
+        await collector.WaitForLogsAsync([Log.IdKeyInvalidUnicode], TimeSpan.FromSeconds(5));
+        await Task.Delay(500);
+
+        collector.WriteTo(log);
+        collector.AssertErrors([Log.IdKeyInvalidUnicode]);
+
+        // The corrupted key must NOT have been persisted to L2. (Note: unrelated
+        // tag-invalidation reads against valid tag keys may still appear in the backend.)
+        Assert.Null(localCache.Get(key));
+    }
+#endif
+
     [Theory]
     [InlineData("tag1,tag2", 2)]
     [InlineData("tag1,tag2,tag3", 3)]
@@ -345,22 +576,28 @@ public class PayloadTests(ITestOutputHelper log) : IClassFixture<TestEventListen
 
         var maxLen = HybridCachePayload.GetMaxBytes(key, writeTags, bytes.Length);
         var oversized = ArrayPool<byte>.Shared.Rent(maxLen);
-
-        int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, writeTags, new(bytes));
-        log.WriteLine($"bytes written: {actualLength}");
-
-        clock.Add(TimeSpan.FromSeconds(10));
-
-        // Inject non-completed tasks for each tag so IsTagExpired returns isPending=true
-        foreach (string tag in tagsArray)
+        try
         {
-            cache.DebugInvalidateTag(tag, new TaskCompletionSource<long>().Task);
-        }
+            int actualLength = HybridCachePayload.Write(oversized, key, cache.CurrentTimestamp(), TimeSpan.FromMinutes(1), 0, writeTags, new(bytes));
+            log.WriteLine($"bytes written: {actualLength}");
 
-        // Parse with empty knownTags to force all tags into pendingTags via the rented buffer path
-        var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, TagSet.Empty, cache, out var parsed, out _);
-        Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
-        Assert.True(parsed.Payload.SequenceEqual(bytes));
-        Assert.Equal(tagCount, parsed.PendingTags.Count);
+            clock.Add(TimeSpan.FromSeconds(10));
+
+            // Inject non-completed tasks for each tag so IsTagExpired returns isPending=true
+            foreach (string tag in tagsArray)
+            {
+                cache.DebugInvalidateTag(tag, new TaskCompletionSource<long>().Task);
+            }
+
+            // Parse with empty knownTags to force all tags into pendingTags via the rented buffer path
+            var result = HybridCachePayload.TryParse(new(oversized, 0, actualLength), key, TagSet.Empty, cache, out var parsed, out _);
+            Assert.Equal(HybridCachePayload.HybridCachePayloadParseResult.Success, result);
+            Assert.True(parsed.Payload.SequenceEqual(bytes));
+            Assert.Equal(tagCount, parsed.PendingTags.Count);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(oversized);
+        }
     }
 }
