@@ -117,7 +117,7 @@ if (!$ReportAllProjects) {
                 }
             }
         }
-        elseif ($file -match '^(src/|test/|eng/|scripts/|azure-pipelines.*\.yml$|[^/]+\.(props|targets)$|global\.json$|NuGet\.config$)') {
+        elseif ($file -match '^(src/|test/|eng/|scripts/|\.config/dotnet-tools\.json$|build\.(sh|cmd)$|azure-pipelines.*\.yml$|[^/]+\.(props|targets)$|global\.json$|NuGet\.config$)') {
             $ReportAllProjects = $true
             break
         }

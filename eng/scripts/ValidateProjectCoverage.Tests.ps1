@@ -125,6 +125,9 @@ Describe 'PR coverage comments' {
         @{ Path = 'Directory.Build.props' }
         @{ Path = 'src/Shared/Helper.cs' }
         @{ Path = 'test/Directory.Build.targets' }
+        @{ Path = '.config/dotnet-tools.json' }
+        @{ Path = 'build.sh' }
+        @{ Path = 'build.cmd' }
     ) {
         param($Path)
         Write-FixtureFile $Path 'Changed'
