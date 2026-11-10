@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
@@ -33,5 +34,11 @@ public class ApiRoutingController : ControllerBase
 
         return "User info...";
     }
+
+    [HttpGet("{userId}")]
+    public IActionResult GetUserProfile([FromRoute][NoDataClassification] string userId) => Ok(userId);
+
+    [HttpPost("{userId}")]
+    public IActionResult UpdateUserProfile([FromRoute][PrivateData] string userId) => Ok(userId);
 }
 #endif
