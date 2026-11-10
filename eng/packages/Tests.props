@@ -32,6 +32,8 @@
     <PackageVersion Include="SharpFuzz" Version="2.1.1" />
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
+    <!-- Lift CVE-impacted transitive dependency; remove once upstream dependencies update. -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsLTSVersion)" />
     <PackageVersion Include="Verify.XunitV3" Version="31.20.0" />
     <PackageVersion Include="Xunit.Combinatorial" Version="2.0.24" />
   </ItemGroup>
@@ -58,12 +60,14 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostVersion)" />
+    <PackageVersion Update="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingNet10Version)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostNet10Version)" />
     <PackageVersion Update="Microsoft.Data.SqlClient" Version="6.1.7" />
+    <PackageVersion Update="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsNet10Version)" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingNet11Version)" />
@@ -71,5 +75,6 @@
     <PackageVersion Update="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageVersion Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesNet11Version)" />
     <PackageVersion Update="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsConfigurationUserSecretsNet11Version)" />
+    <PackageVersion Update="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsNet11Version)" />
   </ItemGroup>
 </Project>
