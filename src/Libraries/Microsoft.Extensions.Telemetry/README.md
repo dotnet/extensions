@@ -215,3 +215,7 @@ builder.Services.AddRedaction(); // <- This call is required in order for the re
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
+
+## Supported Platforms
+
+This package includes .NET Framework compatible targets, but is not officially supported on .NET Framework.
