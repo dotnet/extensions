@@ -186,4 +186,4 @@ report provider-specific behavior to the provider's issue tracker.
 
 ## Supported Platforms
 
-This package is not supported on .NET Framework. Compatibility issues may be closed as not planned.
+This package includes .NET Framework compatible targets, but is not officially supported on .NET Framework.

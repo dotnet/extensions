@@ -4,4 +4,4 @@ This package contains conformance tests for `Microsoft.Extensions.VectorData` pr
 
 ## Supported Platforms
 
-This package is not supported on .NET Framework. Compatibility issues may be closed as not planned.
+This package includes .NET Framework compatible targets, but is not officially supported on .NET Framework.

@@ -92,4 +92,4 @@ We welcome feedback and contributions in [our GitHub repo](https://github.com/do
 
 ## Supported Platforms
 
-This package is not supported on .NET Framework. Compatibility issues may be closed as not planned.
+This package includes .NET Framework compatible targets, but is not officially supported on .NET Framework.
