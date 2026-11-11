@@ -24,11 +24,12 @@ internal static partial class Log
         double cpuPercentage);
 
     [LoggerMessage(4, LogLevel.Debug,
-        "Computed memory usage for container: CurrentMemoryUsage = {currentMemoryUsage}, TotalMemory = {totalMemory}")]
+        "Computed memory usage for container: CurrentMemoryUsage = {currentMemoryUsage}, LimitMemory = {limitMemory}, RequestMemory = {requestMemory}.")]
     public static partial void ContainerMemoryUsageData(
         this ILogger logger,
         ulong currentMemoryUsage,
-        double totalMemory);
+        double limitMemory,
+        double requestMemory);
 
     [LoggerMessage(5, LogLevel.Debug, "Computed CPU usage with CpuUsageKernelTicks = {cpuUsageKernelTicks}, CpuUsageUserTicks = {cpuUsageUserTicks}, OldCpuUsageTicks = {oldCpuUsageTicks}, TimeTickDelta = {timeTickDelta}, CpuUnits = {cpuUnits}, CpuPercentage = {cpuPercentage}.")]
     public static partial void CpuContainerUsageData(

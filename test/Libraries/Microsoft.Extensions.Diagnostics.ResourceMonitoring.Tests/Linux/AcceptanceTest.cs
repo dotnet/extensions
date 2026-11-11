@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,9 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.IO;
-#if !NET10_0
+#if !NET10_0_OR_GREATER
 using System.Linq;
 #endif
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -19,17 +20,17 @@ using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Instruments;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
 public sealed class AcceptanceTest
 {
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     public void Adding_Linux_Resource_Utilization_Allows_To_Query_Snapshot_Provider()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         using var services = new ServiceCollection()
             .AddResourceMonitoring()
             .BuildServiceProvider();
@@ -40,11 +41,12 @@ public sealed class AcceptanceTest
         Assert.NotEqual(default, provider.GetSnapshot());
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Section()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
 
@@ -70,10 +72,11 @@ public sealed class AcceptanceTest
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Action()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
 
@@ -92,11 +95,12 @@ public sealed class AcceptanceTest
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv1()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
 
@@ -141,11 +145,12 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv2()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
 
@@ -164,12 +169,13 @@ public sealed class AcceptanceTest
             .AddSingleton<IUserHz>(new FakeUserHz(100))
             .AddSingleton<IFileSystem>(new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
             {
+                { new FileInfo("/proc/self/cgroup"), "0::/" },
                 { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
                 { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312\nnr_periods 50"},
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-1"},
                 { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 100000"},
-                { new FileInfo("/sys/fs/cgroup/cpu.weight"), "4"},
+                { new FileInfo("/sys/fs/cgroup/cpu.weight"), "17"},
                 { new FileInfo("/sys/fs/cgroup/memory.max"), "100000" }
             }))
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
@@ -189,11 +195,11 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalFact]
-    [CombinatorialData]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -245,7 +251,8 @@ public sealed class AcceptanceTest
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-                .AddResourceMonitoring())
+                .AddResourceMonitoring()
+                .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>()))
             .Build();
 
         meterScope = host.Services.GetRequiredService<IMeterFactory>();
@@ -287,22 +294,23 @@ public sealed class AcceptanceTest
         return Task.CompletedTask;
     }
 
-    [ConditionalFact]
-    [CombinatorialData]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
+            { new FileInfo("/proc/self/cgroup"), "0::/" },
             { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102\nnr_periods 50"},
             { new FileInfo("/sys/fs/cgroup/memory.max"), "1048576" },
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/cpu.max"), "40000 10000"},
-            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "79"}, // equals to 2046,9 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "173"}, // equals to ~2048 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
         });
 
         using var listener = new MeterListener();
@@ -395,11 +403,11 @@ public sealed class AcceptanceTest
         return Task.CompletedTask;
     }
 
-    [ConditionalFact]
-    [CombinatorialData]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    [Fact]
     public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2_Using_LinuxCalculationV2()
     {
+        Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "Linux specific tests");
+
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/proc/self/cgroup"), "0::/fakeslice"},
@@ -409,7 +417,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
             { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.max"), "40000 10000"},
-            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "79"},
+            { new FileInfo("/sys/fs/cgroup/fakeslice/cpu.weight"), "173"},
         });
 
         using var listener = new MeterListener();
@@ -459,7 +467,7 @@ public sealed class AcceptanceTest
         listener.RecordObservableInstruments();
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
-        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120000\nnr_periods 56");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/fakeslice/cpu.stat"), "usage_usec 1120800\nnr_periods 56");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.current"), "524298");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 10");
 
@@ -467,8 +475,8 @@ public sealed class AcceptanceTest
         listener.RecordObservableInstruments();
 
         Assert.Equal(42, Math.Round(cpuLimitFromGauge * 100));
-        Assert.Equal(83, Math.Round(cpuRequestFromGauge * 100));
-        Assert.Equal(167, Math.Round(cpuUserTime * 100));
+        Assert.Equal(84, Math.Round(cpuRequestFromGauge * 100));
+        Assert.Equal(168, Math.Round(cpuUserTime * 100));
         Assert.Equal(81, Math.Round(cpuKernelTime * 100));
 
         return Task.CompletedTask;

@@ -186,7 +186,7 @@ public static class ChatResponseExtensions
 
     /// <summary>
     /// Coalesces image result content elements in the provided list of <see cref="AIContent"/> items.
-    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their Name property, 
+    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their CallId property, 
     /// and it will replace earlier items with later ones when duplicates are found.
     /// </summary>
     private static void CoalesceImageResultContent(IList<AIContent> contents)
@@ -196,15 +196,15 @@ public static class ChatResponseExtensions
 
         for (int i = 0; i < contents.Count; i++)
         {
-            if (contents[i] is ImageGenerationToolResultContent imageResult && !string.IsNullOrEmpty(imageResult.ImageId))
+            if (contents[i] is ImageGenerationToolResultContent imageResult)
             {
-                // Check if there's an existing ImageGenerationToolResultContent with the same ImageId to replace
+                // Check if there's an existing ImageGenerationToolResultContent with the same CallId to replace
                 if (imageResultIndexById is null)
                 {
                     imageResultIndexById = new(StringComparer.Ordinal);
                 }
 
-                if (imageResultIndexById.TryGetValue(imageResult.ImageId!, out int existingIndex))
+                if (imageResultIndexById.TryGetValue(imageResult.CallId, out int existingIndex))
                 {
                     // Replace the existing imageResult with the new one
                     contents[existingIndex] = imageResult;
@@ -213,12 +213,65 @@ public static class ChatResponseExtensions
                 }
                 else
                 {
-                    imageResultIndexById[imageResult.ImageId!] = i;
+                    imageResultIndexById[imageResult.CallId] = i;
                 }
             }
         }
 
         // Remove all of the null slots left over from the coalescing process.
+        if (hasRemovals)
+        {
+            RemoveNullContents(contents);
+        }
+    }
+
+    /// <summary>
+    /// Coalesces web search tool call content elements in the provided list of <see cref="AIContent"/> items.
+    /// Unlike other content coalescing methods, this will coalesce non-sequential items based on their CallId property,
+    /// merging data from all items with the same CallId into the first occurrence.
+    /// </summary>
+    private static void CoalesceWebSearchToolCallContent(IList<AIContent> contents)
+    {
+        Dictionary<string, int>? webSearchCallIndexById = null;
+        bool hasRemovals = false;
+
+        for (int i = 0; i < contents.Count; i++)
+        {
+            if (contents[i] is WebSearchToolCallContent webSearchCall)
+            {
+                webSearchCallIndexById ??= new(StringComparer.Ordinal);
+
+                if (webSearchCallIndexById.TryGetValue(webSearchCall.CallId, out int existingIndex))
+                {
+                    // Create a new merged content rather than mutating the original content objects.
+                    // The same content objects may be shared across multiple ToChatResponse calls
+                    // (e.g. FunctionInvokingChatClient and the caller both call ToChatResponse on
+                    // the same streaming updates), and in-place mutation would corrupt subsequent calls.
+                    var existing = (WebSearchToolCallContent)contents[existingIndex];
+
+                    if (!ReferenceEquals(existing, webSearchCall))
+                    {
+                        contents[existingIndex] = new WebSearchToolCallContent(existing.CallId)
+                        {
+                            Queries = webSearchCall.Queries is not { Count: > 0 } ? existing.Queries :
+                                      existing.Queries is not { Count: > 0 } ? webSearchCall.Queries :
+                                      [.. existing.Queries, .. webSearchCall.Queries],
+                            RawRepresentation = existing.RawRepresentation ?? webSearchCall.RawRepresentation,
+                            AdditionalProperties = existing.AdditionalProperties ?? webSearchCall.AdditionalProperties,
+                            Annotations = existing.Annotations ?? webSearchCall.Annotations,
+                        };
+                    }
+
+                    contents[i] = null!;
+                    hasRemovals = true;
+                }
+                else
+                {
+                    webSearchCallIndexById[webSearchCall.CallId] = i;
+                }
+            }
+        }
+
         if (hasRemovals)
         {
             RemoveNullContents(contents);
@@ -261,6 +314,8 @@ public static class ChatResponseExtensions
             });
 
         CoalesceImageResultContent(contents);
+
+        CoalesceWebSearchToolCallContent(contents);
 
         Coalesce<DataContent>(
             contents,
@@ -320,9 +375,8 @@ public static class ChatResponseExtensions
                     CoalesceContent(inputs);
                 }
 
-                return new()
+                return new(firstContent.CallId)
                 {
-                    CallId = firstContent.CallId,
                     Inputs = inputs,
                     AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
                 };
@@ -331,7 +385,7 @@ public static class ChatResponseExtensions
         Coalesce<CodeInterpreterToolResultContent>(
             contents,
             mergeSingle: true,
-            canMerge: static (r1, r2) => r1.CallId is not null && r2.CallId is not null && r1.CallId == r2.CallId,
+            canMerge: static (r1, r2) => r1.CallId == r2.CallId,
             static (contents, start, end) =>
             {
                 var firstContent = (CodeInterpreterToolResultContent)contents[start];
@@ -358,9 +412,8 @@ public static class ChatResponseExtensions
                     CoalesceContent(output);
                 }
 
-                return new()
+                return new(firstContent.CallId)
                 {
-                    CallId = firstContent.CallId,
                     Outputs = output,
                     AdditionalProperties = firstContent.AdditionalProperties?.Clone(),
                 };
@@ -509,16 +562,17 @@ public static class ChatResponseExtensions
         }
 
         // Some members on ChatResponseUpdate map to members of ChatMessage.
-        // Incorporate those into the latest message; in cases where the message
-        // stores a single value, prefer the latest update's value over anything
-        // stored in the message.
+        // Incorporate those into the latest message. In most cases the message
+        // stores a single value, and we prefer the latest update's value over
+        // anything stored in the message, except for CreatedAt which prefers
+        // the first valid value.
 
         if (update.AuthorName is not null)
         {
             message.AuthorName = update.AuthorName;
         }
 
-        if (message.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > message.CreatedAt))
+        if (message.CreatedAt is null && IsValidCreatedAt(update.CreatedAt))
         {
             message.CreatedAt = update.CreatedAt;
         }
@@ -533,6 +587,34 @@ public static class ChatResponseExtensions
             // Note that this must come after the message checks earlier, as they depend
             // on this value for change detection.
             message.MessageId = update.MessageId;
+        }
+
+        // AdditionalProperties are scoped to the message if the update has a MessageId,
+        // otherwise they're scoped to the response.
+        if (update.AdditionalProperties is not null)
+        {
+            if (update.MessageId is { Length: > 0 })
+            {
+                if (message.AdditionalProperties is null)
+                {
+                    message.AdditionalProperties = new(update.AdditionalProperties);
+                }
+                else
+                {
+                    message.AdditionalProperties.SetAll(update.AdditionalProperties);
+                }
+            }
+            else
+            {
+                if (response.AdditionalProperties is null)
+                {
+                    response.AdditionalProperties = new(update.AdditionalProperties);
+                }
+                else
+                {
+                    response.AdditionalProperties.SetAll(update.AdditionalProperties);
+                }
+            }
         }
 
         foreach (var content in update.Contents)
@@ -551,7 +633,8 @@ public static class ChatResponseExtensions
         }
 
         // Other members on a ChatResponseUpdate map to members of the ChatResponse.
-        // Update the response object with those, preferring the values from later updates.
+        // Update the response object with those, preferring the values from later updates
+        // except for CreatedAt which prefers the first valid value.
 
         if (update.ResponseId is { Length: > 0 })
         {
@@ -563,7 +646,7 @@ public static class ChatResponseExtensions
             response.ConversationId = update.ConversationId;
         }
 
-        if (response.CreatedAt is null || (update.CreatedAt is not null && update.CreatedAt > response.CreatedAt))
+        if (response.CreatedAt is null && IsValidCreatedAt(update.CreatedAt))
         {
             response.CreatedAt = update.CreatedAt;
         }
@@ -577,18 +660,6 @@ public static class ChatResponseExtensions
         {
             response.ModelId = update.ModelId;
         }
-
-        if (update.AdditionalProperties is not null)
-        {
-            if (response.AdditionalProperties is null)
-            {
-                response.AdditionalProperties = new(update.AdditionalProperties);
-            }
-            else
-            {
-                response.AdditionalProperties.SetAll(update.AdditionalProperties);
-            }
-        }
     }
 
     /// <summary>Gets whether both strings are not null/empty and not the same as each other.</summary>
@@ -598,4 +669,19 @@ public static class ChatResponseExtensions
     /// <summary>Gets whether two roles are not null and not the same as each other.</summary>
     private static bool NotNullOrEqual(ChatRole? r1, ChatRole? r2) =>
         r1.HasValue && r2.HasValue && r1.Value != r2.Value;
+
+#if NET
+    /// <summary>Gets whether the specified <see cref="DateTimeOffset"/> is a valid <c>CreatedAt</c> value.</summary>
+    /// <remarks>Values that are <see langword="null"/> or less than or equal to the Unix epoch are treated as invalid.</remarks>
+    private static bool IsValidCreatedAt(DateTimeOffset? createdAt) =>
+        createdAt > DateTimeOffset.UnixEpoch;
+#else
+    /// <summary>The Unix epoch (1970-01-01T00:00:00Z).</summary>
+    private static readonly DateTimeOffset _unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+    /// <summary>Gets whether the specified <see cref="DateTimeOffset"/> is a valid <c>CreatedAt</c> value.</summary>
+    /// <remarks>Values that are <see langword="null"/> or less than or equal to the Unix epoch are treated as invalid.</remarks>
+    private static bool IsValidCreatedAt(DateTimeOffset? createdAt) =>
+        createdAt > _unixEpoch;
+#endif
 }

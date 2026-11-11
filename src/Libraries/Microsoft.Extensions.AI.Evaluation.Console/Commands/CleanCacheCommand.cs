@@ -37,7 +37,7 @@ internal sealed class CleanCacheCommand(ILogger logger, TelemetryHelper telemetr
                         if (storageRootDir is not null)
                         {
                             string storageRootPath = storageRootDir.FullName;
-                            logger.LogInformation("Storage root path: {storageRootPath}", storageRootPath);
+                            logger.LogInformation("Storage root path: {StorageRootPath}", storageRootPath);
                             logger.LogInformation("Deleting expired cache entries...");
 
                             cacheProvider = new DiskBasedResponseCacheProvider(storageRootPath);
@@ -46,7 +46,7 @@ internal sealed class CleanCacheCommand(ILogger logger, TelemetryHelper telemetr
                         }
                         else if (endpointUri is not null)
                         {
-                            logger.LogInformation("Azure Storage endpoint: {endpointUri}", endpointUri);
+                            logger.LogInformation("Azure Storage endpoint: {EndpointUri}", endpointUri);
 
                             var fsClient = new DataLakeDirectoryClient(endpointUri, new DefaultAzureCredential());
                             cacheProvider = new AzureStorageResponseCacheProvider(fsClient);

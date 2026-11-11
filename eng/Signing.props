@@ -1,7 +1,9 @@
 <!-- This file gets automatically imported by Arcade infrastructure when calling the build scripts -->
 <Project>
-    <ItemGroup>
-        <FileExtensionSignInfo Update=".js" CertificateName="MicrosoftDotNet500" />
-        <ItemsToSign Include="$(ArtifactsDir)VSIX\*.vsix" />
-    </ItemGroup>
+  <ItemGroup>
+    <!-- Specify that files with the PKT f300afd708cefcd3 should be signed with the MSSharedLibSHA2 strong-name certificate and the Microsoft400 authenticode certificate -->
+    <StrongNameSignInfo Include="MSSharedLibSHA2" PublicKeyToken="f300afd708cefcd3" CertificateName="Microsoft400" />
+    <FileExtensionSignInfo Update=".js" CertificateName="MicrosoftDotNet500" />
+    <ItemsToSign Include="$(ArtifactsDir)VSIX\*.vsix" />
+  </ItemGroup>
 </Project>

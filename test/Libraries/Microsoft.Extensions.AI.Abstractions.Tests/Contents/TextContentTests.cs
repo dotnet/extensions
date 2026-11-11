@@ -60,4 +60,27 @@ public class TextContentTests
         Assert.NotNull(deserializedContent);
         Assert.Equal(content.Text, deserializedContent.Text);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "text",
+              "text": "Hello, world!",
+              "additionalProperties": {
+                "key1": "value1"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var textContent = Assert.IsType<TextContent>(result);
+        Assert.Equal("Hello, world!", textContent.Text);
+        Assert.NotNull(textContent.AdditionalProperties);
+        Assert.Single(textContent.AdditionalProperties);
+        Assert.Equal("value1", textContent.AdditionalProperties["key1"]?.ToString());
+    }
 }

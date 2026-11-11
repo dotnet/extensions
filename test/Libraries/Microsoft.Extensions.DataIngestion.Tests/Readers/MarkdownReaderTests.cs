@@ -1,11 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.DataIngestion.Readers.Tests;
@@ -19,15 +18,15 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         "https://raw.githubusercontent.com/microsoft/markitdown/main/README.md"
     ];
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(Links))]
     public override Task SupportsStreams(string source) => base.SupportsStreams(source);
 
-    [ConditionalTheory]
+    [Theory]
     [MemberData(nameof(Links))]
     public override Task SupportsFiles(string source) => base.SupportsFiles(source);
 
-    [ConditionalFact]
+    [Fact]
     public override async Task SupportsTables()
     {
         string markdownContent = """
@@ -59,7 +58,48 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.Equal(expected, documentTable.Cells.Map(element => element!.GetMarkdown().Trim()));
     }
 
-    [ConditionalFact]
+    [Fact]
+    public async Task SupportsTablesWithoutTrailingPipes()
+    {
+        // Markdown tables without trailing pipes (|) at the end of each row should be parsed correctly.
+        // This was causing IndexOutOfRangeException before the fix.
+        string markdownContent = """
+        # ReadyToRun Flags
+        
+        | Flag                                       |      Value | Description
+        |:-------------------------------------------|-----------:|:-----------
+        | READYTORUN_FLAG_PLATFORM_NEUTRAL_SOURCE    | 0x00000001 | Set if the original IL image was platform neutral.
+        | READYTORUN_FLAG_COMPOSITE                  | 0x00000002 | The image represents a composite R2R file.
+        | READYTORUN_FLAG_PARTIAL                    | 0x00000004 |
+        | READYTORUN_FLAG_NONSHARED_PINVOKE_STUBS    | 0x00000008 | PInvoke stubs compiled into image are non-shareable.
+        | READYTORUN_FLAG_EMBEDDED_MSIL              | 0x00000010 | Input MSIL is embedded in the R2R image.
+        | READYTORUN_FLAG_COMPONENT                  | 0x00000020 | This is a component assembly of a composite R2R image
+        | READYTORUN_FLAG_MULTIMODULE_VERSION_BUBBLE | 0x00000040 | This R2R module has multiple modules within its version bubble.
+        | READYTORUN_FLAG_UNRELATED_R2R_CODE         | 0x00000080 | This R2R module has code in it that would not be naturally encoded.
+        | READYTORUN_FLAG_PLATFORM_NATIVE_IMAGE      | 0x00000100 | The owning composite executable is in the platform native format
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        IngestionDocumentTable documentTable = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentTable>());
+        Assert.Equal(10, documentTable.Cells.GetLength(0)); // 10 rows (1 header + 9 data rows)
+        Assert.Equal(3, documentTable.Cells.GetLength(1));  // 3 columns
+
+        // Verify a few key cells
+        Assert.Equal("Flag", documentTable.Cells[0, 0]!.GetMarkdown().Trim());
+        Assert.Equal("Value", documentTable.Cells[0, 1]!.GetMarkdown().Trim());
+        Assert.Equal("Description", documentTable.Cells[0, 2]!.GetMarkdown().Trim());
+
+        Assert.Equal("READYTORUN_FLAG_PLATFORM_NEUTRAL_SOURCE", documentTable.Cells[1, 0]!.GetMarkdown().Trim());
+        Assert.Equal("0x00000001", documentTable.Cells[1, 1]!.GetMarkdown().Trim());
+        Assert.Contains("platform neutral", documentTable.Cells[1, 2]!.GetMarkdown().Trim());
+
+        Assert.Equal("READYTORUN_FLAG_PARTIAL", documentTable.Cells[3, 0]!.GetMarkdown().Trim());
+        Assert.Equal("0x00000004", documentTable.Cells[3, 1]!.GetMarkdown().Trim());
+        Assert.Null(documentTable.Cells[3, 2]); // Empty description cell is null
+    }
+
+    [Fact]
     public override async Task SupportsImages()
     {
         string contentType1 = "image/png";
@@ -101,7 +141,7 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.Equal("Three", images[2].AlternativeText);
     }
 
-    [ConditionalFact]
+    [Fact]
     public async Task SupportsTablesWithImages()
     {
         byte[] imageBytes = Enumerable.Range(55, 111).Select(i => (byte)i).ToArray();
@@ -131,6 +171,32 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
         Assert.NotNull(img.Content);
         Assert.False(img.Content.Value.IsEmpty);
         Assert.Equal("Latest logo", img.AlternativeText);
+    }
+
+    [Fact]
+    public async Task SupportsInlineHtml()
+    {
+        string markdownContent = "This has <sup>[1]</sup> inline HTML.";
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
+        Assert.Equal("This has <sup>[1]</sup> inline HTML.", paragraph.Text);
+        Assert.Equal(markdownContent, paragraph.GetMarkdown());
+    }
+
+    [Fact]
+    public async Task SupportsMultipleInlineHtmlElements()
+    {
+        string markdownContent = """
+        Text with <strong>bold</strong>, <em>italic</em>, <sub>subscript</sub>, and <sup>superscript</sup> tags.
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        var paragraph = Assert.Single(document.EnumerateContent().OfType<IngestionDocumentParagraph>());
+        Assert.Equal("Text with <strong>bold</strong>, <em>italic</em>, <sub>subscript</sub>, and <sup>superscript</sup> tags.", paragraph.Text);
+        Assert.Equal(markdownContent, paragraph.GetMarkdown());
     }
 
     private async Task<IngestionDocument> ReadAsync(string content)

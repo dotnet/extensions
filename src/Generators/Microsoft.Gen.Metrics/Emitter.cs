@@ -149,12 +149,15 @@ internal sealed class Emitter : EmitterBase
     {
         const string CounterObjectName = "counter";
         const string HistogramObjectName = "histogram";
+        const string GaugeObjectName = "gauge";
 
         const string CounterRecordStatement = "Add";
         const string HistogramRecordStatement = "Record";
+        const string GaugeRecordStatement = "Record";
 
         const string CounterOfTTypeDefinitionTemplate = "global::System.Diagnostics.Metrics.Counter<{0}>";
         const string HistogramOfTTypeDefinitionTemplate = "global::System.Diagnostics.Metrics.Histogram<{0}>";
+        const string GaugeOfTTypeDefinitionTemplate = "global::System.Diagnostics.Metrics.Gauge<{0}>";
 
         string objectName;
         string typeDefinition;
@@ -174,6 +177,12 @@ internal sealed class Emitter : EmitterBase
                 recordStatement = HistogramRecordStatement;
                 typeDefinition = string.Format(CultureInfo.InvariantCulture, HistogramOfTTypeDefinitionTemplate, metricValueType);
                 objectName = HistogramObjectName;
+                break;
+            case InstrumentKind.Gauge:
+            case InstrumentKind.GaugeT:
+                recordStatement = GaugeRecordStatement;
+                typeDefinition = string.Format(CultureInfo.InvariantCulture, GaugeOfTTypeDefinitionTemplate, metricValueType);
+                objectName = GaugeObjectName;
                 break;
             default:
                 throw new NotSupportedException($"Instrument type '{metricMethod.InstrumentKind}' is not supported to generate metric");
@@ -304,16 +313,19 @@ internal sealed class Emitter : EmitterBase
         {
             foreach (var config in metricMethod.StrongTypeConfigs)
             {
-                if (config.StrongTypeMetricObjectType != StrongTypeMetricObjectType.String &&
-                    config.StrongTypeMetricObjectType != StrongTypeMetricObjectType.Enum)
+                var paramName = GetSanitizedParamName(config.Name);
+                var paramInvoke = config.StrongTypeMetricObjectType switch
+                {
+                    StrongTypeMetricObjectType.String => $"{paramName}!",
+                    StrongTypeMetricObjectType.Enum => $"{paramName}.ToString()",
+                    StrongTypeMetricObjectType.Primitive => paramName,
+                    _ => null,
+                };
+
+                if (paramInvoke is null)
                 {
                     continue;
                 }
-
-                var paramName = GetSanitizedParamName(config.Name);
-                var paramInvoke = config.StrongTypeMetricObjectType == StrongTypeMetricObjectType.Enum
-                    ? $"{paramName}.ToString()"
-                    : $"{paramName}!";
 
                 var access = string.IsNullOrEmpty(config.Path)
                     ? "o." + paramInvoke

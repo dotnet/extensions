@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
@@ -41,8 +40,7 @@ internal sealed class DiskStatsReader(IFileSystem fileSystem) : IDiskStatsReader
             try
             {
                 DiskStats stat = DiskStatsReader.ParseLine(line);
-                if (!skipDevicePrefixes.Any(prefix =>
-                    stat.DeviceName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                if (!Array.Exists(skipDevicePrefixes, prefix => stat.DeviceName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                 {
                     diskStatsList.Add(stat);
                 }

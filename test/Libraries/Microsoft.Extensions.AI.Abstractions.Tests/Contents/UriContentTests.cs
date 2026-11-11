@@ -16,11 +16,9 @@ public sealed class UriContentTests
         Assert.Throws<ArgumentNullException>("uri", () => new UriContent((Uri)null!, "image/png"));
         Assert.Throws<UriFormatException>(() => new UriContent("notauri", "image/png"));
 
-        Assert.Throws<ArgumentNullException>("mediaType", () => new UriContent("data:image/png;base64,aGVsbG8=", null!));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent("data:image/png;base64,aGVsbG8=", ""));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent("data:image/png;base64,aGVsbG8=", "image"));
 
-        Assert.Throws<ArgumentNullException>("mediaType", () => new UriContent(new Uri("data:image/png;base64,aGVsbG8="), null!));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent(new Uri("data:image/png;base64,aGVsbG8="), ""));
         Assert.Throws<ArgumentException>("mediaType", () => new UriContent(new Uri("data:image/png;base64,aGVsbG8="), "audio"));
 
@@ -59,6 +57,98 @@ public sealed class UriContentTests
 
         content.MediaType = mediaType;
         Assert.Equal(mediaType, content.MediaType);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/image.png", "image/png")]
+    [InlineData("http://localhost/audio.mp3", "audio/mpeg")]
+    [InlineData("http://localhost/document.pdf", "application/pdf")]
+    [InlineData("http://localhost/data.json", "application/json")]
+    [InlineData("http://localhost/page.html", "text/html")]
+    [InlineData("http://localhost/photo.jpg", "image/jpeg")]
+    [InlineData("http://localhost/path/to/file.wav", "audio/wav")]
+    [InlineData("http://localhost/path/to/file.svg", "image/svg+xml")]
+    [InlineData("http://localhost/image.png?width=100&height=100", "image/png")]
+    [InlineData("http://localhost/image.png#section", "image/png")]
+    [InlineData("http://localhost/image.png?q=1#frag", "image/png")]
+    public void Ctor_NullMediaType_InfersFromExtension_StringUri(string uri, string expectedMediaType)
+    {
+        var content = new UriContent(uri);
+        Assert.Equal(expectedMediaType, content.MediaType);
+
+        var content2 = new UriContent(uri, null);
+        Assert.Equal(expectedMediaType, content2.MediaType);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/image.png", "image/png")]
+    [InlineData("http://localhost/audio.mp3", "audio/mpeg")]
+    [InlineData("http://localhost/document.pdf", "application/pdf")]
+    [InlineData("http://localhost/photo.jpg", "image/jpeg")]
+    [InlineData("http://localhost/image.png?width=100", "image/png")]
+    [InlineData("http://localhost/image.png#section", "image/png")]
+    [InlineData("http://localhost/image.png?q=1#frag", "image/png")]
+    public void Ctor_NullMediaType_InfersFromExtension_AbsoluteUri(string uri, string expectedMediaType)
+    {
+        var content = new UriContent(new Uri(uri));
+        Assert.Equal(expectedMediaType, content.MediaType);
+
+        var content2 = new UriContent(new Uri(uri), null);
+        Assert.Equal(expectedMediaType, content2.MediaType);
+    }
+
+    [Theory]
+    [InlineData("image.png", "image/png")]
+    [InlineData("audio.mp3", "audio/mpeg")]
+    [InlineData("path/to/document.pdf", "application/pdf")]
+    [InlineData("photo.jpg", "image/jpeg")]
+    [InlineData("image.png?width=100", "image/png")]
+    [InlineData("image.png#section", "image/png")]
+    [InlineData("image.png?q=1#frag", "image/png")]
+    [InlineData("path/to/file.wav?key=value&other=123", "audio/wav")]
+    [InlineData("path/to/file.svg#top", "image/svg+xml")]
+    public void Ctor_NullMediaType_InfersFromExtension_RelativeUri(string uri, string expectedMediaType)
+    {
+        var content = new UriContent(new Uri(uri, UriKind.Relative));
+        Assert.Equal(expectedMediaType, content.MediaType);
+
+        var content2 = new UriContent(new Uri(uri, UriKind.Relative), null);
+        Assert.Equal(expectedMediaType, content2.MediaType);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/noextension")]
+    [InlineData("http://localhost/path/to/resource")]
+    [InlineData("http://localhost/")]
+    [InlineData("http://localhost/file.unknownext")]
+    [InlineData("http://localhost/file.xyz123")]
+    public void Ctor_NullMediaType_NoOrUnknownExtension_DefaultsToOctetStream(string uri)
+    {
+        var content = new UriContent(uri);
+        Assert.Equal("application/octet-stream", content.MediaType);
+    }
+
+    [Theory]
+    [InlineData("noextension")]
+    [InlineData("path/to/resource")]
+    [InlineData("file.unknownext")]
+    [InlineData("file.xyz123")]
+    [InlineData("noext?q=1")]
+    [InlineData("noext#frag")]
+    public void Ctor_NullMediaType_RelativeUri_NoOrUnknownExtension_DefaultsToOctetStream(string uri)
+    {
+        var content = new UriContent(new Uri(uri, UriKind.Relative));
+        Assert.Equal("application/octet-stream", content.MediaType);
+    }
+
+    [Fact]
+    public void Ctor_ExplicitMediaType_OverridesInference()
+    {
+        var content = new UriContent("http://localhost/image.png", "application/octet-stream");
+        Assert.Equal("application/octet-stream", content.MediaType);
+
+        var relContent = new UriContent(new Uri("image.png", UriKind.Relative), "application/octet-stream");
+        Assert.Equal("application/octet-stream", relContent.MediaType);
     }
 
     [Fact]
@@ -126,5 +216,29 @@ public sealed class UriContentTests
     {
         var content = new UriContent("http://localhost", mediaType);
         Assert.False(content.HasTopLevelMediaType(prefix));
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "uri",
+              "uri": "http://localhost/something",
+              "mediaType": "image/png",
+              "additionalProperties": {
+                "title": "My Image"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var uriContent = Assert.IsType<UriContent>(result);
+        Assert.Equal(new Uri("http://localhost/something"), uriContent.Uri);
+        Assert.Equal("image/png", uriContent.MediaType);
+        Assert.NotNull(uriContent.AdditionalProperties);
+        Assert.Equal("My Image", uriContent.AdditionalProperties["title"]?.ToString());
     }
 }

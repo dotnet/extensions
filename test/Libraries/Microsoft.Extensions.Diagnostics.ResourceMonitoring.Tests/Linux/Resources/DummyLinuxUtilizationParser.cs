@@ -19,4 +19,5 @@ internal class DummyLinuxUtilizationParser : ILinuxUtilizationParser
     public long GetHostCpuUsageInNanoseconds() => 0;
     public ulong GetMemoryUsageInBytes() => 0;
     public long GetCgroupPeriodsIntervalInMicroSecondsV2() => 1;
+    public ulong GetMinMemoryInBytes() => 1;
 }

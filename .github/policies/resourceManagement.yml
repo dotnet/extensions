@@ -152,6 +152,8 @@ configuration:
       description: Cleanse emails
     - if:
       - payloadType: Pull_Request
+      - isAction:
+          action: Opened
       then:
       - assignTo:
           author: True
@@ -222,3 +224,5 @@ configuration:
 
 onFailure: 
 onSuccess:
+
+

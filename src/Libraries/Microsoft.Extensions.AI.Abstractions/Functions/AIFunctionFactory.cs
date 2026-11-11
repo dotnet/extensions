@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -27,6 +28,19 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
+/// <remarks>
+/// <para>
+/// The <see cref="AIFunctionFactory"/> class creates <see cref="AIFunction"/> instances that wrap .NET methods
+/// (specified as <see cref="Delegate"/> or <see cref="MethodInfo"/>). As part of this process, JSON schemas are
+/// automatically derived for both the function's input parameters (exposed via <see cref="AIFunctionDeclaration.JsonSchema"/>)
+/// and, by default, the function's return type (exposed via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>).
+/// These schemas are produced using the <see cref="AIFunctionFactoryOptions.SerializerOptions"/> and
+/// <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>, and enable AI services to understand and
+/// interact with the function. Return value serialization and schema derivation behavior can be customized
+/// via <see cref="AIFunctionFactoryOptions.MarshalResult"/> and <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+/// respectively.
+/// </para>
+/// </remarks>
 /// <related type="Article" href="https://learn.microsoft.com/dotnet/ai/quickstarts/use-function-calling">Invoke .NET functions using an AI model.</related>
 public static partial class AIFunctionFactory
 {
@@ -48,30 +62,24 @@ public static partial class AIFunctionFactory
     /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
-    ///     <description>
-    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
-    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
-    ///     </description>
+    ///     <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///     the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///     not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
-    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
+    ///     By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///     and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///     <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///     must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///     The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
-    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
-    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
-    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
+    ///     By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///     passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///     instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///     manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///     optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
+    ///     <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///   </item>
     /// </list>
     /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
@@ -104,7 +112,14 @@ public static partial class AIFunctionFactory
     /// special-cased and are not serialized: the created function returns the original instance(s) directly to enable
     /// callers (such as an <c>IChatClient</c>) to perform type tests and implement specialized handling. If
     /// <see cref="AIFunctionFactoryOptions.MarshalResult"/> is supplied, that delegate governs the behavior instead.
-    /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// </para>
+    /// <para>
+    /// In addition to the parameter schema, a JSON schema is also derived from the method's return type and exposed via the
+    /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
+    /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -120,7 +135,8 @@ public static partial class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="name">
     /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
-    /// any <see cref="DisplayNameAttribute"/> on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
+    /// any <see cref="AIFunctionNameAttribute"/> on <paramref name="method"/>, then from any <see cref="DisplayNameAttribute"/>
+    /// on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
     /// </param>
     /// <param name="description">
     /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
@@ -135,28 +151,22 @@ public static partial class AIFunctionFactory
     /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
-    ///     <description>
-    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
-    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema.
-    ///     </description>
+    ///     <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///     the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///     not included in the generated JSON schema.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
-    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///     </description>
+    ///     By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///     and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///     <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///     must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
-    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
-    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
-    ///       optional or not.
-    ///     </description>
+    ///     By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///     passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///     instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///     manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///     optional or not.
     ///   </item>
     /// </list>
     /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
@@ -180,6 +190,11 @@ public static partial class AIFunctionFactory
     /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
     /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized;
     /// they are returned as-is to facilitate specialized handling.
+    /// </para>
+    /// <para>
+    /// A JSON schema is also derived from the method's return type and exposed via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>.
+    /// For methods returning <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced.
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the unwrapped result type.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -218,30 +233,24 @@ public static partial class AIFunctionFactory
     /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
-    ///     <description>
-    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
-    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
-    ///     </description>
+    ///     <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///     the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///     not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
-    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
+    ///     By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///     and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///     <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///     must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///     The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
-    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
-    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
-    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
+    ///     By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///     passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///     instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///     manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///     optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
     ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
     ///   </item>
     /// </list>
     /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
@@ -273,6 +282,14 @@ public static partial class AIFunctionFactory
     /// any type assignable from <see cref="IEnumerable{AIContent}"/> are not serialized and are instead returned directly.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
     /// </para>
+    /// <para>
+    /// In addition to the parameter schema, a JSON schema is also derived from the method's return type and exposed via the
+    /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
+    /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
+    /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> represents an instance method but <paramref name="target"/> is null.</exception>
@@ -297,7 +314,8 @@ public static partial class AIFunctionFactory
     /// </param>
     /// <param name="name">
     /// The name to use for the <see cref="AIFunction"/>. If <see langword="null"/>, the name will be derived from
-    /// any <see cref="DisplayNameAttribute"/> on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
+    /// any <see cref="AIFunctionNameAttribute"/> on <paramref name="method"/>, then from any <see cref="DisplayNameAttribute"/>
+    /// on <paramref name="method"/>, if available, or else from the name of <paramref name="method"/>.
     /// </param>
     /// <param name="description">
     /// The description to use for the <see cref="AIFunction"/>. If <see langword="null"/>, a description will be derived from
@@ -312,28 +330,22 @@ public static partial class AIFunctionFactory
     /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
-    ///     <description>
-    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
-    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema.
-    ///     </description>
+    ///     <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///     the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///     not included in the generated JSON schema.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
-    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///     </description>
+    ///     By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///     and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///     <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///     must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
-    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
-    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
-    ///       optional or not.
-    ///     </description>
+    ///     By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///     passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///     instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///     manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///     optional or not.
     ///   </item>
     /// </list>
     /// All other parameter types are bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
@@ -357,6 +369,11 @@ public static partial class AIFunctionFactory
     /// or else using <see cref="AIJsonUtilities.DefaultOptions"/>. However, return values whose declared type is <see cref="AIContent"/>, a
     /// derived type of <see cref="AIContent"/>, or any type assignable from <see cref="IEnumerable{AIContent}"/> are returned
     /// without serialization to enable specialized handling.
+    /// </para>
+    /// <para>
+    /// A JSON schema is also derived from the method's return type and exposed via <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>.
+    /// For methods returning <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced.
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the unwrapped result type.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -408,30 +425,24 @@ public static partial class AIFunctionFactory
     /// <see cref="AIFunctionDeclaration.JsonSchema"/>. There are a few exceptions to this:
     /// <list type="bullet">
     ///   <item>
-    ///     <description>
-    ///       <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
-    ///       the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
-    ///       not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
-    ///     </description>
+    ///     <see cref="CancellationToken"/> parameters are automatically bound to the <see cref="CancellationToken"/> passed into
+    ///     the invocation via <see cref="AIFunction.InvokeAsync"/>'s <see cref="CancellationToken"/> parameter. The parameter is
+    ///     not included in the generated JSON schema. The behavior of <see cref="CancellationToken"/> parameters can't be overridden.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
-    ///       and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
-    ///       <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
-    ///       must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
-    ///       The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
+    ///     By default, <see cref="IServiceProvider"/> parameters are bound from the <see cref="AIFunctionArguments.Services"/> property
+    ///     and are not included in the JSON schema. If the parameter is optional, such that a default value is provided,
+    ///     <see cref="AIFunctionArguments.Services"/> is allowed to be <see langword="null"/>; otherwise, <see cref="AIFunctionArguments.Services"/>
+    ///     must be non-<see langword="null"/>, or else the invocation will fail with an exception due to the required nature of the parameter.
+    ///     The handling of <see cref="IServiceProvider"/> parameters can be overridden via <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///   </item>
     ///   <item>
-    ///     <description>
-    ///       By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
-    ///       passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
-    ///       instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
-    ///       manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
-    ///       optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
-    ///       <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
-    ///     </description>
+    ///     By default, <see cref="AIFunctionArguments"/> parameters are bound directly to <see cref="AIFunctionArguments"/> instance
+    ///     passed into <see cref="AIFunction.InvokeAsync"/> and are not included in the JSON schema. If the <see cref="AIFunctionArguments"/>
+    ///     instance passed to <see cref="AIFunction.InvokeAsync"/> is <see langword="null"/>, the <see cref="AIFunction"/> implementation
+    ///     manufactures an empty instance, such that parameters of type <see cref="AIFunctionArguments"/> can always be satisfied, whether
+    ///     optional or not. The handling of <see cref="AIFunctionArguments"/> parameters can be overridden via
+    ///     <see cref="AIFunctionFactoryOptions.ConfigureParameterBinding"/>.
     ///   </item>
     /// </list>
     /// All other parameter types are, by default, bound from the <see cref="AIFunctionArguments"/> dictionary passed into <see cref="AIFunction.InvokeAsync"/>
@@ -462,6 +473,14 @@ public static partial class AIFunctionFactory
     /// However, return values whose declared type is <see cref="AIContent"/>, a derived type of <see cref="AIContent"/>, or any type
     /// assignable from <see cref="IEnumerable{AIContent}"/> are returned directly without serialization.
     /// Handling of return values can be overridden via <see cref="AIFunctionFactoryOptions.MarshalResult"/>.
+    /// </para>
+    /// <para>
+    /// In addition to the parameter schema, a JSON schema is also derived from the method's return type and exposed via the
+    /// returned <see cref="AIFunction"/>'s <see cref="AIFunctionDeclaration.ReturnJsonSchema"/>. For methods returning
+    /// <see cref="void"/>, <see cref="Task"/>, or <see cref="ValueTask"/>, no return schema is produced (the property is <see langword="null"/>).
+    /// For methods returning <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, the schema is derived from the
+    /// unwrapped result type. Return schema generation can be excluded via <see cref="AIFunctionFactoryOptions.ExcludeResultSchema"/>,
+    /// and its generation is governed by <paramref name="options"/>'s <see cref="AIFunctionFactoryOptions.JsonSchemaCreateOptions"/>.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="method"/> is <see langword="null"/>.</exception>
@@ -611,6 +630,49 @@ public static partial class AIFunctionFactory
                 var paramMarshallers = FunctionDescriptor.ParameterMarshallers;
                 object?[] args = paramMarshallers.Length != 0 ? new object?[paramMarshallers.Length] : [];
 
+                // If the configured serializer options request strict handling of unmapped members,
+                // verify that every argument key corresponds to a declared parameter name. This mirrors
+                // JsonSerializerOptions.UnmappedMemberHandling behavior for object deserialization by
+                // applying the same policy to top-level AIFunction argument binding. Argument name matching
+                // honors the comparer of the supplied AIFunctionArguments dictionary (ordinal by default).
+                //
+                // Validation is skipped when custom ParameterBindingOptions.BindParameter callbacks are in
+                // use, since those may legitimately source values from argument keys that do not correspond
+                // to the .NET parameter names.
+                if (FunctionDescriptor.JsonSerializerOptions.UnmappedMemberHandling is JsonUnmappedMemberHandling.Disallow &&
+                    arguments.Count > 0 &&
+                    !FunctionDescriptor.HasCustomParameterBinding)
+                {
+                    HashSet<string> expectedNames = FunctionDescriptor.ExpectedArgumentNames;
+                    int matched = 0;
+                    foreach (string name in expectedNames)
+                    {
+                        if (arguments.ContainsKey(name))
+                        {
+                            matched++;
+                        }
+                    }
+
+                    if (matched != arguments.Count)
+                    {
+                        foreach (KeyValuePair<string, object?> kvp in arguments)
+                        {
+                            if (!expectedNames.Contains(kvp.Key))
+                            {
+                                Throw.ArgumentException(
+                                    nameof(arguments),
+                                    $"The arguments dictionary contains an unexpected key '{kvp.Key}' that does not correspond to any parameter of '{Name}'.");
+                            }
+                        }
+
+                        // Fallback for comparer mismatches (e.g. case-insensitive arguments dictionary
+                        // with duplicate-casing keys aliasing to the same parameter).
+                        Throw.ArgumentException(
+                            nameof(arguments),
+                            $"The arguments dictionary contains keys that do not correspond to any parameter of '{Name}'.");
+                    }
+                }
+
                 for (int i = 0; i < args.Length; i++)
                 {
                     args[i] = paramMarshallers[i](arguments, cancellationToken);
@@ -648,7 +710,7 @@ public static partial class AIFunctionFactory
         private static readonly object? _boxedDefaultCancellationToken = default(CancellationToken);
 
         /// <summary>
-        /// Gets or creates a descriptors using the specified method and options.
+        /// Gets or creates a descriptor using the specified method and options.
         /// </summary>
         public static ReflectionAIFunctionDescriptor GetOrCreate(MethodInfo method, AIFunctionFactoryOptions options)
         {
@@ -673,14 +735,18 @@ public static partial class AIFunctionFactory
         {
             ParameterInfo[] parameters = key.Method.GetParameters();
 
-            // Determine how each parameter should be bound.
-            Dictionary<ParameterInfo, AIFunctionFactoryOptions.ParameterBindingOptions>? boundParameters = null;
+            // Determine how each parameter should be bound. This is keyed on the parameter's position
+            // rather than the ParameterInfo instance: MethodInfo.GetParameters() does not guarantee the
+            // same ParameterInfo instances across concurrent first calls on a cold MethodInfo, and the
+            // schema generator invokes IncludeParameter with ParameterInfo instances from its own
+            // GetParameters() call. Keying on identity would race and silently drop ExcludeFromSchema.
+            AIFunctionFactoryOptions.ParameterBindingOptions[]? boundParameters = null;
             if (parameters.Length != 0 && key.GetBindParameterOptions is not null)
             {
-                boundParameters = new(parameters.Length);
+                boundParameters = new AIFunctionFactoryOptions.ParameterBindingOptions[parameters.Length];
                 for (int i = 0; i < parameters.Length; i++)
                 {
-                    boundParameters[parameters[i]] = key.GetBindParameterOptions(parameters[i]);
+                    boundParameters[i] = key.GetBindParameterOptions(parameters[i]);
                 }
             }
 
@@ -697,8 +763,11 @@ public static partial class AIFunctionFactory
                     }
 
                     // If the parameter is marked as excluded by GetBindParameterOptions, exclude it.
-                    if (boundParameters?.TryGetValue(parameterInfo, out var options) is true &&
-                        options.ExcludeFromSchema)
+                    // Look up by position because the ParameterInfo passed here may be a different
+                    // instance than the one boundParameters was built from (see comment above).
+                    if (boundParameters is not null &&
+                        (uint)parameterInfo.Position < (uint)boundParameters.Length &&
+                        boundParameters[parameterInfo.Position].ExcludeFromSchema)
                     {
                         return false;
                     }
@@ -717,24 +786,52 @@ public static partial class AIFunctionFactory
 
             // Get marshaling delegates for parameters.
             ParameterMarshallers = parameters.Length > 0 ? new Func<AIFunctionArguments, CancellationToken, object?>[parameters.Length] : [];
+            HashSet<string> expectedArgumentNames = new(StringComparer.Ordinal);
+            bool hasCustomParameterBinding = false;
             for (int i = 0; i < parameters.Length; i++)
             {
-                if (boundParameters?.TryGetValue(parameters[i], out AIFunctionFactoryOptions.ParameterBindingOptions options) is not true)
-                {
-                    options = default;
-                }
+                AIFunctionFactoryOptions.ParameterBindingOptions options =
+                    boundParameters is not null ? boundParameters[i] : default;
 
                 ParameterMarshallers[i] = GetParameterMarshaller(serializerOptions, options, parameters[i]);
+
+                if (options.BindParameter is not null)
+                {
+                    // Custom BindParameter callbacks can legally source their value from arbitrary keys in the
+                    // AIFunctionArguments dictionary, so we cannot know in advance which keys are "expected".
+                    // Note this down so that strict unmapped-member validation is skipped in InvokeCoreAsync.
+                    hasCustomParameterBinding = true;
+                }
+
+                // Collect the set of parameter names that are potentially sourced from the arguments dictionary.
+                // Infrastructure parameters (CancellationToken, AIFunctionArguments, IServiceProvider) are always
+                // bound from dedicated sources and are never resolved by argument name, so they are excluded from
+                // the permitted set.
+                Type pType = parameters[i].ParameterType;
+                if (pType != typeof(CancellationToken) &&
+                    pType != typeof(AIFunctionArguments) &&
+                    pType != typeof(IServiceProvider) &&
+                    !string.IsNullOrEmpty(parameters[i].Name))
+                {
+                    string effectiveName = AIJsonUtilities.GetParameterSchemaName(parameters[i]);
+                    if (!expectedArgumentNames.Add(effectiveName))
+                    {
+                        Throw.ArgumentException("method", $"Multiple parameters are mapped to the same name '{effectiveName}'. Ensure that any {nameof(AIParameterNameAttribute)} values do not collide with each other or with other parameter names.");
+                    }
+                }
             }
+
+            ExpectedArgumentNames = expectedArgumentNames;
+            HasCustomParameterBinding = hasCustomParameterBinding;
 
             ReturnParameterMarshaller = GetReturnParameterMarshaller(key, serializerOptions, out Type? returnType);
             Method = key.Method;
-            Name = key.Name ?? key.Method.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName ?? GetFunctionName(key.Method);
+            Name = key.Name ?? key.Method.GetCustomAttribute<AIFunctionNameAttribute>(inherit: true)?.Name ?? key.Method.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName ?? GetFunctionName(key.Method);
             Description = key.Description ?? key.Method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty;
             JsonSerializerOptions = serializerOptions;
             ReturnJsonSchema = returnType is null || key.ExcludeResultSchema ? null : AIJsonUtilities.CreateJsonSchema(
                 NormalizeReturnType(returnType, serializerOptions),
-                description: key.Method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                description: GetReturnParameterDescription(key.Method),
                 serializerOptions: serializerOptions,
                 inferenceOptions: schemaOptions);
 
@@ -754,6 +851,8 @@ public static partial class AIFunctionFactory
         public JsonElement? ReturnJsonSchema { get; }
         public Func<AIFunctionArguments, CancellationToken, object?>[] ParameterMarshallers { get; }
         public Func<object?, CancellationToken, ValueTask<object?>> ReturnParameterMarshaller { get; }
+        public HashSet<string> ExpectedArgumentNames { get; }
+        public bool HasCustomParameterBinding { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
         private static string GetFunctionName(MethodInfo method)
@@ -861,10 +960,11 @@ public static partial class AIFunctionFactory
             // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             JsonTypeInfo? typeInfo = serializerOptions.GetTypeInfo(parameterType);
             bool hasDefaultValue = AIJsonUtilities.TryGetEffectiveDefaultValue(parameter, out object? effectiveDefaultValue);
+            string argumentName = AIJsonUtilities.GetParameterSchemaName(parameter);
             return (arguments, _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
-                if (arguments.TryGetValue(parameter.Name, out object? value))
+                if (arguments.TryGetValue(argumentName, out object? value))
                 {
                     return value switch
                     {
@@ -911,7 +1011,7 @@ public static partial class AIFunctionFactory
                 // If the parameter is required and there's no argument specified for it, throw.
                 if (!hasDefaultValue)
                 {
-                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{parameter.Name}'.");
+                    Throw.ArgumentException(nameof(arguments), $"The arguments dictionary is missing a value for the required parameter '{argumentName}'.");
                 }
 
                 // Otherwise, use the optional parameter's default value.
@@ -1122,6 +1222,21 @@ public static partial class AIFunctionFactory
         private static bool IsAIContentRelatedType(Type type) =>
             typeof(AIContent).IsAssignableFrom(type) ||
             typeof(IEnumerable<AIContent>).IsAssignableFrom(type);
+
+        private static string? GetReturnParameterDescription(MethodInfo method)
+        {
+            try
+            {
+                return method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+            }
+            catch (Exception e) when (e is ArgumentNullException or NullReferenceException or IndexOutOfRangeException)
+            {
+                // DynamicMethod return parameters don't support GetCustomAttribute. Additionally, on .NET Framework,
+                // querying inherited attributes on the return parameter of an overriding method can throw
+                // IndexOutOfRangeException. In either case, treat the description as absent.
+                return null;
+            }
+        }
 
         private static Type NormalizeReturnType(Type type, JsonSerializerOptions? options)
         {

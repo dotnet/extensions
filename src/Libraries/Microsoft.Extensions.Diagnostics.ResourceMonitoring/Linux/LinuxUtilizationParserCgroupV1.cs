@@ -368,6 +368,12 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
                 $"Could not parse '{_cpuSetCpus}'. Expected comma-separated list of integers, with dashes (\"-\") based ranges (\"0\", \"2-6,12\") but got '{new string(content)}'.");
     }
 
+    /// <summary>
+    /// In CgroupV1 there's no equivalent to memory.min or memory.low files.
+    /// </summary>
+    /// <returns>0.</returns>
+    public ulong GetMinMemoryInBytes() => 0;
+
     /// <remarks>
     /// The input must contain only number. If there is something more than whitespace before the number, it will return failure (-1).
     /// </remarks>

@@ -28,6 +28,7 @@ public class FunctionCallContentTests
 
         Assert.Null(c.Arguments);
         Assert.Null(c.Exception);
+        Assert.False(c.InformationalOnly);
     }
 
     [Fact]
@@ -71,6 +72,88 @@ public class FunctionCallContentTests
         Exception e = new();
         c.Exception = e;
         Assert.Same(e, c.Exception);
+
+        Assert.False(c.InformationalOnly);
+        c.InformationalOnly = true;
+        Assert.True(c.InformationalOnly);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Serialization(bool informationalOnly)
+    {
+        // Arrange
+        var sut = new FunctionCallContent("callId1", "functionName", new Dictionary<string, object?> { ["key"] = "value" })
+        {
+            InformationalOnly = informationalOnly
+        };
+
+        // Act
+        var json = JsonSerializer.SerializeToNode(sut, TestJsonSerializerContext.Default.Options);
+
+        // Assert - InformationalOnly should always be in the JSON (for roundtrip)
+        Assert.NotNull(json);
+        var jsonObj = json!.AsObject();
+        Assert.True(jsonObj.ContainsKey("informationalOnly") || jsonObj.ContainsKey("InformationalOnly"));
+
+        JsonNode? informationalOnlyValue = null;
+        if (jsonObj.TryGetPropertyValue("informationalOnly", out var value1))
+        {
+            informationalOnlyValue = value1;
+        }
+        else if (jsonObj.TryGetPropertyValue("InformationalOnly", out var value2))
+        {
+            informationalOnlyValue = value2;
+        }
+
+        Assert.NotNull(informationalOnlyValue);
+        Assert.Equal(informationalOnly, informationalOnlyValue!.GetValue<bool>());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Deserialization(bool informationalOnly)
+    {
+        // Test deserialization
+        var json = $$"""{"callId":"callId1","name":"functionName","informationalOnly":{{(informationalOnly ? "true" : "false")}}}""";
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("callId1", deserialized.CallId);
+        Assert.Equal("functionName", deserialized.Name);
+        Assert.Equal(informationalOnly, deserialized.InformationalOnly);
+    }
+
+    [Fact]
+    public void InformationalOnly_DeserializedToFalseWhenMissing()
+    {
+        // Test deserialization when InformationalOnly is not in JSON (should default to false from field initializer)
+        var json = """{"callId":"callId1","name":"functionName"}""";
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("callId1", deserialized.CallId);
+        Assert.Equal("functionName", deserialized.Name);
+        Assert.False(deserialized.InformationalOnly);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void InformationalOnly_Roundtrip(bool informationalOnly)
+    {
+        // Test that InformationalOnly roundtrips correctly through JSON serialization
+        var original = new FunctionCallContent("callId1", "functionName") { InformationalOnly = informationalOnly };
+        var json = JsonSerializer.SerializeToNode(original, TestJsonSerializerContext.Default.Options);
+        var deserialized = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal(original.CallId, deserialized.CallId);
+        Assert.Equal(original.Name, deserialized.Name);
+        Assert.Equal(original.InformationalOnly, deserialized.InformationalOnly);
+        Assert.Equal(informationalOnly, deserialized.InformationalOnly);
     }
 
     [Fact]
@@ -321,5 +404,65 @@ public class FunctionCallContentTests
         Assert.Throws<ArgumentNullException>("callId", () => FunctionCallContent.CreateFromParsedArguments("{}", null!, "functionName", _ => null));
         Assert.Throws<ArgumentNullException>("name", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
         Assert.Throws<ArgumentNullException>("argumentParser", () => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        var content = new FunctionCallContent("call123", "myFunction")
+        {
+            Arguments = new Dictionary<string, object?> { { "arg1", "value1" } }
+        };
+
+        AssertSerializationRoundtrips<FunctionCallContent>(content);
+        AssertSerializationRoundtrips<ToolCallContent>(content);
+        AssertSerializationRoundtrips<AIContent>(content);
+
+        static void AssertSerializationRoundtrips<T>(FunctionCallContent content)
+            where T : AIContent
+        {
+            T contentAsT = (T)(object)content;
+            string json = JsonSerializer.Serialize(contentAsT, AIJsonUtilities.DefaultOptions);
+            T? deserialized = JsonSerializer.Deserialize<T>(json, AIJsonUtilities.DefaultOptions);
+            Assert.NotNull(deserialized);
+            var deserializedContent = Assert.IsType<FunctionCallContent>(deserialized);
+            Assert.Equal(content.CallId, deserializedContent.CallId);
+            Assert.Equal(content.Name, deserializedContent.Name);
+            Assert.NotNull(deserializedContent.Arguments);
+            Assert.Equal("value1", deserializedContent.Arguments["arg1"]?.ToString());
+        }
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "functionCall",
+              "callId": "call123",
+              "name": "myFunction",
+              "arguments": {
+                "arg1": "value1",
+                "arg2": 42
+              },
+              "informationalOnly": true,
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var funcCall = Assert.IsType<FunctionCallContent>(result);
+        Assert.Equal("call123", funcCall.CallId);
+        Assert.Equal("myFunction", funcCall.Name);
+        Assert.True(funcCall.InformationalOnly);
+        Assert.NotNull(funcCall.Arguments);
+        Assert.Equal("value1", funcCall.Arguments["arg1"]?.ToString());
+        Assert.Equal("42", funcCall.Arguments["arg2"]?.ToString());
+        Assert.NotNull(funcCall.AdditionalProperties);
+        Assert.Equal("val", funcCall.AdditionalProperties["key"]?.ToString());
     }
 }

@@ -12,20 +12,18 @@ public class CodeInterpreterToolResultContentTests
     [Fact]
     public void Constructor_PropsDefault()
     {
-        CodeInterpreterToolResultContent c = new();
+        CodeInterpreterToolResultContent c = new("callId1");
         Assert.Null(c.RawRepresentation);
         Assert.Null(c.AdditionalProperties);
-        Assert.Null(c.CallId);
+        Assert.Equal("callId1", c.CallId);
         Assert.Null(c.Outputs);
     }
 
     [Fact]
     public void Properties_Roundtrip()
     {
-        CodeInterpreterToolResultContent c = new();
+        CodeInterpreterToolResultContent c = new("call123");
 
-        Assert.Null(c.CallId);
-        c.CallId = "call123";
         Assert.Equal("call123", c.CallId);
 
         Assert.Null(c.Outputs);
@@ -47,9 +45,8 @@ public class CodeInterpreterToolResultContentTests
     [Fact]
     public void Output_SupportsMultipleContentTypes()
     {
-        CodeInterpreterToolResultContent c = new()
+        CodeInterpreterToolResultContent c = new("call789")
         {
-            CallId = "call789",
             Outputs =
             [
                 new TextContent("Execution completed"),
@@ -70,9 +67,8 @@ public class CodeInterpreterToolResultContentTests
     [Fact]
     public void Serialization_Roundtrips()
     {
-        CodeInterpreterToolResultContent content = new()
+        CodeInterpreterToolResultContent content = new("call123")
         {
-            CallId = "call123",
             Outputs =
             [
                 new TextContent("Hello, World!"),
@@ -91,5 +87,37 @@ public class CodeInterpreterToolResultContentTests
         Assert.Equal("Hello, World!", ((TextContent)deserializedSut.Outputs[0]).Text);
         Assert.IsType<HostedFileContent>(deserializedSut.Outputs[1]);
         Assert.Equal("result.txt", ((HostedFileContent)deserializedSut.Outputs[1]).FileId);
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "codeInterpreterToolResult",
+              "callId": "ci-call1",
+              "outputs": [
+                {
+                  "$type": "text",
+                  "text": "hello"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var ciResult = Assert.IsType<CodeInterpreterToolResultContent>(result);
+        Assert.Equal("ci-call1", ciResult.CallId);
+        Assert.NotNull(ciResult.Outputs);
+        Assert.Single(ciResult.Outputs);
+        var textOutput = Assert.IsType<TextContent>(ciResult.Outputs[0]);
+        Assert.Equal("hello", textOutput.Text);
+        Assert.NotNull(ciResult.AdditionalProperties);
+        Assert.Equal("val", ciResult.AdditionalProperties["key"]?.ToString());
     }
 }

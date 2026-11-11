@@ -63,4 +63,30 @@ public class ErrorContentTests
         Assert.Equal(errorContent.ErrorCode, deserializedErrorContent.ErrorCode);
         Assert.Equal(errorContent.Details, deserializedErrorContent.Details);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "error",
+              "message": "Error occurred",
+              "errorCode": "ERR001",
+              "details": "Something went wrong",
+              "additionalProperties": {
+                "severity": "high"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var errorContent = Assert.IsType<ErrorContent>(result);
+        Assert.Equal("Error occurred", errorContent.Message);
+        Assert.Equal("ERR001", errorContent.ErrorCode);
+        Assert.Equal("Something went wrong", errorContent.Details);
+        Assert.NotNull(errorContent.AdditionalProperties);
+        Assert.Equal("high", errorContent.AdditionalProperties["severity"]?.ToString());
+    }
 }

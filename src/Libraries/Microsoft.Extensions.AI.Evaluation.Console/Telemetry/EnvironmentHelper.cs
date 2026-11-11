@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
 
 namespace Microsoft.Extensions.AI.Evaluation.Console.Telemetry;
 
@@ -54,7 +53,7 @@ internal static class EnvironmentHelper
 
         foreach (string[] variables in _mustNotBeNullCIVariables)
         {
-            if (variables.All(variable => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable))))
+            if (Array.TrueForAll(variables, static variable => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable))))
             {
                 return true;
             }

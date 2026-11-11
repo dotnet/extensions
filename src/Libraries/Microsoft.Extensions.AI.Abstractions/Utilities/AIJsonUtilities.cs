@@ -36,7 +36,7 @@ public static partial class AIJsonUtilities
         _ = Throw.IfNull(options);
         _ = Throw.IfNull(typeDiscriminatorId);
 
-        AddAIContentType(options, typeof(TContent), typeDiscriminatorId, checkBuiltIn: true);
+        AddAIContentTypeChain(options, typeof(TContent), typeDiscriminatorId, checkBuiltIn: true);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public static partial class AIJsonUtilities
     /// <param name="contentType">The custom content type to configure.</param>
     /// <param name="typeDiscriminatorId">The type discriminator id for the content type.</param>
     /// <exception cref="ArgumentNullException"><paramref name="options"/>, <paramref name="contentType"/>, or <paramref name="typeDiscriminatorId"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="contentType"/> is a built-in content type or does not derived from <see cref="AIContent"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="contentType"/> is a built-in content type or does not derive from <see cref="AIContent"/>.</exception>
     /// <exception cref="InvalidOperationException"><paramref name="options"/> is a read-only instance.</exception>
     public static void AddAIContentType(this JsonSerializerOptions options, Type contentType, string typeDiscriminatorId)
     {
@@ -59,7 +59,7 @@ public static partial class AIJsonUtilities
             Throw.ArgumentException(nameof(contentType), $"The content type must derive from {nameof(AIContent)}.");
         }
 
-        AddAIContentType(options, contentType, typeDiscriminatorId, checkBuiltIn: true);
+        AddAIContentTypeChain(options, contentType, typeDiscriminatorId, checkBuiltIn: true);
     }
 
     /// <summary>Serializes the supplied values and computes a string hash of the resulting JSON.</summary>
@@ -186,21 +186,35 @@ public static partial class AIJsonUtilities
         }
     }
 
-    private static void AddAIContentType(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId, bool checkBuiltIn)
+    /// <summary>
+    /// Walks the inheritance chain from <paramref name="contentType"/> up to and including <see cref="AIContent"/>,
+    /// registering the content type as a derived type of each base in the chain.
+    /// </summary>
+    private static void AddAIContentTypeChain(JsonSerializerOptions options, Type contentType, string typeDiscriminatorId, bool checkBuiltIn)
     {
         if (checkBuiltIn && (contentType.Assembly == typeof(AIContent).Assembly))
         {
             Throw.ArgumentException(nameof(contentType), $"Cannot register built-in {nameof(AIContent)} types.");
         }
 
-        IJsonTypeInfoResolver resolver = options.TypeInfoResolver ?? DefaultOptions.TypeInfoResolver!;
-        options.TypeInfoResolver = resolver.WithAddedModifier(typeInfo =>
+        for (Type? baseType = contentType.BaseType;
+             baseType is not null && typeof(AIContent).IsAssignableFrom(baseType);
+             baseType = baseType.BaseType)
         {
-            if (typeInfo.Type == typeof(AIContent))
+            AddDerivedAIContentType(options, baseType, contentType, typeDiscriminatorId);
+        }
+
+        static void AddDerivedAIContentType(JsonSerializerOptions options, Type baseType, Type contentType, string typeDiscriminatorId)
+        {
+            IJsonTypeInfoResolver resolver = options.TypeInfoResolver ?? DefaultOptions.TypeInfoResolver!;
+            options.TypeInfoResolver = resolver.WithAddedModifier(typeInfo =>
             {
-                (typeInfo.PolymorphismOptions ??= new()).DerivedTypes.Add(new(contentType, typeDiscriminatorId));
-            }
-        });
+                if (typeInfo.Type == baseType)
+                {
+                    (typeInfo.PolymorphismOptions ??= new()).DerivedTypes.Add(new(contentType, typeDiscriminatorId));
+                }
+            });
+        }
     }
 
 #if NET

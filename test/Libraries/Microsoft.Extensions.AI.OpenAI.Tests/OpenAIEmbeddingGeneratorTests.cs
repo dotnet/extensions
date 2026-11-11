@@ -217,6 +217,91 @@ public class OpenAIEmbeddingGeneratorTests
     }
 
     [Fact]
+    public async Task EmbeddingGenerationOptions_MissingUsage_Ignored()
+    {
+        const string Input = """
+            {
+              "input":["hello, world!"],
+              "model":"text-embedding-3-small",
+              "encoding_format":"base64"
+            }
+            """;
+
+        const string Output = """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "object": "embedding",
+                  "index": 0,
+                  "embedding": "AAAAAA=="
+                }
+              ],
+              "model": "text-embedding-3-small"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
+
+        var response = await generator.GenerateAsync(["hello, world!"]);
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Null(response.Usage);
+
+        foreach (Embedding<float> e in response)
+        {
+            Assert.Equal("text-embedding-3-small", e.ModelId);
+            Assert.NotNull(e.CreatedAt);
+            Assert.Equal(1, e.Vector.Length);
+        }
+    }
+
+    [Fact]
+    public async Task EmbeddingGenerationOptions_NullUsage_Ignored()
+    {
+        const string Input = """
+            {
+              "input":["hello, world!"],
+              "model":"text-embedding-3-small",
+              "encoding_format":"base64"
+            }
+            """;
+
+        const string Output = """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "object": "embedding",
+                  "index": 0,
+                  "embedding": "AAAAAA=="
+                }
+              ],
+              "model": "text-embedding-3-small",
+              "usage": null
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IEmbeddingGenerator<string, Embedding<float>> generator = CreateEmbeddingGenerator(httpClient, "text-embedding-3-small");
+
+        var response = await generator.GenerateAsync(["hello, world!"]);
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Null(response.Usage);
+
+        foreach (Embedding<float> e in response)
+        {
+            Assert.Equal("text-embedding-3-small", e.ModelId);
+            Assert.NotNull(e.CreatedAt);
+            Assert.Equal(1, e.Vector.Length);
+        }
+    }
+
+    [Fact]
     public async Task RequestHeaders_UserAgent_ContainsMEAI()
     {
         using var handler = new ThrowUserAgentExceptionHandler();

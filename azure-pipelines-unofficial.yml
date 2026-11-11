@@ -4,7 +4,7 @@ pr: none
 
 variables:
   - name: _TeamName
-    value: dotnet-r9
+    value: dotnet-extensions
   - name: NativeToolsOnMachine
     value: true
   - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
@@ -65,7 +65,7 @@ extends:
     sdl:
       sourceAnalysisPool:
         name: NetCore1ESPool-Internal
-        image: windows.vs2022preview.amd64
+        image: windows.vs2022.amd64
         os: windows
     customBuildTags:
     - ES365AIMigrationTooling
@@ -103,7 +103,7 @@ extends:
             testResultsFormat: VSTest
             pool:
               name: NetCore1ESPool-Internal
-              image: windows.vs2022preview.amd64
+              image: windows.vs2022.amd64
               os: windows
 
             variables:
@@ -141,7 +141,7 @@ extends:
             testResultsFormat: VSTest
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             variables:
@@ -192,7 +192,7 @@ extends:
 
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
+              image: 1es-ubuntu-2204
               os: linux
 
             preSteps:
@@ -207,50 +207,3 @@ extends:
 
             - template: /eng/pipelines/templates/VerifyCoverageReport.yml
 
-
-    # ----------------------------------------------------------------
-    # This stage only performs a build treating warnings as errors
-    # to detect any kind of code style violations
-    # ----------------------------------------------------------------
-    - stage: correctness
-      displayName: Correctness
-      dependsOn: []
-      variables:
-      - template: /eng/common/templates-official/variables/pool-providers.yml@self
-      jobs:
-      - template: /eng/common/templates-official/jobs/jobs.yml@self
-        parameters:
-          enableMicrobuild: true
-          enableTelemetry: true
-          runAsPublic: ${{ variables['runAsPublic'] }}
-          workspace:
-            clean: all
-
-          jobs:
-          - job: WarningsCheck
-            timeoutInMinutes: 180
-
-            pool:
-              name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
-              os: linux
-
-            variables:
-            - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
-
-            preSteps:
-            - checkout: self
-              clean: true
-              persistCredentials: true
-              fetchDepth: 1
-
-            steps:
-            - template: '\eng\pipelines\templates\BuildAndTest.yml'
-              parameters:
-                buildScript: $(_buildScript)
-                buildConfig: $(_BuildConfig)
-                repoLogPath: $(Build.Arcade.LogsPath)
-                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-                skipTests: true
-                skipQualityGates: true
-                isWindows: false

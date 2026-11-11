@@ -1,0 +1,34 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+
+namespace Microsoft.Extensions.VectorData;
+
+/// <summary>
+/// Represents a filter clause that filters by checking if a field consisting of a list of values contains a specific value.
+/// </summary>
+[Obsolete("Use LINQ expressions via VectorSearchOptions<TRecord>.Filter instead. This type will be removed in a future version.")]
+public sealed class AnyTagEqualToFilterClause : FilterClause
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AnyTagEqualToFilterClause"/> class.
+    /// </summary>
+    /// <param name="fieldName">The name of the field with the list of values.</param>
+    /// <param name="value">The value that the list should contain.</param>
+    public AnyTagEqualToFilterClause(string fieldName, string value)
+    {
+        FieldName = fieldName;
+        Value = value;
+    }
+
+    /// <summary>
+    /// Gets the name of the field with the list of values.
+    /// </summary>
+    public string FieldName { get; private set; }
+
+    /// <summary>
+    /// Gets the value that the list should contain.
+    /// </summary>
+    public string Value { get; private set; }
+}

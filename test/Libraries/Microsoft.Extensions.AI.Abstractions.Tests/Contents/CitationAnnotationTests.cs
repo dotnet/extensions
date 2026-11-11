@@ -97,4 +97,46 @@ public class CitationAnnotationTests
         Assert.NotNull(deserialized.Url);
         Assert.Equal(original.Url, deserialized.Url);
     }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "citation",
+              "title": "My Source",
+              "url": "https://example.com/source",
+              "fileId": "file-123",
+              "toolName": "web_search",
+              "snippet": "relevant excerpt",
+              "annotatedRegions": [
+                {
+                  "$type": "textSpan",
+                  "start": 10,
+                  "end": 25
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIAnnotation? result = JsonSerializer.Deserialize<AIAnnotation>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var citation = Assert.IsType<CitationAnnotation>(result);
+        Assert.Equal("My Source", citation.Title);
+        Assert.Equal(new Uri("https://example.com/source"), citation.Url);
+        Assert.Equal("file-123", citation.FileId);
+        Assert.Equal("web_search", citation.ToolName);
+        Assert.Equal("relevant excerpt", citation.Snippet);
+        Assert.NotNull(citation.AnnotatedRegions);
+        Assert.Single(citation.AnnotatedRegions);
+        var textSpan = Assert.IsType<TextSpanAnnotatedRegion>(citation.AnnotatedRegions[0]);
+        Assert.Equal(10, textSpan.StartIndex);
+        Assert.Equal(25, textSpan.EndIndex);
+        Assert.NotNull(citation.AdditionalProperties);
+        Assert.Equal("val", citation.AdditionalProperties["key"]?.ToString());
+    }
 }

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -18,7 +18,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.TestUtilities;
 using OpenTelemetry.Trace;
 using Xunit;
 
@@ -41,8 +40,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     protected IChatClient? ChatClient { get; }
 
-    protected IEmbeddingGenerator<string, Embedding<float>>? EmbeddingGenerator { get; private set; }
-
     public void Dispose()
     {
         ChatClient?.Dispose();
@@ -51,14 +48,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     protected abstract IChatClient? CreateChatClient();
 
-    /// <summary>
-    /// Optionally supplies an embedding generator for integration tests that exercise
-    /// embedding-based components (e.g., tool reduction). Default returns null and
-    /// tests depending on embeddings will skip if not overridden.
-    /// </summary>
-    protected virtual IEmbeddingGenerator<string, Embedding<float>>? CreateEmbeddingGenerator() => null;
-
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_SingleRequestMessage()
     {
         SkipIfNotEnabled();
@@ -68,7 +58,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("whale", response.Text, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_MultipleRequestMessages()
     {
         SkipIfNotEnabled();
@@ -86,7 +76,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("Asia", response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_WithEmptyMessage()
     {
         SkipIfNotEnabled();
@@ -102,7 +92,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("3", response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetStreamingResponseAsync()
     {
         SkipIfNotEnabled();
@@ -123,7 +113,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("one giant leap", responseText, StringComparison.OrdinalIgnoreCase);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_UsageDataAvailable()
     {
         SkipIfNotEnabled();
@@ -135,7 +125,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(response.Usage?.InputTokenCount + response.Usage?.OutputTokenCount, response.Usage?.TotalTokenCount);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetStreamingResponseAsync_UsageDataAvailable()
     {
         SkipIfNotEnabled();
@@ -162,7 +152,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(usage.Details.InputTokenCount + usage.Details.OutputTokenCount, usage.Details.TotalTokenCount);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetStreamingResponseAsync_AppendToHistory()
     {
         SkipIfNotEnabled();
@@ -183,7 +173,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     protected virtual string? GetModel_MultiModal_DescribeImage() => null;
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task MultiModal_DescribeImage()
     {
         SkipIfNotEnabled();
@@ -201,7 +191,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(response.Text.IndexOf("net", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task MultiModal_DescribePdf()
     {
         SkipIfNotEnabled();
@@ -219,7 +209,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(response.Text.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0, response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_AutomaticallyInvokeFunction_Parameterless()
     {
         SkipIfNotEnabled();
@@ -250,7 +240,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         AssertUsageAgainstActivities(response, activities);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_AutomaticallyInvokeFunction_WithParameters_NonStreaming()
     {
         SkipIfNotEnabled();
@@ -265,7 +255,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("3528", response.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_AutomaticallyInvokeFunction_WithParameters_Streaming()
     {
         SkipIfNotEnabled();
@@ -286,7 +276,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains("3528", sb.ToString());
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_OptionalParameter()
     {
         SkipIfNotEnabled();
@@ -318,7 +308,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         AssertUsageAgainstActivities(response, activities);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_NestedParameters()
     {
         SkipIfNotEnabled();
@@ -350,7 +340,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         AssertUsageAgainstActivities(response, activities);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_ArrayParameter()
     {
         SkipIfNotEnabled();
@@ -400,11 +390,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     public record PersonRecord(string Name, int Age = 42);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task AvailableTools_SchemasAreAccepted_Strict() =>
         AvailableTools_SchemasAreAccepted(strict: true);
 
-    [ConditionalFact]
+    [Fact]
     public virtual Task AvailableTools_SchemasAreAccepted_NonStrict() =>
         AvailableTools_SchemasAreAccepted(strict: false);
 
@@ -432,7 +422,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
             if (strict)
             {
-                aiFuncOptions.AdditionalProperties = new Dictionary<string, object?> { ["strictJsonSchema"] = true };
+                aiFuncOptions.AdditionalProperties = new Dictionary<string, object?> { ["strict"] = true };
             }
 
             return aiFuncOptions;
@@ -444,7 +434,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
             if (strict)
             {
-                additionalProperties["strictJsonSchema"] = true;
+                additionalProperties["strict"] = true;
             }
 
             return new CustomAIFunction($"CustomMethod{methodCount++}", schema, additionalProperties);
@@ -505,6 +495,10 @@ public abstract class ChatClientIntegrationTests : IDisposable
                     """),
                 createWithSchema("""
                     {"properties":{"commit_message":{"description":"Extra detail for merge commit","type":"string"},"commit_title":{"description":"Title for merge commit","type":"string"},"merge_method":{"description":"Merge method","enum":["merge","squash","rebase"],"type":"string"},"owner":{"description":"Repository owner","type":"string"},"pullNumber":{"description":"Pull request number","type":"number"},"repo":{"description":"Repository name","type":"string"}},"required":["owner","repo","pullNumber"],"type":"object"}
+                    """),
+
+                createWithSchema("""
+                    {"type":"object","properties":{"labels":{"type":"object"}},"additionalProperties":{"type":"string"}}
                     """),
             ],
         };
@@ -567,14 +561,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     protected virtual bool SupportsParallelFunctionCalling => true;
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_SupportsMultipleParallelRequests()
     {
         SkipIfNotEnabled();
-        if (!SupportsParallelFunctionCalling)
-        {
-            throw new SkipTestException("Parallel function calling is not supported by this chat client");
-        }
+        Assert.SkipUnless(SupportsParallelFunctionCalling, "Parallel function calling is not supported by this chat client");
 
         using var chatClient = new FunctionInvokingChatClient(ChatClient);
 
@@ -597,7 +588,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             $"Doesn't contain three: {response.Text}");
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_RequireAny()
     {
         SkipIfNotEnabled();
@@ -620,7 +611,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(callCount >= 1);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task FunctionInvocation_RequireSpecific()
     {
         SkipIfNotEnabled();
@@ -641,7 +632,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(shieldsUp);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Caching_OutputVariesWithoutCaching()
     {
         SkipIfNotEnabled();
@@ -653,7 +644,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.NotEqual(firstResponse.Text, secondResponse.Text);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Caching_SamePromptResultsInCacheHit_NonStreaming()
     {
         SkipIfNotEnabled();
@@ -678,7 +669,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.NotEqual(firstResponse.Messages, thirdResponse.Messages);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Caching_SamePromptResultsInCacheHit_Streaming()
     {
         SkipIfNotEnabled();
@@ -717,7 +708,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.NotEqual(orig.ToString(), third.ToString());
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Caching_BeforeFunctionInvocation_AvoidsExtraCalls()
     {
         SkipIfNotEnabled();
@@ -753,7 +744,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(2, llmCallCount!.CallCount);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Caching_AfterFunctionInvocation_FunctionOutputUnchangedAsync()
     {
         SkipIfNotEnabled();
@@ -795,7 +786,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
     public virtual bool FunctionInvokingChatClientSetsConversationId => false;
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Caching_AfterFunctionInvocation_FunctionOutputChangedAsync()
     {
         SkipIfNotEnabled();
@@ -836,7 +827,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(3, llmCallCount!.CallCount);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Logging_LogsCalls_NonStreaming()
     {
         SkipIfNotEnabled();
@@ -855,7 +846,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             entry => Assert.Contains("whale", entry.Message));
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Logging_LogsCalls_Streaming()
     {
         SkipIfNotEnabled();
@@ -877,7 +868,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains(logs, e => e.Message.Contains("whale"));
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Logging_LogsFunctionCalls_NonStreaming()
     {
         SkipIfNotEnabled();
@@ -903,7 +894,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             entry => Assert.Contains(secretNumber.ToString(), entry.Message));
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task Logging_LogsFunctionCalls_Streaming()
     {
         SkipIfNotEnabled();
@@ -931,7 +922,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains(logs, e => e.Message.Contains($"\"result\": {secretNumber}"));
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task OpenTelemetry_CanEmitTracesAndMetrics()
     {
         SkipIfNotEnabled();
@@ -961,7 +952,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutput()
     {
         SkipIfNotEnabled();
@@ -977,7 +968,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(JobType.Programmer, response.Result.Job);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutputArray()
     {
         SkipIfNotEnabled();
@@ -993,7 +984,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Contains(response.Result, x => x.FullName == "Josh Simpson");
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutputInteger()
     {
         SkipIfNotEnabled();
@@ -1006,7 +997,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(15, response.Result);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutputString()
     {
         SkipIfNotEnabled();
@@ -1019,7 +1010,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal("Jimbo Smith", response.Result);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutputBool_True()
     {
         SkipIfNotEnabled();
@@ -1032,7 +1023,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.True(response.Result);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutputBool_False()
     {
         SkipIfNotEnabled();
@@ -1045,7 +1036,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.False(response.Result);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutputEnum()
     {
         SkipIfNotEnabled();
@@ -1057,7 +1048,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(JobType.PopStar, response.Result);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutput_WithFunctions()
     {
         SkipIfNotEnabled();
@@ -1088,7 +1079,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Assert.Equal(expectedPerson.Job, response.Result.Job);
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task GetResponseAsync_StructuredOutput_NonNative()
     {
         SkipIfNotEnabled();
@@ -1134,7 +1125,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
         Unknown,
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task SummarizingChatReducer_PreservesConversationContext()
     {
         SkipIfNotEnabled();
@@ -1157,13 +1148,14 @@ public abstract class ChatClientIntegrationTests : IDisposable
         // The summarizer should have reduced the conversation
         Assert.Equal(1, chatClient.SummarizerCallCount);
         Assert.NotNull(chatClient.LastSummarizedConversation);
-        Assert.Equal(3, chatClient.LastSummarizedConversation.Count);
+        Assert.Equal(4, chatClient.LastSummarizedConversation.Count);
         Assert.Collection(chatClient.LastSummarizedConversation,
             m =>
             {
                 Assert.Equal(ChatRole.Assistant, m.Role); // Indicates this is the assistant's summary
                 Assert.Contains("Alice", m.Text);
             },
+            m => Assert.StartsWith("I hiked the section", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("The Sierra Nevada section", m.Text, StringComparison.Ordinal),
             m => Assert.StartsWith("What's my name", m.Text, StringComparison.Ordinal));
 
@@ -1175,7 +1167,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             $"Expected 'hiking' or 'hike' in response: {response.Text}");
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task SummarizingChatReducer_PreservesSystemMessage()
     {
         SkipIfNotEnabled();
@@ -1219,7 +1211,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             $"Expected pirate speak in response: {response.Text}");
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task SummarizingChatReducer_WithFunctionCalls()
     {
         SkipIfNotEnabled();
@@ -1270,7 +1262,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             $"Expected weather comparison in response: {response.Text}");
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task SummarizingChatReducer_Streaming()
     {
         SkipIfNotEnabled();
@@ -1315,7 +1307,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
             $"Expected 'software' or 'engineer' in response: {responseText}");
     }
 
-    [ConditionalFact]
+    [Fact]
     public virtual async Task SummarizingChatReducer_CustomPrompt()
     {
         SkipIfNotEnabled();
@@ -1404,362 +1396,12 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
     }
 
-    [ConditionalFact]
-    public virtual async Task ToolReduction_DynamicSelection_RespectsConversationHistory()
-    {
-        SkipIfNotEnabled();
-        EnsureEmbeddingGenerator();
-
-        // Limit to 2 so that, once the conversation references both weather and translation,
-        // both tools can be included even if the latest user turn only mentions one of them.
-        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 2);
-
-        var weatherTool = AIFunctionFactory.Create(
-            () => "Weather data",
-            new AIFunctionFactoryOptions
-            {
-                Name = "GetWeatherForecast",
-                Description = "Returns weather forecast and temperature for a given city."
-            });
-
-        var translateTool = AIFunctionFactory.Create(
-            () => "Translated text",
-            new AIFunctionFactoryOptions
-            {
-                Name = "TranslateText",
-                Description = "Translates text between human languages."
-            });
-
-        var mathTool = AIFunctionFactory.Create(
-            () => 42,
-            new AIFunctionFactoryOptions
-            {
-                Name = "SolveMath",
-                Description = "Solves basic math problems."
-            });
-
-        var allTools = new List<AITool> { weatherTool, translateTool, mathTool };
-
-        IList<AITool>? firstTurnTools = null;
-        IList<AITool>? secondTurnTools = null;
-
-        using var client = ChatClient!
-            .AsBuilder()
-            .UseToolReduction(strategy)
-            .Use(async (messages, options, next, ct) =>
-            {
-                // Capture the (possibly reduced) tool list for each turn.
-                if (firstTurnTools is null)
-                {
-                    firstTurnTools = options?.Tools;
-                }
-                else
-                {
-                    secondTurnTools ??= options?.Tools;
-                }
-
-                await next(messages, options, ct);
-            })
-            .UseFunctionInvocation()
-            .Build();
-
-        // Maintain chat history across turns.
-        List<ChatMessage> history = [];
-
-        // Turn 1: Ask a weather question.
-        history.Add(new ChatMessage(ChatRole.User, "What will the weather be in Seattle tomorrow?"));
-        var firstResponse = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
-        history.AddMessages(firstResponse); // Append assistant reply.
-
-        Assert.NotNull(firstTurnTools);
-        Assert.Contains(firstTurnTools, t => t.Name == "GetWeatherForecast");
-
-        // Turn 2: Ask a translation question. Even though only translation is mentioned now,
-        // conversation history still contains a weather request. Expect BOTH weather + translation tools.
-        history.Add(new ChatMessage(ChatRole.User, "Please translate 'good evening' into French."));
-        var secondResponse = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
-        history.AddMessages(secondResponse);
-
-        Assert.NotNull(secondTurnTools);
-        Assert.Equal(2, secondTurnTools.Count); // Should have filled both slots with the two relevant domains.
-        Assert.Contains(secondTurnTools, t => t.Name == "GetWeatherForecast");
-        Assert.Contains(secondTurnTools, t => t.Name == "TranslateText");
-
-        // Ensure unrelated tool was excluded.
-        Assert.DoesNotContain(secondTurnTools, t => t.Name == "SolveMath");
-    }
-
-    [ConditionalFact]
-    public virtual async Task ToolReduction_RequireSpecificToolPreservedAndOrdered()
-    {
-        SkipIfNotEnabled();
-        EnsureEmbeddingGenerator();
-
-        // Limit would normally reduce to 1, but required tool plus another should remain.
-        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 1);
-
-        var translateTool = AIFunctionFactory.Create(
-            () => "Translated text",
-            new AIFunctionFactoryOptions
-            {
-                Name = "TranslateText",
-                Description = "Translates phrases between languages."
-            });
-
-        var weatherTool = AIFunctionFactory.Create(
-            () => "Weather data",
-            new AIFunctionFactoryOptions
-            {
-                Name = "GetWeatherForecast",
-                Description = "Returns forecast data for a city."
-            });
-
-        var tools = new List<AITool> { translateTool, weatherTool };
-
-        IList<AITool>? captured = null;
-
-        using var client = ChatClient!
-            .AsBuilder()
-            .UseToolReduction(strategy)
-            .UseFunctionInvocation()
-            .Use((messages, options, next, ct) =>
-            {
-                captured = options?.Tools;
-                return next(messages, options, ct);
-            })
-            .Build();
-
-        var history = new List<ChatMessage>
-        {
-            new(ChatRole.User, "What will the weather be like in Redmond next week?")
-        };
-
-        var response = await client.GetResponseAsync(history, new ChatOptions
-        {
-            Tools = tools,
-            ToolMode = ChatToolMode.RequireSpecific(translateTool.Name)
-        });
-        history.AddMessages(response);
-
-        Assert.NotNull(captured);
-        Assert.Equal(2, captured!.Count);
-        Assert.Equal("TranslateText", captured[0].Name); // Required should appear first.
-        Assert.Equal("GetWeatherForecast", captured[1].Name);
-    }
-
-    [ConditionalFact]
-    public virtual async Task ToolReduction_ToolRemovedAfterFirstUse_NotInvokedAgain()
-    {
-        SkipIfNotEnabled();
-        EnsureEmbeddingGenerator();
-
-        int weatherInvocationCount = 0;
-
-        var weatherTool = AIFunctionFactory.Create(
-            () =>
-            {
-                weatherInvocationCount++;
-                return "Sunny and dry.";
-            },
-            new AIFunctionFactoryOptions
-            {
-                Name = "GetWeather",
-                Description = "Gets the weather forecast for a given location."
-            });
-
-        // Strategy exposes tools only on the first request, then removes them.
-        var removalStrategy = new RemoveToolAfterFirstUseStrategy();
-
-        IList<AITool>? firstTurnTools = null;
-        IList<AITool>? secondTurnTools = null;
-
-        using var client = ChatClient!
-            .AsBuilder()
-            // Place capture immediately after reduction so it's invoked exactly once per user request.
-            .UseToolReduction(removalStrategy)
-            .Use((messages, options, next, ct) =>
-            {
-                if (firstTurnTools is null)
-                {
-                    firstTurnTools = options?.Tools;
-                }
-                else
-                {
-                    secondTurnTools ??= options?.Tools;
-                }
-
-                return next(messages, options, ct);
-            })
-            .UseFunctionInvocation()
-            .Build();
-
-        List<ChatMessage> history = [];
-
-        // Turn 1
-        history.Add(new ChatMessage(ChatRole.User, "What's the weather like tomorrow in Seattle?"));
-        var firstResponse = await client.GetResponseAsync(history, new ChatOptions
-        {
-            Tools = [weatherTool],
-            ToolMode = ChatToolMode.RequireAny
-        });
-        history.AddMessages(firstResponse);
-
-        Assert.Equal(1, weatherInvocationCount);
-        Assert.NotNull(firstTurnTools);
-        Assert.Contains(firstTurnTools!, t => t.Name == "GetWeather");
-
-        // Turn 2 (tool removed by strategy even though caller supplies it again)
-        history.Add(new ChatMessage(ChatRole.User, "And what about next week?"));
-        var secondResponse = await client.GetResponseAsync(history, new ChatOptions
-        {
-            Tools = [weatherTool]
-        });
-        history.AddMessages(secondResponse);
-
-        Assert.Equal(1, weatherInvocationCount); // Not invoked again.
-        Assert.NotNull(secondTurnTools);
-        Assert.Empty(secondTurnTools!);          // Strategy removed the tool set.
-
-        // Response text shouldn't just echo the tool's stub output.
-        Assert.DoesNotContain("Sunny and dry.", secondResponse.Text, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [ConditionalFact]
-    public virtual async Task ToolReduction_MessagesEmbeddingTextSelector_UsesChatClientToAnalyzeConversation()
-    {
-        SkipIfNotEnabled();
-        EnsureEmbeddingGenerator();
-
-        // Create tools for different domains.
-        var weatherTool = AIFunctionFactory.Create(
-            () => "Weather data",
-            new AIFunctionFactoryOptions
-            {
-                Name = "GetWeatherForecast",
-                Description = "Returns weather forecast and temperature for a given city."
-            });
-
-        var translateTool = AIFunctionFactory.Create(
-            () => "Translated text",
-            new AIFunctionFactoryOptions
-            {
-                Name = "TranslateText",
-                Description = "Translates text between human languages."
-            });
-
-        var mathTool = AIFunctionFactory.Create(
-            () => 42,
-            new AIFunctionFactoryOptions
-            {
-                Name = "SolveMath",
-                Description = "Solves basic math problems."
-            });
-
-        var allTools = new List<AITool> { weatherTool, translateTool, mathTool };
-
-        // Track the analysis result from the chat client used in the selector.
-        string? capturedAnalysis = null;
-
-        var strategy = new EmbeddingToolReductionStrategy(EmbeddingGenerator, toolLimit: 2)
-        {
-            // Use a chat client to analyze the conversation and extract relevant tool categories.
-            MessagesEmbeddingTextSelector = async messages =>
-            {
-                var conversationText = string.Join("\n", messages.Select(m => $"{m.Role}: {m.Text}"));
-
-                var analysisPrompt = $"""
-                    Analyze the following conversation and identify what kinds of tools would be most helpful.
-                    Focus on the key topics and tasks being discussed.
-                    Respond with a brief summary of the relevant tool categories (e.g., "weather", "translation", "math").
-
-                    Conversation:
-                    {conversationText}
-
-                    Relevant tool categories:
-                    """;
-
-                var response = await ChatClient!.GetResponseAsync(analysisPrompt);
-                capturedAnalysis = response.Text;
-
-                // Return the analysis as the query text for embedding-based tool selection.
-                return capturedAnalysis;
-            }
-        };
-
-        IList<AITool>? selectedTools = null;
-
-        using var client = ChatClient!
-            .AsBuilder()
-            .UseToolReduction(strategy)
-            .Use(async (messages, options, next, ct) =>
-            {
-                selectedTools = options?.Tools;
-                await next(messages, options, ct);
-            })
-            .UseFunctionInvocation()
-            .Build();
-
-        // Conversation that clearly indicates weather-related needs.
-        List<ChatMessage> history = [];
-        history.Add(new ChatMessage(ChatRole.User, "What will the weather be like in London tomorrow?"));
-
-        var response = await client.GetResponseAsync(history, new ChatOptions { Tools = allTools });
-        history.AddMessages(response);
-
-        // Verify that the chat client was used to analyze the conversation.
-        Assert.NotNull(capturedAnalysis);
-        Assert.True(
-            capturedAnalysis.IndexOf("weather", StringComparison.OrdinalIgnoreCase) >= 0 ||
-            capturedAnalysis.IndexOf("forecast", StringComparison.OrdinalIgnoreCase) >= 0,
-            $"Expected analysis to mention weather or forecast: {capturedAnalysis}");
-
-        // Verify that the tool selection was influenced by the analysis.
-        Assert.NotNull(selectedTools);
-        Assert.True(selectedTools.Count <= 2, $"Expected at most 2 tools, got {selectedTools.Count}");
-        Assert.Contains(selectedTools, t => t.Name == "GetWeatherForecast");
-    }
-
-    // Test-only custom strategy: include tools on first request, then remove them afterward.
-    private sealed class RemoveToolAfterFirstUseStrategy : IToolReductionStrategy
-    {
-        private bool _used;
-
-        public Task<IEnumerable<AITool>> SelectToolsForRequestAsync(
-            IEnumerable<ChatMessage> messages,
-            ChatOptions? options,
-            CancellationToken cancellationToken = default)
-        {
-            if (!_used && options?.Tools is { Count: > 0 })
-            {
-                _used = true;
-                // Returning the same instance signals no change.
-                return Task.FromResult<IEnumerable<AITool>>(options.Tools);
-            }
-
-            // After first use, remove all tools.
-            return Task.FromResult<IEnumerable<AITool>>(Array.Empty<AITool>());
-        }
-    }
-
     [MemberNotNull(nameof(ChatClient))]
     protected void SkipIfNotEnabled()
     {
         string? skipIntegration = TestRunnerConfiguration.Instance["SkipIntegrationTests"];
 
-        if (skipIntegration is not null || ChatClient is null)
-        {
-            throw new SkipTestException("Client is not enabled.");
-        }
+        Assert.SkipUnless(skipIntegration is null && ChatClient is not null, "Client is not enabled.");
     }
 
-    [MemberNotNull(nameof(EmbeddingGenerator))]
-    protected void EnsureEmbeddingGenerator()
-    {
-        EmbeddingGenerator ??= CreateEmbeddingGenerator();
-
-        if (EmbeddingGenerator is null)
-        {
-            throw new SkipTestException("Embedding generator is not enabled.");
-        }
-    }
 }

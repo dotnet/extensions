@@ -3,28 +3,36 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from '../../components/App.tsx'
-import { FluentProvider, webLightTheme } from '@fluentui/react-components';
-import { createScoreSummary } from '../../components/Summary.ts';
-import { ReportContextProvider } from '../../components/ReportContext.tsx';
+import { App, createScoreSummary, ReportContextProvider } from '../../components';
 
-let dataset: Dataset = { scenarioRunResults: [] };
+let dataset: Dataset = { scenarioRunResults: [], createdAt: '' };
+
+const rootElement = document.getElementById('root')!;
 
 if (!import.meta.env.PROD) {
-  // This only runs in development. In production the data is embedded into the dataset variable declaration above.
+  // This only runs in development. In production the data is read from the data-dataset attribute on the root element.
   // run `node init-devdata.js` to populate the data file from the most recent execution.
   const imported = await import("../devdata.json");
   dataset = imported.default as unknown as Dataset;
+} else {
+  // In production, the data is HTML-encoded and placed in a data-dataset attribute.
+  // This pattern avoids XSS vulnerabilities that can occur when embedding JSON in script blocks.
+  const datasetJson = rootElement.getAttribute('data-dataset');
+  if (datasetJson) {
+    try {
+      dataset = JSON.parse(datasetJson) as Dataset;
+    } catch {
+      // Keep the empty fallback dataset when the embedded payload is malformed.
+    }
+  }
 }
 
 const scoreSummary = createScoreSummary(dataset);
 
-createRoot(document.getElementById('root')!).render(
-  <FluentProvider theme={webLightTheme}>
-    <StrictMode>
-      <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
-        <App />
-      </ReportContextProvider>
-    </StrictMode>
-  </FluentProvider>,
+createRoot(rootElement).render(
+  <StrictMode>
+    <ReportContextProvider dataset={dataset} scoreSummary={scoreSummary}>
+      <App heightStrategy="fill-viewport" themeSource="toggle" />
+    </ReportContextProvider>
+  </StrictMode>,
 )

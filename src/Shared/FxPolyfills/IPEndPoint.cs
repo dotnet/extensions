@@ -29,12 +29,9 @@ internal static partial class FxPolyfillIPEndPoint
             // Look to see if this is an IPv6 address with a port.
             if (lastColonPos > 0)
             {
-                if (s[lastColonPos - 1] == ']')
-                {
-                    addressLength = lastColonPos;
-                }
                 // Look to see if this is IPv4 with a port (IPv6 will have another colon)
-                else if (s.Slice(0, lastColonPos).LastIndexOf(':') == -1)
+                if (s[lastColonPos - 1] == ']' ||
+                    s.Slice(0, lastColonPos).LastIndexOf(':') < 0)
                 {
                     addressLength = lastColonPos;
                 }

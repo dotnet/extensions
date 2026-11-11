@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable SA1111 // Closing parenthesis should be on line of last parameter
@@ -19,10 +20,10 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a delegating image generator that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
 /// <remarks>
-/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.38, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
+/// This class provides an implementation of the Semantic Conventions for Generative AI systems v1.41, defined at <see href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" />.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
 {
     private readonly ActivitySource _activitySource;
@@ -36,16 +37,18 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
     private readonly string? _serverAddress;
     private readonly int _serverPort;
 
+    private readonly ILogger? _logger;
+
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetryImageGenerator"/> class.</summary>
     /// <param name="innerGenerator">The underlying <see cref="IImageGenerator"/>.</param>
     /// <param name="logger">The <see cref="ILogger"/> to use for emitting any logging data from the client.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-#pragma warning disable IDE0060 // Remove unused parameter; it exists for consistency with IChatClient and future use
     public OpenTelemetryImageGenerator(IImageGenerator innerGenerator, ILogger? logger = null, string? sourceName = null)
-#pragma warning restore IDE0060
         : base(innerGenerator)
     {
         Debug.Assert(innerGenerator is not null, "Should have been validated by the base ctor");
+
+        _logger = logger;
 
         if (innerGenerator!.GetService<ImageGeneratorMetadata>() is ImageGeneratorMetadata metadata)
         {
@@ -59,19 +62,8 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
         _activitySource = new(name);
         _meter = new(name);
 
-        _tokenUsageHistogram = _meter.CreateHistogram<int>(
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Name,
-            OpenTelemetryConsts.TokensUnit,
-            OpenTelemetryConsts.GenAI.Client.TokenUsage.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.TokenUsage.ExplicitBucketBoundaries }
-            );
-
-        _operationDurationHistogram = _meter.CreateHistogram<double>(
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Name,
-            OpenTelemetryConsts.SecondsUnit,
-            OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
-            advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries }
-            );
+        _tokenUsageHistogram = OtelMetricHelpers.CreateGenAITokenUsageHistogram(_meter);
+        _operationDurationHistogram = OtelMetricHelpers.CreateGenAIOperationDurationHistogram(_meter);
     }
 
     /// <inheritdoc/>
@@ -195,7 +187,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
 
                     _ = activity.AddTag(
                         OpenTelemetryConsts.GenAI.Input.Messages,
-                        OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.User, content)]));
+                        OtelMessageSerializer.SerializeChatMessages([new(ChatRole.User, content)]));
 
                     if (options?.AdditionalProperties is { } props)
                     {
@@ -232,12 +224,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
             _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
         }
 
-        if (error is not null)
-        {
-            _ = activity?
-                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
-        }
+        OpenTelemetryLog.RecordOperationError(activity, _logger, error);
 
         if (response is not null)
         {
@@ -247,7 +234,7 @@ public sealed class OpenTelemetryImageGenerator : DelegatingImageGenerator
             {
                 _ = activity.AddTag(
                     OpenTelemetryConsts.GenAI.Output.Messages,
-                    OpenTelemetryChatClient.SerializeChatMessages([new(ChatRole.Assistant, contents)]));
+                    OtelMessageSerializer.SerializeChatMessages([new(ChatRole.Assistant, contents)]));
             }
 
             if (response.Usage is { } usage)

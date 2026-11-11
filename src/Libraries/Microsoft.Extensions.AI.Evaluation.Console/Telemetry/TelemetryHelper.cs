@@ -113,7 +113,7 @@ internal sealed class TelemetryHelper : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to report event '{eventName}' in telemetry.");
+            _logger.LogWarning(ex, "Failed to report event '{EventName}' in telemetry.", eventName);
         }
     }
 

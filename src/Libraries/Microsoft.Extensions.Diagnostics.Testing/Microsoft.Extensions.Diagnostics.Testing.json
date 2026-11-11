@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.Testing, Version=8.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Diagnostics.Testing, Version=10.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T> where T : struct",
@@ -58,6 +58,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.Logging.Testing.FakeLogRecord> Microsoft.Extensions.Logging.Testing.FakeLogCollector.GetLogsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Logging.Testing.FakeLogRecord> Microsoft.Extensions.Logging.Testing.FakeLogCollector.GetSnapshot(bool clear = false);",
           "Stage": "Stable"
         }
@@ -88,6 +92,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Func<Microsoft.Extensions.Logging.Testing.FakeLogRecord, bool>? Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.CustomFilter { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.FilteredCategories { get; set; }",
           "Stage": "Stable"
         },
@@ -110,7 +118,7 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogger : Microsoft.Extensions.Logging.ILogger",
+      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogger : Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.Abstractions.IBufferedLogger",
       "Stage": "Stable",
       "Methods": [
         {
@@ -136,6 +144,10 @@
         {
           "Member": "void Microsoft.Extensions.Logging.Testing.FakeLogger.Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception? exception, System.Func<TState, System.Exception?, string> formatter);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.Testing.FakeLogger.LogRecords(System.Collections.Generic.IEnumerable<Microsoft.Extensions.Logging.Abstractions.BufferedLogRecord> records);",
+          "Stage": "Experimental"
         }
       ],
       "Properties": [

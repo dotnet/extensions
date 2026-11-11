@@ -20,7 +20,8 @@ public class MetricsGenerator : IIncrementalGenerator
         SymbolLoader.CounterTAttribute.Replace("`1", "<T>"),
         SymbolLoader.HistogramAttribute,
         SymbolLoader.HistogramTAttribute.Replace("`1", "<T>"),
-        SymbolLoader.GaugeAttribute
+        SymbolLoader.GaugeAttribute,
+        SymbolLoader.GaugeTAttribute.Replace("`1", "<T>"),
     ];
 
     public void Initialize(IncrementalGeneratorInitializationContext context)

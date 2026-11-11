@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 public static partial class NonSensitiveRecordExtensions
 {
-    internal record User()
+    internal record User
     {
         public int Id { get; set; }
 

@@ -23,6 +23,11 @@ internal static class DataUriParser
 {
     public static string Scheme => "data:";
 
+    /// <summary>
+    /// The default media type per RFC 2397 when the media type is omitted.
+    /// </summary>
+    public const string DefaultMediaType = "text/plain;charset=US-ASCII";
+
     public static DataUri Parse(ReadOnlyMemory<char> dataUri)
     {
         // Validate, then trim off the "data:" scheme.
@@ -47,7 +52,7 @@ internal static class DataUriParser
 
         // Determine whether the data is Base64-encoded or percent-encoded (Uri-encoded).
         // If it's base64-encoded, validate it. If it's Uri-encoded, there's nothing to validate,
-        // as WebUtility.UrlDecode will successfully decode any input with no sequence considered invalid.
+        // as WebUtility.UrlDecodeToBytes will successfully decode any input with no sequence considered invalid.
         if (metadata.Span.EndsWith(";base64".AsSpan(), StringComparison.OrdinalIgnoreCase))
         {
             metadata = metadata.Slice(0, metadata.Length - ";base64".Length);
@@ -59,9 +64,14 @@ internal static class DataUriParser
         }
 
         // Validate the media type, if present.
+        // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII".
         ReadOnlySpan<char> span = metadata.Span.Trim();
         string? mediaType = null;
-        if (!span.IsEmpty && !IsValidMediaType(span, ref mediaType))
+        if (span.IsEmpty)
+        {
+            mediaType = DefaultMediaType;
+        }
+        else if (!IsValidMediaType(span, ref mediaType))
         {
             throw new UriFormatException("Invalid data URI format: the media type is not a valid.");
         }
@@ -91,6 +101,7 @@ internal static class DataUriParser
         // For common media types, we can avoid both allocating a string for the span and avoid parsing overheads.
         string? knownType = mediaTypeSpan switch
         {
+            DefaultMediaType => DefaultMediaType,
             "application/json" => "application/json",
             "application/octet-stream" => "application/octet-stream",
             "application/pdf" => "application/pdf",
@@ -189,8 +200,16 @@ internal static class DataUriParser
 
         public bool IsBase64 { get; } = isBase64;
 
-        public byte[] ToByteArray() => IsBase64 ?
-            Convert.FromBase64String(Data.ToString()) :
-            Encoding.UTF8.GetBytes(WebUtility.UrlDecode(Data.ToString()));
+        public byte[] ToByteArray()
+        {
+            if (IsBase64)
+            {
+                return Convert.FromBase64String(Data.ToString());
+            }
+
+            // Each %xx escape is the octet it names, and '+' is a literal plus, not a space as in form encoding.
+            byte[] bytes = Encoding.UTF8.GetBytes(Data.ToString().Replace("+", "%2B"));
+            return WebUtility.UrlDecodeToBytes(bytes, 0, bytes.Length)!;
+        }
     }
 }

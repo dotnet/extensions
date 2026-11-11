@@ -42,7 +42,7 @@ internal sealed class CleanResultsCommand(ILogger logger, TelemetryHelper teleme
                         if (storageRootDir is not null)
                         {
                             string storageRootPath = storageRootDir.FullName;
-                            logger.LogInformation("Storage root path: {storageRootPath}", storageRootPath);
+                            logger.LogInformation("Storage root path: {StorageRootPath}", storageRootPath);
 
                             resultStore = new DiskBasedResultStore(storageRootPath);
 
@@ -50,7 +50,7 @@ internal sealed class CleanResultsCommand(ILogger logger, TelemetryHelper teleme
                         }
                         else if (endpointUri is not null)
                         {
-                            logger.LogInformation("Azure Storage endpoint: {endpointUri}", endpointUri);
+                            logger.LogInformation("Azure Storage endpoint: {EndpointUri}", endpointUri);
 
                             var fsClient = new DataLakeDirectoryClient(endpointUri, new DefaultAzureCredential());
                             resultStore = new AzureStorageResultStore(fsClient);
@@ -72,7 +72,7 @@ internal sealed class CleanResultsCommand(ILogger logger, TelemetryHelper teleme
                         else
                         {
                             logger.LogInformation(
-                                "Deleting all results except the {lastN} most recent ones...",
+                                "Deleting all results except the {LastN} most recent ones...",
                                 lastN);
 
                             HashSet<string> toPreserve = [];

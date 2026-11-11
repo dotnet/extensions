@@ -9,11 +9,12 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using OpenAI.Assistants;
 using OpenAI.Chat;
 using OpenAI.Realtime;
 using OpenAI.Responses;
 using Xunit;
+
+#pragma warning disable OPENAI001 // Experimental OpenAI APIs
 
 namespace Microsoft.Extensions.AI;
 
@@ -47,7 +48,7 @@ public class OpenAIConversionTests
             """), RemoveWhitespace(((IJsonModel<OpenAI.Chat.ChatResponseFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
 
         jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIChatResponseFormat(
-            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strictJsonSchema"] = true } });
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strict"] = true } });
         Assert.NotNull(jsonSchema);
         Assert.Equal(RemoveWhitespace("""
             {
@@ -82,7 +83,7 @@ public class OpenAIConversionTests
             """), RemoveWhitespace(((IJsonModel<ResponseTextFormat>)jsonSchema).Write(ModelReaderWriterOptions.Json).ToString()));
 
         jsonSchema = ChatResponseFormat.ForJsonSchema(typeof(int), schemaName: "my_schema", schemaDescription: "A test schema").AsOpenAIResponseTextFormat(
-            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strictJsonSchema"] = true } });
+            new() { AdditionalProperties = new AdditionalPropertiesDictionary { ["strict"] = true } });
         Assert.NotNull(jsonSchema);
         Assert.Equal(ResponseTextFormatKind.JsonSchema, jsonSchema.Kind);
         Assert.Equal(RemoveWhitespace("""
@@ -105,6 +106,78 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIChatTool_ExplicitSchema_PreservesObjectAdditionalProperties()
+    {
+        var schema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "labels": { "type": "object" }
+                },
+                "additionalProperties": { "type": "string" }
+            }
+            """).RootElement;
+
+        var function = AIFunctionFactory.CreateDeclaration(
+            "set_labels",
+            "Stores labels and arbitrary string metadata.",
+            schema);
+
+        var tool = function.AsOpenAIChatTool();
+        Assert.NotNull(tool);
+        Assert.Equal("set_labels", tool.FunctionName);
+
+        using var parsedParams = JsonDocument.Parse(tool.FunctionParameters);
+        var root = parsedParams.RootElement;
+        Assert.True(root.TryGetProperty("additionalProperties", out var ap), "additionalProperties should be preserved");
+        Assert.Equal(JsonValueKind.Object, ap.ValueKind);
+        Assert.Equal("string", ap.GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void AsOpenAIChatTool_PreservesExtraTopLevelPropertiesLikeDefs()
+    {
+        // Create a JSON schema with $defs (used for reference types)
+        var jsonSchema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "person": { "$ref": "#/$defs/Person" }
+                },
+                "required": ["person"],
+                "$defs": {
+                    "Person": {
+                        "type": "object",
+                        "properties": {
+                            "name": { "type": "string" }
+                        }
+                    }
+                }
+            }
+            """).RootElement;
+
+        var functionWithDefs = AIFunctionFactory.CreateDeclaration(
+            "test_function_with_defs",
+            "A test function with $defs",
+            jsonSchema);
+
+        var tool = functionWithDefs.AsOpenAIChatTool();
+
+        Assert.NotNull(tool);
+        Assert.Equal("test_function_with_defs", tool.FunctionName);
+        Assert.Equal("A test function with $defs", tool.FunctionDescription);
+
+        // Verify that $defs is preserved in the function parameters
+        using var parsedParams = JsonDocument.Parse(tool.FunctionParameters);
+        var root = parsedParams.RootElement;
+
+        Assert.True(root.TryGetProperty("$defs", out var defs), "The $defs property should be preserved in the function parameters");
+        Assert.True(defs.TryGetProperty("Person", out var person), "The Person definition should exist in $defs");
+        Assert.True(person.TryGetProperty("properties", out var properties), "Person should have properties");
+        Assert.True(properties.TryGetProperty("name", out _), "Person should have a name property");
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_ProducesValidInstance()
     {
         var tool = _testFunction.AsOpenAIResponseTool();
@@ -121,6 +194,36 @@ public class OpenAIConversionTests
         var functionTool = Assert.IsType<FunctionTool>(tool);
         Assert.Equal("test_function", functionTool.FunctionName);
         Assert.Equal("A test function for conversion", functionTool.FunctionDescription);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_ExplicitSchema_PreservesObjectAdditionalProperties()
+    {
+        var schema = JsonDocument.Parse("""
+            {
+                "type": "object",
+                "properties": {
+                    "labels": { "type": "object" }
+                },
+                "additionalProperties": { "type": "string" }
+            }
+            """).RootElement;
+
+        var function = AIFunctionFactory.CreateDeclaration(
+            "set_labels",
+            "Stores labels and arbitrary string metadata.",
+            schema);
+
+        var tool = function.AsOpenAIResponseTool();
+        Assert.NotNull(tool);
+        var functionTool = Assert.IsType<FunctionTool>(tool);
+        Assert.Equal("set_labels", functionTool.FunctionName);
+
+        using var parsedParams = JsonDocument.Parse(functionTool.FunctionParameters);
+        var root = parsedParams.RootElement;
+        Assert.True(root.TryGetProperty("additionalProperties", out var ap), "additionalProperties should be preserved");
+        Assert.Equal(JsonValueKind.Object, ap.ValueKind);
+        Assert.Equal("string", ap.GetProperty("type").GetString());
     }
 
     [Fact]
@@ -141,8 +244,8 @@ public class OpenAIConversionTests
         var location = WebSearchToolLocation.CreateApproximateLocation("US", "Region", "City", "UTC");
         var webSearchTool = new HostedWebSearchToolWithProperties(new Dictionary<string, object?>
         {
-            [nameof(WebSearchToolLocation)] = location,
-            [nameof(WebSearchToolContextSize)] = WebSearchToolContextSize.High
+            [nameof(WebSearchTool.UserLocation)] = location,
+            [nameof(WebSearchTool.SearchContextSize)] = WebSearchToolContextSize.High
         });
 
         var result = webSearchTool.AsOpenAIResponseTool();
@@ -206,6 +309,30 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedFileSearchToolWithAdditionalProperties_ProducesValidFileSearchTool()
+    {
+        var rankingOptions = new FileSearchToolRankingOptions { ScoreThreshold = 0.5f };
+        var filters = BinaryData.FromString("{\"type\":\"eq\",\"key\":\"status\",\"value\":\"published\"}");
+        var fileSearchTool = new HostedFileSearchTool(new Dictionary<string, object?>
+        {
+            [nameof(FileSearchTool.RankingOptions)] = rankingOptions,
+            [nameof(FileSearchTool.Filters)] = filters
+        })
+        {
+            MaximumResultCount = 15
+        };
+
+        var result = fileSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<FileSearchTool>(result);
+        Assert.NotNull(tool.RankingOptions);
+        Assert.Equal(0.5f, tool.RankingOptions.ScoreThreshold);
+        Assert.NotNull(tool.Filters);
+        Assert.Equal(15, tool.MaxResultCount);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithHostedCodeInterpreterTool_ProducesValidCodeInterpreterTool()
     {
         var codeTool = new HostedCodeInterpreterTool();
@@ -234,6 +361,110 @@ public class OpenAIConversionTests
         var autoContainerConfig = Assert.IsType<AutomaticCodeInterpreterToolContainerConfiguration>(tool.Container.ContainerConfiguration);
         Assert.Single(autoContainerConfig.FileIds);
         Assert.Equal(fileContent.FileId, autoContainerConfig.FileIds[0]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationTool_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions { MediaType = "image/png" }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.NotNull(tool);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithoutMediaType_PreservesUnspecifiedOutputFileFormat()
+    {
+        var imageGenTool = new HostedImageGenerationTool();
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Null(tool.OutputFileFormat);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithOptions_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                MediaType = "image/png",
+                ImageSize = new System.Drawing.Size(1024, 1024),
+                StreamingCount = 2
+            }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Equal("gpt-image-1", tool.Model);
+        Assert.Equal(ImageGenerationToolOutputFileFormat.Png, tool.OutputFileFormat);
+        Assert.NotNull(tool.Size);
+        Assert.Equal(2, tool.PartialImageCount);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithAdditionalProperties_ProducesValidImageGenerationTool()
+    {
+        var imageGenTool = new HostedImageGenerationTool(new Dictionary<string, object?>
+        {
+            [nameof(ImageGenerationTool.Background)] = ImageGenerationToolBackground.Transparent,
+            [nameof(ImageGenerationTool.InputFidelity)] = ImageGenerationToolInputFidelity.High,
+            [nameof(ImageGenerationTool.ModerationLevel)] = ImageGenerationToolModerationLevel.Low,
+            [nameof(ImageGenerationTool.OutputCompressionFactor)] = 50,
+            [nameof(ImageGenerationTool.Quality)] = ImageGenerationToolQuality.High
+        })
+        {
+            Options = new ImageGenerationOptions
+            {
+                ModelId = "gpt-image-1",
+                MediaType = "image/jpeg",
+            }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.Equal("gpt-image-1", tool.Model);
+        Assert.Equal(ImageGenerationToolOutputFileFormat.Jpeg, tool.OutputFileFormat);
+        Assert.Equal(ImageGenerationToolBackground.Transparent, tool.Background);
+        Assert.Equal(ImageGenerationToolInputFidelity.High, tool.InputFidelity);
+        Assert.Equal(ImageGenerationToolModerationLevel.Low, tool.ModerationLevel);
+        Assert.Equal(50, tool.OutputCompressionFactor);
+        Assert.Equal(ImageGenerationToolQuality.High, tool.Quality);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedImageGenerationToolWithInputImageMask_ProducesValidImageGenerationTool()
+    {
+        var inputImageMask = new ImageGenerationToolInputImageMask(
+            new Uri(new DataContent((byte[])[0x89, 0x50, 0x4E, 0x47], "image/png").Uri));
+
+        var imageGenTool = new HostedImageGenerationTool(new Dictionary<string, object?>
+        {
+            [nameof(ImageGenerationTool.InputImageMask)] = inputImageMask
+        })
+        {
+            Options = new ImageGenerationOptions { MediaType = "image/png" }
+        };
+
+        var result = imageGenTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<ImageGenerationTool>(result);
+        Assert.NotNull(tool.InputImageMask);
     }
 
     [Fact]
@@ -269,14 +500,40 @@ public class OpenAIConversionTests
     {
         var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
         {
-            AuthorizationToken = "test-token"
+            Headers = new Dictionary<string, string> { ["Authorization"] = "Bearer test-token" }
         };
 
         var result = mcpTool.AsOpenAIResponseTool();
 
         Assert.NotNull(result);
         var tool = Assert.IsType<McpTool>(result);
-        Assert.Equal("test-token", tool.AuthorizationToken);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.NotNull(tool.Headers);
+        Assert.Single(tool.Headers);
+        Assert.Equal("Bearer test-token", tool.Headers["Authorization"]);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolWithAuthTokenAndCustomHeaders_ProducesValidMcpTool()
+    {
+        var mcpTool = new HostedMcpServerTool("test-server", "http://localhost:8000")
+        {
+            Headers = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer test-token",
+                ["X-Custom-Header"] = "custom-value"
+            }
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Null(tool.AuthorizationToken);
+        Assert.NotNull(tool.Headers);
+        Assert.Equal(2, tool.Headers.Count);
+        Assert.Equal("Bearer test-token", tool.Headers["Authorization"]);
+        Assert.Equal("custom-value", tool.Headers["X-Custom-Header"]);
     }
 
     [Fact]
@@ -326,8 +583,8 @@ public class OpenAIConversionTests
         Assert.NotNull(result);
         var tool = Assert.IsType<McpTool>(result);
         Assert.NotNull(tool.ToolCallApprovalPolicy);
-        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
-        Assert.Equal(GlobalMcpToolCallApprovalPolicy.AlwaysRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.DefaultPolicy);
+        Assert.Equal(DefaultMcpToolCallApprovalPolicy.AlwaysRequireApproval, tool.ToolCallApprovalPolicy.DefaultPolicy);
     }
 
     [Fact]
@@ -343,8 +600,8 @@ public class OpenAIConversionTests
         Assert.NotNull(result);
         var tool = Assert.IsType<McpTool>(result);
         Assert.NotNull(tool.ToolCallApprovalPolicy);
-        Assert.NotNull(tool.ToolCallApprovalPolicy.GlobalPolicy);
-        Assert.Equal(GlobalMcpToolCallApprovalPolicy.NeverRequireApproval, tool.ToolCallApprovalPolicy.GlobalPolicy);
+        Assert.NotNull(tool.ToolCallApprovalPolicy.DefaultPolicy);
+        Assert.Equal(DefaultMcpToolCallApprovalPolicy.NeverRequireApproval, tool.ToolCallApprovalPolicy.DefaultPolicy);
     }
 
     [Fact]
@@ -374,6 +631,24 @@ public class OpenAIConversionTests
     }
 
     [Fact]
+    public void AsOpenAIResponseTool_WithHostedMcpServerToolConnector_ExtractsAuthToken()
+    {
+        var mcpTool = new HostedMcpServerTool("calendar", "connector_googlecalendar")
+        {
+            Headers = new Dictionary<string, string> { ["Authorization"] = "Bearer connector-token" }
+        };
+
+        var result = mcpTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var tool = Assert.IsType<McpTool>(result);
+        Assert.Equal("connector-token", tool.AuthorizationToken);
+
+        // For connectors, headers should not be set - only AuthorizationToken
+        Assert.Empty(tool.Headers);
+    }
+
+    [Fact]
     public void AsOpenAIResponseTool_WithUnknownToolType_ReturnsNull()
     {
         var unknownTool = new UnknownAITool();
@@ -381,6 +656,30 @@ public class OpenAIConversionTests
         var result = unknownTool.AsOpenAIResponseTool();
 
         Assert.Null(result);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_ProducesValidToolSearchTool()
+    {
+        var toolSearchTool = new HostedToolSearchTool();
+
+        var result = toolSearchTool.AsOpenAIResponseTool();
+
+        Assert.NotNull(result);
+        var json = ModelReaderWriter.Write(result, ModelReaderWriterOptions.Json).ToString();
+        Assert.Contains("\"type\"", json);
+        Assert.Contains("tool_search", json);
+    }
+
+    [Fact]
+    public void AsOpenAIResponseTool_WithHostedToolSearchTool_ProducesNewInstanceEachTime()
+    {
+        var result1 = new HostedToolSearchTool().AsOpenAIResponseTool();
+        var result2 = new HostedToolSearchTool().AsOpenAIResponseTool();
+
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+        Assert.NotSame(result1, result2);
     }
 
     [Fact]
@@ -392,23 +691,12 @@ public class OpenAIConversionTests
     [Fact]
     public void AsOpenAIConversationFunctionTool_ProducesValidInstance()
     {
-        var tool = _testFunction.AsOpenAIConversationFunctionTool();
-
-        Assert.NotNull(tool);
-        Assert.Equal("test_function", tool.Name);
-        Assert.Equal("A test function for conversion", tool.Description);
-        ValidateSchemaParameters(tool.Parameters);
-    }
-
-    [Fact]
-    public void AsOpenAIAssistantsFunctionToolDefinition_ProducesValidInstance()
-    {
-        var tool = _testFunction.AsOpenAIAssistantsFunctionToolDefinition();
+        var tool = _testFunction.AsOpenAIRealtimeFunctionTool();
 
         Assert.NotNull(tool);
         Assert.Equal("test_function", tool.FunctionName);
-        Assert.Equal("A test function for conversion", tool.Description);
-        ValidateSchemaParameters(tool.Parameters);
+        Assert.Equal("A test function for conversion", tool.FunctionDescription);
+        ValidateSchemaParameters(tool.FunctionParameters);
     }
 
     /// <summary>Helper method to validate function parameters match our schema.</summary>
@@ -671,19 +959,199 @@ public class OpenAIConversionTests
     [Fact]
     public void AsChatResponse_ConvertsOpenAIResponse()
     {
-        Assert.Throws<ArgumentNullException>("response", () => ((OpenAIResponse)null!).AsChatResponse());
+        Assert.Throws<ArgumentNullException>("response", () => ((ResponseResult)null!).AsChatResponse());
 
         // The OpenAI library currently doesn't provide any way to create an OpenAIResponse instance,
         // as all constructors/factory methods currently are internal. Update this test when such functionality is available.
     }
 
+    /// <summary>
+    /// Derived type to allow creating StreamingResponseOutputItemDoneUpdate instances for testing.
+    /// The base class has internal constructors, but we can derive and set the Item property.
+    /// </summary>
+    private sealed class TestableStreamingResponseOutputItemDoneUpdate : StreamingResponseOutputItemDoneUpdate
+    {
+    }
+
     [Fact]
-    public void AsChatResponseUpdatesAsync_ConvertsOpenAIStreamingResponseUpdates()
+    public async Task AsChatResponseUpdatesAsync_ConvertsOpenAIStreamingResponseUpdates()
     {
         Assert.Throws<ArgumentNullException>("responseUpdates", () => ((IAsyncEnumerable<StreamingResponseUpdate>)null!).AsChatResponseUpdatesAsync());
 
-        // The OpenAI library currently doesn't provide any way to create a StreamingResponseUpdate instance,
-        // as all constructors/factory methods currently are internal. Update this test when such functionality is available.
+        // Create streaming updates with various ResponseItem types
+        FunctionCallResponseItem functionCall = ResponseItem.CreateFunctionCallItem("call_abc", "MyFunction", BinaryData.FromString("""{"arg":"value"}"""));
+        McpToolCallItem mcpToolCall = ResponseItem.CreateMcpToolCallItem("deepwiki", "ask_question", BinaryData.FromString("""{"query":"hello"}"""));
+        mcpToolCall.Id = "mcp_call_123";
+        mcpToolCall.ToolOutput = "The answer is 42";
+        McpToolCallApprovalRequestItem mcpApprovalRequest = ResponseItem.CreateMcpApprovalRequestItem(
+            "mcpr_123",
+            "deepwiki",
+            "ask_question",
+            BinaryData.FromString("""{"repo":"dotnet/extensions"}"""));
+        McpToolCallApprovalResponseItem mcpApprovalResponse = ResponseItem.CreateMcpApprovalResponseItem("mcpr_123", approved: true);
+
+        WebSearchCallResponseItem webSearchItem = ResponseItem.CreateWebSearchCallItem();
+        webSearchItem.Id = "ws_123";
+        FileSearchCallResponseItem fileSearchItem = ModelReaderWriter.Read<FileSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"file_search_call","id":"fs_123","status":"completed","queries":["test query"],"results":[]}"""))!;
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
+        ComputerCallResponseItem computerItem = ModelReaderWriter.Read<ComputerCallResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call","id":"cu_123","call_id":"call_456","action":{"type":"screenshot"},"pending_safety_checks":[],"status":"completed"}"""))!;
+        ComputerCallOutputResponseItem computerOutput = ModelReaderWriter.Read<ComputerCallOutputResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call_output","id":"co_123","call_id":"call_456","output":{"type":"computer_screenshot","image_url":"https://example.com/screenshot.png"}}"""))!;
+#pragma warning restore OPENAICUA001
+
+        ApplyPatchCallItem applyPatchItem = ModelReaderWriter.Read<ApplyPatchCallItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call","id":"ap_123","call_id":"call_patch_789","status":"completed","patch":"*** hello.txt\n+++ hello.txt\n@@ -0,0 +1 @@\n+Hello World"}"""))!;
+        ApplyPatchCallOutputItem applyPatchOutputItem = ModelReaderWriter.Read<ApplyPatchCallOutputItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call_output","id":"apo_123","call_id":"call_patch_789","status":"completed","output":"Applied patch successfully."}"""))!;
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (ChatResponseUpdate update in CreateStreamingUpdates().AsChatResponseUpdatesAsync())
+        {
+            updates.Add(update);
+        }
+
+        // Verify we got the expected updates
+        Assert.Equal(11, updates.Count);
+
+        // First update should be FunctionCallContent
+        FunctionCallContent? fcc = updates[0].Contents.OfType<FunctionCallContent>().FirstOrDefault();
+        Assert.NotNull(fcc);
+        Assert.Equal("call_abc", fcc.CallId);
+        Assert.Equal("MyFunction", fcc.Name);
+
+        // Second update should be McpServerToolCallContent + McpServerToolResultContent
+        McpServerToolCallContent? mcpToolCallContent = updates[1].Contents.OfType<McpServerToolCallContent>().FirstOrDefault();
+        Assert.NotNull(mcpToolCallContent);
+        Assert.Equal("mcp_call_123", mcpToolCallContent.CallId);
+        Assert.Equal("ask_question", mcpToolCallContent.Name);
+        Assert.Equal("deepwiki", mcpToolCallContent.ServerName);
+        Assert.Null(mcpToolCallContent.RawRepresentation); // Intentionally null to avoid duplication during roundtrip
+
+        McpServerToolResultContent? mcpToolResultContent = updates[1].Contents.OfType<McpServerToolResultContent>().FirstOrDefault();
+        Assert.NotNull(mcpToolResultContent);
+        Assert.Equal("mcp_call_123", mcpToolResultContent.CallId);
+        Assert.NotNull(mcpToolResultContent.RawRepresentation);
+        Assert.Same(mcpToolCall, mcpToolResultContent.RawRepresentation);
+
+        // Third update should be ToolApprovalRequestContent with McpServerToolCallContent
+        ToolApprovalRequestContent? approvalRequest = updates[2].Contents.OfType<ToolApprovalRequestContent>().FirstOrDefault();
+        Assert.NotNull(approvalRequest);
+        Assert.Equal("mcpr_123", approvalRequest.RequestId);
+        Assert.NotNull(approvalRequest.RawRepresentation);
+        Assert.Same(mcpApprovalRequest, approvalRequest.RawRepresentation);
+
+        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequest.ToolCall);
+        Assert.Equal("ask_question", nestedMcpCall.Name);
+        Assert.Equal("deepwiki", nestedMcpCall.ServerName);
+
+        // Fourth update should be ToolApprovalResponseContent correlated with request
+        ToolApprovalResponseContent? approvalResponse = updates[3].Contents.OfType<ToolApprovalResponseContent>().FirstOrDefault();
+        Assert.NotNull(approvalResponse);
+        Assert.Equal("mcpr_123", approvalResponse.RequestId);
+        Assert.True(approvalResponse.Approved);
+        Assert.NotNull(approvalResponse.RawRepresentation);
+        Assert.Same(mcpApprovalResponse, approvalResponse.RawRepresentation);
+
+        // The correlated FunctionCall should be McpServerToolCallContent with tool details from the request
+        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponse.ToolCall);
+        Assert.Equal("mcpr_123", correlatedMcpCall.CallId);
+        Assert.Equal("ask_question", correlatedMcpCall.Name);
+        Assert.Equal("deepwiki", correlatedMcpCall.ServerName);
+        Assert.NotNull(correlatedMcpCall.Arguments);
+        Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repo"]?.ToString());
+
+        // Fifth update: WebSearchCallResponseItem -> WebSearchToolCallContent
+        WebSearchToolCallContent? wsToolCall = updates[4].Contents.OfType<WebSearchToolCallContent>().FirstOrDefault();
+        Assert.NotNull(wsToolCall);
+        Assert.Equal("ws_123", wsToolCall.CallId);
+        Assert.Null(wsToolCall.RawRepresentation);
+
+        // Sixth update: WebSearchCallResponseItem -> WebSearchToolResultContent
+        WebSearchToolResultContent? wsToolResult = updates[5].Contents.OfType<WebSearchToolResultContent>().FirstOrDefault();
+        Assert.NotNull(wsToolResult);
+        Assert.Equal("ws_123", wsToolResult.CallId);
+        Assert.Same(webSearchItem, wsToolResult.RawRepresentation);
+
+        // Seventh update: FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? fsToolCall = updates[6].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        Assert.NotNull(fsToolCall);
+        Assert.Equal("fs_123", fsToolCall.CallId);
+        Assert.Null(fsToolCall.RawRepresentation);
+
+        ToolResultContent? fsToolResult = updates[6].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        Assert.NotNull(fsToolResult);
+        Assert.Equal("fs_123", fsToolResult.CallId);
+        Assert.Same(fileSearchItem, fsToolResult.RawRepresentation);
+
+        // Eighth update: ComputerCallResponseItem -> ToolCallContent
+        ToolCallContent? cuToolCall = updates[7].Contents.OfType<ToolCallContent>().FirstOrDefault();
+        Assert.NotNull(cuToolCall);
+        Assert.Equal("call_456", cuToolCall.CallId);
+        Assert.Same(computerItem, cuToolCall.RawRepresentation);
+
+        // Ninth update: ComputerCallOutputResponseItem -> ToolResultContent
+        ToolResultContent? cuToolResult = updates[8].Contents.OfType<ToolResultContent>().FirstOrDefault();
+        Assert.NotNull(cuToolResult);
+        Assert.Equal("call_456", cuToolResult.CallId);
+        Assert.Same(computerOutput, cuToolResult.RawRepresentation);
+
+        // Tenth update: ApplyPatchCallItem -> AIContent (streaming falls through to default)
+        AIContent? apCallContent = updates[9].Contents.FirstOrDefault(c => c.RawRepresentation == applyPatchItem);
+        Assert.NotNull(apCallContent);
+        Assert.Same(applyPatchItem, apCallContent.RawRepresentation);
+
+        // Eleventh update: ApplyPatchCallOutputItem -> AIContent (streaming falls through to default)
+        AIContent? apOutputContent = updates[10].Contents.FirstOrDefault(c => c.RawRepresentation == applyPatchOutputItem);
+        Assert.NotNull(apOutputContent);
+        Assert.Same(applyPatchOutputItem, apOutputContent.RawRepresentation);
+
+        async IAsyncEnumerable<StreamingResponseUpdate> CreateStreamingUpdates()
+        {
+            await Task.Yield();
+
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = functionCall };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpToolCall };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalRequest };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalResponse };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = webSearchItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = fileSearchItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = computerItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = computerOutput };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = applyPatchItem };
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = applyPatchOutputItem };
+        }
+    }
+
+    [Fact]
+    public async Task AsChatResponseUpdatesAsync_McpToolCallApprovalResponseItem_WithoutCorrelatedRequest_FallsBackToAIContent()
+    {
+        // Create an approval response without a matching request in the stream.
+        McpToolCallApprovalResponseItem mcpApprovalResponse = ResponseItem.CreateMcpApprovalResponseItem("unknown_request_id", approved: true);
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (ChatResponseUpdate update in CreateStreamingUpdates().AsChatResponseUpdatesAsync())
+        {
+            updates.Add(update);
+        }
+
+        Assert.Single(updates);
+
+        // Should NOT have a ToolApprovalResponseContent since there was no correlated request
+        Assert.Empty(updates[0].Contents.OfType<ToolApprovalResponseContent>());
+
+        // Should have a generic AIContent with RawRepresentation set to the response item
+        AIContent? genericContent = updates[0].Contents.FirstOrDefault(c => c.RawRepresentation == mcpApprovalResponse);
+        Assert.NotNull(genericContent);
+        Assert.IsNotType<ToolApprovalResponseContent>(genericContent);
+        Assert.Same(mcpApprovalResponse, genericContent.RawRepresentation);
+
+        async IAsyncEnumerable<StreamingResponseUpdate> CreateStreamingUpdates()
+        {
+            await Task.Yield();
+            yield return new TestableStreamingResponseOutputItemDoneUpdate { Item = mcpApprovalResponse };
+        }
     }
 
     [Fact]
@@ -771,6 +1239,272 @@ public class OpenAIConversionTests
         Assert.Equal("call123", functionCall.CallId);
         Assert.Equal("TestFunction", functionCall.Name);
         Assert.Equal("value", functionCall.Arguments!["param"]?.ToString());
+    }
+
+    [Fact]
+    public void AsChatMessages_FromResponseItems_AllContentTypes_SetsRawRepresentation()
+    {
+        // Create ResponseItems of various types that ToChatMessages handles.
+        // Each type should roundtrip with RawRepresentation set.
+        MessageResponseItem assistantItem = ResponseItem.CreateAssistantMessageItem("Hello from the assistant!");
+        ReasoningResponseItem reasoningItem = ResponseItem.CreateReasoningItem("This is reasoning text");
+        FunctionCallResponseItem functionCallItem = ResponseItem.CreateFunctionCallItem("call_abc", "MyFunction", BinaryData.FromString("""{"arg": "value"}"""));
+        FunctionCallOutputResponseItem functionOutputItem = ResponseItem.CreateFunctionCallOutputItem("call_abc", "function result output");
+        McpToolCallItem mcpToolCallItem = ResponseItem.CreateMcpToolCallItem("deepwiki", "ask_question", BinaryData.FromString("""{"query":"hello"}"""));
+        mcpToolCallItem.Id = "mcp_call_123";
+        mcpToolCallItem.ToolOutput = "The answer is 42";
+        McpToolCallApprovalRequestItem mcpApprovalRequestItem = ResponseItem.CreateMcpApprovalRequestItem(
+            "mcpr_123",
+            "deepwiki",
+            "ask_question",
+            BinaryData.FromString("""{"repoName":"dotnet/extensions"}"""));
+
+        // Use matching ID so response can correlate with the request
+        McpToolCallApprovalResponseItem mcpApprovalResponseItem = ResponseItem.CreateMcpApprovalResponseItem("mcpr_123", approved: true);
+
+        WebSearchCallResponseItem webSearchItem = ResponseItem.CreateWebSearchCallItem();
+        webSearchItem.Id = "ws_123";
+        FileSearchCallResponseItem fileSearchItem = ModelReaderWriter.Read<FileSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"file_search_call","id":"fs_123","status":"completed","queries":["test query"],"results":[]}"""))!;
+#pragma warning disable OPENAICUA001 // OpenAI Computer Use is experimental
+        ComputerCallResponseItem computerItem = ModelReaderWriter.Read<ComputerCallResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call","id":"cu_123","call_id":"call_456","action":{"type":"screenshot"},"pending_safety_checks":[],"status":"completed"}"""))!;
+        ComputerCallOutputResponseItem computerOutput = ModelReaderWriter.Read<ComputerCallOutputResponseItem>(BinaryData.FromString(
+            """{"type":"computer_call_output","id":"co_123","call_id":"call_456","output":{"type":"computer_screenshot","image_url":"https://example.com/screenshot.png"}}"""))!;
+#pragma warning restore OPENAICUA001
+
+        ApplyPatchCallItem applyPatchItem = ModelReaderWriter.Read<ApplyPatchCallItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call","id":"ap_123","call_id":"call_patch_789","status":"completed","patch":"*** hello.txt\n+++ hello.txt\n@@ -0,0 +1 @@\n+Hello World"}"""))!;
+        ApplyPatchCallOutputItem applyPatchOutputItem = ModelReaderWriter.Read<ApplyPatchCallOutputItem>(BinaryData.FromString(
+            """{"type":"apply_patch_call_output","id":"apo_123","call_id":"call_patch_789","status":"completed","output":"Applied patch successfully."}"""))!;
+
+        ResponseItem[] items =
+        [
+            assistantItem, reasoningItem, functionCallItem, functionOutputItem,
+            mcpToolCallItem, mcpApprovalRequestItem, mcpApprovalResponseItem,
+            webSearchItem, fileSearchItem, computerItem, computerOutput,
+            applyPatchItem, applyPatchOutputItem,
+        ];
+
+        // Convert to ChatMessages
+        ChatMessage[] messages = items.AsChatMessages().ToArray();
+
+        // All items should be grouped into a single assistant message
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+        Assert.Equal(ChatRole.Assistant, message.Role);
+
+        // The message itself should have RawRepresentation from MessageResponseItem
+        Assert.NotNull(message.RawRepresentation);
+        Assert.Same(assistantItem, message.RawRepresentation);
+
+        // Verify each content type has RawRepresentation set
+
+        // 1. MessageResponseItem -> TextContent with ResponseContentPart as RawRepresentation
+        TextContent? textContent = message.Contents.OfType<TextContent>().FirstOrDefault();
+        Assert.NotNull(textContent);
+        Assert.Equal("Hello from the assistant!", textContent.Text);
+        Assert.NotNull(textContent.RawRepresentation);
+        Assert.IsAssignableFrom<ResponseContentPart>(textContent.RawRepresentation);
+
+        // 2. ReasoningResponseItem -> TextReasoningContent
+        TextReasoningContent? reasoningContent = message.Contents.OfType<TextReasoningContent>().FirstOrDefault();
+        Assert.NotNull(reasoningContent);
+        Assert.Equal("This is reasoning text", reasoningContent.Text);
+        Assert.NotNull(reasoningContent.RawRepresentation);
+        Assert.Same(reasoningItem, reasoningContent.RawRepresentation);
+
+        // 3. FunctionCallResponseItem -> FunctionCallContent
+        FunctionCallContent? functionCallContent = message.Contents.OfType<FunctionCallContent>().FirstOrDefault();
+        Assert.NotNull(functionCallContent);
+        Assert.Equal("call_abc", functionCallContent.CallId);
+        Assert.Equal("MyFunction", functionCallContent.Name);
+        Assert.NotNull(functionCallContent.RawRepresentation);
+        Assert.Same(functionCallItem, functionCallContent.RawRepresentation);
+
+        // 4. FunctionCallOutputResponseItem -> FunctionResultContent
+        FunctionResultContent? functionResultContent = message.Contents.OfType<FunctionResultContent>().FirstOrDefault();
+        Assert.NotNull(functionResultContent);
+        Assert.Equal("call_abc", functionResultContent.CallId);
+        Assert.Equal("function result output", functionResultContent.Result);
+        Assert.NotNull(functionResultContent.RawRepresentation);
+        Assert.Same(functionOutputItem, functionResultContent.RawRepresentation);
+
+        // 5. McpToolCallItem -> McpServerToolCallContent + McpServerToolResultContent
+        // Note: AddMcpToolCallContent creates both contents; RawRepresentation is only on the result, not the call
+        McpServerToolCallContent? mcpToolCall = message.Contents.OfType<McpServerToolCallContent>().FirstOrDefault(c => c.CallId == "mcp_call_123");
+        Assert.NotNull(mcpToolCall);
+        Assert.Equal("mcp_call_123", mcpToolCall.CallId);
+        Assert.Equal("ask_question", mcpToolCall.Name);
+        Assert.Equal("deepwiki", mcpToolCall.ServerName);
+        Assert.Null(mcpToolCall.RawRepresentation); // Intentionally null to avoid duplication during roundtrip
+
+        McpServerToolResultContent? mcpToolResult = message.Contents.OfType<McpServerToolResultContent>().FirstOrDefault(c => c.CallId == "mcp_call_123");
+        Assert.NotNull(mcpToolResult);
+        Assert.Equal("mcp_call_123", mcpToolResult.CallId);
+        Assert.NotNull(mcpToolResult.RawRepresentation);
+        Assert.Same(mcpToolCallItem, mcpToolResult.RawRepresentation);
+
+        // 6. McpToolCallApprovalRequestItem -> ToolApprovalRequestContent
+        ToolApprovalRequestContent? approvalRequestContent = message.Contents.OfType<ToolApprovalRequestContent>().FirstOrDefault();
+        Assert.NotNull(approvalRequestContent);
+        Assert.Equal("mcpr_123", approvalRequestContent.RequestId);
+        Assert.NotNull(approvalRequestContent.RawRepresentation);
+        Assert.Same(mcpApprovalRequestItem, approvalRequestContent.RawRepresentation);
+
+        // The nested FunctionCall should be McpServerToolCallContent
+        McpServerToolCallContent nestedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalRequestContent.ToolCall);
+        Assert.Equal("ask_question", nestedMcpCall.Name);
+        Assert.Equal("deepwiki", nestedMcpCall.ServerName);
+        Assert.NotNull(nestedMcpCall.RawRepresentation);
+        Assert.Same(mcpApprovalRequestItem, nestedMcpCall.RawRepresentation);
+
+        // 7. McpToolCallApprovalResponseItem -> ToolApprovalResponseContent (correlated with request)
+        ToolApprovalResponseContent? approvalResponseContent = message.Contents.OfType<ToolApprovalResponseContent>().FirstOrDefault();
+        Assert.NotNull(approvalResponseContent);
+        Assert.Equal("mcpr_123", approvalResponseContent.RequestId);
+        Assert.True(approvalResponseContent.Approved);
+        Assert.NotNull(approvalResponseContent.RawRepresentation);
+        Assert.Same(mcpApprovalResponseItem, approvalResponseContent.RawRepresentation);
+
+        // The correlated FunctionCall should be McpServerToolCallContent with tool details from the request
+        McpServerToolCallContent correlatedMcpCall = Assert.IsType<McpServerToolCallContent>(approvalResponseContent.ToolCall);
+        Assert.Equal("mcpr_123", correlatedMcpCall.CallId);
+        Assert.Equal("ask_question", correlatedMcpCall.Name);
+        Assert.Equal("deepwiki", correlatedMcpCall.ServerName);
+        Assert.NotNull(correlatedMcpCall.Arguments);
+        Assert.Equal("dotnet/extensions", correlatedMcpCall.Arguments["repoName"]?.ToString());
+
+        // 8. WebSearchCallResponseItem -> WebSearchToolCallContent + WebSearchToolResultContent
+        WebSearchToolCallContent? webSearchToolCall = message.Contents.OfType<WebSearchToolCallContent>().FirstOrDefault(c => c.CallId == "ws_123");
+        Assert.NotNull(webSearchToolCall);
+        Assert.Null(webSearchToolCall.RawRepresentation); // Intentionally null to avoid duplication during roundtrip
+
+        WebSearchToolResultContent? webSearchToolResult = message.Contents.OfType<WebSearchToolResultContent>().FirstOrDefault(c => c.CallId == "ws_123");
+        Assert.NotNull(webSearchToolResult);
+        Assert.Same(webSearchItem, webSearchToolResult.RawRepresentation);
+
+        // 9. FileSearchCallResponseItem -> ToolCallContent + ToolResultContent
+        ToolCallContent? fileSearchToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "fs_123");
+        Assert.NotNull(fileSearchToolCall);
+        Assert.Null(fileSearchToolCall.RawRepresentation);
+
+        ToolResultContent? fileSearchToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "fs_123");
+        Assert.NotNull(fileSearchToolResult);
+        Assert.Same(fileSearchItem, fileSearchToolResult.RawRepresentation);
+
+        // 10. ComputerCallResponseItem -> ToolCallContent (result comes separately)
+        ToolCallContent? computerToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "call_456");
+        Assert.NotNull(computerToolCall);
+        Assert.Same(computerItem, computerToolCall.RawRepresentation);
+
+        // 11. ComputerCallOutputResponseItem -> ToolResultContent
+        ToolResultContent? computerToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "call_456");
+        Assert.NotNull(computerToolResult);
+        Assert.Same(computerOutput, computerToolResult.RawRepresentation);
+
+        // 12. ApplyPatchCallItem -> ToolCallContent
+        ToolCallContent? applyPatchToolCall = message.Contents.OfType<ToolCallContent>().FirstOrDefault(c => c.CallId == "call_patch_789");
+        Assert.NotNull(applyPatchToolCall);
+        Assert.Same(applyPatchItem, applyPatchToolCall.RawRepresentation);
+
+        // 13. ApplyPatchCallOutputItem -> ToolResultContent
+        ToolResultContent? applyPatchToolResult = message.Contents.OfType<ToolResultContent>().FirstOrDefault(c => c.CallId == "call_patch_789");
+        Assert.NotNull(applyPatchToolResult);
+        Assert.Same(applyPatchOutputItem, applyPatchToolResult.RawRepresentation);
+    }
+
+    [Fact]
+    public void AsChatMessages_McpToolCallApprovalResponseItem_WithoutCorrelatedRequest_FallsBackToAIContent()
+    {
+        // Create an approval response without a matching request in the batch.
+        // This simulates receiving a response item when we don't have the original request.
+        MessageResponseItem assistantItem = ResponseItem.CreateAssistantMessageItem("Hello");
+        McpToolCallApprovalResponseItem mcpApprovalResponseItem = ResponseItem.CreateMcpApprovalResponseItem("unknown_request_id", approved: true);
+
+        ResponseItem[] items = [assistantItem, mcpApprovalResponseItem];
+
+        // Convert to ChatMessages
+        ChatMessage[] messages = items.AsChatMessages().ToArray();
+
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+
+        // Should NOT have a ToolApprovalResponseContent since there was no correlated request
+        Assert.Empty(message.Contents.OfType<ToolApprovalResponseContent>());
+
+        // Should have a generic AIContent with RawRepresentation set to the response item
+        AIContent? genericContent = message.Contents.FirstOrDefault(c => c.RawRepresentation == mcpApprovalResponseItem);
+        Assert.NotNull(genericContent);
+        Assert.IsNotType<ToolApprovalResponseContent>(genericContent);
+        Assert.Same(mcpApprovalResponseItem, genericContent.RawRepresentation);
+    }
+
+    [Fact]
+    public void AsChatMessages_InputImageWithRelativeUri_ProducesAIContentWithRawRepresentation()
+    {
+        // Create a MessageResponseItem containing an input_image with a relative URI,
+        // which fails Uri.TryCreate with UriKind.Absolute.
+        MessageResponseItem messageItem = ModelReaderWriter.Read<MessageResponseItem>(BinaryData.FromString(
+            """{"type":"message","id":"msg_001","status":"completed","role":"user","content":[{"type":"input_image","image_url":"images/photo.png"}]}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { messageItem }.AsChatMessages().ToArray();
+
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+        Assert.Equal(ChatRole.User, message.Role);
+
+        // Invalid URI should still produce an AIContent with RawRepresentation set
+        AIContent content = Assert.Single(message.Contents);
+        Assert.IsType<AIContent>(content, exactMatch: true);
+        Assert.NotNull(content.RawRepresentation);
+        Assert.IsAssignableFrom<ResponseContentPart>(content.RawRepresentation);
+    }
+
+    [Fact]
+    public void AsChatMessages_InputImageWithNoProperties_ProducesAIContentWithRawRepresentation()
+    {
+        // Create a MessageResponseItem containing an input_image with no image_url or file_id.
+        MessageResponseItem messageItem = ModelReaderWriter.Read<MessageResponseItem>(BinaryData.FromString(
+            """{"type":"message","id":"msg_001","status":"completed","role":"user","content":[{"type":"input_image"}]}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { messageItem }.AsChatMessages().ToArray();
+
+        Assert.Single(messages);
+        ChatMessage message = messages[0];
+        Assert.Equal(ChatRole.User, message.Role);
+
+        // Empty input_image should still produce an AIContent with RawRepresentation set
+        AIContent content = Assert.Single(message.Contents);
+        Assert.IsType<AIContent>(content, exactMatch: true);
+        Assert.NotNull(content.RawRepresentation);
+        Assert.IsAssignableFrom<ResponseContentPart>(content.RawRepresentation);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsOpenAIResponseItems_McpServerToolContents_RoundtripsToolOutputAndError(bool isError)
+    {
+        var mcpToolCall = new McpServerToolCallContent("call_123", "get_weather", "weather_server") { Arguments = new Dictionary<string, object?> { ["city"] = "Seattle" } };
+        var mcpToolResult = new McpServerToolResultContent("call_123") { Outputs = isError ? [new ErrorContent("error")] : [new TextContent("sunny")] };
+
+        var items = new ChatMessage[] { new(ChatRole.Assistant, [mcpToolCall, mcpToolResult]) }.AsOpenAIResponseItems().ToArray();
+
+        McpToolCallItem mtci = Assert.IsType<McpToolCallItem>(Assert.Single(items));
+        Assert.Equal("get_weather", mtci.ToolName);
+        Assert.Equal("weather_server", mtci.ServerLabel);
+
+        if (isError)
+        {
+            Assert.Contains("error", mtci.Error?.ToString());
+            Assert.Null(mtci.ToolOutput);
+        }
+        else
+        {
+            Assert.Equal("sunny", mtci.ToolOutput);
+            Assert.Null(mtci.Error);
+        }
     }
 
     [Fact]
@@ -1238,32 +1972,31 @@ public class OpenAIConversionTests
     [Fact]
     public void AsOpenAIResponse_WithNullArgument_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).AsOpenAIResponse());
+        Assert.Throws<ArgumentNullException>("response", () => ((ChatResponse)null!).AsOpenAIResponseResult());
     }
 
     [Fact]
     public void AsOpenAIResponse_WithRawRepresentation_ReturnsOriginal()
     {
-        var originalOpenAIResponse = OpenAIResponsesModelFactory.OpenAIResponse(
-            "original-response-id",
-            new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
-            ResponseStatus.Completed,
-            usage: null,
-            maxOutputTokenCount: 100,
-            outputItems: [],
-            parallelToolCallsEnabled: false,
-            model: "gpt-4",
-            temperature: 0.7f,
-            topP: 0.9f,
-            previousResponseId: "prev-id",
-            instructions: "Test instructions");
+        ResponseResult originalOpenAIResponse = new()
+        {
+            Id = "original-response-id",
+            CreatedAt = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            Status = ResponseStatus.Completed,
+            MaxOutputTokenCount = 100,
+            ParallelToolCallsEnabled = false,
+            Model = "gpt-4",
+            Temperature = 0.7f,
+            TopP = 0.9f,
+            PreviousResponseId = "prev-id",
+        };
 
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test"))
         {
             RawRepresentation = originalOpenAIResponse
         };
 
-        var result = chatResponse.AsOpenAIResponse();
+        var result = chatResponse.AsOpenAIResponseResult();
 
         Assert.Same(originalOpenAIResponse, result);
     }
@@ -1279,7 +2012,7 @@ public class OpenAIConversionTests
             FinishReason = ChatFinishReason.Stop
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.NotNull(openAIResponse);
         Assert.Equal("test-response-id", openAIResponse.Id);
@@ -1298,6 +2031,7 @@ public class OpenAIConversionTests
     {
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Test message"))
         {
+            ConversationId = "conv_123",
             ResponseId = "options-test",
             ModelId = "gpt-3.5-turbo"
         };
@@ -1306,21 +2040,20 @@ public class OpenAIConversionTests
         {
             MaxOutputTokens = 500,
             AllowMultipleToolCalls = true,
-            ConversationId = "conversation-123",
             Instructions = "You are a helpful assistant.",
             Temperature = 0.8f,
             TopP = 0.95f,
             ModelId = "override-model"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("options-test", openAIResponse.Id);
         Assert.Equal("gpt-3.5-turbo", openAIResponse.Model);
         Assert.Equal(500, openAIResponse.MaxOutputTokenCount);
         Assert.True(openAIResponse.ParallelToolCallsEnabled);
-        Assert.Equal("conversation-123", openAIResponse.PreviousResponseId);
-        Assert.Equal("You are a helpful assistant.", openAIResponse.Instructions);
+        Assert.Equal("conv_123", openAIResponse.ConversationOptions?.ConversationId);
+        Assert.Equal("You are a helpful assistant.", Assert.IsAssignableFrom<MessageResponseItem>(openAIResponse.Instructions.Single()).Content.Single().Text);
         Assert.Equal(0.8f, openAIResponse.Temperature);
         Assert.Equal(0.95f, openAIResponse.TopP);
     }
@@ -1334,7 +2067,7 @@ public class OpenAIConversionTests
             ModelId = "gpt-4"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.Equal("empty-response", openAIResponse.Id);
         Assert.Equal("gpt-4", openAIResponse.Model);
@@ -1360,7 +2093,7 @@ public class OpenAIConversionTests
             ResponseId = "multi-message-response"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.Equal(4, openAIResponse.OutputItems.Count);
 
@@ -1397,7 +2130,7 @@ public class OpenAIConversionTests
             ResponseId = "tool-message-test"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         var outputItems = openAIResponse.OutputItems.ToArray();
         Assert.Equal(4, outputItems.Length);
@@ -1428,7 +2161,7 @@ public class OpenAIConversionTests
             ResponseId = "system-user-test"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         var outputItems = openAIResponse.OutputItems.ToArray();
         Assert.Equal(3, outputItems.Length);
@@ -1447,16 +2180,16 @@ public class OpenAIConversionTests
     {
         var chatResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Default test"));
 
-        var openAIResponse = chatResponse.AsOpenAIResponse();
+        var openAIResponse = chatResponse.AsOpenAIResponseResult();
 
         Assert.NotNull(openAIResponse);
         Assert.Equal(ResponseStatus.Completed, openAIResponse.Status);
-        Assert.False(openAIResponse.ParallelToolCallsEnabled);
+        Assert.True(openAIResponse.ParallelToolCallsEnabled);
         Assert.Null(openAIResponse.MaxOutputTokenCount);
         Assert.Null(openAIResponse.Temperature);
         Assert.Null(openAIResponse.TopP);
-        Assert.Null(openAIResponse.PreviousResponseId);
-        Assert.Null(openAIResponse.Instructions);
+        Assert.Null(openAIResponse.ConversationOptions);
+        Assert.Empty(openAIResponse.Instructions);
         Assert.NotNull(openAIResponse.OutputItems);
     }
 
@@ -1470,7 +2203,7 @@ public class OpenAIConversionTests
             ModelId = "options-model-id"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("options-model-id", openAIResponse.Model);
     }
@@ -1488,7 +2221,7 @@ public class OpenAIConversionTests
             ModelId = "options-model-id"
         };
 
-        var openAIResponse = chatResponse.AsOpenAIResponse(options);
+        var openAIResponse = chatResponse.AsOpenAIResponseResult(options);
 
         Assert.Equal("response-model-id", openAIResponse.Model);
     }
@@ -1541,6 +2274,54 @@ public class OpenAIConversionTests
     }
 
     /// <summary>Helper class for testing WebSearchTool with additional properties.</summary>
+    [Fact]
+    public void AsChatMessages_WebSearchCallResponseItem_QueriesArrayPreferredOverDeprecatedQuery()
+    {
+        // Both "queries" (array) and deprecated "query" (string) are present.
+        // The array form should be preferred.
+        WebSearchCallResponseItem wsItem = ModelReaderWriter.Read<WebSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"web_search_call","id":"ws_1","status":"completed","action":{"type":"search","queries":[".NET 10 release","dotnet latest"],"query":".NET 10 release"}}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { wsItem }.AsChatMessages().ToArray();
+        Assert.Single(messages);
+
+        WebSearchToolCallContent wsCall = Assert.Single(messages[0].Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws_1", wsCall.CallId);
+        Assert.NotNull(wsCall.Queries);
+        Assert.Equal(new[] { ".NET 10 release", "dotnet latest" }, wsCall.Queries);
+    }
+
+    [Fact]
+    public void AsChatMessages_WebSearchCallResponseItem_FallsBackToDeprecatedQueryWhenNoQueriesArray()
+    {
+        // Only the deprecated "query" field is present (no "queries" array).
+        WebSearchCallResponseItem wsItem = ModelReaderWriter.Read<WebSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"web_search_call","id":"ws_2","status":"completed","action":{"type":"search","query":"what is .NET"}}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { wsItem }.AsChatMessages().ToArray();
+        Assert.Single(messages);
+
+        WebSearchToolCallContent wsCall = Assert.Single(messages[0].Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws_2", wsCall.CallId);
+        Assert.NotNull(wsCall.Queries);
+        Assert.Equal(new[] { "what is .NET" }, wsCall.Queries);
+    }
+
+    [Fact]
+    public void AsChatMessages_WebSearchCallResponseItem_NullQueriesWhenNeitherFieldPresent()
+    {
+        // Neither "queries" nor "query" is present in the action.
+        WebSearchCallResponseItem wsItem = ModelReaderWriter.Read<WebSearchCallResponseItem>(BinaryData.FromString(
+            """{"type":"web_search_call","id":"ws_3","status":"completed","action":{"type":"search"}}"""))!;
+
+        ChatMessage[] messages = new ResponseItem[] { wsItem }.AsChatMessages().ToArray();
+        Assert.Single(messages);
+
+        WebSearchToolCallContent wsCall = Assert.Single(messages[0].Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws_3", wsCall.CallId);
+        Assert.Null(wsCall.Queries);
+    }
+
     private sealed class HostedWebSearchToolWithProperties : HostedWebSearchTool
     {
         private readonly Dictionary<string, object?> _additionalProperties;

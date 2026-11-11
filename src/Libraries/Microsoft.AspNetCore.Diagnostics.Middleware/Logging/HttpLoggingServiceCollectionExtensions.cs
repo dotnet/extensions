@@ -6,10 +6,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Logging;
+using Microsoft.AspNetCore.Diagnostics.Logging.Internal;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -18,8 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods to register the HTTP logging feature within the service.
 /// </summary>
-[Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
-public static class HttpLoggingServiceCollectionExtensions
+public static partial class HttpLoggingServiceCollectionExtensions
 {
     /// <summary>
     /// Enables enrichment and redaction of HTTP request logging output.
@@ -31,10 +32,12 @@ public static class HttpLoggingServiceCollectionExtensions
     /// <param name="configure">Configures the redaction options.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configure = null)
     {
         _ = Throw.IfNull(services);
 
+        _ = services.AddRedaction();
         _ = services.AddOptionsWithValidateOnStart<LoggingRedactionOptions, LoggingRedactionOptionsValidator>()
             .Configure(configure ?? (static _ => { }));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>());
@@ -56,11 +59,16 @@ public static class HttpLoggingServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="section">The configuration section with the redaction settings.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, IConfigurationSection section)
     {
+        _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        return services.AddHttpLoggingRedaction(o => section.Bind(o));
+        _ = services.AddSingleton<IConfigureOptions<LoggingRedactionOptions>>(
+            new LoggingRedactionOptionsConfigureOptions(section));
+
+        return services.AddHttpLoggingRedaction();
     }
 
     /// <summary>

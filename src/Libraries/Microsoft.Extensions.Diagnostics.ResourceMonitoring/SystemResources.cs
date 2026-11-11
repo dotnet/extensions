@@ -24,9 +24,10 @@ public readonly struct SystemResources
     /// This value corresponds to the number of the guaranteed CPUs as described by Kubernetes CPU request parameter. Each 1000 CPU units
     /// represent 1 CPU or 1 Core. For example, if the Pod is configured with 1500m units as the CPU request, this property will be assigned
     /// to 1.5, which means one and a half CPU will be dedicated for the Pod.
-    /// For a Pod, this value is calculated based on the <c>cgroupv2</c> weight, using the formula
-    /// <c>y = (1 + ((x - 2) * 9999) / 262142)</c>, where <c>y</c> is the CPU weight and <c>x</c> is the CPU share (<c>cgroup v1</c>).
-    /// For more information, see <see href="https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2"/>.
+    /// For a Pod, this value is calculated based on the <c>cgroupv2</c> weight by converting it back to <c>cgroup v1</c> shares, using the formula
+    /// <c>L = (sqrt(16129 + 2448 * log10(cpu.weight)) - 125) / 2</c> and <c>cpu.shares = 2^L</c>, where the result is clamped to the range [2, 262144].
+    /// The final CPU units value is then calculated as <c>cpu.shares / 1024</c>.
+    /// For more information, see <see href="https://github.com/kubernetes/website/blob/main/content/en/blog/_posts/2026-01-30-new-cgroup-v1-to-v2-conversion-formula/index.md#new-conversion-formula"/>.
     /// </remarks>
     public double GuaranteedCpuUnits { get; }
 

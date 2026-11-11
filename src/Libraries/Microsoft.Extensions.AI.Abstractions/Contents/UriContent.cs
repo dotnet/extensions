@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Net.Mime;
 using System.Text.Json.Serialization;
 using Microsoft.Shared.Diagnostics;
 
@@ -18,6 +19,9 @@ namespace Microsoft.Extensions.AI;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class UriContent : AIContent
 {
+    /// <summary>The default media type for unknown file extensions.</summary>
+    private const string DefaultMediaType = "application/octet-stream";
+
     /// <summary>The URI represented.</summary>
     private Uri _uri;
 
@@ -26,37 +30,35 @@ public class UriContent : AIContent
 
     /// <summary>Initializes a new instance of the <see cref="UriContent"/> class.</summary>
     /// <param name="uri">The URI to the represented content.</param>
-    /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
+    /// <param name="mediaType">
+    /// The media type (also known as MIME type) represented by the content. If not provided,
+    /// it will be inferred from the file extension of the URI. If it cannot be inferred,
+    /// "application/octet-stream" is used.
+    /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="mediaType"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="mediaType"/> is an invalid media type.</exception>
     /// <exception cref="UriFormatException"><paramref name="uri"/> is an invalid URL.</exception>
-    /// <remarks>
-    /// A media type must be specified, so that consumers know what to do with the content.
-    /// If an exact media type is not known, but the category (e.g. image) is known, a wildcard
-    /// may be used (e.g. "image/*").
-    /// </remarks>
-    public UriContent(string uri, string mediaType)
+    public UriContent(string uri, string? mediaType = null)
         : this(new Uri(Throw.IfNull(uri)), mediaType)
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="UriContent"/> class.</summary>
     /// <param name="uri">The URI to the represented content.</param>
-    /// <param name="mediaType">The media type (also known as MIME type) represented by the content.</param>
+    /// <param name="mediaType">
+    /// The media type (also known as MIME type) represented by the content. If not provided,
+    /// it will be inferred from the file extension of the URI. If it cannot be inferred,
+    /// "application/octet-stream" is used.
+    /// </param>
     /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="mediaType"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="mediaType"/> is an invalid media type.</exception>
-    /// <remarks>
-    /// A media type must be specified, so that consumers know what to do with the content.
-    /// If an exact media type is not known, but the category (e.g. image) is known, a wildcard
-    /// may be used (e.g. "image/*").
-    /// </remarks>
     [JsonConstructor]
-    public UriContent(Uri uri, string mediaType)
+    public UriContent(Uri uri, string? mediaType = null)
     {
         _uri = Throw.IfNull(uri);
-        _mediaType = DataUriParser.ThrowIfInvalidMediaType(mediaType);
+        _mediaType = mediaType is not null
+            ? DataUriParser.ThrowIfInvalidMediaType(mediaType)
+            : InferMediaType(uri);
     }
 
     /// <summary>Gets or sets the <see cref="Uri"/> for this content.</summary>
@@ -90,4 +92,25 @@ public class UriContent : AIContent
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"Uri = {_uri}";
+
+    /// <summary>Infers the media type from the URI's file extension.</summary>
+    private static string InferMediaType(Uri uri)
+    {
+        string path;
+        if (uri.IsAbsoluteUri)
+        {
+            path = uri.AbsolutePath;
+        }
+        else
+        {
+            path = uri.OriginalString;
+            int i = path.AsSpan().IndexOfAny('?', '#');
+            if (i >= 0)
+            {
+                path = path.Substring(0, i);
+            }
+        }
+
+        return MediaTypeMap.GetMediaType(path) ?? DefaultMediaType;
+    }
 }

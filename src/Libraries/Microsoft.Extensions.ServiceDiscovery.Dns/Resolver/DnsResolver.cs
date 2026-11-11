@@ -61,6 +61,12 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (CheckIsReservedDnsName(name) is ReservedNameType type && type != ReservedNameType.None)
+        {
+            // RFC 6761 requires that libraries return negative results for all queries except localhost A/AAAA
+            return ValueTask.FromResult(Array.Empty<ServiceResult>());
+        }
+
         // dnsSafeName is Disposed by SendQueryWithTelemetry
         EncodedDomainName dnsSafeName = GetNormalizedHostName(name);
         return SendQueryWithTelemetry(name, dnsSafeName, QueryType.SRV, ProcessResponse, cancellationToken);
@@ -109,24 +115,9 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
 
     public async ValueTask<AddressResult[]> ResolveIPAddressesAsync(string name, CancellationToken cancellationToken = default)
     {
-        if (string.Equals(name, "localhost", StringComparison.OrdinalIgnoreCase))
+        if (CheckIsReservedDnsName(name) is ReservedNameType type && type != ReservedNameType.None)
         {
-            // name localhost exists outside of DNS and can't be resolved by a DNS server
-            int len = (Socket.OSSupportsIPv4 ? 1 : 0) + (Socket.OSSupportsIPv6 ? 1 : 0);
-            AddressResult[] res = new AddressResult[len];
-
-            int index = 0;
-            if (Socket.OSSupportsIPv6) // prefer IPv6
-            {
-                res[index] = new AddressResult(DateTime.MaxValue, IPAddress.IPv6Loopback);
-                index++;
-            }
-            if (Socket.OSSupportsIPv4)
-            {
-                res[index] = new AddressResult(DateTime.MaxValue, IPAddress.Loopback);
-            }
-
-            return res;
+            return ResolveDnsReservedNameAddress(type, null);
         }
 
         var ipv4AddressesTask = ResolveIPAddressesAsync(name, AddressFamily.InterNetwork, cancellationToken);
@@ -151,19 +142,9 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
             throw new ArgumentOutOfRangeException(nameof(addressFamily), addressFamily, "Invalid address family");
         }
 
-        if (string.Equals(name, "localhost", StringComparison.OrdinalIgnoreCase))
+        if (CheckIsReservedDnsName(name) is ReservedNameType type && type != ReservedNameType.None)
         {
-            // name localhost exists outside of DNS and can't be resolved by a DNS server
-            if (addressFamily == AddressFamily.InterNetwork && Socket.OSSupportsIPv4)
-            {
-                return ValueTask.FromResult<AddressResult[]>([new AddressResult(DateTime.MaxValue, IPAddress.Loopback)]);
-            }
-            else if (addressFamily == AddressFamily.InterNetworkV6 && Socket.OSSupportsIPv6)
-            {
-                return ValueTask.FromResult<AddressResult[]>([new AddressResult(DateTime.MaxValue, IPAddress.IPv6Loopback)]);
-            }
-
-            return ValueTask.FromResult<AddressResult[]>([]);
+            return ValueTask.FromResult(ResolveDnsReservedNameAddress(type, addressFamily));
         }
 
         // dnsSafeName is Disposed by SendQueryWithTelemetry
@@ -337,6 +318,41 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
                 target = new IPAddress(record.Data.Span);
                 return true;
             }
+        }
+    }
+
+    private static AddressResult[] ResolveDnsReservedNameAddress(ReservedNameType type, AddressFamily? addressFamily)
+    {
+        switch (type)
+        {
+            case ReservedNameType.Localhost:
+                // resolve to appropriate loopback address
+                bool doIpv6 = Socket.OSSupportsIPv6 && (addressFamily == null || addressFamily == AddressFamily.InterNetworkV6);
+                bool doIpv4 = Socket.OSSupportsIPv4 && (addressFamily == null || addressFamily == AddressFamily.InterNetwork);
+
+                int len = (doIpv4 ? 1 : 0) + (doIpv6 ? 1 : 0);
+                AddressResult[] res = new AddressResult[len];
+
+                int count = 0;
+                if (doIpv6) // put IPv6 first if both are requested
+                {
+                    res[count] = new AddressResult(DateTime.MaxValue, IPAddress.IPv6Loopback);
+                    count++;
+                }
+                if (doIpv4)
+                {
+                    res[count] = new AddressResult(DateTime.MaxValue, IPAddress.Loopback);
+                }
+
+                return res;
+
+            case ReservedNameType.Invalid:
+                // RFC 6761 requires that libraries return negative results for 'invalid'
+                return [];
+
+            default:
+                Debug.Fail("Should be unreachable");
+                throw new ArgumentOutOfRangeException(nameof(type), type, "Invalid reserved name type");
         }
     }
 
@@ -619,7 +635,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
         //    be used again.
         //
 
-        DnsResourceRecord? soa = authorities.FirstOrDefault(r => r.Type == QueryType.SOA);
+        DnsResourceRecord? soa = authorities.Find(r => r.Type == QueryType.SOA);
         if (soa != null && DnsPrimitives.TryReadSoa(soa.Value.Data, out _, out _, out _, out _, out _, out _, out uint minimum, out _))
         {
             expiration = createdAt.AddSeconds(Math.Min(minimum, soa.Value.Ttl));
@@ -653,7 +669,7 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
             //    another query for the same <QNAME, QTYPE, QCLASS> that resulted in
             //    the cached negative response.
             //
-            if (!authorities.Any(r => r.Type == QueryType.NS) && GetNegativeCacheExpiration(createdAt, authorities, out DateTime newExpiration))
+            if (!authorities.Exists(r => r.Type == QueryType.NS) && GetNegativeCacheExpiration(createdAt, authorities, out DateTime newExpiration))
             {
                 expiration = newExpiration;
                 // _cache.TryAdd(name, queryType, expiration, Array.Empty<T>());
@@ -925,5 +941,45 @@ internal sealed partial class DnsResolver : IDnsResolver, IDisposable
                 ArrayPool<byte>.Shared.Return(buffer);
             }
         }
+    }
+
+    //
+    // See RFC 6761 for reserved DNS names.
+    //
+    private static ReservedNameType CheckIsReservedDnsName(string name)
+    {
+        ReadOnlySpan<char> nameAsSpan = name;
+        nameAsSpan = nameAsSpan.TrimEnd('.'); // trim potential explicit root label
+
+        if (MatchesReservedName(nameAsSpan, "localhost"))
+        {
+            return ReservedNameType.Localhost;
+        }
+
+        if (MatchesReservedName(nameAsSpan, "invalid"))
+        {
+            return ReservedNameType.Invalid;
+        }
+
+        return ReservedNameType.None;
+
+        static bool MatchesReservedName(ReadOnlySpan<char> name, string reservedName)
+        {
+            // check if equal to reserved name or is a subdomain of it
+            if (name.EndsWith(reservedName, StringComparison.OrdinalIgnoreCase) &&
+                (name.Length == reservedName.Length || name[name.Length - reservedName.Length - 1] == '.'))
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    private enum ReservedNameType
+    {
+        None,
+        Localhost,
+        Invalid,
     }
 }

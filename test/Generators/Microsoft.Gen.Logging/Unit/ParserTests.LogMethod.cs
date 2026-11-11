@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Logging.Parsing;
 using Xunit;
 
@@ -276,12 +278,64 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    static partial void M1/*0+*/<T>/*-0*/(ILogger logger);
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {value}"")]
+                    static partial void M1<T>(ILogger logger, T value);
                 }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.LoggingMethodIsGeneric);
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task MethodGenericWithConstraints()
+    {
+        const string Source = @"
+                partial class C
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {code}"")]
+                    static partial void M1<TCode>(ILogger logger, TCode code)
+                        where TCode : struct, System.Enum;
+                }
+            ";
+
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task MethodGenericMultipleTypeParams()
+    {
+        const string Source = @"
+                partial class C
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {p1} {p2}"")]
+                    static partial void M1<T1, T2>(ILogger logger, T1 p1, T2 p2)
+                        where T1 : class
+                        where T2 : notnull;
+                }
+            ";
+
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task MethodGenericWithAllowsRefStructConstraint()
+    {
+        // The 'allows ref struct' detection requires Roslyn 4.9+ (ITypeParameterSymbol.AllowsRefLikeType).
+        // Skip gracefully on older Roslyn versions where the property and syntax are unavailable.
+        if (typeof(ITypeParameterSymbol).GetProperty("AllowsRefLikeType") is null)
+        {
+            return;
+        }
+
+        const string Source = @"
+                partial class C
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
+                    static partial void /*0+*/M1/*-0*/<T>(ILogger logger) where T : allows ref struct;
+                }
+            ";
+
+        await RunGenerator(Source, DiagDescriptors.LoggingMethodHasAllowsRefStructConstraint);
     }
 
     [Theory]
@@ -296,6 +350,45 @@ public partial class ParserTests
             }}";
 
         await RunGenerator(source, DiagDescriptors.LoggingMethodParameterRefKind);
+    }
+
+    [Fact]
+    public async Task LogMethodParamsModifier()
+    {
+        const string Source = @"
+            partial class C
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
+                static partial void M(ILogger logger, params int[] /*0+*/values/*-0*/);
+            }";
+
+        await RunGenerator(Source, DiagDescriptors.LoggingMethodParameterParams);
+    }
+
+    [Fact]
+    public async Task LogMethodRefReadOnlyModifier()
+    {
+        const string Source = @"
+            partial class C
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter {p1}"")]
+                static partial void M(ILogger logger, ref readonly int p1);
+            }";
+
+        await RunGenerator(Source);
+    }
+
+    [Fact]
+    public async Task LogMethodScopedModifier()
+    {
+        const string Source = @"
+            partial class C
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter {p1}"")]
+                static partial void M(ILogger logger, scoped ref readonly int /*0+*/p1/*-0*/);
+            }";
+
+        await RunGenerator(Source, DiagDescriptors.LoggingMethodParameterParams);
     }
 
     [Theory]
@@ -464,5 +557,94 @@ public partial class ParserTests
                 [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
                 public static partial void LogFunc(ILogger logger, IRedactorProvider provider, MyRecord /*0+*/p0/*-0*/);
             }");
+    }
+
+    [Theory]
+    [InlineData("record Inner(int Value); record MyRecord(Inner First, MyRecord Self);")]
+    [InlineData("record Node { public Leaf Next { get; init; } } record Leaf : Node { } record MyRecord(Leaf First);")]
+    public async Task LogMethod_SkipsTypeCyclesInRecord(string records)
+    {
+        await RunGenerator(@$"
+            {records}
+
+            partial class C
+            {{
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
+                public static partial void LogTemplate(ILogger logger, MyRecord p0);
+            }}");
+    }
+
+    [Fact]
+    public async Task LogMethod_DetectsSensitiveMembersInRecordWithTypeCycle()
+    {
+        await RunGenerator(@"
+            using Microsoft.Extensions.Compliance.Testing;
+
+            record Inner(int Value);
+
+            record MyRecord
+            {
+                public Inner First { get; init; }
+                public MyRecord Self { get; init; }
+                [PrivateData] public string Secret { get; init; }
+            }
+
+            partial class C
+            {
+                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
+                public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
+            }",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
+    }
+
+    [Theory]
+    [InlineData("record MyRecord { [PrivateData] public MyRecord Self { get; init; } }")]
+    [InlineData("record Child { [PrivateData] public Child Next { get; init; } } record MyRecord(Child First);")]
+    public async Task LogMethod_DetectsSensitiveSelfReferencingMemberInRecord(string records)
+    {
+        await RunGenerator(@$"
+            using Microsoft.Extensions.Compliance.Testing;
+
+            {records}
+
+            partial class C
+            {{
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
+                public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
+            }}",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
+    }
+
+    [Fact]
+    public async Task LogMethod_DetectsSensitiveMembersNestedBeyondTraversalDepthInRecord()
+    {
+        var records = string.Join(" ", Enumerable.Range(1, 39).Select(i => $"record R{i}(R{i + 1} Next);"));
+
+        await RunGenerator(@$"
+            using Microsoft.Extensions.Compliance.Testing;
+
+            {records}
+            record R40([PrivateData] string Secret);
+
+            partial class C
+            {{
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
+                public static partial void LogTemplate(ILogger logger, R1 /*0+*/p0/*-0*/);
+            }}",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
+    }
+
+    [Fact]
+    public async Task LogMethod_ReportsUnboundedGenericRecord()
+    {
+        await RunGenerator(@"
+            record Node<T>(Node<Node<T>> Next);
+
+            partial class C
+            {
+                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
+                public static partial void LogTemplate(ILogger logger, Node<int> /*0+*/p0/*-0*/);
+            }",
+            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
     }
 }

@@ -150,7 +150,7 @@ internal sealed class LinuxNetworkUtilizationParser
         ReadOnlySpan<char> firstLine = enumerableLines.Current.TrimStart().Span;
         if (!firstLine.StartsWith(Sl, StringComparison.Ordinal))
         {
-            Throw.InvalidOperationException($"Could not parse '{file}'. We expected first line of the file to start with '{Sl}' but it was '{firstLine.ToString()}' instead.");
+            Throw.InvalidOperationException($"Could not parse '{file}'. We expected first line of the file to start with '{Sl}' but it was '{firstLine}' instead.");
         }
 
         while (enumerableLines.MoveNext())

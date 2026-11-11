@@ -12,13 +12,26 @@ namespace Microsoft.Extensions.AI;
 /// </remarks>
 public class HostedFileSearchTool : AITool
 {
+    /// <summary>Any additional properties associated with the tool.</summary>
+    private IReadOnlyDictionary<string, object?>? _additionalProperties;
+
     /// <summary>Initializes a new instance of the <see cref="HostedFileSearchTool"/> class.</summary>
     public HostedFileSearchTool()
     {
     }
 
+    /// <summary>Initializes a new instance of the <see cref="HostedFileSearchTool"/> class.</summary>
+    /// <param name="additionalProperties">Any additional properties associated with the tool.</param>
+    public HostedFileSearchTool(IReadOnlyDictionary<string, object?>? additionalProperties)
+    {
+        _additionalProperties = additionalProperties;
+    }
+
     /// <inheritdoc />
     public override string Name => "file_search";
+
+    /// <inheritdoc />
+    public override IReadOnlyDictionary<string, object?> AdditionalProperties => _additionalProperties ?? base.AdditionalProperties;
 
     /// <summary>Gets or sets a collection of <see cref="AIContent"/> to be used as input to the file search tool.</summary>
     /// <remarks>

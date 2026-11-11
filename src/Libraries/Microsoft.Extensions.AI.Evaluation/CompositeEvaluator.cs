@@ -163,6 +163,6 @@ public sealed class CompositeEvaluator : IEvaluator
         }
 
         IEnumerable<ValueTask<EvaluationResult>> concurrentTasks = _evaluators.Select(EvaluateAsync);
-        return concurrentTasks.StreamResultsAsync(preserveOrder: false, cancellationToken);
+        return concurrentTasks.StreamResultsAsync(cancellationToken: cancellationToken);
     }
 }

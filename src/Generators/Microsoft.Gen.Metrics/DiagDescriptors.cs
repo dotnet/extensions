@@ -113,12 +113,6 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.ErrorInvalidMethodReturnTypeArityMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ErrorGaugeNotSupported { get; } = Make(
-        id: DiagnosticIds.Metrics.METGEN017,
-        title: Resources.ErrorGaugeNotSupportedTitle,
-        messageFormat: Resources.ErrorGaugeNotSupportedMessage,
-        category: Category);
-
     public static DiagnosticDescriptor ErrorXmlNotLoadedCorrectly { get; } = Make(
         id: DiagnosticIds.Metrics.METGEN018,
         title: Resources.ErrorXmlNotLoadedCorrectlyTitle,

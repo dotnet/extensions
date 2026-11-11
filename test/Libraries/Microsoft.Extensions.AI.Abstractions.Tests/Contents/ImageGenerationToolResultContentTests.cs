@@ -1,0 +1,153 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using Xunit;
+
+namespace Microsoft.Extensions.AI;
+
+public class ImageGenerationToolResultContentTests
+{
+    [Fact]
+    public void Constructor_PropsDefault()
+    {
+        ImageGenerationToolResultContent c = new("call123");
+        Assert.Null(c.RawRepresentation);
+        Assert.Null(c.AdditionalProperties);
+        Assert.Equal("call123", c.CallId);
+        Assert.Null(c.Outputs);
+    }
+
+    [Fact]
+    public void Properties_Roundtrip()
+    {
+        ImageGenerationToolResultContent c = new("img123");
+
+        Assert.Equal("img123", c.CallId);
+
+        Assert.Null(c.Outputs);
+        IList<AIContent> outputs = [new DataContent(new byte[] { 1, 2, 3 }, "image/png")];
+        c.Outputs = outputs;
+        Assert.Same(outputs, c.Outputs);
+
+        Assert.Null(c.RawRepresentation);
+        object raw = new();
+        c.RawRepresentation = raw;
+        Assert.Same(raw, c.RawRepresentation);
+
+        Assert.Null(c.AdditionalProperties);
+        AdditionalPropertiesDictionary props = new() { { "key", "value" } };
+        c.AdditionalProperties = props;
+        Assert.Same(props, c.AdditionalProperties);
+    }
+
+    [Fact]
+    public void Outputs_SupportsMultipleContentTypes()
+    {
+        ImageGenerationToolResultContent c = new("img456")
+        {
+            Outputs =
+            [
+                new DataContent(new byte[] { 1, 2, 3 }, "image/png"),
+                new UriContent("http://example.com/image.jpg", "image/jpeg"),
+                new DataContent(new byte[] { 4, 5, 6 }, "image/gif")
+            ]
+        };
+
+        Assert.NotNull(c.Outputs);
+        Assert.Equal(3, c.Outputs.Count);
+        Assert.IsType<DataContent>(c.Outputs[0]);
+        Assert.IsType<UriContent>(c.Outputs[1]);
+        Assert.IsType<DataContent>(c.Outputs[2]);
+    }
+
+    [Fact]
+    public void Serialization_Roundtrips()
+    {
+        ImageGenerationToolResultContent content = new("img123")
+        {
+            Outputs =
+            [
+                new DataContent(new byte[] { 1, 2, 3 }, "image/png"),
+                new UriContent("http://example.com/image.jpg", "image/jpeg")
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        var deserializedSut = JsonSerializer.Deserialize<ImageGenerationToolResultContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserializedSut);
+        Assert.Equal("img123", deserializedSut.CallId);
+        Assert.NotNull(deserializedSut.Outputs);
+        Assert.Equal(2, deserializedSut.Outputs.Count);
+        Assert.IsType<DataContent>(deserializedSut.Outputs[0]);
+        Assert.Equal("image/png", ((DataContent)deserializedSut.Outputs[0]).MediaType);
+        Assert.IsType<UriContent>(deserializedSut.Outputs[1]);
+        Assert.Equal("http://example.com/image.jpg", ((UriContent)deserializedSut.Outputs[1]).Uri.ToString());
+    }
+
+    [Fact]
+    public void Serialization_PolymorphicAsAIContent_Roundtrips()
+    {
+        AIContent content = new ImageGenerationToolResultContent("img789")
+        {
+            Outputs =
+            [
+                new DataContent(new byte[] { 7, 8, 9 }, "image/png"),
+                new UriContent("http://example.com/another.jpg", "image/jpeg")
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
+        Assert.Contains("\"$type\"", json);
+        Assert.Contains("\"imageGenerationToolResult\"", json);
+
+        var deserialized = JsonSerializer.Deserialize<AIContent>(json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(deserialized);
+        Assert.IsType<ImageGenerationToolResultContent>(deserialized);
+
+        var imageResult = (ImageGenerationToolResultContent)deserialized;
+        Assert.Equal("img789", imageResult.CallId);
+        Assert.NotNull(imageResult.Outputs);
+        Assert.Equal(2, imageResult.Outputs.Count);
+        Assert.IsType<DataContent>(imageResult.Outputs[0]);
+        Assert.IsType<UriContent>(imageResult.Outputs[1]);
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "imageGenerationToolResult",
+              "callId": "img-call1",
+              "outputs": [
+                {
+                  "$type": "uri",
+                  "uri": "http://example.com/image.png",
+                  "mediaType": "image/png"
+                }
+              ],
+              "additionalProperties": {
+                "key": "val"
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var imgResult = Assert.IsType<ImageGenerationToolResultContent>(result);
+        Assert.Equal("img-call1", imgResult.CallId);
+        Assert.NotNull(imgResult.Outputs);
+        Assert.Single(imgResult.Outputs);
+        var uriOutput = Assert.IsType<UriContent>(imgResult.Outputs[0]);
+        Assert.Equal(new Uri("http://example.com/image.png"), uriOutput.Uri);
+        Assert.Equal("image/png", uriOutput.MediaType);
+        Assert.NotNull(imgResult.AdditionalProperties);
+        Assert.Equal("val", imgResult.AdditionalProperties["key"]?.ToString());
+    }
+}

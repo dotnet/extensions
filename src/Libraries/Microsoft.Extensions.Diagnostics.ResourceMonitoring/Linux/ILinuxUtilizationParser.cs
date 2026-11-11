@@ -95,4 +95,10 @@ internal interface ILinuxUtilizationParser
     /// </summary>
     /// <returns>The number of CPU periods.</returns>
     long GetCgroupPeriodsIntervalInMicroSecondsV2();
+
+    /// <summary>
+    /// For CgroupV2 only. Reads the file /sys/fs/cgroup/memory.min, if 0 reads the file /sys/fs/cgroup/memory.low.
+    /// </summary>
+    /// <returns>The minimum memory allocated in bytes, or 0 if not available.</returns>
+    ulong GetMinMemoryInBytes();
 }

@@ -12,6 +12,8 @@ internal sealed class MetricMethod
     public Dictionary<string, string> TagDescriptionDictionary = [];
     public string? Name;
     public string? MetricName;
+    public string? MetricUnit;
+    public string? MetricDescription;
     public string? XmlDefinition;
     public bool IsExtensionMethod;
     public string Modifiers = string.Empty;

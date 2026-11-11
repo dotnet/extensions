@@ -45,6 +45,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     {
     }
 
+#pragma warning disable S107 // Methods should not have too many parameters
     internal WindowsSnapshotProvider(
         ILogger<WindowsSnapshotProvider>? logger,
         IMeterFactory meterFactory,
@@ -54,6 +55,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         Func<long> getCpuTicksFunc,
         Func<long> getMemoryUsageFunc,
         Func<ulong> getTotalMemoryInBytesFunc)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         _logger = logger ?? NullLogger<WindowsSnapshotProvider>.Instance;
 
@@ -89,8 +91,15 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryPercentage);
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessCpuUtilization,
+            observeValue: CpuPercentage,
+            description: "The CPU consumption of the running application.");
+
+        _ = meter.CreateObservableGauge(
+            name: ResourceUtilizationInstruments.ProcessMemoryUtilization,
+            observeValue: MemoryPercentage,
+            description: "The memory consumption of the running application.");
     }
 
     public Snapshot GetSnapshot()

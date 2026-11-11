@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ public class DistributedCachingEmbeddingGeneratorTest
     private readonly TestInMemoryCacheStorage _storage = new();
     private readonly Embedding<float> _expectedEmbedding = new(new float[] { 1.0f, 2.0f, 3.0f })
     {
-        CreatedAt = DateTimeOffset.Parse("2024-08-01T00:00:00Z"),
+        CreatedAt = DateTimeOffset.Parse("2024-08-01T00:00:00Z", DateTimeFormatInfo.InvariantInfo),
         ModelId = "someModel",
         AdditionalProperties = new() { ["a"] = "b" },
     };
@@ -88,7 +89,7 @@ public class DistributedCachingEmbeddingGeneratorTest
         Embedding<float>[] expected = Enumerable.Range(0, 10).Select(i =>
             new Embedding<float>(new[] { 1.0f, 2.0f, 3.0f })
             {
-                CreatedAt = DateTimeOffset.Parse("2024-08-01T00:00:00Z") + TimeSpan.FromHours(i),
+                CreatedAt = DateTimeOffset.Parse("2024-08-01T00:00:00Z", DateTimeFormatInfo.InvariantInfo) + TimeSpan.FromHours(i),
                 ModelId = $"someModel{i}",
                 AdditionalProperties = new() { [$"a{i}"] = $"b{i}" },
             }).ToArray();

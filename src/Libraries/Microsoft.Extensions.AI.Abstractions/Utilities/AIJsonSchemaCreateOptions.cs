@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -19,7 +20,7 @@ public sealed record class AIJsonSchemaCreateOptions
     public static AIJsonSchemaCreateOptions Default { get; } = new AIJsonSchemaCreateOptions();
 
     /// <summary>
-    /// Gets a callback that is invoked for every schema that is generated within the type graph.
+    /// Gets or initializes a callback that is invoked for every schema that is generated within the type graph.
     /// </summary>
     public Func<AIJsonSchemaCreateContext, JsonNode, JsonNode>? TransformSchemaNode { get; init; }
 
@@ -36,7 +37,19 @@ public sealed record class AIJsonSchemaCreateOptions
     public Func<ParameterInfo, bool>? IncludeParameter { get; init; }
 
     /// <summary>
-    /// Gets a <see cref="AIJsonSchemaTransformOptions"/> governing transformations on the JSON schema after it has been generated.
+    /// Gets a callback that is invoked for each parameter in the <see cref="MethodBase"/> provided to
+    /// <see cref="AIJsonUtilities.CreateFunctionJsonSchema"/> to obtain a description for the parameter.
+    /// </summary>
+    /// <remarks>
+    /// The delegate receives a <see cref="ParameterInfo"/> instance and returns a string describing
+    /// the parameter. If <see langword="null"/>, or if the delegate returns <see langword="null"/>,
+    /// the description will be sourced from the <see cref="MethodBase"/> metadata (like <see cref="DescriptionAttribute"/>),
+    /// if available.
+    /// </remarks>
+    public Func<ParameterInfo, string?>? ParameterDescriptionProvider { get; init; }
+
+    /// <summary>
+    /// Gets or initializes a <see cref="AIJsonSchemaTransformOptions"/> governing transformations on the JSON schema after it has been generated.
     /// </summary>
     public AIJsonSchemaTransformOptions? TransformOptions { get; init; }
 

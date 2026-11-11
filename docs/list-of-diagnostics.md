@@ -10,13 +10,21 @@
 
 # Experiments
 
-As new functionality is introduced to this repo, new in-development APIs are marked as being experimental. Experimental APIs offer no
-compatibility guarantees and can change without notice. They are usually published in order to gather feedback before finalizing
-a design.
+As new functionality is introduced to this repo, in-development APIs may be marked as experimental. The
+[`ExperimentalAttribute`](https://learn.microsoft.com/dotnet/api/system.diagnostics.codeanalysis.experimentalattribute) lets a
+library ship preview APIs in an otherwise stable package and reports a diagnostic at call sites. It does not require a preview
+SDK or target framework. Experimental APIs offer no compatibility guarantees: their design or behavior may change, or they may
+be removed, as the library gathers feedback and finalizes the design. Experimental status describes the API's compatibility
+commitment, not its quality or reliability.
 
-You may use experimental APIs in your application, but we advise against using these APIs in production scenarios as they may not be
-fully tested nor fully reliable. Additionally, we strongly recommend that library authors do not publish versions of their libraries
-that depend on experimental APIs as this will quite possibly lead to future breaking changes and diamond problems.
+Consumers may evaluate experimental APIs in applications, but should use them in production only when they can accept possible
+compatibility changes. Library authors should generally avoid exposing stable APIs that depend on experimental APIs from another
+package. If that dependency is necessary, keep the dependent API experimental until its dependencies are stable, and consider
+the downstream breaking-change and diamond-dependency risks. These cautions do not prevent implementation-level dependencies
+between packages in this repository; they do require the public experimental boundary and consumer impact to be understood.
+
+See the [contribution guidance](../CONTRIBUTING.md#using-experimental) for when experimental APIs may be released before formal
+API Review approval and how review expectations vary by library.
 
 If you use experimental APIs, you will get one of the diagnostic shown below. The diagnostic is there to let you know you're
 using such an API so that you can avoid accidentally depending on experimental features. You may suppress these diagnostics
@@ -24,23 +32,27 @@ if desired.
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTEXP0001` | Resilience experiments |
-| `EXTEXP0002` | Compliance experiments  |
-| `EXTEXP0003` | Telemetry experiments |
-| `EXTEXP0004` | TimeProvider experiments |
-| `EXTEXP0006` | AsyncState experiments |
-| `EXTEXP0007` | Health check experiments |
-| `EXTEXP0008` | Resource monitoring experiments |
-| `EXTEXP0009` | Hosting experiments |
-| `EXTEXP0010` | Object pool experiments |
-| `EXTEXP0011` | Document database experiments |
-| `EXTEXP0012` | Auto-activation experiments |
-| `EXTEXP0013` | HttpLogging middleware experiments |
-| `EXTEXP0014` | ASP.NET Core integration testing experiments |
-| `EXTEXP0015` | Environmental probes experiments |
-| `EXTEXP0016` | Hosting integration testing experiments |
-| `EXTEXP0017` | Contextual options experiments |
-| `EXTEXP0018` | HybridCache experiments |
+| `EXTEXP0001`      | Resilience experiments |
+| `EXTEXP0002`      | Compliance experiments  |
+| `EXTEXP0003`      | Telemetry experiments |
+| `EXTEXP0004`      | TimeProvider experiments |
+| `EXTEXP0006`      | AsyncState experiments |
+| `EXTEXP0007`      | Health check experiments |
+| `EXTEXP0008`      | Resource monitoring experiments |
+| `EXTEXP0009`      | Hosting experiments |
+| `EXTEXP0010`      | Object pool experiments |
+| `EXTEXP0011`      | Document database experiments |
+| `EXTEXP0012`      | Auto-activation experiments |
+| `EXTEXP0013`      | HttpLogging middleware experiments |
+| `EXTEXP0014`      | ASP.NET Core integration testing experiments |
+| `EXTEXP0015`      | Environmental probes experiments |
+| `EXTEXP0016`      | Hosting integration testing experiments |
+| `EXTEXP0017`      | Contextual options experiments |
+| `EXTEXP0018`      | HybridCache experiments |
+| `EXTEXP0019`      | Documents experiments |
+| `MEAI001`         | AI experiments |
+| `MEVD9001`        | Vector Data experiments |
+| `MEDE0001`        | Document Extraction experiments |
 
 # Obsoletions
 
@@ -52,6 +64,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | :---------------- | :---------- |
 | `EXTOBS0001` | This API is obsolete and will be removed in a future version. Consider using [Resource Monitoring observable instruments](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-diagnostics#microsoftextensionsdiagnosticsresourcemonitoring). |
 | `EXTOBS0002` | This API is obsolete and will be removed in a future version. Instead of the AddServiceLogEnricher() methods, consider using the respective AddApplicationLogEnricher() methods.                                                                              |
+| `EXTOBS0003` | HybridCache does not provide built-in compression, so this option doesn't do anything. To compress cached data, configure a serializer that performs compression. |
 
 # LoggerMessage
 
@@ -64,7 +77,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN004` | A static logging method must have a parameter that implements the "Microsoft.Extensions.Logging.ILogger" interface |
 | `LOGGEN005` | Logging methods must be static |
 | `LOGGEN006` | Logging methods must be partial |
-| `LOGGEN007` | Logging methods can't be generic |
+| `LOGGEN007` | Logging methods can't use the `allows ref struct` constraint |
 | `LOGGEN008` | Redundant qualifier in the logging message |
 | `LOGGEN009` | Don't include exception parameters as templates in the logging message |
 | `LOGGEN010` | The logging template has no corresponding method parameter |
@@ -96,6 +109,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN036` | A value being logged doesn't have an effective way to be converted into a string |
 | `LOGGEN037` | Logging method contains malformed format strings |
 | `LOGGEN038` | Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field |
+| `LOGGEN039` | Logging method parameters can't have the "params" or "scoped" modifier |
 
 # Metrics
 
@@ -118,7 +132,6 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `METGEN014` | A metering attribute type argument is invalid |
 | `METGEN015` | Metric methods mustn't use any external type as the return type |
 | `METGEN016` | Metric methods mustn't use any generic type as the return type |
-| `METGEN017` | Gauge is not supported yet |
 | `METGEN018` | Xml comment was not parsed correctly |
 | `METGEN019` | A metric class has cycles in its type hierarchy |
 

@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
@@ -29,6 +29,46 @@ internal class LogCollector : ILoggerProvider
                 log.WriteLine($"{logItem.categoryName} {logItem.eventId}: {logItem.message}{errSuffix}");
             }
         }
+    }
+
+    public async Task WaitForLogsAsync(int[] expectedErrorIds, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            lock (_items)
+            {
+                // Check for exact match to avoid race conditions with AssertErrors
+                if (_items.Count == expectedErrorIds.Length)
+                {
+                    bool match = true;
+                    for (int i = 0; i < expectedErrorIds.Length; i++)
+                    {
+                        if (_items[i].eventId.Id != expectedErrorIds[i])
+                        {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match)
+                    {
+                        return; // Success
+                    }
+                }
+
+                // If we have more logs than expected, something unexpected happened
+                // Stop waiting to let AssertErrors report the mismatch
+                if (_items.Count > expectedErrorIds.Length)
+                {
+                    return;
+                }
+            }
+
+            await Task.Delay(10);
+        }
+
+        // Timeout reached, will fail in AssertErrors
     }
 
     public void AssertErrors(int[] errorIds)

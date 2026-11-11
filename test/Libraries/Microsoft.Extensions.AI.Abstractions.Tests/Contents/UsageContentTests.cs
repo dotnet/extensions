@@ -66,7 +66,9 @@ public class UsageContentTests
         {
             InputTokenCount = 10,
             OutputTokenCount = 20,
-            TotalTokenCount = 30
+            TotalTokenCount = 30,
+            CachedInputTokenCount = 5,
+            ReasoningTokenCount = 8
         });
 
         var json = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions);
@@ -77,5 +79,35 @@ public class UsageContentTests
         Assert.Equal(content.Details.InputTokenCount, deserializedContent.Details.InputTokenCount);
         Assert.Equal(content.Details.OutputTokenCount, deserializedContent.Details.OutputTokenCount);
         Assert.Equal(content.Details.TotalTokenCount, deserializedContent.Details.TotalTokenCount);
+        Assert.Equal(content.Details.CachedInputTokenCount, deserializedContent.Details.CachedInputTokenCount);
+        Assert.Equal(content.Details.ReasoningTokenCount, deserializedContent.Details.ReasoningTokenCount);
+    }
+
+    [Fact]
+    public void JsonDeserialization_KnownPayload()
+    {
+        const string Json = """
+            {
+              "$type": "usage",
+              "details": {
+                "inputTokenCount": 10,
+                "outputTokenCount": 20,
+                "totalTokenCount": 30,
+                "cachedInputTokenCount": 5,
+                "reasoningTokenCount": 8
+              }
+            }
+            """;
+
+        AIContent? result = JsonSerializer.Deserialize<AIContent>(Json, AIJsonUtilities.DefaultOptions);
+
+        Assert.NotNull(result);
+        var usageContent = Assert.IsType<UsageContent>(result);
+        Assert.NotNull(usageContent.Details);
+        Assert.Equal(10, usageContent.Details.InputTokenCount);
+        Assert.Equal(20, usageContent.Details.OutputTokenCount);
+        Assert.Equal(30, usageContent.Details.TotalTokenCount);
+        Assert.Equal(5, usageContent.Details.CachedInputTokenCount);
+        Assert.Equal(8, usageContent.Details.ReasoningTokenCount);
     }
 }

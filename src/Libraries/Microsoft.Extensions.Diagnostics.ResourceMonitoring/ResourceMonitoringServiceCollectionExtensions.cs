@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
+
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Disk;
@@ -114,6 +115,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         if (JobObjectInfo.SafeJobHandle.IsProcessInJob())
         {
             builder.Services.TryAddSingleton<ISnapshotProvider, WindowsContainerSnapshotProvider>();
+            builder.Services.TryAddSingleton<ResourceQuotaProvider, WindowsContainerResourceQuotaProvider>();
         }
         else
         {
@@ -127,6 +129,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = Throw.IfNull(builder);
 
         builder.Services.TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
+        builder.Services.TryAddSingleton<ResourceQuotaProvider, LinuxResourceQuotaProvider>();
 
         builder.Services.TryAddSingleton(TimeProvider.System);
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();

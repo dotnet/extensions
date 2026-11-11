@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.AI;
 /// and replaces them with equivalent function tools that the chat client can invoke to perform image generation and editing operations.
 /// </para>
 /// </remarks>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class ImageGeneratingChatClient : DelegatingChatClient
 {
     /// <summary>
@@ -318,8 +319,8 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
         {
             List<AIContent>? newContents = null;
 
-            // Replace FunctionResultContent instances with generated image content
-            for (int i = contents.Count - 1; i >= 0; i--)
+            // Replace image-generation FunctionCallContent with ImageGenerationToolCallContent, and FunctionResultContent with generated image content
+            for (int i = 0; i < contents.Count; i++)
             {
                 var content = contents[i];
 
@@ -327,28 +328,25 @@ public sealed class ImageGeneratingChatClient : DelegatingChatClient
                 if (content is FunctionCallContent functionCall &&
                     _toolNames.Contains(functionCall.Name))
                 {
-                    // create a new list and omit the FunctionCallContent
+                    // create a new list copying all items before this one, and omit the FunctionCallContent
                     newContents ??= CopyList(contents, i);
 
                     if (functionCall.Name != nameof(GetImagesForEdit))
                     {
-                        newContents.Add(new ImageGenerationToolCallContent
-                        {
-                            ImageId = functionCall.CallId,
-                        });
+                        newContents.Add(new ImageGenerationToolCallContent(functionCall.CallId));
                     }
                 }
                 else if (content is FunctionResultContent functionResult &&
                     _imageContentByCallId.TryGetValue(functionResult.CallId, out var imageContents))
                 {
+                    // create a new list copying all items before this one
                     newContents ??= CopyList(contents, i);
 
                     if (imageContents.Any())
                     {
                         // Insert ImageGenerationToolResultContent in its place, do not preserve the FunctionResultContent
-                        newContents.Add(new ImageGenerationToolResultContent
+                        newContents.Add(new ImageGenerationToolResultContent(functionResult.CallId)
                         {
-                            ImageId = functionResult.CallId,
                             Outputs = imageContents
                         });
                     }

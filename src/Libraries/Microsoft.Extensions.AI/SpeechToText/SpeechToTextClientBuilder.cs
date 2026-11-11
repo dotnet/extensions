@@ -4,12 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A builder for creating pipelines of <see cref="ISpeechToTextClient"/>.</summary>
-[Experimental("MEAI001")]
+[Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class SpeechToTextClientBuilder
 {
     private readonly Func<IServiceProvider, ISpeechToTextClient> _innerClientFactory;

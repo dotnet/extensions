@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -38,6 +39,21 @@ internal sealed class Parser
             SpecialType.System_Int32,
             SpecialType.System_Int64,
             SpecialType.System_Decimal,
+            SpecialType.System_Single,
+            SpecialType.System_Double
+        ];
+
+    // Types that map losslessly to the OpenTelemetry boolean, int64, and double attribute types.
+    private static readonly HashSet<SpecialType> _allowedPrimitiveTagTypes =
+        [
+            SpecialType.System_Boolean,
+            SpecialType.System_SByte,
+            SpecialType.System_Byte,
+            SpecialType.System_Int16,
+            SpecialType.System_UInt16,
+            SpecialType.System_Int32,
+            SpecialType.System_UInt32,
+            SpecialType.System_Int64,
             SpecialType.System_Single,
             SpecialType.System_Double
         ];
@@ -233,7 +249,6 @@ internal sealed class Parser
             return (InstrumentKind.Histogram, symbols.LongTypeSymbol);
         }
 
-        // Gauge is not supported yet
         if (methodAttributeSymbol.Equals(symbols.GaugeAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.Gauge, symbols.LongTypeSymbol);
@@ -247,6 +262,11 @@ internal sealed class Parser
         if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.HistogramOfTAttribute, SymbolEqualityComparer.Default))
         {
             return (InstrumentKind.HistogramT, GetGenericType(methodAttributeSymbol));
+        }
+
+        if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.GaugeOfTAttribute, SymbolEqualityComparer.Default))
+        {
+            return (InstrumentKind.GaugeT, GetGenericType(methodAttributeSymbol));
         }
 
         return (InstrumentKind.None, null);
@@ -273,22 +293,38 @@ internal sealed class Parser
         return false;
     }
 
-    private (string metricName, HashSet<string> tagNames, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
+    private (string metricName, string metricUnit, string metricDescription, HashSet<string> tagNames, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
         AttributeData attribute,
         SemanticModel semanticModel)
     {
         var tagHashSet = new HashSet<string>();
         var tagDescriptionMap = new Dictionary<string, string>();
         string metricNameFromAttribute = string.Empty;
+        string metricUnitFromAttribute = string.Empty;
+        string metricDescriptionFromAttribute = string.Empty;
         if (!attribute.NamedArguments.IsDefaultOrEmpty)
         {
             foreach (var arg in attribute.NamedArguments)
             {
-                if (arg.Value.Kind == TypedConstantKind.Primitive &&
-                    arg.Key is "MetricName" or "Name")
+                if (arg.Value.Kind != TypedConstantKind.Primitive)
                 {
-                    metricNameFromAttribute = (arg.Value.Value ?? string.Empty).ToString().Replace("\\\\", "\\");
-                    break;
+                    continue;
+                }
+
+                var value = (arg.Value.Value ?? string.Empty).ToString();
+                switch (arg.Key)
+                {
+                    case "MetricName" or "Name":
+                        metricNameFromAttribute = value.Replace("\\\\", "\\");
+                        break;
+
+                    case "Unit":
+                        metricUnitFromAttribute = value;
+                        break;
+
+                    case "Description":
+                        metricDescriptionFromAttribute = value;
+                        break;
                 }
             }
         }
@@ -330,7 +366,7 @@ internal sealed class Parser
             }
         }
 
-        return (metricNameFromAttribute, tagHashSet, tagDescriptionMap);
+        return (metricNameFromAttribute, metricUnitFromAttribute, metricDescriptionFromAttribute, tagHashSet, tagDescriptionMap);
     }
 
     private string GetSymbolXmlCommentSummary(ISymbol symbol)
@@ -404,12 +440,6 @@ internal sealed class Parser
             return (null, false);
         }
 
-        if (instrumentKind == InstrumentKind.Gauge)
-        {
-            Diag(DiagDescriptors.ErrorGaugeNotSupported, methodSymbol.GetLocation());
-            return (null, false);
-        }
-
         bool keepMethod = CheckMethodReturnType(methodSymbol);
         if (!_allowedGenericAttributeTypeArgs.Contains(genericType.SpecialType))
         {
@@ -422,20 +452,21 @@ internal sealed class Parser
         if (!methodAttribute.ConstructorArguments.IsDefaultOrEmpty
             && methodAttribute.ConstructorArguments[0].Kind == TypedConstantKind.Type)
         {
-            KeyValuePair<string, TypedConstant> namedArg = default;
+            ImmutableArray<KeyValuePair<string, TypedConstant>> namedArgs = ImmutableArray<KeyValuePair<string, TypedConstant>>.Empty;
             var ctorArg = methodAttribute.ConstructorArguments[0];
 
             if (!methodAttribute.NamedArguments.IsDefaultOrEmpty)
             {
-                namedArg = methodAttribute.NamedArguments[0];
+                namedArgs = methodAttribute.NamedArguments;
             }
 
-            strongTypeAttrParams = ExtractStrongTypeAttributeParameters(ctorArg, namedArg, symbols);
+            strongTypeAttrParams = ExtractStrongTypeAttributeParameters(ctorArg, namedArgs, symbols);
         }
         else
         {
             var parameters = ExtractAttributeParameters(methodAttribute, semanticModel);
-            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.TagHashSet, strongTypeAttrParams.TagDescriptionDictionary) = parameters;
+            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.MetricUnitFromAttribute, strongTypeAttrParams.MetricDescriptionFromAttribute,
+                strongTypeAttrParams.TagHashSet, strongTypeAttrParams.TagDescriptionDictionary) = parameters;
         }
 
         string metricNameFromMethod = methodSymbol.ReturnType.Name;
@@ -444,6 +475,8 @@ internal sealed class Parser
         {
             Name = methodSymbol.Name,
             MetricName = string.IsNullOrWhiteSpace(strongTypeAttrParams.MetricNameFromAttribute) ? metricNameFromMethod : strongTypeAttrParams.MetricNameFromAttribute,
+            MetricUnit = strongTypeAttrParams.MetricUnitFromAttribute,
+            MetricDescription = strongTypeAttrParams.MetricDescriptionFromAttribute,
             InstrumentKind = instrumentKind,
             GenericType = genericType.ToDisplayString(_genericTypeSymbolFormat),
             TagKeys = strongTypeAttrParams.TagHashSet,
@@ -605,14 +638,26 @@ internal sealed class Parser
 
     private StrongTypeAttributeParameters ExtractStrongTypeAttributeParameters(
         TypedConstant constructorArg,
-        KeyValuePair<string, TypedConstant> namedArgument,
+        ImmutableArray<KeyValuePair<string, TypedConstant>> namedArguments,
         SymbolHolder symbols)
     {
         var strongTypeAttributeParameters = new StrongTypeAttributeParameters();
 
-        if (namedArgument is { Key: "Name", Value.Value: { } })
+        // Extract "Name", "Unit" and "Description" values from the named arguments, if present, and assign them to the corresponding properties.
+        foreach (var namedArgument in namedArguments)
         {
-            strongTypeAttributeParameters.MetricNameFromAttribute = namedArgument.Value.Value.ToString();
+            if (namedArgument.Key == "Name" && namedArgument.Value.Value is { } nameValue)
+            {
+                strongTypeAttributeParameters.MetricNameFromAttribute = nameValue.ToString();
+            }
+            else if (namedArgument.Key == "Unit" && namedArgument.Value.Value is { } unitValue)
+            {
+                strongTypeAttributeParameters.MetricUnitFromAttribute = unitValue.ToString();
+            }
+            else if (namedArgument.Key == "Description" && namedArgument.Value.Value is { } descriptionValue)
+            {
+                strongTypeAttributeParameters.MetricDescriptionFromAttribute = descriptionValue.ToString();
+            }
         }
 
         if (constructorArg.IsNull ||
@@ -725,30 +770,16 @@ internal sealed class Parser
         {
             if (kind == TypeKind.Enum)
             {
-                var name = TryGetTagNameFromAttribute(member, symbols, out var tagName)
-                    ? tagName
-                    : member.Name;
+                AddTagConfig(member, StrongTypeMetricObjectType.Enum, stringBuilder.ToString(),
+                    tagConfigs, tagHashSet, tagDescriptionDictionary, symbols);
 
-                if (!tagHashSet.Add(name))
-                {
-                    Diag(DiagDescriptors.ErrorDuplicateTagName, member.Locations[0], member.Name);
-                }
-                else
-                {
-                    tagConfigs.Add(new StrongTypeConfig
-                    {
-                        Name = member.Name,
-                        Path = stringBuilder.ToString(),
-                        TagName = name,
-                        StrongTypeMetricObjectType = StrongTypeMetricObjectType.Enum
-                    });
+                return tagConfigs;
+            }
 
-                    var xmlDefinition = GetSymbolXmlCommentSummary(member);
-                    if (!string.IsNullOrEmpty(xmlDefinition))
-                    {
-                        tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? member.Name : tagName, xmlDefinition);
-                    }
-                }
+            if (_allowedPrimitiveTagTypes.Contains(specialType))
+            {
+                AddTagConfig(member, StrongTypeMetricObjectType.Primitive, stringBuilder.ToString(),
+                    tagConfigs, tagHashSet, tagDescriptionDictionary, symbols);
 
                 return tagConfigs;
             }
@@ -757,30 +788,8 @@ internal sealed class Parser
             {
                 if (specialType == SpecialType.System_String)
                 {
-                    var name = TryGetTagNameFromAttribute(member, symbols, out var tagName)
-                        ? tagName
-                        : member.Name;
-
-                    if (!tagHashSet.Add(name))
-                    {
-                        Diag(DiagDescriptors.ErrorDuplicateTagName, member.Locations[0], member.Name);
-                    }
-                    else
-                    {
-                        tagConfigs.Add(new StrongTypeConfig
-                        {
-                            Name = member.Name,
-                            Path = stringBuilder.ToString(),
-                            TagName = name,
-                            StrongTypeMetricObjectType = StrongTypeMetricObjectType.String
-                        });
-
-                        var xmlDefinition = GetSymbolXmlCommentSummary(member);
-                        if (!string.IsNullOrEmpty(xmlDefinition))
-                        {
-                            tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? member.Name : tagName, xmlDefinition);
-                        }
-                    }
+                    AddTagConfig(member, StrongTypeMetricObjectType.String, stringBuilder.ToString(),
+                        tagConfigs, tagHashSet, tagDescriptionDictionary, symbols);
 
                     return tagConfigs;
                 }
@@ -843,6 +852,40 @@ internal sealed class Parser
         finally
         {
             _builders.ReturnStringBuilder(stringBuilder);
+        }
+    }
+
+    private void AddTagConfig(
+        ISymbol member,
+        StrongTypeMetricObjectType strongTypeMetricObjectType,
+        string path,
+        List<StrongTypeConfig> tagConfigs,
+        HashSet<string> tagHashSet,
+        Dictionary<string, string> tagDescriptionDictionary,
+        SymbolHolder symbols)
+    {
+        var name = TryGetTagNameFromAttribute(member, symbols, out var tagName)
+            ? tagName
+            : member.Name;
+
+        if (!tagHashSet.Add(name))
+        {
+            Diag(DiagDescriptors.ErrorDuplicateTagName, member.Locations[0], member.Name);
+            return;
+        }
+
+        tagConfigs.Add(new StrongTypeConfig
+        {
+            Name = member.Name,
+            Path = path,
+            TagName = name,
+            StrongTypeMetricObjectType = strongTypeMetricObjectType
+        });
+
+        var xmlDefinition = GetSymbolXmlCommentSummary(member);
+        if (!string.IsNullOrEmpty(xmlDefinition))
+        {
+            tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? member.Name : tagName, xmlDefinition);
         }
     }
 

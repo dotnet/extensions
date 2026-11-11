@@ -1,9 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -20,6 +23,87 @@ public class UsageDetails
 
     /// <summary>Gets or sets the total number of tokens used to produce the response.</summary>
     public long? TotalTokenCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of input tokens that were read from a cache.
+    /// </summary>
+    /// <remarks>
+    /// Cached input tokens should be counted as part of <see cref="InputTokenCount"/>.
+    /// </remarks>
+    public long? CachedInputTokenCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of "reasoning" / "thinking" tokens used internally
+    /// by the model.
+    /// </summary>
+    /// <remarks>
+    /// Reasoning tokens should be counted as part of <see cref="OutputTokenCount"/>.
+    /// </remarks>
+    public long? ReasoningTokenCount { get; set; }
+
+    /// <summary>Gets or sets the number of audio input tokens used.</summary>
+    /// <remarks>
+    /// Audio input tokens should be counted as part of <see cref="InputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? InputAudioTokenCount
+    {
+        get => InputAudioTokenCountCore;
+        set => InputAudioTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("inputAudioTokenCount")]
+    internal long? InputAudioTokenCountCore { get; set; }
+
+    /// <summary>Gets or sets the number of text input tokens used.</summary>
+    /// <remarks>
+    /// Text input tokens should be counted as part of <see cref="InputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? InputTextTokenCount
+    {
+        get => InputTextTokenCountCore;
+        set => InputTextTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("inputTextTokenCount")]
+    internal long? InputTextTokenCountCore { get; set; }
+
+    /// <summary>Gets or sets the number of audio output tokens used.</summary>
+    /// <remarks>
+    /// Audio output tokens should be counted as part of <see cref="OutputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? OutputAudioTokenCount
+    {
+        get => OutputAudioTokenCountCore;
+        set => OutputAudioTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("outputAudioTokenCount")]
+    internal long? OutputAudioTokenCountCore { get; set; }
+
+    /// <summary>Gets or sets the number of text output tokens used.</summary>
+    /// <remarks>
+    /// Text output tokens should be counted as part of <see cref="OutputTokenCount"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIRealTime, UrlFormat = DiagnosticIds.UrlFormat)]
+    [JsonIgnore]
+    public long? OutputTextTokenCount
+    {
+        get => OutputTextTokenCountCore;
+        set => OutputTextTokenCountCore = value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("outputTextTokenCount")]
+    internal long? OutputTextTokenCountCore { get; set; }
 
     /// <summary>Gets or sets a dictionary of additional usage counts.</summary>
     /// <remarks>
@@ -38,6 +122,12 @@ public class UsageDetails
         InputTokenCount = NullableSum(InputTokenCount, usage.InputTokenCount);
         OutputTokenCount = NullableSum(OutputTokenCount, usage.OutputTokenCount);
         TotalTokenCount = NullableSum(TotalTokenCount, usage.TotalTokenCount);
+        CachedInputTokenCount = NullableSum(CachedInputTokenCount, usage.CachedInputTokenCount);
+        ReasoningTokenCount = NullableSum(ReasoningTokenCount, usage.ReasoningTokenCount);
+        InputAudioTokenCount = NullableSum(InputAudioTokenCount, usage.InputAudioTokenCount);
+        InputTextTokenCount = NullableSum(InputTextTokenCount, usage.InputTextTokenCount);
+        OutputAudioTokenCount = NullableSum(OutputAudioTokenCount, usage.OutputAudioTokenCount);
+        OutputTextTokenCount = NullableSum(OutputTextTokenCount, usage.OutputTextTokenCount);
 
         if (usage.AdditionalCounts is { } countsToAdd)
         {
@@ -80,6 +170,35 @@ public class UsageDetails
                 parts.Add($"{nameof(TotalTokenCount)} = {total}");
             }
 
+            if (CachedInputTokenCount is { } cached)
+            {
+                parts.Add($"{nameof(CachedInputTokenCount)} = {cached}");
+            }
+
+            if (ReasoningTokenCount is { } reasoning)
+            {
+                parts.Add($"{nameof(ReasoningTokenCount)} = {reasoning}");
+            }
+
+            if (InputAudioTokenCount is { } inputAudio)
+            {
+                parts.Add($"{nameof(InputAudioTokenCount)} = {inputAudio}");
+            }
+
+            if (InputTextTokenCount is { } inputText)
+            {
+                parts.Add($"{nameof(InputTextTokenCount)} = {inputText}");
+            }
+
+            if (OutputAudioTokenCount is { } outputAudio)
+            {
+                parts.Add($"{nameof(OutputAudioTokenCount)} = {outputAudio}");
+            }
+
+            if (OutputTextTokenCount is { } outputText)
+            {
+                parts.Add($"{nameof(OutputTextTokenCount)} = {outputText}");
+            }
             if (AdditionalCounts is { } additionalCounts)
             {
                 foreach (var entry in additionalCounts)

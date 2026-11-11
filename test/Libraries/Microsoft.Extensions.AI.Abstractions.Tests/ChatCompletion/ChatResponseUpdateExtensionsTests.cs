@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable SA1204 // Static elements should appear before instance elements
-#pragma warning disable MEAI0001 // Suppress experimental warnings for testing
 
 namespace Microsoft.Extensions.AI;
 
@@ -28,9 +28,9 @@ public class ChatResponseUpdateExtensionsTests
     {
         ChatResponseUpdate[] updates =
         [
-            new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(1, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
+            new(ChatRole.Assistant, "Hello") { ResponseId = "someResponse", MessageId = "12345", CreatedAt = new DateTimeOffset(2024, 2, 3, 4, 5, 6, TimeSpan.Zero), ModelId = "model123" },
             new(ChatRole.Assistant, ", ") { AuthorName = "Someone", AdditionalProperties = new() { ["a"] = "b" } },
-            new(null, "world!") { CreatedAt = new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
+            new(null, "world!") { CreatedAt = new DateTimeOffset(2025, 2, 3, 4, 5, 6, TimeSpan.Zero), ConversationId = "123", AdditionalProperties = new() { ["c"] = "d" } },
 
             new() { Contents = [new UsageContent(new() { InputTokenCount = 1, OutputTokenCount = 2 })] },
             new() { Contents = [new UsageContent(new() { InputTokenCount = 4, OutputTokenCount = 5 })] },
@@ -46,7 +46,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(7, response.Usage.OutputTokenCount);
 
         Assert.Equal("someResponse", response.ResponseId);
-        Assert.Equal(new DateTimeOffset(2, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
+        Assert.Equal(new DateTimeOffset(2024, 2, 3, 4, 5, 6, TimeSpan.Zero), response.CreatedAt);
         Assert.Equal("model123", response.ModelId);
 
         Assert.Equal("123", response.ConversationId);
@@ -447,6 +447,91 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesGoToMessages(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        [
+
+            // First message with AdditionalProperties (MessageId makes properties go to message)
+            new(ChatRole.Assistant, "First message") { MessageId = "msg1", AdditionalProperties = new() { ["key1"] = "value1" } },
+            new(null, " part 2") { MessageId = "msg1", AdditionalProperties = new() { ["key2"] = "value2" } },
+
+            // Second message with different AdditionalProperties (same keys, different values)
+            new(ChatRole.User, "Second message") { MessageId = "msg2", AdditionalProperties = new() { ["key1"] = "different_value1" } },
+            new(null, " part 2") { MessageId = "msg2", AdditionalProperties = new() { ["key3"] = "value3" } },
+
+            // Third message with no AdditionalProperties
+            new(ChatRole.Assistant, "Third message") { MessageId = "msg3" },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        Assert.Equal(3, response.Messages.Count);
+        Assert.Null(response.AdditionalProperties);
+
+        // First message should have its own AdditionalProperties
+        var msg1 = response.Messages[0];
+        Assert.Equal("First message part 2", msg1.Text);
+        Assert.NotNull(msg1.AdditionalProperties);
+        Assert.Equal(2, msg1.AdditionalProperties.Count);
+        Assert.Equal("value1", msg1.AdditionalProperties["key1"]);
+        Assert.Equal("value2", msg1.AdditionalProperties["key2"]);
+
+        // Second message should have its own AdditionalProperties (with different value for key1)
+        var msg2 = response.Messages[1];
+        Assert.Equal("Second message part 2", msg2.Text);
+        Assert.NotNull(msg2.AdditionalProperties);
+        Assert.Equal(2, msg2.AdditionalProperties.Count);
+        Assert.Equal("different_value1", msg2.AdditionalProperties["key1"]);
+        Assert.Equal("value3", msg2.AdditionalProperties["key3"]);
+
+        // Third message should have no AdditionalProperties
+        var msg3 = response.Messages[2];
+        Assert.Equal("Third message", msg3.Text);
+        Assert.Null(msg3.AdditionalProperties);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_AdditionalPropertiesRoutingBasedOnMessageId(bool useAsync)
+    {
+        // This test explicitly verifies that:
+        // - Updates WITH MessageId route AdditionalProperties to the message
+        // - Updates WITHOUT MessageId route AdditionalProperties to the response
+        ChatResponseUpdate[] updates =
+        [
+
+            // Update with MessageId - properties should go to message
+            new(ChatRole.Assistant, "Hello") { MessageId = "msg1", AdditionalProperties = new() { ["messageKey"] = "messageValue" } },
+
+            // Update without MessageId - properties should go to response
+            new() { AdditionalProperties = new() { ["responseKey"] = "responseValue" } },
+        ];
+
+        ChatResponse response = useAsync ?
+            await YieldAsync(updates).ToChatResponseAsync() :
+            updates.ToChatResponse();
+
+        // Verify message-scoped properties (update had MessageId)
+        var message = Assert.Single(response.Messages);
+        Assert.NotNull(message.AdditionalProperties);
+        Assert.Single(message.AdditionalProperties);
+        Assert.Equal("messageValue", message.AdditionalProperties["messageKey"]);
+        Assert.False(message.AdditionalProperties.ContainsKey("responseKey"));
+
+        // Verify response-scoped properties (update had no MessageId)
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Single(response.AdditionalProperties);
+        Assert.Equal("responseValue", response.AdditionalProperties["responseKey"]);
+        Assert.False(response.AdditionalProperties.ContainsKey("messageKey"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task ToChatResponse_UpdatesProduceMultipleResponseMessages(bool useAsync)
     {
         ChatResponseUpdate[] updates =
@@ -455,7 +540,7 @@ public class ChatResponseUpdateExtensionsTests
             // First message - ID "msg1", AuthorName "Assistant"
             new(null, "Hi! ") { CreatedAt = new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
             new(ChatRole.Assistant, "Hello") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 0, 0, TimeSpan.Zero), AuthorName = "Assistant" },
-            new(null, " from") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+            new(null, " from") { MessageId = "msg1", CreatedAt = new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero) }, // Later CreatedAt should not overwrite first
             new(null, " AI") { MessageId = "msg1", AuthorName = "Assistant" }, // Keep same AuthorName to avoid creating new message
 
             // Second message - ID "msg1" changes to "msg2", still AuthorName "Assistant" 
@@ -468,7 +553,7 @@ public class ChatResponseUpdateExtensionsTests
 
             // Fourth message - ID "msg4", Role changes back to Assistant
             new(ChatRole.Assistant, "I'm doing well,") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero) },
-            new(null, " thank you!") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero) }, // Later CreatedAt should win
+            new(null, " thank you!") { MessageId = "msg4", CreatedAt = new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero) }, // Later CreatedAt should not overwrite first
 
             // Updates without MessageId should continue the last message (msg4)
             new(null, " How can I help?"),
@@ -486,7 +571,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg1", message1.MessageId);
         Assert.Equal(ChatRole.Assistant, message1.Role);
         Assert.Equal("Assistant", message1.AuthorName);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 10, 1, 0, TimeSpan.Zero), message1.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2023, 1, 1, 10, 0, 0, TimeSpan.Zero), message1.CreatedAt); // First value should win
         Assert.Equal("Hi! Hello from AI", message1.Text);
 
         // Verify second message  
@@ -502,7 +587,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg3", message3.MessageId);
         Assert.Equal(ChatRole.User, message3.Role);
         Assert.Equal("User", message3.AuthorName);
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 1, 0, TimeSpan.Zero), message3.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 11, 0, 0, TimeSpan.Zero), message3.CreatedAt); // First value should win
         Assert.Equal("How are you?", message3.Text);
 
         // Verify fourth message
@@ -510,7 +595,7 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal("msg4", message4.MessageId);
         Assert.Equal(ChatRole.Assistant, message4.Role);
         Assert.Null(message4.AuthorName); // No AuthorName set
-        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 2, 0, TimeSpan.Zero), message4.CreatedAt); // Last value should win
+        Assert.Equal(new DateTimeOffset(2024, 1, 1, 12, 0, 0, TimeSpan.Zero), message4.CreatedAt); // First value should win
         Assert.Equal("I'm doing well, thank you! How can I help?", message4.Text);
     }
 
@@ -526,7 +611,7 @@ public class ChatResponseUpdateExtensionsTests
                     {
                         foreach (bool gapBeginningEnd in new[] { false, true })
                         {
-                            yield return new object[] { useAsync, numSequences, sequenceLength, gapLength, false };
+                            yield return new object[] { useAsync, numSequences, sequenceLength, gapLength, gapBeginningEnd };
                         }
                     }
                 }
@@ -740,6 +825,7 @@ public class ChatResponseUpdateExtensionsTests
         DateTimeOffset middle = new(2024, 1, 1, 11, 0, 0, TimeSpan.Zero);
         DateTimeOffset late = new(2024, 1, 1, 12, 0, 0, TimeSpan.Zero);
         DateTimeOffset unixEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        DateTimeOffset beforeEpoch = new(1969, 12, 31, 23, 59, 59, TimeSpan.Zero);
 
         ChatResponseUpdate[] updates =
         [
@@ -750,20 +836,23 @@ public class ChatResponseUpdateExtensionsTests
             // Unix epoch (as "null") should not overwrite
             new(null, "b") { CreatedAt = unixEpoch },
 
-            // Newer timestamp should overwrite
-            new(null, "c") { CreatedAt = middle },
+            // Before Unix epoch (as "null") should not overwrite
+            new(null, "c") { CreatedAt = beforeEpoch },
+
+            // Newer timestamp should not overwrite (first value wins)
+            new(null, "d") { CreatedAt = middle },
 
             // Older timestamp should not overwrite
-            new(null, "d") { CreatedAt = early },
+            new(null, "e") { CreatedAt = early },
 
-            // Even newer timestamp should overwrite
-            new(null, "e") { CreatedAt = late },
+            // Even newer timestamp should not overwrite (first value wins)
+            new(null, "f") { CreatedAt = late },
 
             // Unix epoch should not overwrite again
-            new(null, "f") { CreatedAt = unixEpoch },
+            new(null, "g") { CreatedAt = unixEpoch },
 
             // null should not overwrite
-            new(null, "g") { CreatedAt = null },
+            new(null, "h") { CreatedAt = null },
         ];
 
         ChatResponse response = useAsync ?
@@ -771,24 +860,26 @@ public class ChatResponseUpdateExtensionsTests
             updates.ToChatResponse();
         Assert.Single(response.Messages);
 
-        Assert.Equal("abcdefg", response.Messages[0].Text);
+        Assert.Equal("abcdefgh", response.Messages[0].Text);
         Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
-        Assert.Equal(late, response.Messages[0].CreatedAt);
-        Assert.Equal(late, response.CreatedAt);
+        Assert.Equal(early, response.Messages[0].CreatedAt);
+        Assert.Equal(early, response.CreatedAt);
     }
 
     public static IEnumerable<object?[]> ToChatResponse_TimestampFolding_MemberData()
     {
-        // Base test cases
+        // Base test cases (first valid timestamp wins)
         var testCases = new (string? timestamp1, string? timestamp2, string? expectedTimestamp)[]
         {
             (null, null, null),
             ("2024-01-01T10:00:00Z", null, "2024-01-01T10:00:00Z"),
             (null, "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
-            ("2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T11:00:00Z"),
-            ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"),
+            ("2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z"), // First wins
+            ("2024-01-01T11:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T11:00:00Z"), // First wins
             ("2024-01-01T10:00:00Z", "1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z"),
-            ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"),
+            ("1970-01-01T00:00:00Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"), // Unix epoch treated as null, second is first valid
+            ("1969-12-31T23:59:59Z", "2024-01-01T10:00:00Z", "2024-01-01T10:00:00Z"), // Before Unix epoch treated as null, second is first valid
+            ("1960-01-01T00:00:00Z", "1965-06-15T12:00:00Z", null), // Both before Unix epoch treated as null
         };
 
         // Yield each test case twice, once for useAsync = false and once for useAsync = true
@@ -803,9 +894,9 @@ public class ChatResponseUpdateExtensionsTests
     [MemberData(nameof(ToChatResponse_TimestampFolding_MemberData))]
     public async Task ToChatResponse_TimestampFolding(bool useAsync, string? timestamp1, string? timestamp2, string? expectedTimestamp)
     {
-        DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1) : null;
-        DateTimeOffset? second = timestamp2 is not null ? DateTimeOffset.Parse(timestamp2) : null;
-        DateTimeOffset? expected = expectedTimestamp is not null ? DateTimeOffset.Parse(expectedTimestamp) : null;
+        DateTimeOffset? first = timestamp1 is not null ? DateTimeOffset.Parse(timestamp1, DateTimeFormatInfo.InvariantInfo) : null;
+        DateTimeOffset? second = timestamp2 is not null ? DateTimeOffset.Parse(timestamp2, DateTimeFormatInfo.InvariantInfo) : null;
+        DateTimeOffset? expected = expectedTimestamp is not null ? DateTimeOffset.Parse(expectedTimestamp, DateTimeFormatInfo.InvariantInfo) : null;
 
         ChatResponseUpdate[] updates =
         [
@@ -840,16 +931,16 @@ public class ChatResponseUpdateExtensionsTests
             new(null, " some images"),
 
             // Initial ImageGenerationToolResultContent with ID "img1"
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image1] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img1") { Outputs = [image1] }] },
 
             // Another ImageGenerationToolResultContent with different ID "img2" 
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image2] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img2") { Outputs = [image2] }] },
 
             // Another ImageGenerationToolResultContent with same ID "img1" - should replace the first one
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img1", Outputs = [image3] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img1") { Outputs = [image3] }] },
 
             // ImageGenerationToolResultContent with same ID "img2" - should replace the second one
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "img2", Outputs = [image4] }] },
+            new() { Contents = [new ImageGenerationToolResultContent("img2") { Outputs = [image4] }] },
 
             // Final text
             new(null, "Here are those generated images"),
@@ -870,13 +961,13 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Equal(2, imageResults.Length);
 
         // Verify the first image result (ID "img1") has the latest content (image3)
-        var firstImageResult = imageResults.First(ir => ir.ImageId == "img1");
+        var firstImageResult = imageResults.First(ir => ir.CallId == "img1");
         Assert.NotNull(firstImageResult.Outputs);
         var firstOutput = Assert.Single(firstImageResult.Outputs);
         Assert.Same(image3, firstOutput); // Should be the later image, not image1
 
         // Verify the second image result (ID "img2") has the latest content (image4)
-        var secondImageResult = imageResults.First(ir => ir.ImageId == "img2");
+        var secondImageResult = imageResults.First(ir => ir.CallId == "img2");
         Assert.NotNull(secondImageResult.Outputs);
         var secondOutput = Assert.Single(secondImageResult.Outputs);
         Assert.Same(image4, secondOutput); // Should be the later image, not image2
@@ -885,7 +976,7 @@ public class ChatResponseUpdateExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ToChatResponse_ImageGenerationToolResultContentWithNullOrEmptyImageId_DoesNotCoalesce(bool useAsync)
+    public async Task ToChatResponse_ImageGenerationToolResultContentWithDistinctCallIds_DoesNotCoalesce(bool useAsync)
     {
         var image1 = new DataContent((byte[])[1, 2, 3, 4], "image/png") { Name = "image1.png" };
         var image2 = new DataContent((byte[])[5, 6, 7, 8], "image/jpeg") { Name = "image2.jpg" };
@@ -893,20 +984,20 @@ public class ChatResponseUpdateExtensionsTests
 
         ChatResponseUpdate[] updates =
         {
-            // ImageGenerationToolResultContent with null ImageId - should not coalesce
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image1] }] },
+            // ImageGenerationToolResultContent with unique CallId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent("id-1") { Outputs = [image1] }] },
 
-            // ImageGenerationToolResultContent with empty ImageId - should not coalesce
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = "", Outputs = [image2] }] },
+            // ImageGenerationToolResultContent with different CallId - should not coalesce
+            new() { Contents = [new ImageGenerationToolResultContent("id-2") { Outputs = [image2] }] },
 
-            // Another with null ImageId - should not coalesce with the first
-            new() { Contents = [new ImageGenerationToolResultContent { ImageId = null, Outputs = [image3] }] },
+            // Another with unique CallId - should not coalesce with the others
+            new() { Contents = [new ImageGenerationToolResultContent("id-3") { Outputs = [image3] }] },
         };
 
         ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
         ChatMessage message = Assert.Single(response.Messages);
 
-        // Should have all 3 image result contents since they can't be coalesced
+        // Should have all 3 image result contents since they have distinct CallIds
         var imageResults = message.Contents.OfType<ImageGenerationToolResultContent>().ToArray();
         Assert.Equal(3, imageResults.Length);
 
@@ -914,6 +1005,139 @@ public class ChatResponseUpdateExtensionsTests
         Assert.Same(image1, imageResults[0].Outputs![0]);
         Assert.Same(image2, imageResults[1].Outputs![0]);
         Assert.Same(image3, imageResults[2].Outputs![0]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent(bool useAsync)
+    {
+        object rawRepresentation = new();
+        AdditionalPropertiesDictionary additionalProps = new() { { "key", "value" } };
+
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "Searching..."),
+
+            // Initial WebSearchToolCallContent with a query (like first search)
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["first query"] }] },
+
+            // Text in between
+            new(null, " found results"),
+
+            // Second WebSearchToolCallContent with additional query and RawRepresentation
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["second query"], RawRepresentation = rawRepresentation, AdditionalProperties = additionalProps }] },
+
+            // Different CallId should not be coalesced with the first
+            new() { Contents = [new WebSearchToolCallContent("ws2") { Queries = ["AI safety"] }] },
+
+            // Third for ws1, no queries this time
+            new() { Contents = [new WebSearchToolCallContent("ws1")] },
+
+            new(null, " done"),
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var webSearchCalls = message.Contents.OfType<WebSearchToolCallContent>().ToArray();
+        Assert.Equal(2, webSearchCalls.Length);
+
+        // ws1 should have queries combined from both updates
+        var ws1 = webSearchCalls.First(ws => ws.CallId == "ws1");
+        Assert.Equal(["first query", "second query"], ws1.Queries);
+
+        // RawRepresentation and AdditionalProperties should be merged from the second update
+        Assert.Same(rawRepresentation, ws1.RawRepresentation);
+        Assert.Same(additionalProps, ws1.AdditionalProperties);
+
+        // ws2 should be unchanged
+        var ws2 = webSearchCalls.First(ws => ws.CallId == "ws2");
+        Assert.Equal(["AI safety"], ws2.Queries);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent_NullQueriesFirst(bool useAsync)
+    {
+        // First item has no queries, second provides them — should assign directly rather than merge.
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new WebSearchToolCallContent("ws1")] },
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["query from second"] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var ws1 = Assert.Single(message.Contents.OfType<WebSearchToolCallContent>());
+        Assert.Equal("ws1", ws1.CallId);
+        Assert.Equal(["query from second"], ws1.Queries);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ToChatResponse_WebSearchToolCallContentWithDistinctCallIds_DoesNotCoalesce(bool useAsync)
+    {
+        ChatResponseUpdate[] updates =
+        {
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["q1"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws2") { Queries = ["q2"] }] },
+            new() { Contents = [new WebSearchToolCallContent("ws3") { Queries = ["q3"] }] },
+        };
+
+        ChatResponse response = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        ChatMessage message = Assert.Single(response.Messages);
+
+        var webSearchCalls = message.Contents.OfType<WebSearchToolCallContent>().ToArray();
+        Assert.Equal(3, webSearchCalls.Length);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task ToChatResponse_CoalescesWebSearchToolCallContent_CallingToChatResponseTwiceOnSameUpdates(bool useAsync, bool firstHasQueries)
+    {
+        object rawRepresentation = new();
+        string[] expectedQueries = firstHasQueries ? ["first query", "dotnet extensions"] : ["dotnet extensions"];
+
+        var inProgress = new WebSearchToolCallContent("ws1")
+        {
+            RawRepresentation = rawRepresentation,
+            Queries = firstHasQueries ? ["first query"] : null,
+        };
+
+        ChatResponseUpdate[] updates =
+        {
+            new(null, "Searching the web..."),
+
+            // In-progress: mirrors StreamingResponseWebSearchCallInProgressUpdate.
+            // With the OpenAI provider this has null Queries, but exercise both paths.
+            new() { Contents = [inProgress] },
+
+            // Done: queries populated (mirrors StreamingResponseOutputItemDoneUpdate with WebSearchCallResponseItem)
+            new() { Contents = [new WebSearchToolCallContent("ws1") { Queries = ["dotnet extensions"] }] },
+
+            // Function call in the same response (this is what triggers FunctionInvokingChatClient
+            // to call ToChatResponse internally before the caller does)
+            new() { Contents = [new FunctionCallContent("fc1", "SearchTool", new Dictionary<string, object?> { ["q"] = "test" })] },
+        };
+
+        // First call — simulates FunctionInvokingChatClient's internal ToChatResponse.
+        ChatResponse response1 = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        var ws1First = Assert.Single(response1.Messages.SelectMany(m => m.Contents).OfType<WebSearchToolCallContent>());
+        Assert.Equal(expectedQueries, ws1First.Queries);
+        Assert.Same(rawRepresentation, ws1First.RawRepresentation);
+
+        // Second call — simulates the caller's ToChatResponse on the same updates.
+        ChatResponse response2 = useAsync ? await YieldAsync(updates).ToChatResponseAsync() : updates.ToChatResponse();
+        var ws1Second = Assert.Single(response2.Messages.SelectMany(m => m.Contents).OfType<WebSearchToolCallContent>());
+        Assert.Equal(expectedQueries, ws1Second.Queries);
+        Assert.Same(rawRepresentation, ws1Second.RawRepresentation);
     }
 
     private static async IAsyncEnumerable<ChatResponseUpdate> YieldAsync(IEnumerable<ChatResponseUpdate> updates)

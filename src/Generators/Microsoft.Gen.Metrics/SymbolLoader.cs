@@ -10,6 +10,7 @@ internal static class SymbolLoader
     internal const string CounterTAttribute = "Microsoft.Extensions.Diagnostics.Metrics.CounterAttribute`1";
     internal const string HistogramTAttribute = "Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute`1";
     internal const string GaugeAttribute = "Microsoft.Extensions.Diagnostics.Metrics.GaugeAttribute";
+    internal const string GaugeTAttribute = "Microsoft.Extensions.Diagnostics.Metrics.GaugeAttribute`1";
     internal const string CounterAttribute = "Microsoft.Extensions.Diagnostics.Metrics.CounterAttribute";
     internal const string HistogramAttribute = "Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute";
     internal const string TagNameAttribute = "Microsoft.Extensions.Diagnostics.Metrics.TagNameAttribute";
@@ -32,6 +33,7 @@ internal static class SymbolLoader
         var counterTAttribute = compilation.GetTypeByMetadataName(CounterTAttribute);
         var histogramTAttribute = compilation.GetTypeByMetadataName(HistogramTAttribute);
         var gaugeAttribute = compilation.GetTypeByMetadataName(GaugeAttribute);
+        var gaugeTAttribute = compilation.GetTypeByMetadataName(GaugeTAttribute);
         var tagNameAttribute = compilation.GetTypeByMetadataName(TagNameAttribute);
         var longType = compilation.GetSpecialType(SpecialType.System_Int64);
 
@@ -42,6 +44,7 @@ internal static class SymbolLoader
             histogramAttribute,
             histogramTAttribute,
             gaugeAttribute,
+            gaugeTAttribute,
             longType,
             tagNameAttribute);
     }

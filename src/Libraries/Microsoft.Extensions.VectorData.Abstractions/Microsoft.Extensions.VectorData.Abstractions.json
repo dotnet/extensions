@@ -1,0 +1,1332 @@
+{
+  "Name": "Microsoft.Extensions.VectorData.Abstractions, Version=10.5.0.0, Culture=neutral, PublicKeyToken=f300afd708cefcd3",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.AnyTagEqualToFilterClause : Microsoft.Extensions.VectorData.FilterClause",
+      "Stage": "Obsolete",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.AnyTagEqualToFilterClause.AnyTagEqualToFilterClause(string fieldName, string value);",
+          "Stage": "Obsolete"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.VectorData.AnyTagEqualToFilterClause.FieldName { get; private set; }",
+          "Stage": "Obsolete"
+        },
+        {
+          "Member": "string Microsoft.Extensions.VectorData.AnyTagEqualToFilterClause.Value { get; private set; }",
+          "Stage": "Obsolete"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.ProviderServices.CollectionJsonModelBuilder : Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.CollectionJsonModelBuilder.CollectionJsonModelBuilder(Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.ProviderServices.CollectionModel Microsoft.Extensions.VectorData.ProviderServices.CollectionJsonModelBuilder.Build(System.Type recordType, System.Type keyType, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? definition, Microsoft.Extensions.AI.IEmbeddingGenerator? defaultEmbeddingGenerator, System.Text.Json.JsonSerializerOptions jsonSerializerOptions);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.ProviderServices.CollectionModel Microsoft.Extensions.VectorData.ProviderServices.CollectionJsonModelBuilder.BuildDynamic(Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition definition, Microsoft.Extensions.AI.IEmbeddingGenerator? defaultEmbeddingGenerator, System.Text.Json.JsonSerializerOptions jsonSerializerOptions);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.VectorData.ProviderServices.CollectionJsonModelBuilder.Customize();",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.ProviderServices.CollectionModel",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "TRecord Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.CreateRecord<TRecord>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.PropertyModel Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.GetDataOrKeyProperty<TRecord>(System.Linq.Expressions.Expression<System.Func<TRecord, object?>> expression);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.GetFullTextDataPropertyOrSingle<TRecord>(System.Linq.Expressions.Expression<System.Func<TRecord, object?>>? expression);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.GetVectorPropertyOrSingle<TRecord>(Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord> searchOptions);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.DataProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.EmbeddingGenerationRequired { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.KeyProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.KeyProperty { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.VectorData.ProviderServices.PropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.Properties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.VectorData.ProviderServices.PropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.PropertyMap { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.VectorProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel Microsoft.Extensions.VectorData.ProviderServices.CollectionModel.VectorProperty { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.CollectionModelBuilder(Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.ProviderServices.CollectionModel Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.Build(System.Type recordType, System.Type keyType, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? definition, Microsoft.Extensions.AI.IEmbeddingGenerator? defaultEmbeddingGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual Microsoft.Extensions.VectorData.ProviderServices.CollectionModel Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.BuildDynamic(Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition definition, Microsoft.Extensions.AI.IEmbeddingGenerator? defaultEmbeddingGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.Customize();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "abstract bool Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.IsDataPropertyTypeValid(System.Type type, out string? supportedTypes);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "abstract bool Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.IsVectorPropertyTypeValid(System.Type type, out string? supportedTypes);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.ProcessProperty(System.Reflection.PropertyInfo? clrProperty, Microsoft.Extensions.VectorData.VectorStoreProperty? definitionProperty);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual bool Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.SupportsKeyAutoGeneration(System.Type keyPropertyType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.Validate(System.Type? type, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? definition);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.ValidateKeyProperty(Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel keyProperty);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.ValidateProperty(Microsoft.Extensions.VectorData.ProviderServices.PropertyModel propertyModel, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? definition);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.List<Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.DataProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IEmbeddingGenerator? Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.DefaultEmbeddingGenerator { get; private set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher> Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.EmbeddingGenerationDispatchers { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.List<Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.KeyProperties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.KeyType { get; private set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.Options { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.VectorData.ProviderServices.PropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.Properties { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.Dictionary<string, Microsoft.Extensions.VectorData.ProviderServices.PropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.PropertyMap { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.List<Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel> Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuilder.VectorProperties { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions.CollectionModelBuildingOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions.RequiresAtLeastOneVector { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions.ReservedKeyStorageName { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions.SupportsMultipleVectors { get; init; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.CollectionModelBuildingOptions.UsesExternalSerializer { get; init; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel : Microsoft.Extensions.VectorData.ProviderServices.PropertyModel",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel.DataPropertyModel(string modelName, System.Type type);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel.IsFullTextIndexed { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.DataPropertyModel.IsIndexed { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.VectorData.DistanceFunction",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance",
+          "Stage": "Stable",
+          "Value": "CosineDistance"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.CosineSimilarity",
+          "Stage": "Stable",
+          "Value": "CosineSimilarity"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.DotProductSimilarity",
+          "Stage": "Stable",
+          "Value": "DotProductSimilarity"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.EuclideanDistance",
+          "Stage": "Stable",
+          "Value": "EuclideanDistance"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.EuclideanSquaredDistance",
+          "Stage": "Stable",
+          "Value": "EuclideanSquaredDistance"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.HammingDistance",
+          "Stage": "Stable",
+          "Value": "HammingDistance"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.ManhattanDistance",
+          "Stage": "Stable",
+          "Value": "ManhattanDistance"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.DistanceFunction.NegativeDotProductSimilarity",
+          "Stage": "Stable",
+          "Value": "NegativeDotProductSimilarity"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher.EmbeddingGenerationDispatcher();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "abstract bool Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher.CanGenerateEmbedding(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher.Create<TEmbedding>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<Microsoft.Extensions.AI.Embedding> Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher.GenerateEmbeddingAsync(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, object? value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.Embedding>> Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher.GenerateEmbeddingsAsync(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, System.Collections.Generic.IEnumerable<object?> values, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "abstract System.Type? Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher.ResolveEmbeddingType(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator, System.Type? userRequestedEmbeddingType);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "abstract System.Type Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher.EmbeddingType { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher<TEmbedding> : Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher where TEmbedding : Microsoft.Extensions.AI.Embedding",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher<TEmbedding>.EmbeddingGenerationDispatcher();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher<TEmbedding>.CanGenerateEmbedding(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<Microsoft.Extensions.AI.Embedding> Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher<TEmbedding>.GenerateEmbeddingAsync(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, object? value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.Embedding>> Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher<TEmbedding>.GenerateEmbeddingsAsync(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, System.Collections.Generic.IEnumerable<object?> values, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Type? Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher<TEmbedding>.ResolveEmbeddingType(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator, System.Type? userRequestedEmbeddingType);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "override System.Type Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher<TEmbedding>.EmbeddingType { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.EqualToFilterClause : Microsoft.Extensions.VectorData.FilterClause",
+      "Stage": "Obsolete",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.EqualToFilterClause.EqualToFilterClause(string fieldName, object value);",
+          "Stage": "Obsolete"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.VectorData.EqualToFilterClause.FieldName { get; private set; }",
+          "Stage": "Obsolete"
+        },
+        {
+          "Member": "object Microsoft.Extensions.VectorData.EqualToFilterClause.Value { get; private set; }",
+          "Stage": "Obsolete"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.FilterClause",
+      "Stage": "Obsolete",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.FilterClause.FilterClause();",
+          "Stage": "Obsolete"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.FilteredRecordRetrievalOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.IncludeVectors { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition, Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition>? Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderBy { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.Skip { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.SortInfo",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.SortInfo.Ascending { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Linq.Expressions.Expression<System.Func<TRecord, object?>> Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.SortInfo.PropertySelector { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.OrderByDefinition();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.Ascending(System.Linq.Expressions.Expression<System.Func<TRecord, object?>> propertySelector);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.Descending(System.Linq.Expressions.Expression<System.Func<TRecord, object?>> propertySelector);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.SortInfo> Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition.Values { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterPreprocessingOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterPreprocessingOptions.FilterPreprocessingOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterPreprocessingOptions.SupportsParameterization { get; init; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterTranslatorBase",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterTranslatorBase.FilterTranslatorBase();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Linq.Expressions.Expression Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterTranslatorBase.PreprocessFilter(System.Linq.Expressions.LambdaExpression lambdaExpression, Microsoft.Extensions.VectorData.ProviderServices.CollectionModel model, Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterPreprocessingOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual bool Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterTranslatorBase.TryBindProperty(System.Linq.Expressions.Expression expression, out Microsoft.Extensions.VectorData.ProviderServices.PropertyModel? propertyModel);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterTranslatorBase.TryMatchContains(System.Linq.Expressions.MethodCallExpression methodCall, out System.Linq.Expressions.Expression? source, out System.Linq.Expressions.Expression? item);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.CollectionModel Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterTranslatorBase.Model { get; private set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Linq.Expressions.ParameterExpression Microsoft.Extensions.VectorData.ProviderServices.Filter.FilterTranslatorBase.RecordParameter { get; private set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>.HybridSearchOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Linq.Expressions.Expression<System.Func<TRecord, object?>>? Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>.AdditionalProperty { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Linq.Expressions.Expression<System.Func<TRecord, bool>>? Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>.Filter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>.IncludeVectors { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>.ScoreThreshold { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>.Skip { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Linq.Expressions.Expression<System.Func<TRecord, object?>>? Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>.VectorProperty { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.VectorData.IKeywordHybridSearchable<TRecord> where TRecord : class",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "object? Microsoft.Extensions.VectorData.IKeywordHybridSearchable<TRecord>.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.VectorData.VectorSearchResult<TRecord>> Microsoft.Extensions.VectorData.IKeywordHybridSearchable<TRecord>.HybridSearchAsync<TInput>(TInput searchValue, System.Collections.Generic.ICollection<string> keywords, int top, Microsoft.Extensions.VectorData.HybridSearchOptions<TRecord>? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.VectorData.IndexKind",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.IndexKind.DiskAnn",
+          "Stage": "Stable",
+          "Value": "DiskAnn"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.IndexKind.Dynamic",
+          "Stage": "Stable",
+          "Value": "Dynamic"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.IndexKind.Flat",
+          "Stage": "Stable",
+          "Value": "Flat"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.IndexKind.Hnsw",
+          "Stage": "Stable",
+          "Value": "Hnsw"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.IndexKind.IvfFlat",
+          "Stage": "Stable",
+          "Value": "IvfFlat"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.VectorData.IndexKind.QuantizedFlat",
+          "Stage": "Stable",
+          "Value": "QuantizedFlat"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.VectorData.IVectorSearchable<TRecord> where TRecord : class",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "object? Microsoft.Extensions.VectorData.IVectorSearchable<TRecord>.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.VectorData.VectorSearchResult<TRecord>> Microsoft.Extensions.VectorData.IVectorSearchable<TRecord>.SearchAsync<TInput>(TInput searchValue, int top, Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel : Microsoft.Extensions.VectorData.ProviderServices.PropertyModel",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel.KeyPropertyModel(string modelName, System.Type type);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel.IsAutoGenerated { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.ProviderServices.KeyPropertyModel.SerializedKeyName { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      // After generating the baseline, manually edit this file to remove primary constructor portion
+      // This is needed until ICSharpCode.Decompiler adds support for primary constructors
+      // See: https://github.com/icsharpcode/ILSpy/issues/829
+      "Type": "abstract class Microsoft.Extensions.VectorData.ProviderServices.PropertyModel",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.PropertyModel(string modelName, System.Type type);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.GetValue<T>(object record);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.GetValueAsObject(object record);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.SetValue<T>(object record, T value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.SetValueAsObject(object record, object? value);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.IsNullable { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.ModelName { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Reflection.PropertyInfo? Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.PropertyInfo { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.Dictionary<string, object?>? Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.ProviderAnnotations { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.StorageName { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Type Microsoft.Extensions.VectorData.ProviderServices.PropertyModel.Type { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.ProviderServices.Filter.QueryParameterExpression : System.Linq.Expressions.Expression",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.Filter.QueryParameterExpression.QueryParameterExpression(string name, object? value, System.Type type);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Linq.Expressions.Expression Microsoft.Extensions.VectorData.ProviderServices.Filter.QueryParameterExpression.VisitChildren(System.Linq.Expressions.ExpressionVisitor visitor);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.VectorData.ProviderServices.Filter.QueryParameterExpression.Name { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Linq.Expressions.ExpressionType Microsoft.Extensions.VectorData.ProviderServices.Filter.QueryParameterExpression.NodeType { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Type Microsoft.Extensions.VectorData.ProviderServices.Filter.QueryParameterExpression.Type { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.VectorData.ProviderServices.Filter.QueryParameterExpression.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.RecordRetrievalOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.RecordRetrievalOptions.RecordRetrievalOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.RecordRetrievalOptions.IncludeVectors { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.ConfiguredEmbeddingTypeIsUnsupportedByTheGenerator(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, System.Type userRequestedEmbeddingType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.ConfiguredEmbeddingTypeIsUnsupportedByTheProvider(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, System.Type userRequestedEmbeddingType, string supportedVectorTypes);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.DifferentEmbeddingTypeSpecifiedForNativelySupportedType(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, System.Type embeddingType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.EmbeddingGeneratorWithInvalidEmbeddingType(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.IncompatibleEmbeddingGenerator(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty, Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator, string supportedOutputTypes);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(System.Type inputType, System.Type embeddingGeneratorType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(System.Type inputType, string supportedVectorTypes);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.MissingTypeOnPropertyDefinition(Microsoft.Extensions.VectorData.VectorStoreProperty property);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(System.Type dynamicCollectionType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.UnsupportedVectorPropertyWithoutEmbeddingGenerator(Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel vectorProperty);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.GetCollectionWithDictionaryNotSupported { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.VectorData.ProviderServices.VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel : Microsoft.Extensions.VectorData.ProviderServices.PropertyModel",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.VectorPropertyModel(string modelName, System.Type type);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual bool Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.CanGenerateEmbedding<TEmbedding>(Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.Embedding> Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.GenerateEmbeddingAsync(object? value, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.Embedding>> Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.GenerateEmbeddingsAsync(System.Collections.Generic.IEnumerable<object?> values, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Type[] Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.GetSupportedInputTypes();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual System.Type? Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.ResolveEmbeddingType<TEmbedding>(Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator, System.Type? userRequestedEmbeddingType);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.ToString();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.Dimensions { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.DistanceFunction { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.EmbeddingGenerationDispatcher? Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.EmbeddingGenerationDispatcher { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IEmbeddingGenerator? Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.EmbeddingGenerator { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Type Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.EmbeddingType { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel.IndexKind { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel<TInput> : Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel<TInput>.VectorPropertyModel(string modelName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel<TInput>.CanGenerateEmbedding<TEmbedding>(Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Type[] Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel<TInput>.GetSupportedInputTypes();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override System.Type? Microsoft.Extensions.VectorData.ProviderServices.VectorPropertyModel<TInput>.ResolveEmbeddingType<TEmbedding>(Microsoft.Extensions.AI.IEmbeddingGenerator embeddingGenerator, System.Type? userRequestedEmbeddingType);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>.VectorSearchOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Linq.Expressions.Expression<System.Func<TRecord, bool>>? Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>.Filter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>.IncludeVectors { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>.ScoreThreshold { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>.Skip { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Linq.Expressions.Expression<System.Func<TRecord, object?>>? Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>.VectorProperty { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorSearchResult<TRecord> where TRecord : class",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorSearchResult<TRecord>.VectorSearchResult(TRecord record, double? score);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "TRecord Microsoft.Extensions.VectorData.VectorSearchResult<TRecord>.Record { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.VectorData.VectorSearchResult<TRecord>.Score { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.VectorStore : System.IDisposable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStore.VectorStore();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<bool> Microsoft.Extensions.VectorData.VectorStore.CollectionExistsAsync(string name, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.VectorData.VectorStore.Dispose(bool disposing);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.VectorData.VectorStore.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.VectorData.VectorStore.EnsureCollectionDeletedAsync(string name, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> Microsoft.Extensions.VectorData.VectorStore.GetCollection<TKey, TRecord>(string name, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? definition = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract Microsoft.Extensions.VectorData.VectorStoreCollection<object, System.Collections.Generic.Dictionary<string, object?>> Microsoft.Extensions.VectorData.VectorStore.GetDynamicCollection(string name, Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition definition);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract object? Microsoft.Extensions.VectorData.VectorStore.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Collections.Generic.IAsyncEnumerable<string> Microsoft.Extensions.VectorData.VectorStore.ListCollectionNamesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord> : Microsoft.Extensions.VectorData.IVectorSearchable<TRecord>, System.IDisposable where TKey : notnull where TRecord : class",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.VectorStoreCollection();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<bool> Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.CollectionExistsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.DeleteAsync(TKey key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Threading.Tasks.Task Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.DeleteAsync(System.Collections.Generic.IEnumerable<TKey> keys, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.Dispose(bool disposing);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.EnsureCollectionDeletedAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.EnsureCollectionExistsAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task<TRecord?> Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.GetAsync(TKey key, Microsoft.Extensions.VectorData.RecordRetrievalOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual System.Collections.Generic.IAsyncEnumerable<TRecord> Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.GetAsync(System.Collections.Generic.IEnumerable<TKey> keys, Microsoft.Extensions.VectorData.RecordRetrievalOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Collections.Generic.IAsyncEnumerable<TRecord> Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.GetAsync(System.Linq.Expressions.Expression<System.Func<TRecord, bool>> filter, int top, Microsoft.Extensions.VectorData.FilteredRecordRetrievalOptions<TRecord>? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract object? Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.GetService(System.Type serviceType, object? serviceKey = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Collections.Generic.IAsyncEnumerable<Microsoft.Extensions.VectorData.VectorSearchResult<TRecord>> Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.SearchAsync<TInput>(TInput searchValue, int top, Microsoft.Extensions.VectorData.VectorSearchOptions<TRecord>? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.UpsertAsync(TRecord record, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "abstract System.Threading.Tasks.Task Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.UpsertAsync(System.Collections.Generic.IEnumerable<TRecord> records, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "abstract string Microsoft.Extensions.VectorData.VectorStoreCollection<TKey, TRecord>.Name { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition.VectorStoreCollectionDefinition();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.IEmbeddingGenerator? Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition.EmbeddingGenerator { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.VectorData.VectorStoreProperty> Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition.Properties { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.VectorStoreCollectionMetadata",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollectionMetadata.VectorStoreCollectionMetadata();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreCollectionMetadata.CollectionName { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreCollectionMetadata.VectorStoreName { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreCollectionMetadata.VectorStoreSystemName { get; init; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.VectorStoreCollectionOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollectionOptions.VectorStoreCollectionOptions();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollectionOptions.VectorStoreCollectionOptions(Microsoft.Extensions.VectorData.VectorStoreCollectionOptions? source);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreCollectionDefinition? Microsoft.Extensions.VectorData.VectorStoreCollectionOptions.Definition { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IEmbeddingGenerator? Microsoft.Extensions.VectorData.VectorStoreCollectionOptions.EmbeddingGenerator { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorStoreDataAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreDataAttribute.VectorStoreDataAttribute();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.VectorStoreDataAttribute.IsFullTextIndexed { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.VectorStoreDataAttribute.IsIndexed { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreDataAttribute.StorageName { get; init; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorStoreDataProperty : Microsoft.Extensions.VectorData.VectorStoreProperty",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreDataProperty.VectorStoreDataProperty(string name, System.Type? type = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.VectorStoreDataProperty.IsFullTextIndexed { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.VectorStoreDataProperty.IsIndexed { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.VectorStoreException : System.Exception",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreException.VectorStoreException();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreException.VectorStoreException(string? message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreException.VectorStoreException(string? message, System.Exception? innerException);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreException.CollectionName { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreException.OperationName { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreException.VectorStoreName { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreException.VectorStoreSystemName { get; init; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorStoreKeyAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreKeyAttribute.VectorStoreKeyAttribute();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.VectorData.VectorStoreKeyAttribute.IsAutoGenerated { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreKeyAttribute.StorageName { get; init; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorStoreKeyProperty : Microsoft.Extensions.VectorData.VectorStoreProperty",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreKeyProperty.VectorStoreKeyProperty(string name, System.Type? type = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool? Microsoft.Extensions.VectorData.VectorStoreKeyProperty.IsAutoGenerated { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.VectorStoreMetadata",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreMetadata.VectorStoreMetadata();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreMetadata.VectorStoreName { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreMetadata.VectorStoreSystemName { get; init; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "abstract class Microsoft.Extensions.VectorData.VectorStoreProperty",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.VectorData.VectorStoreProperty.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.Dictionary<string, object?>? Microsoft.Extensions.VectorData.VectorStoreProperty.ProviderAnnotations { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreProperty.StorageName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.VectorData.VectorStoreProperty.Type { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.VectorData.VectorStoreVectorAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.VectorStoreVectorAttribute(int dimensions);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.Dimensions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.DistanceFunction { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.IndexKind { get; init; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreVectorAttribute.StorageName { get; init; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.VectorStoreVectorProperty : Microsoft.Extensions.VectorData.VectorStoreProperty",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorProperty.VectorStoreVectorProperty(string name, int dimensions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorProperty.VectorStoreVectorProperty(string name, System.Type type, int dimensions);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.VectorData.VectorStoreVectorProperty.Dimensions { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreVectorProperty.DistanceFunction { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.IEmbeddingGenerator? Microsoft.Extensions.VectorData.VectorStoreVectorProperty.EmbeddingGenerator { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.VectorData.VectorStoreVectorProperty.EmbeddingType { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.VectorData.VectorStoreVectorProperty.IndexKind { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.VectorData.VectorStoreVectorProperty<TInput> : Microsoft.Extensions.VectorData.VectorStoreVectorProperty",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.VectorData.VectorStoreVectorProperty<TInput>.VectorStoreVectorProperty(string propertyName, int dimensions);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

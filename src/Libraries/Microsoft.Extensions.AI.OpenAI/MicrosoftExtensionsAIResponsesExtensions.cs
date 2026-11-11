@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.AI;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S3254 // Default parameter values should not be passed as arguments
@@ -12,6 +14,7 @@ using Microsoft.Shared.Diagnostics;
 namespace OpenAI.Responses;
 
 /// <summary>Provides extension methods for working with content associated with OpenAI.Responses.</summary>
+[Experimental(DiagnosticIds.Experiments.AIOpenAIResponses)]
 public static class MicrosoftExtensionsAIResponsesExtensions
 {
     /// <summary>Creates an OpenAI <see cref="ResponseTool"/> from an <see cref="AIFunctionDeclaration"/>.</summary>
@@ -56,12 +59,12 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     public static IEnumerable<ChatMessage> AsChatMessages(this IEnumerable<ResponseItem> items) =>
         OpenAIResponsesChatClient.ToChatMessages(Throw.IfNull(items));
 
-    /// <summary>Creates a Microsoft.Extensions.AI <see cref="ChatResponse"/> from an <see cref="OpenAIResponse"/>.</summary>
-    /// <param name="response">The <see cref="OpenAIResponse"/> to convert to a <see cref="ChatResponse"/>.</param>
+    /// <summary>Creates a Microsoft.Extensions.AI <see cref="ChatResponse"/> from an <see cref="ResponseResult"/>.</summary>
+    /// <param name="response">The <see cref="ResponseResult"/> to convert to a <see cref="ChatResponse"/>.</param>
     /// <param name="options">The options employed in the creation of the response.</param>
     /// <returns>A converted <see cref="ChatResponse"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="response"/> is <see langword="null"/>.</exception>
-    public static ChatResponse AsChatResponse(this OpenAIResponse response, ResponseCreationOptions? options = null) =>
+    public static ChatResponse AsChatResponse(this ResponseResult response, CreateResponseOptions? options = null) =>
         OpenAIResponsesChatClient.FromOpenAIResponse(Throw.IfNull(response), options, conversationId: null);
 
     /// <summary>
@@ -74,35 +77,47 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <returns>A sequence of converted <see cref="ChatResponseUpdate"/> instances.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responseUpdates"/> is <see langword="null"/>.</exception>
     public static IAsyncEnumerable<ChatResponseUpdate> AsChatResponseUpdatesAsync(
-        this IAsyncEnumerable<StreamingResponseUpdate> responseUpdates, ResponseCreationOptions? options = null, CancellationToken cancellationToken = default) =>
+        this IAsyncEnumerable<StreamingResponseUpdate> responseUpdates, CreateResponseOptions? options = null, CancellationToken cancellationToken = default) =>
         OpenAIResponsesChatClient.FromOpenAIStreamingResponseUpdatesAsync(Throw.IfNull(responseUpdates), options, conversationId: null, cancellationToken: cancellationToken);
 
-    /// <summary>Creates an OpenAI <see cref="OpenAIResponse"/> from a <see cref="ChatResponse"/>.</summary>
+    /// <summary>Creates an OpenAI <see cref="ResponseResult"/> from a <see cref="ChatResponse"/>.</summary>
     /// <param name="response">The response to convert.</param>
     /// <param name="options">The options employed in the creation of the response.</param>
-    /// <returns>The created <see cref="OpenAIResponse"/>.</returns>
-    public static OpenAIResponse AsOpenAIResponse(this ChatResponse response, ChatOptions? options = null)
+    /// <returns>The created <see cref="ResponseResult"/>.</returns>
+    public static ResponseResult AsOpenAIResponseResult(this ChatResponse response, ChatOptions? options = null)
     {
         _ = Throw.IfNull(response);
 
-        if (response.RawRepresentation is OpenAIResponse openAIResponse)
+        if (response.RawRepresentation is ResponseResult openAIResponse)
         {
             return openAIResponse;
         }
 
-        return OpenAIResponsesModelFactory.OpenAIResponse(
-            response.ResponseId,
-            response.CreatedAt ?? default,
-            ResponseStatus.Completed,
-            usage: null, // No way to construct a ResponseTokenUsage right now from external to the OpenAI library
-            maxOutputTokenCount: options?.MaxOutputTokens,
-            outputItems: OpenAIResponsesChatClient.ToOpenAIResponseItems(response.Messages, options),
-            parallelToolCallsEnabled: options?.AllowMultipleToolCalls ?? false,
-            model: response.ModelId ?? options?.ModelId,
-            temperature: options?.Temperature,
-            topP: options?.TopP,
-            previousResponseId: options?.ConversationId,
-            instructions: options?.Instructions);
+        ResponseResult result = new()
+        {
+            ConversationOptions = OpenAIClientExtensions.IsConversationId(response.ConversationId) ? new(response.ConversationId) : null,
+            CreatedAt = response.CreatedAt ?? default,
+            Id = response.ResponseId,
+            MaxOutputTokenCount = options?.MaxOutputTokens,
+            Model = response.ModelId ?? options?.ModelId,
+            ParallelToolCallsEnabled = options?.AllowMultipleToolCalls ?? true,
+            Status = ResponseStatus.Completed,
+            Temperature = options?.Temperature,
+            TopP = options?.TopP,
+            Usage = OpenAIResponsesChatClient.ToResponseTokenUsage(response.Usage),
+        };
+
+        if (options?.Instructions is { Length: > 0 })
+        {
+            result.Instructions.Add(ResponseItem.CreateDeveloperMessageItem(options.Instructions));
+        }
+
+        foreach (var responseItem in OpenAIResponsesChatClient.ToOpenAIResponseItems(response.Messages, options))
+        {
+            result.OutputItems.Add(responseItem);
+        }
+
+        return result;
     }
 
     /// <summary>Adds the <see cref="ResponseTool"/> to the list of <see cref="AITool"/>s.</summary>
@@ -111,7 +126,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <remarks>
     /// <see cref="ResponseTool"/> does not derive from <see cref="AITool"/>, so it cannot be added directly to a list of <see cref="AITool"/>s.
     /// Instead, this method wraps the provided <see cref="ResponseTool"/> in an <see cref="AITool"/> and adds that to the list.
-    /// The <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(OpenAIResponseClient)"/> will
+    /// The <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient, string)"/> will
     /// be able to unwrap the <see cref="ResponseTool"/> when it processes the list of tools and use the provided <paramref name="tool"/> as-is.
     /// </remarks>
     public static void Add(this IList<AITool> tools, ResponseTool tool)
@@ -127,7 +142,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <remarks>
     /// <para>
     /// The returned tool is only suitable for use with the <see cref="IChatClient"/> returned by
-    /// <see cref="OpenAIClientExtensions.AsIChatClient(OpenAIResponseClient)"/> (or <see cref="IChatClient"/>s that delegate
+    /// <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient, string)"/> (or <see cref="IChatClient"/>s that delegate
     /// to such an instance). It is likely to be ignored by any other <see cref="IChatClient"/> implementation.
     /// </para>
     /// <para>
@@ -136,7 +151,7 @@ public static class MicrosoftExtensionsAIResponsesExtensions
     /// <see cref="HostedFileSearchTool"/>, those types should be preferred instead of this method, as they are more portable,
     /// capable of being respected by any <see cref="IChatClient"/> implementation. This method does not attempt to
     /// map the supplied <see cref="ResponseTool"/> to any of those types, it simply wraps it as-is:
-    /// the <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(OpenAIResponseClient)"/> will
+    /// the <see cref="IChatClient"/> returned by <see cref="OpenAIClientExtensions.AsIChatClient(ResponsesClient, string)"/> will
     /// be able to unwrap the <see cref="ResponseTool"/> when it processes the list of tools.
     /// </para>
     /// </remarks>
