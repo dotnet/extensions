@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -943,8 +944,15 @@ public class OpenTelemetryRealtimeClientTests
         Assert.Contains("User text message", inputMessages);
     }
 
-    [Fact]
-    public async Task DataContentInClientMessage_LoggedWithModality()
+    [Theory]
+    [InlineData("image/png", "image")]
+    [InlineData("audio/wav", "audio")]
+    [InlineData("video/mp4", "video")]
+    [InlineData("application/pdf", "application")]
+    [InlineData("application/zip", "application")]
+    [InlineData("text/plain", "text")]
+    [InlineData("TEXT/PLAIN; charset=utf-8", "text")]
+    public async Task ContentPartsInClientMessage_LoggedWithModality(string mediaType, string expectedModality)
     {
         var sourceName = Guid.NewGuid().ToString();
         var activities = new List<Activity>();
@@ -966,7 +974,7 @@ public class OpenTelemetryRealtimeClientTests
         client.EnableSensitiveData = true;
         await using var session = await client.CreateSessionAsync();
 
-        await foreach (var msg in GetClientMessagesWithImageContentAsync())
+        await foreach (var msg in GetClientMessagesWithContentAsync(mediaType))
         {
             await session.SendAsync(msg);
         }
@@ -976,13 +984,27 @@ public class OpenTelemetryRealtimeClientTests
             // Consume
         }
 
-        // GetClientMessagesWithImageContentAsync yields 2 messages but only 1 has content, so 1 input activity + 1 output = 2 activities
+        // Only the conversation item has content, so 1 input activity + 1 output = 2 activities.
         Assert.Equal(2, activities.Count);
-        var inputMessages = activities[0].GetTagItem("gen_ai.input.messages")?.ToString();
-        Assert.NotNull(inputMessages);
-        Assert.Contains("blob", inputMessages);
-        Assert.Contains("image", inputMessages);
-        Assert.Contains("image/png", inputMessages);
+        using var json = JsonDocument.Parse(Assert.IsType<string>(activities[0].GetTagItem("gen_ai.input.messages")));
+        var parts = json.RootElement[0].GetProperty("parts");
+        Assert.Equal(4, parts.GetArrayLength());
+        for (int i = 0; i < 3; i++)
+        {
+            Assert.Equal(expectedModality, parts[i].GetProperty("modality").GetString());
+            Assert.Equal(mediaType, parts[i].GetProperty("mime_type").GetString());
+        }
+
+        Assert.Equal("blob", parts[0].GetProperty("type").GetString());
+        Assert.Equal("AQID", parts[0].GetProperty("content").GetString());
+        Assert.Equal("uri", parts[1].GetProperty("type").GetString());
+        Assert.Equal("https://example.com/content", parts[1].GetProperty("uri").GetString());
+        Assert.Equal("file", parts[2].GetProperty("type").GetString());
+        Assert.Equal("file-123", parts[2].GetProperty("file_id").GetString());
+        Assert.Equal("file", parts[3].GetProperty("type").GetString());
+        Assert.Equal("file-without-media-type", parts[3].GetProperty("file_id").GetString());
+        Assert.Equal("unknown", parts[3].GetProperty("modality").GetString());
+        Assert.False(parts[3].TryGetProperty("mime_type", out _));
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
@@ -1013,12 +1035,18 @@ public class OpenTelemetryRealtimeClientTests
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
-    private static async IAsyncEnumerable<RealtimeClientMessage> GetClientMessagesWithImageContentAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    private static async IAsyncEnumerable<RealtimeClientMessage> GetClientMessagesWithContentAsync(
+        string mediaType, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 #pragma warning restore IDE0060
     {
         await Task.Yield();
-        var imageData = new DataContent(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, "image/png");
-        var item = new RealtimeConversationItem([imageData], role: ChatRole.User);
+        var item = new RealtimeConversationItem(
+        [
+            new DataContent(new byte[] { 1, 2, 3 }, mediaType),
+            new UriContent(new Uri("https://example.com/content"), mediaType),
+            new HostedFileContent("file-123") { MediaType = mediaType },
+            new HostedFileContent("file-without-media-type"),
+        ], role: ChatRole.User);
         yield return new CreateConversationItemRealtimeClientMessage(item);
         yield return new CreateResponseRealtimeClientMessage();
     }
