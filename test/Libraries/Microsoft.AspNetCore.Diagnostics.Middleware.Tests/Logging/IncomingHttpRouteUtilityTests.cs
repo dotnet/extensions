@@ -1,17 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETCOREAPP3_1_OR_GREATER
 using System;
-#endif
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
-#if NETCOREAPP3_1_OR_GREATER
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-#endif
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Moq;
@@ -21,7 +18,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class IncomingHttpRouteUtilityTests
 {
-#if NETCOREAPP3_1_OR_GREATER
     [Fact]
     public void GetSensitiveParameter_OneParameterWithDataClassAttrib_ReturnsSensitiveParameter()
     {
@@ -366,6 +362,123 @@ public class IncomingHttpRouteUtilityTests
     }
 
     [Fact]
+    public void GetSensitiveParameter_ActionsWithSameRoute_ReturnsSensitiveParametersOfEachAction()
+    {
+        ControllerActionDescriptor unclassifiedActionDescriptor = new ControllerActionDescriptor();
+        var unclassifiedParametersInfo = typeof(TestController).GetMethod(nameof(TestController.GetTest5Async))!.GetParameters();
+
+        unclassifiedActionDescriptor.Parameters = new List<ParameterDescriptor>(unclassifiedParametersInfo.Length);
+        foreach (var parameterInfo in unclassifiedParametersInfo)
+        {
+            var parameter = new ControllerParameterDescriptor
+            {
+                ParameterInfo = parameterInfo,
+            };
+            unclassifiedActionDescriptor.Parameters.Add(parameter);
+        }
+
+        ControllerActionDescriptor classifiedActionDescriptor = new ControllerActionDescriptor();
+        var classifiedParametersInfo = typeof(TestController).GetMethod(nameof(TestController.GetTest3Async))!.GetParameters();
+
+        classifiedActionDescriptor.Parameters = new List<ParameterDescriptor>(classifiedParametersInfo.Length);
+        foreach (var parameterInfo in classifiedParametersInfo)
+        {
+            var parameter = new ControllerParameterDescriptor
+            {
+                ParameterInfo = parameterInfo,
+            };
+            classifiedActionDescriptor.Parameters.Add(parameter);
+        }
+
+        var httpRoute = "v1/profile/users/{userId}/teams/{teamId}/chats/{chatId}";
+        var unclassifiedEndpoint = new RouteEndpoint(
+                c => throw new InvalidOperationException("Test"),
+                RoutePatternFactory.Parse(httpRoute),
+                0,
+                new EndpointMetadataCollection(new List<object> { unclassifiedActionDescriptor }),
+                "Endpoint display name");
+
+        var classifiedEndpoint = new RouteEndpoint(
+                c => throw new InvalidOperationException("Test"),
+                RoutePatternFactory.Parse(httpRoute),
+                0,
+                new EndpointMetadataCollection(new List<object> { classifiedActionDescriptor }),
+                "Endpoint display name");
+
+        Mock<HttpRequest> mockHttpRequest = new Mock<HttpRequest>();
+        HttpContext context = new DefaultHttpContext();
+        mockHttpRequest.Setup(m => m.HttpContext).Returns(context);
+
+        var d = new Dictionary<string, DataClassification>();
+
+        var routeUtility = new IncomingHttpRouteUtility();
+        context.SetEndpoint(unclassifiedEndpoint);
+        var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
+        Assert.Empty(sensitiveParameters);
+
+        context.SetEndpoint(classifiedEndpoint);
+        sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
+        Assert.Equal(2, sensitiveParameters.Count);
+        Assert.True(sensitiveParameters.ContainsKey("userId"));
+        Assert.Equal(FakeTaxonomy.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.True(sensitiveParameters.ContainsKey("teamId"));
+        Assert.Equal(FakeTaxonomy.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+    }
+
+    [Fact]
+    public void GetSensitiveParameter_ReplacedEndpoint_IsNotKeptAlive()
+    {
+        var routeUtility = new IncomingHttpRouteUtility();
+        var endpointReference = GetSensitiveParametersOfNewEndpoint(routeUtility);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(endpointReference.IsAlive);
+        GC.KeepAlive(routeUtility);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static WeakReference GetSensitiveParametersOfNewEndpoint(IncomingHttpRouteUtility routeUtility)
+        {
+            ControllerActionDescriptor controllerActionDescriptor = new ControllerActionDescriptor();
+            var parametersInfo = typeof(TestController).GetMethod(nameof(TestController.GetTest2Async))!.GetParameters();
+
+            controllerActionDescriptor.Parameters = new List<ParameterDescriptor>(parametersInfo.Length);
+            foreach (var parameterInfo in parametersInfo)
+            {
+                var parameter = new ControllerParameterDescriptor
+                {
+                    ParameterInfo = parameterInfo,
+                };
+                controllerActionDescriptor.Parameters.Add(parameter);
+            }
+
+            var metadata = new List<object> { controllerActionDescriptor };
+
+            var httpRoute = "v1/profile/users/{userId}/teams/{teamId}";
+            var endpoint = new RouteEndpoint(
+                    c => throw new InvalidOperationException("Test"),
+                    RoutePatternFactory.Parse(httpRoute),
+                    0,
+                    new EndpointMetadataCollection(metadata),
+                    "Endpoint display name");
+
+            Mock<HttpRequest> mockHttpRequest = new Mock<HttpRequest>();
+            HttpContext context = new DefaultHttpContext();
+            mockHttpRequest.Setup(m => m.HttpContext).Returns(context);
+            context.SetEndpoint(endpoint);
+
+            var d = new Dictionary<string, DataClassification>();
+
+            var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
+            Assert.Equal(2, sensitiveParameters.Count);
+
+            return new WeakReference(endpoint);
+        }
+    }
+
+    [Fact]
     public void GetSensitiveParameter_2ndCallOnwardForSameRouteReturnsCachedResult()
     {
         ControllerActionDescriptor controllerActionDescriptor = new ControllerActionDescriptor();
@@ -466,26 +579,4 @@ public class IncomingHttpRouteUtilityTests
         Assert.True(sensitiveParameters.ContainsKey("testKey"));
         Assert.Equal(FakeTaxonomy.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
     }
-#else
-    [Fact]
-    public void GetSensitiveParameter_AlwaysReturnsDefault()
-    {
-        var httpRoute = "v1/profile/users/{userId}/teams/{teamId}";
-
-        Mock<HttpRequest> mockHttpRequest = new Mock<HttpRequest>();
-        HttpContext context = new DefaultHttpContext();
-        mockHttpRequest.Setup(m => m.HttpContext).Returns(context);
-
-        var routeUtility = new IncomingHttpRouteUtility();
-        var d = new Dictionary<string, DataClassification>
-        {
-            { "testKey", FakeClassifications.PrivateData }
-        };
-        var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
-        Assert.Single(sensitiveParameters);
-        Assert.True(sensitiveParameters.ContainsKey("testKey"));
-        Assert.True(sensitiveParameters.TryGetValue("testKey", out DataClassification classification));
-        Assert.Equal(FakeClassifications.PrivateData, classification);
-    }
-#endif
 }
