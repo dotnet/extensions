@@ -92,8 +92,10 @@ public class HttpServiceEndpointResolverSharingTests
         Assert.True(cleanupTimer.IsDisposed);
     }
 
-    [Fact]
-    public async Task SynchronousProviderDisposal_DuringResolution_CancelsTheResolution()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ProviderDisposal_DuringResolution_CancelsTheResolution(bool disposeAsynchronously)
     {
         var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var services = new ServiceCollection()
@@ -106,7 +108,16 @@ public class HttpServiceEndpointResolverSharingTests
         var pending = resolver.GetEndpointAsync(request, CancellationToken.None).AsTask();
         await started.Task;
 
-        services.Dispose();
+        if (disposeAsynchronously)
+        {
+            // The resolution only ends when disposal cancels it, so disposal must not wait for it to end first.
+            var disposal = services.DisposeAsync().AsTask();
+            Assert.Same(disposal, await Task.WhenAny(disposal, Task.Delay(TimeSpan.FromSeconds(30))));
+        }
+        else
+        {
+            services.Dispose();
+        }
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
     }

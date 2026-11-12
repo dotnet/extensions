@@ -134,7 +134,7 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
 
         foreach (var resolver in _resolvers)
         {
-            await resolver.Value.DisposeAsync().ConfigureAwait(false);
+            await resolver.Value.CancelAndDisposeAsync().ConfigureAwait(false);
         }
 
         _resolvers.Clear();
@@ -254,6 +254,17 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
             // Mark the entry as disposing so new resolves are rejected, then release the watcher.
             Interlocked.Or(ref _status, DisposingFlag);
             _watcher.Dispose();
+        }
+
+        /// <summary>
+        /// Disposes the entry, cancelling the resolves which are in flight instead of waiting for them to finish.
+        /// </summary>
+        public ValueTask CancelAndDisposeAsync()
+        {
+            // A resolve can be waiting for a refresh which only ends when the watcher is stopped, and DisposeAsync
+            // only stops the watcher once every resolve has finished. Stopping the watcher first breaks that cycle.
+            _watcher.Dispose();
+            return DisposeAsync();
         }
 
         public async ValueTask DisposeAsync()
