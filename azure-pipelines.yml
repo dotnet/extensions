@@ -316,7 +316,7 @@ extends:
             - checkout: self
               clean: true
               persistCredentials: true
-              fetchDepth: 1
+              fetchDepth: 2 # Include the PR merge commit's first parent for comment filtering.
 
             steps:
             - script: $(Build.SourcesDirectory)/build.sh --ci --restore
