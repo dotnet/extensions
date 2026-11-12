@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -422,6 +423,59 @@ public class IncomingHttpRouteUtilityTests
         Assert.Equal(FakeTaxonomy.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
         Assert.True(sensitiveParameters.ContainsKey("teamId"));
         Assert.Equal(FakeTaxonomy.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+    }
+
+    [Fact]
+    public void GetSensitiveParameter_ReplacedEndpoint_IsNotKeptAlive()
+    {
+        var routeUtility = new IncomingHttpRouteUtility();
+        var endpointReference = GetSensitiveParametersOfNewEndpoint(routeUtility);
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.False(endpointReference.IsAlive);
+        GC.KeepAlive(routeUtility);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static WeakReference GetSensitiveParametersOfNewEndpoint(IncomingHttpRouteUtility routeUtility)
+        {
+            ControllerActionDescriptor controllerActionDescriptor = new ControllerActionDescriptor();
+            var parametersInfo = typeof(TestController).GetMethod(nameof(TestController.GetTest2Async))!.GetParameters();
+
+            controllerActionDescriptor.Parameters = new List<ParameterDescriptor>(parametersInfo.Length);
+            foreach (var parameterInfo in parametersInfo)
+            {
+                var parameter = new ControllerParameterDescriptor
+                {
+                    ParameterInfo = parameterInfo,
+                };
+                controllerActionDescriptor.Parameters.Add(parameter);
+            }
+
+            var metadata = new List<object> { controllerActionDescriptor };
+
+            var httpRoute = "v1/profile/users/{userId}/teams/{teamId}";
+            var endpoint = new RouteEndpoint(
+                    c => throw new InvalidOperationException("Test"),
+                    RoutePatternFactory.Parse(httpRoute),
+                    0,
+                    new EndpointMetadataCollection(metadata),
+                    "Endpoint display name");
+
+            Mock<HttpRequest> mockHttpRequest = new Mock<HttpRequest>();
+            HttpContext context = new DefaultHttpContext();
+            mockHttpRequest.Setup(m => m.HttpContext).Returns(context);
+            context.SetEndpoint(endpoint);
+
+            var d = new Dictionary<string, DataClassification>();
+
+            var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
+            Assert.Equal(2, sensitiveParameters.Count);
+
+            return new WeakReference(endpoint);
+        }
     }
 
     [Fact]

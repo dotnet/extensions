@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Compliance.Classification;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging;
 internal sealed class IncomingHttpRouteUtility : IIncomingHttpRouteUtility
 {
     private static readonly Type _dataClassificationAttributeType = typeof(DataClassificationAttribute);
-    private readonly ConcurrentDictionary<Endpoint, FrozenDictionary<string, DataClassification>> _parametersToRedactCache = new();
+    private readonly ConditionalWeakTable<Endpoint, FrozenDictionary<string, DataClassification>> _parametersToRedactCache = new();
 
     public IReadOnlyDictionary<string, DataClassification> GetSensitiveParameters(string httpRoute, HttpRequest request, IReadOnlyDictionary<string, DataClassification> defaultSensitiveParameters)
     {
@@ -62,6 +62,8 @@ internal sealed class IncomingHttpRouteUtility : IIncomingHttpRouteUtility
             }
         }
 
-        return _parametersToRedactCache.GetOrAdd(endpoint, static (_, paramsToRedact) => paramsToRedact.ToFrozenDictionary(StringComparer.Ordinal), parametersToRedact);
+        var frozenParametersToRedact = parametersToRedact.ToFrozenDictionary(StringComparer.Ordinal);
+        _parametersToRedactCache.AddOrUpdate(endpoint, frozenParametersToRedact);
+        return frozenParametersToRedact;
     }
 }
