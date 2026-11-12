@@ -9,7 +9,7 @@
     <PackageVersion Include="Aspire.AppHost.Sdk" Version="13.0.0" />
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.0.0-preview.1.25560.3" />
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="13.0.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="13.0.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="13.0.0" />
     <PackageVersion Include="Aspire.Hosting.Qdrant" Version="13.0.0" />
