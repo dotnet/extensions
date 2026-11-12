@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -494,7 +495,8 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "type": "file",
-                    "file_id": "file-xyz789"
+                    "file_id": "file-xyz789",
+                    "modality": "unknown"
                   }
                 ]
               },
@@ -562,12 +564,101 @@ public class OpenTelemetryChatClientTests
                   },
                   {
                     "type": "file",
-                    "file_id": "file-abc123"
+                    "file_id": "file-abc123",
+                    "modality": "unknown"
                   }
                 ]
               }
             ]
             """), ReplaceWhitespace(outputMessages));
+    }
+
+    [Theory]
+    [InlineData("application/pdf", "application")]
+    [InlineData("application/json", "application")]
+    [InlineData("application/zip", "application")]
+    [InlineData("application/octet-stream", "application")]
+    [InlineData("text/plain", "text")]
+    [InlineData("text/csv", "text")]
+    [InlineData("text/markdown", "text")]
+    [InlineData("Application/PDF", "application")]
+    [InlineData("TEXT/PLAIN; charset=utf-8", "text")]
+    [InlineData("IMAGE/PNG", "image")]
+    [InlineData("audio/wav", "audio")]
+    [InlineData("video/mp4", "video")]
+    [InlineData("font/woff2", "font")]
+    [InlineData("model/gltf+json", "model")]
+    [InlineData("message/rfc822", "message")]
+    [InlineData("multipart/mixed", "multipart")]
+    [InlineData("example/custom", "example")]
+    public async Task ContentParts_SerializedWithModality(string mediaType, string expectedModality)
+    {
+        foreach (bool streaming in new[] { false, true })
+        {
+            var sourceName = Guid.NewGuid().ToString();
+            var activities = new List<Activity>();
+            using var tracerProvider = OpenTelemetry.Sdk.CreateTracerProviderBuilder()
+                .AddSource(sourceName)
+                .AddInMemoryExporter(activities)
+                .Build();
+
+            List<AIContent> contents =
+            [
+                new DataContent(new byte[] { 1, 2, 3 }, mediaType),
+                new UriContent(new Uri("https://example.com/content"), mediaType),
+                new HostedFileContent("file-123") { MediaType = mediaType },
+            ];
+
+            using var innerClient = new TestChatClient
+            {
+                GetResponseAsyncCallback = (_, _, _) =>
+                    Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, contents))),
+                GetStreamingResponseAsyncCallback = (_, _, _) => StreamResponseAsync(),
+            };
+
+            async IAsyncEnumerable<ChatResponseUpdate> StreamResponseAsync()
+            {
+                await Task.Yield();
+                yield return new(ChatRole.Assistant, contents);
+            }
+
+            using var chatClient = innerClient.AsBuilder()
+                .UseOpenTelemetry(null, sourceName, configure: instance => instance.EnableSensitiveData = true)
+                .Build();
+
+            ChatMessage[] messages = [new(ChatRole.User, contents)];
+            if (streaming)
+            {
+                await foreach (var update in chatClient.GetStreamingResponseAsync(messages))
+                {
+                    await Task.Yield();
+                }
+            }
+            else
+            {
+                await chatClient.GetResponseAsync(messages);
+            }
+
+            var activity = Assert.Single(activities);
+            foreach (string attribute in new[] { "gen_ai.input.messages", "gen_ai.output.messages" })
+            {
+                using var json = JsonDocument.Parse(Assert.IsType<string>(activity.GetTagItem(attribute)));
+                var parts = json.RootElement[0].GetProperty("parts");
+                Assert.Equal(3, parts.GetArrayLength());
+                foreach (var part in parts.EnumerateArray())
+                {
+                    Assert.Equal(expectedModality, part.GetProperty("modality").GetString());
+                    Assert.Equal(mediaType, part.GetProperty("mime_type").GetString());
+                }
+
+                Assert.Equal("blob", parts[0].GetProperty("type").GetString());
+                Assert.Equal("AQID", parts[0].GetProperty("content").GetString());
+                Assert.Equal("uri", parts[1].GetProperty("type").GetString());
+                Assert.Equal("https://example.com/content", parts[1].GetProperty("uri").GetString());
+                Assert.Equal("file", parts[2].GetProperty("type").GetString());
+                Assert.Equal("file-123", parts[2].GetProperty("file_id").GetString());
+            }
+        }
     }
 
     [Fact]
