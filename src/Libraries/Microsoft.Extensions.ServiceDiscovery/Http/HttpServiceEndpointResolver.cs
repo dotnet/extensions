@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ServiceDiscovery.LoadBalancing;
 
@@ -11,7 +10,7 @@ namespace Microsoft.Extensions.ServiceDiscovery.Http;
 /// <summary>
 /// Resolves endpoints for HTTP requests.
 /// </summary>
-internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory watcherFactory, IServiceProvider serviceProvider, TimeProvider timeProvider) : IAsyncDisposable
+internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory watcherFactory, IServiceProvider serviceProvider, TimeProvider timeProvider) : IDisposable, IAsyncDisposable
 {
     private static readonly TimerCallback s_cleanupCallback = s => ((HttpServiceEndpointResolver)s!).CleanupResolvers();
     private static readonly TimeSpan s_cleanupPeriod = TimeSpan.FromSeconds(10);
@@ -21,6 +20,7 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
     private readonly ConcurrentDictionary<string, ResolverEntry> _resolvers = new();
     private ITimer? _cleanupTimer;
     private Task? _cleanupTask;
+    private bool _disposed;
 
     /// <summary>
     /// Resolves and returns a service endpoint for the specified request.
@@ -37,6 +37,7 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
             throw new InvalidOperationException("Cannot resolve an endpoint for a request which has no RequestUri");
         }
 
+        ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureCleanupTimerStarted();
 
         var key = request.RequestUri.GetLeftPart(UriPartial.Authority);
@@ -73,6 +74,8 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
 
         lock (_lock)
         {
+            // Checked under the lock so that a call racing with disposal cannot start a timer which nothing would stop.
+            ObjectDisposedException.ThrowIf(_disposed, this);
             if (_cleanupTimer is not null)
             {
                 return;
@@ -102,17 +105,36 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
     }
 
     /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
+    public void Dispose()
     {
         lock (_lock)
         {
+            _disposed = true;
             _cleanupTimer?.Dispose();
             _cleanupTimer = null;
         }
 
         foreach (var resolver in _resolvers)
         {
-            await resolver.Value.DisposeAsync().ConfigureAwait(false);
+            resolver.Value.Dispose();
+        }
+
+        _resolvers.Clear();
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        lock (_lock)
+        {
+            _disposed = true;
+            _cleanupTimer?.Dispose();
+            _cleanupTimer = null;
+        }
+
+        foreach (var resolver in _resolvers)
+        {
+            await resolver.Value.CancelAndDisposeAsync().ConfigureAwait(false);
         }
 
         _resolvers.Clear();
@@ -160,15 +182,15 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
         return result;
     }
 
-    private sealed class ResolverEntry : IAsyncDisposable
+    private sealed class ResolverEntry : IDisposable, IAsyncDisposable
     {
         private readonly ServiceEndpointWatcher _watcher;
         private readonly IServiceEndpointSelector _selector;
+        private readonly TaskCompletionSource _onDisposed = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private const ulong CountMask = ~(RecentUseFlag | DisposingFlag);
         private const ulong RecentUseFlag = 1UL << 62;
         private const ulong DisposingFlag = 1UL << 63;
         private ulong _status;
-        private TaskCompletionSource? _onDisposed;
 
         public ResolverEntry(ServiceEndpointWatcher watcher, IServiceEndpointSelector selector)
         {
@@ -227,13 +249,26 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
             }
         }
 
+        public void Dispose()
+        {
+            // Mark the entry as disposing so new resolves are rejected, then release the watcher.
+            Interlocked.Or(ref _status, DisposingFlag);
+            _watcher.Dispose();
+        }
+
+        /// <summary>
+        /// Disposes the entry, cancelling the resolves which are in flight instead of waiting for them to finish.
+        /// </summary>
+        public ValueTask CancelAndDisposeAsync()
+        {
+            // A resolve can be waiting for a refresh which only ends when the watcher is stopped, and DisposeAsync
+            // only stops the watcher once every resolve has finished. Stopping the watcher first breaks that cycle.
+            _watcher.Dispose();
+            return DisposeAsync();
+        }
+
         public async ValueTask DisposeAsync()
         {
-            if (_onDisposed is null)
-            {
-                Interlocked.CompareExchange(ref _onDisposed, new(TaskCreationOptions.RunContinuationsAsynchronously), null);
-            }
-
             var status = Interlocked.Or(ref _status, DisposingFlag);
             if ((status & DisposingFlag) != DisposingFlag && (status & CountMask) == 0)
             {
@@ -255,7 +290,6 @@ internal sealed class HttpServiceEndpointResolver(ServiceEndpointWatcherFactory 
             }
             finally
             {
-                Debug.Assert(_onDisposed is not null);
                 _onDisposed.SetResult();
             }
         }
