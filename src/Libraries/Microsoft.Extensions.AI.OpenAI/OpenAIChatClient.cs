@@ -29,6 +29,8 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents an <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="ChatClient"/>.</summary>
 internal sealed partial class OpenAIChatClient : IChatClient
 {
+    private static readonly JsonSerializerOptions _toolJsonOptions = CreateToolJsonOptions();
+
     // These delegate instances are used to call the internal overloads of CompleteChatAsync and CompleteChatStreamingAsync that accept
     // a RequestOptions. These should be replaced once a better way to pass RequestOptions is available.
     private static readonly Func<ChatClient, IEnumerable<OpenAI.Chat.ChatMessage>, ChatCompletionOptions, RequestOptions, Task<ClientResult<ChatCompletion>>>?
@@ -189,7 +191,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         {
                             try
                             {
-                                result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                                result = JsonSerializer.Serialize(resultContent.Result, _toolJsonOptions.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -217,7 +219,7 @@ internal sealed partial class OpenAIChatClient : IChatClient
                         case FunctionCallContent fc:
                             (toolCalls ??= []).Add(
                                 ChatToolCall.CreateFunctionToolCall(fc.CallId, fc.Name, new(JsonSerializer.SerializeToUtf8Bytes(
-                                    fc.Arguments, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
+                                    fc.Arguments, _toolJsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))));
                             break;
 
                         default:
@@ -255,6 +257,13 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 yield return message;
             }
         }
+    }
+
+    private static JsonSerializerOptions CreateToolJsonOptions()
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { WriteIndented = false };
+        options.MakeReadOnly();
+        return options;
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>

@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -1779,6 +1780,50 @@ public class OpenAIChatClientTests
         new OpenAIClient(new ApiKeyCredential("apikey"), new OpenAIClientOptions { Transport = new HttpClientPipelineTransport(httpClient) })
         .GetChatClient(modelId)
         .AsIChatClient();
+
+    [Fact]
+    public void AsOpenAIChatMessages_UsesCompactJsonForToolArguments()
+    {
+        Dictionary<string, object?> arguments = new() { ["query"] = "notebook", ["max"] = 10 };
+        ChatMessage[] messages = [new(ChatRole.Assistant, [new FunctionCallContent("call_1", "search", arguments)])];
+
+        var assistant = Assert.IsType<AssistantChatMessage>(Assert.Single(messages.AsOpenAIChatMessages()));
+        var call = Assert.Single(assistant.ToolCalls);
+        Assert.Equal("call_1", call.Id);
+        Assert.Equal("search", call.FunctionName);
+        Assert.Equal("""{"query":"notebook","max":10}""", call.FunctionArguments.ToString());
+    }
+
+    [Fact]
+    public void AsOpenAIChatMessages_UsesCompactJsonForStructuredToolResults()
+    {
+        using var result = JsonDocument.Parse("""
+            {
+              "products": [{"name":"Notebook","available":12}]
+            }
+            """);
+        const string TextResult = "first line\n  second line";
+        ChatMessage[] messages =
+        [
+            new(ChatRole.Tool, [new FunctionResultContent("call_1", result.RootElement)]),
+            new(ChatRole.Tool, [new FunctionResultContent("call_2", TextResult)]),
+        ];
+
+        Assert.Collection(
+            messages.AsOpenAIChatMessages(),
+            message =>
+            {
+                var tool = Assert.IsType<ToolChatMessage>(message);
+                Assert.Equal("call_1", tool.ToolCallId);
+                Assert.Equal("""{"products":[{"name":"Notebook","available":12}]}""", Assert.Single(tool.Content).Text);
+            },
+            message =>
+            {
+                var tool = Assert.IsType<ToolChatMessage>(message);
+                Assert.Equal("call_2", tool.ToolCallId);
+                Assert.Equal(TextResult, Assert.Single(tool.Content).Text);
+            });
+    }
 
     [Fact]
     public void AsChatMessages_PreservesRole_SystemMessage()
