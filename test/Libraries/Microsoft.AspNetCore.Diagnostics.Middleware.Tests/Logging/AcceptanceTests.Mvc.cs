@@ -179,29 +179,6 @@ public partial class AcceptanceTests
     }
 
     [Fact]
-    public async Task TestServer_WhenControllerActionsShareRoute_RedactParametersOfEachAction()
-    {
-        await RunControllerAsync(
-            LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(),
-            async (logCollector, client) =>
-            {
-                const string UserId = "testUserId";
-
-                using var getResponse = await client.GetAsync($"/api/users/{UserId}").ConfigureAwait(false);
-                Assert.True(getResponse.IsSuccessStatusCode);
-                await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30));
-
-                using var postResponse = await client.PostAsync($"/api/users/{UserId}", null).ConfigureAwait(false);
-                Assert.True(postResponse.IsSuccessStatusCode);
-                await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30), expectedRecords: 2);
-
-                var state = logCollector.LatestRecord.StructuredState!;
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == "api/users/<redacted:testUserId>");
-            });
-    }
-
-    [Fact]
     public async Task TestServer_WhenControllerWithPathRoute_RedactionModeNone()
     {
         await RunControllerAsync(

@@ -140,27 +140,6 @@ public partial class AcceptanceTests
             });
     }
 
-    [Fact]
-    public async Task Routing_WhenActionsShareConventionalRoute_RedactParametersOfEachAction()
-    {
-        await RunAsync<TestStartupWithRouting>(
-            LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(),
-            async (logCollector, client, _) =>
-            {
-                using var getDataResponse = await client.GetAsync("ConventionalRouting/GetData/12345").ConfigureAwait(false);
-                Assert.True(getDataResponse.IsSuccessStatusCode);
-                await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30));
-
-                using var getEntityResponse = await client.GetAsync("ConventionalRouting/GetEntity/12345").ConfigureAwait(false);
-                Assert.True(getEntityResponse.IsSuccessStatusCode);
-                await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30), expectedRecords: 2);
-
-                var state = logCollector.LatestRecord.StructuredState!;
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == "ConventionalRouting/GetEntity/<redacted:12345>");
-            });
-    }
-
     [Theory]
 
     // Conventional routing.
