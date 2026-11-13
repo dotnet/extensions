@@ -51,3 +51,7 @@ For a comprehensive tour of all the functionality, concepts and APIs available i
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
+
+## Supported Platforms
+
+This package includes .NET Framework compatible targets, but is not officially supported on .NET Framework.
