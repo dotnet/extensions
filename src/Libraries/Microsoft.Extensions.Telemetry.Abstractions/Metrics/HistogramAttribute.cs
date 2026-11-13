@@ -89,4 +89,30 @@ public sealed class HistogramAttribute : Attribute
     /// </summary>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public string? Description { get; set; }
+
+#if NET10_0_OR_GREATER
+    /// <summary>
+    /// Gets or sets the bucket boundaries the histogram advises collectors to use, as
+    /// <see cref="System.Diagnostics.Metrics.InstrumentAdvice{T}.HistogramBucketBoundaries"/>.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    ///   <item>The values must be distinct and in increasing order.</item>
+    ///   <item>An empty array advises a histogram with no buckets, which tracks only the count and the sum.</item>
+    ///   <item><see langword="null"/>, the default, leaves the buckets to the collector.</item>
+    ///   <item>Available only when targeting .NET 10 or later.</item>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// static partial class Metric
+    /// {
+    ///     [Histogram("RequestName", Unit = "ms", HistogramBucketBoundaries = [10, 50, 100, 500, 1000, 5000])]
+    ///     static partial RequestDuration CreateRequestDuration(Meter meter);
+    /// }
+    /// </code>
+    /// </example>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public long[]? HistogramBucketBoundaries { get; set; }
+#endif
 }

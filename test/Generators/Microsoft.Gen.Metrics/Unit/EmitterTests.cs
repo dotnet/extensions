@@ -26,6 +26,13 @@ public class EmitterTests
             sources.Add(File.ReadAllText(file));
         }
 
+        // The golden files come from the Generated project, which compiles MetricsWithBucketBoundaries only on .NET 10 and later.
+#if NET10_0_OR_GREATER
+        string[] preprocessorSymbols = ["NET10_0_OR_GREATER"];
+#else
+        string[] preprocessorSymbols = [];
+#endif
+
         var (d, r) = await RoslynTestUtils.RunGenerator(
             new MetricsGenerator(),
             new[]
@@ -38,7 +45,8 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(GaugeAttribute))!,
                 Assembly.GetAssembly(typeof(GaugeAttribute<>))!,
             },
-            sources)
+            sources,
+            preprocessorSymbols)
 ;
 
         Assert.Empty(d);
@@ -285,7 +293,46 @@ public class EmitterTests
         Assert.Contains("_meter.CreateGauge<long>(@\"MyStrongTypeGauge\", null, \"Strongly-typed gauge description.\");", factory);
     }
 
+    [Fact]
+    public void EmitFactory_WithBucketBoundaries_PassesThemAsAdvice()
+    {
+        var result = EmitFactory(InstrumentKind.HistogramT, unit: "s", description: "Some description.", "double", 0.005, 0.1, 1d, 10d);
+
+        Assert.Contains("var instrument = _meter.CreateHistogram<double>(@\"TestMetric\", @\"s\", \"Some description.\", tags: null,", result);
+        Assert.Contains(
+            "advice: new global::System.Diagnostics.Metrics.InstrumentAdvice<double> { HistogramBucketBoundaries = new double[] { 0.005D, 0.1D, 1D, 10D } });",
+            result);
+    }
+
+    [Theory]
+    [InlineData("double", "new double[] { double.NegativeInfinity, -0.5D, 1E-05D, 1E+20D, double.PositiveInfinity }",
+        double.NegativeInfinity, -0.5, 1E-05, 1E+20, double.PositiveInfinity)]
+    [InlineData("float", "new float[] { float.NegativeInfinity, 0.1F, 2.5F, float.PositiveInfinity }",
+        float.NegativeInfinity, 0.1f, 2.5f, float.PositiveInfinity)]
+    [InlineData("long", "new long[] { -9223372036854775808L, 0L, 9000000000L }", long.MinValue, 0L, 9_000_000_000L)]
+    [InlineData("int", "new int[] { -5, 100 }", -5, 100)]
+    [InlineData("short", "new short[] { -5, 100 }", (short)-5, (short)100)]
+    [InlineData("byte", "new byte[] { 1, 255 }", (byte)1, (byte)255)]
+    [InlineData("double", "global::System.Array.Empty<double>()")]
+    public void EmitFactory_WritesEachBucketBoundaryAsALiteralOfItsType(string genericType, string expected, params object[] bucketBoundaries)
+    {
+        var result = EmitFactory(InstrumentKind.HistogramT, unit: null, description: null, genericType, bucketBoundaries);
+
+        Assert.Contains($"var instrument = _meter.CreateHistogram<{genericType}>(@\"TestMetric\", null, null, tags: null,", result);
+        Assert.Contains($"{{ HistogramBucketBoundaries = {expected} }});", result);
+    }
+
+    [Fact]
+    public void EmitFactory_GivenBucketBoundaryTypeIsUnknown_ThrowsNotSupportedException()
+    {
+        Assert.Throws<NotSupportedException>(() => EmitFactory(InstrumentKind.HistogramT, unit: null, description: null, "decimal", 1m));
+    }
+
     private static string EmitFactory(InstrumentKind instrumentKind, string? unit, string? description)
+        => EmitFactory(instrumentKind, unit, description, "long", bucketBoundaries: null);
+
+    private static string EmitFactory(InstrumentKind instrumentKind, string? unit, string? description, string genericType,
+        params object[]? bucketBoundaries)
     {
         var metricClass = new MetricType
         {
@@ -300,8 +347,9 @@ public class EmitterTests
                     MetricTypeName = "TestMetric",
                     MetricUnit = unit,
                     MetricDescription = description,
+                    HistogramBucketBoundaries = bucketBoundaries,
                     InstrumentKind = instrumentKind,
-                    GenericType = "long",
+                    GenericType = genericType,
                     IsExtensionMethod = false,
                     Modifiers = "static partial",
                     MetricTypeModifiers = "public static partial",

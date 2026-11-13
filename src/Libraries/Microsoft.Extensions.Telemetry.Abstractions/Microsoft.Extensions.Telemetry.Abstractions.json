@@ -268,6 +268,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "long[]? Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute.HistogramBucketBoundaries { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "string? Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute.Name { get; set; }",
           "Stage": "Stable"
         },
@@ -301,6 +305,10 @@
       "Properties": [
         {
           "Member": "string? Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute<T>.Description { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T[]? Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute<T>.HistogramBucketBoundaries { get; set; }",
           "Stage": "Experimental"
         },
         {

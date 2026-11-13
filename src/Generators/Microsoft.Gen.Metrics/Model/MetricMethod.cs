@@ -14,6 +14,7 @@ internal sealed class MetricMethod
     public string? MetricName;
     public string? MetricUnit;
     public string? MetricDescription;
+    public IReadOnlyList<object>? HistogramBucketBoundaries; // Boxed values of GenericType, distinct, in increasing order and not NaN
     public string? XmlDefinition;
     public bool IsExtensionMethod;
     public string Modifiers = string.Empty;

@@ -153,6 +153,7 @@ internal static class DiagnosticIds
         internal const string METGEN017 = nameof(METGEN017);
         internal const string METGEN018 = nameof(METGEN018);
         internal const string METGEN019 = nameof(METGEN019);
+        internal const string METGEN020 = nameof(METGEN020);
     }
 
     internal static class AuditReports

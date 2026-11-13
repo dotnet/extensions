@@ -272,6 +272,41 @@ internal sealed class Parser
         return (InstrumentKind.None, null);
     }
 
+    private static bool TryGetHistogramBucketBoundaries(AttributeData attribute, out IComparable[] bucketBoundaries)
+    {
+        if (!attribute.NamedArguments.IsDefaultOrEmpty)
+        {
+            foreach (var arg in attribute.NamedArguments)
+            {
+                if (arg.Key == "HistogramBucketBoundaries" && arg.Value.Kind == TypedConstantKind.Array && !arg.Value.IsNull)
+                {
+                    // The compiler has converted each value to the histogram's type, so they all compare with each other.
+                    bucketBoundaries = arg.Value.Values.Select(static value => value.Value).OfType<IComparable>().ToArray();
+                    return true;
+                }
+            }
+        }
+
+        bucketBoundaries = [];
+        return false;
+    }
+
+    // InstrumentAdvice<T> requires distinct, increasing values, and would throw when the instrument is created. It lets NaN
+    // through, as NaN sorts below every number, but no value is ever at or below NaN, so its bucket would always be empty.
+    private static bool AreStrictlyIncreasingNumbers(IComparable[] bucketBoundaries)
+    {
+        for (int i = 0; i < bucketBoundaries.Length; i++)
+        {
+            if (bucketBoundaries[i] is double.NaN or float.NaN
+                || (i > 0 && bucketBoundaries[i - 1].CompareTo(bucketBoundaries[i]) >= 0))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static bool TryGetTagNameFromAttribute(ISymbol symbol, SymbolHolder symbols, out string tagName)
     {
         var attributeData = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagNameAttribute, symbol);
@@ -548,6 +583,19 @@ internal sealed class Parser
         {
             Diag(DiagDescriptors.ErrorInvalidTagNames, methodSymbol.GetLocation());
             keepMethod = false;
+        }
+
+        if (TryGetHistogramBucketBoundaries(methodAttribute, out var bucketBoundaries))
+        {
+            if (!AreStrictlyIncreasingNumbers(bucketBoundaries))
+            {
+                Diag(DiagDescriptors.ErrorInvalidHistogramBucketBoundaries, methodSymbol.GetLocation(), methodSymbol.Name);
+                keepMethod = false;
+            }
+            else
+            {
+                metricMethod.HistogramBucketBoundaries = bucketBoundaries;
+            }
         }
 
         bool isFirstParam = true;

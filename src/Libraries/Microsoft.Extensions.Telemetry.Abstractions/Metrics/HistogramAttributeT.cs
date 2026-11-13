@@ -96,4 +96,31 @@ public sealed class HistogramAttribute<T> : Attribute
     /// </summary>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public string? Description { get; set; }
+
+#if NET10_0_OR_GREATER
+    /// <summary>
+    /// Gets or sets the bucket boundaries the histogram advises collectors to use, as
+    /// <see cref="System.Diagnostics.Metrics.InstrumentAdvice{T}.HistogramBucketBoundaries"/>.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    ///   <item>The values must be distinct, in increasing order and not NaN.</item>
+    ///   <item>An empty array advises a histogram with no buckets, which tracks only the count and the sum.</item>
+    ///   <item><see langword="null"/>, the default, leaves the buckets to the collector.</item>
+    ///   <item>Available only when targeting .NET 10 or later.</item>
+    ///   <item>Not available when <typeparamref name="T"/> is <see cref="decimal"/>, which attribute arguments can't hold.</item>
+    /// </list>
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// static partial class Metric
+    /// {
+    ///     [Histogram&lt;double&gt;("RequestName", Unit = "s", HistogramBucketBoundaries = [0.01, 0.05, 0.1, 0.5, 1, 5, 10])]
+    ///     static partial RequestDuration CreateRequestDuration(Meter meter);
+    /// }
+    /// </code>
+    /// </example>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public T[]? HistogramBucketBoundaries { get; set; }
+#endif
 }

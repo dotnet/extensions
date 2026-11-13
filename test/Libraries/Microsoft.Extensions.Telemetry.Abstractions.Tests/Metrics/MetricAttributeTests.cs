@@ -86,6 +86,28 @@ public class MetricAttributeTests
         Assert.Equal(MyDescription, attribute.Description);
     }
 
+#if NET10_0_OR_GREATER
+    [Fact]
+    public void TestHistogramAttributeBucketBoundaries()
+    {
+        var attribute = new HistogramAttribute("d1");
+        Assert.Null(attribute.HistogramBucketBoundaries);
+
+        attribute.HistogramBucketBoundaries = [10, 50, 100];
+        Assert.Equal([10, 50, 100], attribute.HistogramBucketBoundaries);
+    }
+
+    [Fact]
+    public void TestHistogramAttributeTBucketBoundaries()
+    {
+        var attribute = new HistogramAttribute<int>("d1");
+        Assert.Null(attribute.HistogramBucketBoundaries);
+
+        attribute.HistogramBucketBoundaries = [10, 50, 100];
+        Assert.Equal([10, 50, 100], attribute.HistogramBucketBoundaries);
+    }
+#endif
+
     [Fact]
     public void TestGaugeAttribute()
     {
