@@ -5,6 +5,7 @@ using System;
 using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,14 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AITextToSpeech, UrlFormat = DiagnosticIds.UrlFormat)]
 internal sealed class OpenAITextToSpeechClient : ITextToSpeechClient
 {
+    private static readonly Func<AudioClient, string, GeneratedSpeechVoice, SpeechGenerationOptions, CancellationToken, object> _generateSpeechStreamingAsync =
+        (Func<AudioClient, string, GeneratedSpeechVoice, SpeechGenerationOptions, CancellationToken, object>?)
+        typeof(AudioClient).GetMethod(
+            nameof(AudioClient.GenerateSpeechStreamingAsync), BindingFlags.Public | BindingFlags.Instance,
+            null, [typeof(string), typeof(GeneratedSpeechVoice), typeof(SpeechGenerationOptions), typeof(CancellationToken)], null)
+        ?.CreateDelegate(typeof(Func<AudioClient, string, GeneratedSpeechVoice, SpeechGenerationOptions, CancellationToken, object>)) ??
+        throw new MissingMethodException(typeof(AudioClient).FullName, nameof(AudioClient.GenerateSpeechStreamingAsync));
+
     /// <summary>Default voice to use when none is specified.</summary>
     private const string DefaultVoice = "alloy";
 
@@ -85,14 +94,16 @@ internal sealed class OpenAITextToSpeechClient : ITextToSpeechClient
         SpeechGenerationOptions openAIOptions = ToOpenAISpeechOptions(options);
         string mediaType = GetMediaType(openAIOptions.ResponseFormat);
 
-        AsyncCollectionResult<StreamingSpeechUpdate>? streamingResult = null;
+        IAsyncEnumerable<StreamingSpeechUpdate>? streamingResult = null;
         try
         {
-            streamingResult = _audioClient.GenerateSpeechStreamingAsync(
+            object result = _generateSpeechStreamingAsync(
+                _audioClient,
                 text,
                 new GeneratedSpeechVoice(options?.VoiceId ?? DefaultVoice),
                 openAIOptions,
                 cancellationToken);
+            streamingResult = await OpenAIStreamingHelpers.GetAsyncEnumerableAsync<StreamingSpeechUpdate>(result).ConfigureAwait(false);
         }
         catch (NotSupportedException)
         {

@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +26,14 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AISpeechToText, UrlFormat = DiagnosticIds.UrlFormat)]
 internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
 {
+    private static readonly Func<AudioClient, Stream, string, AudioTranscriptionOptions, CancellationToken, object> _transcribeAudioStreamingAsync =
+        (Func<AudioClient, Stream, string, AudioTranscriptionOptions, CancellationToken, object>?)
+        typeof(AudioClient).GetMethod(
+            nameof(AudioClient.TranscribeAudioStreamingAsync), BindingFlags.Public | BindingFlags.Instance,
+            null, [typeof(Stream), typeof(string), typeof(AudioTranscriptionOptions), typeof(CancellationToken)], null)
+        ?.CreateDelegate(typeof(Func<AudioClient, Stream, string, AudioTranscriptionOptions, CancellationToken, object>)) ??
+        throw new MissingMethodException(typeof(AudioClient).FullName, nameof(AudioClient.TranscribeAudioStreamingAsync));
+
     /// <summary>Metadata about the client.</summary>
     private readonly SpeechToTextClientMetadata _metadata;
 
@@ -125,11 +135,14 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         }
         else
         {
-            await foreach (var update in _audioClient.TranscribeAudioStreamingAsync(
+            object streamingResult = _transcribeAudioStreamingAsync(
+                _audioClient,
                 audioSpeechStream,
                 filename,
                 ToOpenAITranscriptionOptions(options),
-                cancellationToken).ConfigureAwait(false))
+                cancellationToken);
+
+            await foreach (var update in (await OpenAIStreamingHelpers.GetAsyncEnumerableAsync<StreamingAudioTranscriptionUpdate>(streamingResult).ConfigureAwait(false)).ConfigureAwait(false))
             {
                 SpeechToTextResponseUpdate result = new()
                 {
