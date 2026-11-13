@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
@@ -57,6 +59,42 @@ internal sealed class MetricFactoryEmitter : EmitterBase
 
     private static string GetMetricDictionaryName(MetricMethod metricMethod)
         => $"_{GetStringWithFirstCharLowercase(metricMethod.MetricTypeName)}Instruments";
+
+    private static string FormatBucketBoundaries(string type, IReadOnlyList<object> bucketBoundaries)
+        => bucketBoundaries.Count == 0
+            ? $"global::System.Array.Empty<{type}>()"
+            : $"new {type}[] {{ {string.Join(", ", bucketBoundaries.Select(FormatBucketBoundary))} }}";
+
+    // A literal of the boundary's own type that compiles back to exactly the same value. An int, short or byte constant
+    // converts to the array's type implicitly.
+    [SuppressMessage("Performance", "LA0002:Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance", Justification = "Can't use that in a generator")]
+    private static string FormatBucketBoundary(object value) => value switch
+    {
+        double.PositiveInfinity => "double.PositiveInfinity",
+        double.NegativeInfinity => "double.NegativeInfinity",
+        double d => RoundTrip(d) + "D",
+        float.PositiveInfinity => "float.PositiveInfinity",
+        float.NegativeInfinity => "float.NegativeInfinity",
+        float f => RoundTrip(f) + "F",
+        long l => l.ToString(CultureInfo.InvariantCulture) + "L",
+        int i => i.ToString(CultureInfo.InvariantCulture),
+        short s => s.ToString(CultureInfo.InvariantCulture),
+        byte b => b.ToString(CultureInfo.InvariantCulture),
+        _ => throw new NotSupportedException($"Bucket boundary type '{value.GetType()}' is not supported"),
+    };
+
+    // "R" doesn't always round-trip on .NET Framework, where Visual Studio may run the generator; "G17" and "G9" always do.
+    private static string RoundTrip(double value)
+    {
+        var text = value.ToString("R", CultureInfo.InvariantCulture);
+        return double.Parse(text, CultureInfo.InvariantCulture).Equals(value) ? text : value.ToString("G17", CultureInfo.InvariantCulture);
+    }
+
+    private static string RoundTrip(float value)
+    {
+        var text = value.ToString("R", CultureInfo.InvariantCulture);
+        return float.Parse(text, CultureInfo.InvariantCulture).Equals(value) ? text : value.ToString("G9", CultureInfo.InvariantCulture);
+    }
 
     private void GenMetricFactoryByNamespace(string nspace, IEnumerable<MetricType> metricClasses, CancellationToken cancellationToken)
     {
@@ -149,9 +187,16 @@ internal sealed class MetricFactoryEmitter : EmitterBase
         OutOpenBrace();
         OutLn($"return {GetMetricDictionaryName(metricMethod)}.GetOrAdd({meterParam.Name}, static _meter =>");
         OutLn("    {");
-        if (metricMethod.MetricDescription is { Length: > 0 } description)
+        var unit = string.IsNullOrEmpty(metricMethod.MetricUnit) ? "null" : $"@\"{metricMethod.MetricUnit}\"";
+        if (metricMethod.HistogramBucketBoundaries is { } bucketBoundaries)
         {
-            var unit = string.IsNullOrEmpty(metricMethod.MetricUnit) ? "null" : $"@\"{metricMethod.MetricUnit}\"";
+            var description = metricMethod.MetricDescription is { Length: > 0 } text ? SymbolDisplay.FormatLiteral(text, quote: true) : "null";
+            var boundaries = FormatBucketBoundaries(metricMethod.GenericType, bucketBoundaries);
+            OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\", {unit}, {description}, tags: null,");
+            OutLn($"            advice: new global::System.Diagnostics.Metrics.InstrumentAdvice<{metricMethod.GenericType}> {{ HistogramBucketBoundaries = {boundaries} }});");
+        }
+        else if (metricMethod.MetricDescription is { Length: > 0 } description)
+        {
             OutLn($"        var instrument = _meter.{createMethodName}(@\"{metricMethod.MetricName}\", {unit}, {SymbolDisplay.FormatLiteral(description, quote: true)});");
         }
         else if (string.IsNullOrEmpty(metricMethod.MetricUnit))

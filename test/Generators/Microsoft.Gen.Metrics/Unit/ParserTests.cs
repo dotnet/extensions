@@ -827,6 +827,47 @@ public partial class ParserTests
         Assert.Empty(d);
     }
 
+#if NET10_0_OR_GREATER
+    [Fact]
+    public async Task HistogramBucketBoundariesParameterTest()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                [Histogram(""d1"", HistogramBucketBoundaries = new long[] { 10, 50, 100 })]
+                static partial MyHistogram CreateHistogram(Meter meter);
+
+                [Histogram<double>(Unit = ""s"", HistogramBucketBoundaries = new[] { 0.005, 0.5, 5 })]
+                static partial MyGenericHistogram CreateGenericHistogram(Meter meter);
+
+                [Histogram<int>(HistogramBucketBoundaries = new int[0])]
+                static partial MyHistogramWithoutBuckets CreateHistogramWithoutBuckets(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Theory]
+    [InlineData("Histogram", "new long[] { 10, 5 }")]
+    [InlineData("Histogram", "new long[] { 10, 10 }")]
+    [InlineData("Histogram<double>", "new[] { 0.5, 0.25 }")]
+    [InlineData("Histogram<double>", "new[] { double.NaN, double.NaN }")]
+    [InlineData("Histogram<double>", "new[] { double.NaN, 1 }")]
+    [InlineData("Histogram<float>", "new[] { float.NaN }")]
+    public async Task InvalidHistogramBucketBoundaries(string attribute, string bucketBoundaries)
+    {
+        var d = await RunGenerator(@$"
+            partial class C
+            {{
+                [{attribute}(HistogramBucketBoundaries = {bucketBoundaries})]
+                static partial MyHistogram CreateHistogram(Meter meter);
+            }}");
+
+        var diagnostic = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorInvalidHistogramBucketBoundaries.Id, diagnostic.Id);
+    }
+#endif
+
     [Fact]
     public async Task StrongTypeGauge_CyclicReference()
     {
