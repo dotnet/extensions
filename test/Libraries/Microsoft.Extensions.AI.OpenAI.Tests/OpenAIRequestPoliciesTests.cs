@@ -99,6 +99,25 @@ public class OpenAIRequestPoliciesTests
     }
 
     [Fact]
+    public async Task AddPolicy_ResponseStreaming_CustomUserAgentIsApplied()
+    {
+        using var handler = new CapturingUserAgentHandler();
+        using var http = new HttpClient(handler);
+        OpenAIClientOptions options = new() { Transport = new HttpClientPipelineTransport(http) };
+        using IChatClient client = new OpenAIClient(new ApiKeyCredential("k"), options).GetResponsesClient().AsIChatClient("gpt-4o-mini");
+
+        client.GetService<OpenAIRequestPolicies>()!.AddPolicy(new SetUserAgentPolicy("my-sdk/1.0"));
+
+        InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await client.GetStreamingResponseAsync("hi").ToChatResponseAsync();
+        });
+
+        Assert.Equal("captured", exception.Message);
+        Assert.Equal("my-sdk/1.0", handler.CapturedUserAgent);
+    }
+
+    [Fact]
     public async Task AddPolicy_CustomHeaderAdd_StacksWithMeaiUserAgent()
     {
         using var handler = new CapturingUserAgentHandler();
