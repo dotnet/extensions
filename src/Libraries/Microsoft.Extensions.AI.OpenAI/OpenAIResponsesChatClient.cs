@@ -1364,7 +1364,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                             (parts ??= []).Add(ResponseContentPart.CreateInputImagePart(uriContent.Uri, GetImageDetail(item)));
                             break;
 
-                        case UriContent uriContent when uriContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
+                        case UriContent uriContent:
                             (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(uriContent.Uri));
                             break;
 
@@ -1374,6 +1374,10 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         case DataContent dataContent when dataContent.MediaType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase):
                             (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data, dataContent.MediaType), dataContent.MediaType, dataContent.Name ?? $"{Guid.NewGuid():N}.pdf"));
+                            break;
+
+                        case DataContent dataContent:
+                            (parts ??= []).Add(ResponseContentPart.CreateInputFilePart(BinaryData.FromBytes(dataContent.Data, dataContent.MediaType), dataContent.MediaType, dataContent.Name ?? $"file_{Guid.NewGuid():N}"));
                             break;
 
                         case HostedFileContent fileContent when fileContent.HasTopLevelMediaType("image"):
