@@ -212,6 +212,7 @@ public class StampedeTests : IClassFixture<TestEventListener>
 
         using var scope = GetDefaultCache(out var cache);
         using var semaphore = new SemaphoreSlim(0);
+        var factoryCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         int executeCount = 0;
         int cancelCount = 0;
@@ -236,22 +237,18 @@ public class StampedeTests : IClassFixture<TestEventListener>
                 }
                 finally
                 {
-                    semaphore.Release(); // handshake so we can check when available again
+                    factoryCompleted.SetResult(true);
                 }
             }, cancellationToken: cancels[i].Token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
 
-        // everyone is queued up; release the hounds and check
-        // that we all got the same result
+        // Cancel callers while the shared factory remains blocked.
         foreach (var cancel in cancels)
         {
             cancel.Cancel();
         }
-
-        // allow the shared underlying task time to enter its semaphore wait
-        await Task.Delay(500);
 
         for (var i = 0; i < callerCount; i++)
         {
@@ -267,11 +264,8 @@ public class StampedeTests : IClassFixture<TestEventListener>
         Assert.Equal(0, Volatile.Read(ref executeCount));
         semaphore.Release();
 
-        // wait for underlying task to hand back to us
-        if (!await semaphore.WaitAsync(5_000))
-        {
-            throw new TimeoutException("Didn't get handshake back from task");
-        }
+        // A separate completion signal prevents the test from consuming the factory's release.
+        await WaitForCompletionAsync(factoryCompleted.Task, 5_000);
 
         Assert.Equal(1, Volatile.Read(ref executeCount));
         Assert.Equal(1, Volatile.Read(ref cancelCount));
@@ -287,12 +281,12 @@ public class StampedeTests : IClassFixture<TestEventListener>
     {
         Assert.True(callerCount >= 2); // "most" is not "one"
 
-        // what we want to prove here is that everyone ends up cancelling promptly by
-        // *their own* cancellation (not dependent on the shared task), and that
-        // the shared task becomes cancelled (which can be later)
+        // Each canceled caller must finish independently while the shared task
+        // remains active for the remaining caller.
 
         using var scope = GetDefaultCache(out var cache);
         using var semaphore = new SemaphoreSlim(0);
+        var factoryCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         int executeCount = 0;
         int cancelCount = 0;
@@ -317,15 +311,14 @@ public class StampedeTests : IClassFixture<TestEventListener>
                 }
                 finally
                 {
-                    semaphore.Release(); // handshake so we can check when available again
+                    factoryCompleted.SetResult(true);
                 }
             }, cancellationToken: cancels[i].Token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
 
-        // everyone is queued up; release the hounds and check
-        // that we all got the same result
+        // Cancel callers while the shared factory remains blocked.
         for (var i = 0; i < callerCount; i++)
         {
             if (i != remaining)
@@ -333,9 +326,6 @@ public class StampedeTests : IClassFixture<TestEventListener>
                 cancels[i].Cancel();
             }
         }
-
-        // allow the shared underlying task time to enter its semaphore wait
-        await Task.Delay(500);
 
         for (var i = 0; i < callerCount; i++)
         {
@@ -352,13 +342,10 @@ public class StampedeTests : IClassFixture<TestEventListener>
         }
 
         Assert.Equal(0, Volatile.Read(ref executeCount));
+        Assert.False(results[remaining].IsCompleted);
         semaphore.Release();
 
-        // wait for underlying task to hand back to us
-        if (!await semaphore.WaitAsync(5_000))
-        {
-            throw new TimeoutException("Didn't get handshake back from task");
-        }
+        await WaitForCompletionAsync(factoryCompleted.Task, 5_000);
 
         Assert.Equal(1, Volatile.Read(ref executeCount));
         Assert.Equal(0, Volatile.Read(ref cancelCount)); // ran to completion
