@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import React, { useEffect } from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ReportContextProvider, createScoreSummary, getConversationDisplay, TranscriptBlock } from '../components';
-import { toolCallDataset, toolCallScenario } from './fixtures/richDataset';
+import { ReportContextProvider, createScoreSummary, getConversationDisplay, TranscriptBlock, useReportContext } from '../components';
+import { singleExecutionDataset, toolCallDataset, toolCallScenario, twoExecutionDataset } from './fixtures/richDataset';
 
 const renderTranscript = (messages: ChatMessage[], modelResponse?: ChatResponse) => {
     const scoreSummary = createScoreSummary(toolCallDataset);
@@ -124,5 +125,60 @@ describe('TranscriptBlock — image content renders as <img> with derived alt te
 
         const img = screen.getByRole('img', { name: 'Image shared by the assistant' });
         expect(img).toHaveAttribute('src', dataUri);
+    });
+});
+
+describe('TranscriptBlock — empty transcript message', () => {
+    const NOT_KEPT = 'Transcript not kept for this execution. Reports only keep transcripts for the latest execution (exec-v1).';
+    const NO_TRANSCRIPT = 'No transcript for this case.';
+
+    const ExecSetter = ({ exec, children }: { exec?: string; children: React.ReactNode }) => {
+        const { setExec } = useReportContext();
+        useEffect(() => {
+            if (exec !== undefined) setExec(exec);
+        }, [exec, setExec]);
+        return <>{children}</>;
+    };
+
+    const renderEmpty = (dataset: Dataset, exec?: string, messages: ChatMessage[] = []) => {
+        const { messages: display } = getConversationDisplay(messages, { messages: [] });
+        return render(
+            <ReportContextProvider dataset={dataset} scoreSummary={createScoreSummary(dataset)}>
+                <ExecSetter exec={exec}>
+                    <TranscriptBlock messages={display} />
+                </ExecSetter>
+            </ReportContextProvider>,
+        );
+    };
+
+    it('says the transcript was not kept when an older execution is selected', async () => {
+        renderEmpty(twoExecutionDataset, 'exec-v2');
+
+        expect(await screen.findByText(NOT_KEPT)).toBeInTheDocument();
+        expect(screen.queryByText(NO_TRANSCRIPT)).not.toBeInTheDocument();
+    });
+
+    it('keeps the generic message for the latest execution', () => {
+        renderEmpty(twoExecutionDataset);
+
+        expect(screen.getByText(NO_TRANSCRIPT)).toBeInTheDocument();
+        expect(screen.queryByText(/not kept/)).not.toBeInTheDocument();
+    });
+
+    it('keeps the generic message when the report has a single execution', () => {
+        renderEmpty(singleExecutionDataset);
+
+        expect(screen.getByText(NO_TRANSCRIPT)).toBeInTheDocument();
+        expect(screen.queryByText(/not kept/)).not.toBeInTheDocument();
+    });
+
+    it('still renders the transcript of an older execution when it has one', async () => {
+        renderEmpty(twoExecutionDataset, 'exec-v2', [
+            { role: 'user', contents: [{ $type: 'text', text: 'Older execution question' } as unknown as AIContent] },
+        ]);
+
+        expect(await screen.findByText(/Older execution question/)).toBeInTheDocument();
+        expect(screen.queryByText(/not kept/)).not.toBeInTheDocument();
+        expect(screen.queryByText(NO_TRANSCRIPT)).not.toBeInTheDocument();
     });
 });
