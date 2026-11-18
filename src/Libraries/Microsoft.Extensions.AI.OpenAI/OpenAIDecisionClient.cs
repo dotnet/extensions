@@ -81,9 +81,7 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
             throw new DecisionClientException(ex.Message, isTransient: IsTransient(ex.Status), ex);
         }
 
-        DecisionResponse response = FromOpenAIDecision(request, result.Value);
-        response.Validate(request);
-        return response;
+        return FromOpenAIDecision(request, result.Value);
     }
 
     /// <inheritdoc />

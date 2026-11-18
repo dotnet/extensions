@@ -295,6 +295,7 @@ public class OpenAIDecisionClientTests
     [Theory]
     [InlineData("""{ "answers": [] }""")]
     [InlineData("""{ "answers": [ { "type": "predicate", "name": "other", "probability": 0.5 } ] }""")]
+    [InlineData("""{ "answers": [ { "type": "predicate", "name": "q", "probability": 0.5 }, { "type": "predicate", "name": "other", "probability": 0.5 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "predicate", "probability": 0.5 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "predicate", "name": "q", "probability": 0.5 }, { "type": "predicate", "name": "q", "probability": 0.5 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "a", "probabilities": [ { "value": "a", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
