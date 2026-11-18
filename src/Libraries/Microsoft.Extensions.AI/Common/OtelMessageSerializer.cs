@@ -257,8 +257,7 @@ internal static class OtelMessageSerializer
 
     /// <summary>Derives the OTel <c>modality</c> classifier from a media type's top-level type.</summary>
     /// <remarks>
-    /// The modality is required by the OTel schema, so an empty string is returned when it can't be derived,
-    /// matching OTel's Python GenAI instrumentations.
+    /// The modality is required by the OTel schema, so an empty string is returned when a modality cannot be derived.
     /// </remarks>
     internal static string DeriveModalityFromMediaType(string? mediaType)
     {
