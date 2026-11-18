@@ -1,0 +1,125 @@
+# Experimental typed decision APIs
+
+`Microsoft.Extensions.AI` builds on the `IDecisionClient` abstraction from `Microsoft.Extensions.AI.Abstractions` with typed APIs that declare decision questions from a .NET result type and bind provider answers back to it. See the [decision abstractions overview](../../Microsoft.Extensions.AI.Abstractions/Decisions/README.md) for questions, inputs, answers, and provider guidance.
+
+## Typed definitions
+
+A `DecisionDefinition<TResult>` declares one question per bound result property. Question IDs come from the JSON property names of `TResult`, and instructions default to the property's `[Description]` or name:
+
+```csharp
+#pragma warning disable MEAI001
+
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.AI;
+
+DecisionDefinition<TicketDecision> definition = DecisionDefinition<TicketDecision>.Create(
+    builder =>
+    {
+        builder.Choice(result => result.Category);
+        builder.BinaryProbability(result => result.RefundProbability, "Is the customer asking for a refund?");
+        builder.ExpectedScore(result => result.Urgency,
+        [
+            new("low", "Can wait for normal processing."),
+            new("medium", "Should be handled today."),
+            new("high", "Needs immediate attention."),
+        ]);
+    },
+    TicketJsonContext.Default.Options);
+
+public sealed record TicketDecision(
+    [property: Description("Classify the customer's main concern.")] TicketCategory Category,
+    double RefundProbability,
+    double Urgency);
+
+[JsonConverter(typeof(JsonStringEnumConverter<TicketCategory>))]
+public enum TicketCategory
+{
+    [Description("Payment, invoice, or charge concerns.")] Billing,
+    [Description("Product defects, errors, or outages.")] Technical,
+    [Description("Sign-in, profile, or account access.")] Account,
+}
+```
+
+| Builder method | Question | Bound value |
+| --- | --- | --- |
+| `Choice` | Choice over the enum's members, using their serialized names as candidate IDs and their `[Description]` or name as descriptions | The selected enum value |
+| `BinaryProbability` | Binary | `BinaryDecisionAnswer.TrueProbability` |
+| `Score` | Score over the supplied levels | `ScoreDecisionAnswer.Score`, which the provider must report |
+| `ExpectedScore` | Score over the supplied levels | `ScoreDecisionAnswer.ExpectedScore` |
+
+The definition uses the supplied `JsonSerializerOptions` to resolve the result contract, so it works with source-generated contexts and Native AOT.
+
+## Getting a typed response
+
+The typed `GetResponseAsync` overloads send the definition's questions, validate the response, and bind it to `TResult`. The input can be JSON state, ordered `AIContent` items, or both:
+
+```csharp
+DecisionResponse<TicketDecision> response = await client.GetResponseAsync(
+    ticket,
+    TicketJsonContext.Default.SupportTicket,
+    definition);
+
+DecisionResponse<TicketDecision> fromContents = await client.GetResponseAsync(
+    [new TextContent(ticketText), new DataContent(screenshotBytes, "image/png")],
+    definition);
+
+TicketDecision decision = response.Result;
+IReadOnlyDictionary<TicketCategory, double> categories = response.GetDistribution(result => result.Category);
+DecisionResponse untyped = response.Response;
+```
+
+`DecisionResponse<TResult>.Response` exposes the underlying `DecisionResponse`, including `ModelId`, `Usage`, and the raw answers. `GetDistribution` maps a choice question's distribution to enum values.
+
+## Unanswered questions
+
+When a provider returns an `UnansweredDecisionAnswer` for a question bound by the definition, the typed APIs throw `DecisionUnansweredException`. Its `QuestionIds` property lists the unanswered questions, and its `Response` property exposes the untyped response so that callers can still read the questions that were answered:
+
+```csharp
+try
+{
+    DecisionResponse<TicketDecision> response = await client.GetResponseAsync(ticket, TicketJsonContext.Default.SupportTicket, definition);
+}
+catch (DecisionUnansweredException ex)
+{
+    foreach (string questionId in ex.QuestionIds)
+    {
+        var unanswered = (UnansweredDecisionAnswer)ex.Response.GetAnswer(questionId)!;
+        Console.WriteLine($"{questionId}: {unanswered.Reason}");
+    }
+}
+```
+
+## Binding untyped responses
+
+To build a result from an untyped response, use `Bind` with a `DecisionAnswerSet`. A `DecisionEnumDefinition<TEnum>` maps candidate IDs to enum values. Only the answers that the mapping reads must be answered:
+
+```csharp
+DecisionEnumDefinition<TicketCategory> categories = new(
+[
+    new(TicketCategory.Billing, "billing", "Payment, invoice, or charge concerns."),
+    new(TicketCategory.Technical, "technical", "Product defects, errors, or outages."),
+    new(TicketCategory.Account, "account", "Sign-in, profile, or account access."),
+]);
+
+DecisionResponse response = await client.GetResponseAsync(
+    ticket,
+    TicketJsonContext.Default.SupportTicket,
+    [categories.CreateQuestion("category", "Classify the customer's main concern."), refundQuestion]);
+
+TicketTriage triage = response.Bind(answers => new TicketTriage(
+    answers.GetChoice("category", categories),
+    answers.GetBinary("refund").TrueProbability));
+```
+
+## Exposing a definition as a tool
+
+`AsAIFunction<TState>` exposes a definition as an `AIFunction` that accepts `TState` and returns `TResult`, so a chat model can request a decision through function calling:
+
+```csharp
+AIFunction evaluate = definition.AsAIFunction(
+    decisionClient,
+    stateTypeInfo: TicketJsonContext.Default.SupportTicket);
+```
+
+When the state and result contracts come from different source-generated contexts, the function combines their resolvers.
