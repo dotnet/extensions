@@ -251,14 +251,14 @@ public class DecisionTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_SerializesStateAndPassesContents()
+    public async Task GetDecisionAsync_SerializesStateAndPassesContents()
     {
         DecisionOptions options = new() { ModelId = "model" };
         DecisionResponse expected = CreateMixedResponse();
         using RecordingDecisionClient client = new(_ => expected);
         using CancellationTokenSource cts = new();
 
-        DecisionResponse response = await client.GetResponseAsync(
+        DecisionResponse response = await client.GetDecisionAsync(
             new TicketState("Refund", 3),
             TestJsonSerializerContext.Default.TicketState,
             CreateRequest().Questions,
@@ -306,7 +306,7 @@ public class DecisionTests
 
         public CancellationToken CancellationToken { get; private set; }
 
-        public Task<DecisionResponse> GetResponseAsync(
+        public Task<DecisionResponse> GetDecisionAsync(
             DecisionRequest request,
             DecisionOptions? options = null,
             CancellationToken cancellationToken = default)

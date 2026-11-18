@@ -12,26 +12,27 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Represents the inputs to evaluate and a nonempty, ordered batch of questions.</summary>
+/// <summary>Represents request-level inputs and a nonempty, ordered batch of questions evaluated against them.</summary>
 /// <remarks>
 /// <para>
-/// Every question is evaluated against the same inputs: the optional JSON <see cref="State"/> and the ordered
-/// <see cref="Contents"/>. At least one of them must be provided.
+/// <see cref="State"/> (optional JSON) and <see cref="Contents"/> (optional <see cref="AIContent"/> items) are both
+/// request-level inputs. They are shared by every question in <see cref="Questions"/>. At least one of them must be provided.
 /// </para>
 /// <para>
 /// <see cref="Contents"/> and question instructions and criteria may contain any <see cref="AIContent"/>.
-/// An <see cref="IDecisionClient"/> implementation must map every content item it can represent faithfully
-/// and must throw <see cref="NotSupportedException"/> for any item it cannot represent. It must never silently
-/// drop or alter content, because doing so changes the decision being requested.
+/// An <see cref="IDecisionClient"/> implementation maps the inputs it supports to the provider's input format
+/// and must throw <see cref="NotSupportedException"/> for any input it cannot represent, whether that is the
+/// <see cref="State"/> or a content item. It must never silently drop or alter an input, because doing so changes
+/// the decision being requested.
 /// </para>
 /// </remarks>
 [Experimental(DiagnosticIds.Experiments.AIDecisions, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class DecisionRequest
 {
     /// <summary>Initializes a new instance of the <see cref="DecisionRequest"/> class and snapshots its inputs and questions.</summary>
-    /// <param name="state">The optional JSON state evaluated by every question.</param>
+    /// <param name="state">The optional JSON state, a request-level input shared by every question.</param>
     /// <param name="questions">The ordered heterogeneous question batch.</param>
-    /// <param name="contents">The optional ordered content evaluated by every question.</param>
+    /// <param name="contents">The optional content, a request-level input shared by every question.</param>
     /// <exception cref="ArgumentException">
     /// Neither <paramref name="state"/> nor nonempty <paramref name="contents"/> were provided, <paramref name="questions"/> is empty,
     /// or question IDs are not unique.
@@ -71,11 +72,18 @@ public sealed class DecisionRequest
         Questions = Array.AsReadOnly(copy);
     }
 
-    /// <summary>Gets the owned JSON state snapshot, or <see langword="null"/> when the request has no state.</summary>
+    /// <summary>Gets the optional JSON state shared by every question in the request.</summary>
+    /// <remarks>
+    /// The value is an owned snapshot, or <see langword="null"/> when the request has no state.
+    /// An implementation that cannot represent the state throws <see cref="NotSupportedException"/>.
+    /// </remarks>
     public JsonElement? State { get; }
 
-    /// <summary>Gets the owned, ordered content snapshot.</summary>
-    /// <remarks>The list is empty when the request has no content.</remarks>
+    /// <summary>Gets the optional content shared by every question in the request.</summary>
+    /// <remarks>
+    /// The list is an owned snapshot and is empty when the request has no content.
+    /// An implementation throws <see cref="NotSupportedException"/> for any item it cannot represent.
+    /// </remarks>
     public IReadOnlyList<AIContent> Contents { get; }
 
     /// <summary>Gets the ordered, owned question snapshot.</summary>

@@ -38,7 +38,7 @@ public static class DecisionClientExtensions
     /// <param name="options">Optional per-request options.</param>
     /// <param name="cancellationToken">The cancellation token to monitor.</param>
     /// <returns>The response, with one answer per question in request order.</returns>
-    public static async Task<DecisionResponse> GetResponseAsync<TState>(
+    public static async Task<DecisionResponse> GetDecisionAsync<TState>(
         this IDecisionClient client,
         TState state,
         JsonTypeInfo<TState> stateTypeInfo,
@@ -56,6 +56,6 @@ public static class DecisionClientExtensions
             questions.ToArray(),
             contents?.ToArray());
 
-        return await client.GetResponseAsync(request, options, cancellationToken).ConfigureAwait(false);
+        return await client.GetDecisionAsync(request, options, cancellationToken).ConfigureAwait(false);
     }
 }

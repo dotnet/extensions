@@ -18,8 +18,9 @@ namespace Microsoft.Extensions.AI;
 /// the whole request or fabricating a value.
 /// </para>
 /// <para>
-/// An implementation must map every <see cref="AIContent"/> item in the request faithfully, or throw
-/// <see cref="NotSupportedException"/> for any item it cannot represent. It must never silently drop content.
+/// An implementation maps the request inputs it supports (<see cref="DecisionRequest.State"/> and the <see cref="AIContent"/>
+/// items in <see cref="DecisionRequest.Contents"/>) faithfully, and throws <see cref="NotSupportedException"/> for any input
+/// it cannot represent. It must never silently drop an input.
 /// When an item's <see cref="AIContent.RawRepresentation"/> is a provider-native input, implementations should pass it through.
 /// </para>
 /// </remarks>
@@ -31,7 +32,7 @@ public interface IDecisionClient : IDisposable
     /// <param name="options">Optional per-request options.</param>
     /// <param name="cancellationToken">The cancellation token to monitor.</param>
     /// <returns>A response containing one answer per question, in request order.</returns>
-    Task<DecisionResponse> GetResponseAsync(
+    Task<DecisionResponse> GetDecisionAsync(
         DecisionRequest request,
         DecisionOptions? options = null,
         CancellationToken cancellationToken = default);

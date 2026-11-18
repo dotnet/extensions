@@ -41,7 +41,7 @@ DecisionQuestion[] questions =
 
 ## Inputs
 
-A request evaluates every question against the same input, which consists of optional JSON state, optional ordered `AIContent` items, or both:
+A request has two optional inputs, and at least one must be provided: `State`, a JSON value, and `Contents`, a list of `AIContent` items. Both are request-level inputs shared by every question in the request:
 
 ```csharp
 using System.Text.Json;
@@ -51,20 +51,20 @@ DecisionRequest request = new(
     questions: questions,
     contents: [new DataContent(screenshotBytes, "image/png")]);
 
-DecisionResponse response = await client.GetResponseAsync(request);
+DecisionResponse response = await client.GetDecisionAsync(request);
 ```
 
-The `GetResponseAsync<TState>` extension serializes application state with a supplied `JsonTypeInfo<TState>` and sends the request:
+The `GetDecisionAsync<TState>` extension serializes application state with a supplied `JsonTypeInfo<TState>` and sends the request:
 
 ```csharp
-DecisionResponse response = await client.GetResponseAsync(
+DecisionResponse response = await client.GetDecisionAsync(
     ticket,
     TicketJsonContext.Default.SupportTicket,
     questions,
     contents: [new UriContent(screenshotUri, "image/png")]);
 ```
 
-Providers must map every content item faithfully or throw `NotSupportedException`. They must not silently drop content. A provider can recognize a provider-specific content item through `AIContent.RawRepresentation`.
+Providers map the inputs they support and throw `NotSupportedException` for any state or content item they can't represent. They must not silently drop input. A provider can recognize a provider-specific content item through `AIContent.RawRepresentation`.
 
 ## Answers
 
@@ -93,7 +93,7 @@ Probabilities are reported as observed by the provider. Each value is in [0, 1],
 
 An `IDecisionClient` implementation:
 
-- Maps instructions, criteria, and request contents to the provider's input format, and throws `NotSupportedException` for anything it can't represent.
+- Maps the request inputs (state and contents), instructions, and criteria to the provider's input format, and throws `NotSupportedException` for anything it can't represent.
 - Returns exactly one answer per question in request order, using `UnansweredDecisionAnswer` for questions that the provider declined to answer.
 - Reports distributions using the requested candidate and level IDs in request order.
 - Throws `DecisionClientException` for provider failures, setting `IsTransient` for failures that a caller can retry.

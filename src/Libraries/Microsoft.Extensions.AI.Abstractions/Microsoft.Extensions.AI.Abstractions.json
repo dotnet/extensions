@@ -1822,7 +1822,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse> Microsoft.Extensions.AI.DecisionClientExtensions.GetResponseAsync<TState>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TState> stateTypeInfo, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.DecisionQuestion> questions, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse> Microsoft.Extensions.AI.DecisionClientExtensions.GetDecisionAsync<TState>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TState> stateTypeInfo, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.DecisionQuestion> questions, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
@@ -3297,7 +3297,7 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse> Microsoft.Extensions.AI.IDecisionClient.GetResponseAsync(Microsoft.Extensions.AI.DecisionRequest request, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse> Microsoft.Extensions.AI.IDecisionClient.GetDecisionAsync(Microsoft.Extensions.AI.DecisionRequest request, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
