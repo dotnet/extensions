@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -125,11 +126,13 @@ internal sealed class OpenAISpeechToTextClient : ISpeechToTextClient
         }
         else
         {
-            await foreach (var update in _audioClient.TranscribeAudioStreamingAsync(
+            AsyncStreamingResult<StreamingAudioTranscriptionUpdate> streamingResult = await _audioClient.TranscribeAudioStreamingAsync(
                 audioSpeechStream,
                 filename,
                 ToOpenAITranscriptionOptions(options),
-                cancellationToken).ConfigureAwait(false))
+                cancellationToken).ConfigureAwait(false);
+
+            await foreach (var update in ((IAsyncEnumerable<StreamingAudioTranscriptionUpdate>)streamingResult).ConfigureAwait(false))
             {
                 SpeechToTextResponseUpdate result = new()
                 {
