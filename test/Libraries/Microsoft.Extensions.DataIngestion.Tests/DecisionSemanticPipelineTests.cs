@@ -154,7 +154,7 @@ public sealed class DecisionSemanticPipelineTests
         {
             await foreach (IngestionChunk<string> chunk in chunks.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
-                DecisionResponse response = await _client.GetResponseAsync(
+                DecisionResponse response = await _client.GetDecisionAsync(
                     new SemanticDecisionState(chunk.Content.Length, chunk.Context is not null),
                     _stateTypeInfo,
                     [_question],
@@ -206,7 +206,7 @@ public sealed class DecisionSemanticPipelineTests
 
         public Exception? Failure { get; set; }
 
-        public Task<DecisionResponse> GetResponseAsync(
+        public Task<DecisionResponse> GetDecisionAsync(
             DecisionRequest request,
             DecisionOptions? options = null,
             CancellationToken cancellationToken = default)

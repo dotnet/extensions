@@ -30,7 +30,7 @@ public static class DecisionClientTypedExtensions
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="definition"/> is <see langword="null"/>.</exception>
     /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
-    public static Task<DecisionResponse<TResult>> GetResponseAsync<TResult>(
+    public static Task<DecisionResponse<TResult>> GetDecisionAsync<TResult>(
         this IDecisionClient client,
         JsonElement state,
         DecisionDefinition<TResult> definition,
@@ -41,7 +41,7 @@ public static class DecisionClientTypedExtensions
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(definition);
 
-        return GetResponseCoreAsync(client, new DecisionRequest(state, definition.Questions, contents?.ToArray()), definition, options, cancellationToken);
+        return GetDecisionCoreAsync(client, new DecisionRequest(state, definition.Questions, contents?.ToArray()), definition, options, cancellationToken);
     }
 
     /// <summary>Evaluates a typed decision definition for content.</summary>
@@ -58,7 +58,7 @@ public static class DecisionClientTypedExtensions
     /// <exception cref="ArgumentException"><paramref name="contents"/> is empty.</exception>
     /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
-    public static Task<DecisionResponse<TResult>> GetResponseAsync<TResult>(
+    public static Task<DecisionResponse<TResult>> GetDecisionAsync<TResult>(
         this IDecisionClient client,
         IEnumerable<AIContent> contents,
         DecisionDefinition<TResult> definition,
@@ -69,7 +69,7 @@ public static class DecisionClientTypedExtensions
         _ = Throw.IfNull(contents);
         _ = Throw.IfNull(definition);
 
-        return GetResponseCoreAsync(client, new DecisionRequest(null, definition.Questions, contents.ToArray()), definition, options, cancellationToken);
+        return GetDecisionCoreAsync(client, new DecisionRequest(null, definition.Questions, contents.ToArray()), definition, options, cancellationToken);
     }
 
     /// <summary>Evaluates a typed decision definition for application-owned state.</summary>
@@ -88,7 +88,7 @@ public static class DecisionClientTypedExtensions
     /// </exception>
     /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
-    public static Task<DecisionResponse<TResult>> GetResponseAsync<TState, TResult>(
+    public static Task<DecisionResponse<TResult>> GetDecisionAsync<TState, TResult>(
         this IDecisionClient client,
         TState state,
         JsonTypeInfo<TState> stateTypeInfo,
@@ -102,17 +102,17 @@ public static class DecisionClientTypedExtensions
         _ = Throw.IfNull(definition);
 
         JsonElement stateJson = JsonSerializer.SerializeToElement(state, stateTypeInfo);
-        return GetResponseCoreAsync(client, new DecisionRequest(stateJson, definition.Questions, contents?.ToArray()), definition, options, cancellationToken);
+        return GetDecisionCoreAsync(client, new DecisionRequest(stateJson, definition.Questions, contents?.ToArray()), definition, options, cancellationToken);
     }
 
-    private static async Task<DecisionResponse<TResult>> GetResponseCoreAsync<TResult>(
+    private static async Task<DecisionResponse<TResult>> GetDecisionCoreAsync<TResult>(
         IDecisionClient client,
         DecisionRequest request,
         DecisionDefinition<TResult> definition,
         DecisionOptions? options,
         CancellationToken cancellationToken)
     {
-        DecisionResponse response = await client.GetResponseAsync(request, options, cancellationToken);
+        DecisionResponse response = await client.GetDecisionAsync(request, options, cancellationToken);
         return definition.Bind(response);
     }
 }

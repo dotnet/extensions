@@ -148,7 +148,7 @@ public sealed class DecisionTypedFunctionTests
             options);
         using SupportTicketDecisionClient client = new();
 
-        DecisionResponse<TicketAnalysis> response = await client.GetResponseAsync(
+        DecisionResponse<TicketAnalysis> response = await client.GetDecisionAsync(
             new SupportTicket("Combined state."),
             DecisionStateOnlyJsonContext.Default.SupportTicket,
             definition);
@@ -395,7 +395,7 @@ public sealed class DecisionTypedFunctionTests
             [Description("The ticket to classify.")] SupportTicket ticket,
             CancellationToken cancellationToken)
         {
-            DecisionResponse<TicketAnalysis> response = await client.GetResponseAsync(
+            DecisionResponse<TicketAnalysis> response = await client.GetDecisionAsync(
                 ticket,
                 DecisionTypedFunctionJsonContext.Default.SupportTicket,
                 definition,
@@ -410,7 +410,7 @@ public sealed class DecisionTypedFunctionTests
             [Description("The ticket to classify.")] SupportTicket ticket,
             CancellationToken cancellationToken)
         {
-            DecisionResponse<TicketAnalysis> response = await client.GetResponseAsync(
+            DecisionResponse<TicketAnalysis> response = await client.GetDecisionAsync(
                 ticket,
                 DecisionTypedFunctionJsonContext.Default.SupportTicket,
                 definition,
@@ -440,7 +440,7 @@ public sealed class DecisionTypedFunctionTests
 
         public int DisposeCount { get; private set; }
 
-        public Task<DecisionResponse> GetResponseAsync(
+        public Task<DecisionResponse> GetDecisionAsync(
             DecisionRequest request,
             DecisionOptions? options = null,
             CancellationToken cancellationToken = default)

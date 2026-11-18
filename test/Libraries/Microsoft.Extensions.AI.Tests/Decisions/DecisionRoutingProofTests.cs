@@ -173,7 +173,7 @@ public sealed class DecisionRoutingProofTests
                 "\n",
                 context.Messages.Select(static message => message.Text));
             RoutingState state = new(requestText, context.ChatOptions?.Tools is not null);
-            DecisionResponse<RoutingDecision> response = await decisionClient.GetResponseAsync(
+            DecisionResponse<RoutingDecision> response = await decisionClient.GetDecisionAsync(
                 state,
                 DecisionRoutingJsonContext.Default.RoutingState,
                 CreateDefinition(),
@@ -210,7 +210,7 @@ public sealed class DecisionRoutingProofTests
 
         public bool ReturnUnconfigured { get; init; }
 
-        public Task<DecisionResponse> GetResponseAsync(
+        public Task<DecisionResponse> GetDecisionAsync(
             DecisionRequest request,
             DecisionOptions? options = null,
             CancellationToken cancellationToken = default)

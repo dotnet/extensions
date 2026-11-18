@@ -683,7 +683,7 @@ public sealed class DecisionDefinition<TResult>
             [Description("The application state for the declared decision.")] TState state,
             CancellationToken cancellationToken)
         {
-            DecisionResponse<TResult> response = await client.GetResponseAsync(
+            DecisionResponse<TResult> response = await client.GetDecisionAsync(
                 state,
                 stateTypeInfo,
                 definition,

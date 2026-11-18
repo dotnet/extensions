@@ -52,15 +52,15 @@ The definition uses the supplied `JsonSerializerOptions` to resolve the result c
 
 ## Getting a typed response
 
-The typed `GetResponseAsync` overloads send the definition's questions and bind the response to `TResult`. Binding throws `DecisionProtocolException` when the answer for a declared question is missing or does not match its kind, candidates, or levels. The input can be JSON state, ordered `AIContent` items, or both:
+The typed `GetDecisionAsync` overloads send the definition's questions and bind the response to `TResult`. Binding throws `DecisionProtocolException` when the answer for a declared question is missing or does not match its kind, candidates, or levels. The request-level inputs, shared by every question, can be JSON state, `AIContent` items, or both:
 
 ```csharp
-DecisionResponse<TicketDecision> response = await client.GetResponseAsync(
+DecisionResponse<TicketDecision> response = await client.GetDecisionAsync(
     ticket,
     TicketJsonContext.Default.SupportTicket,
     definition);
 
-DecisionResponse<TicketDecision> fromContents = await client.GetResponseAsync(
+DecisionResponse<TicketDecision> fromContents = await client.GetDecisionAsync(
     [new TextContent(ticketText), new DataContent(screenshotBytes, "image/png")],
     definition);
 
@@ -78,7 +78,7 @@ When a provider returns an `UnansweredDecisionAnswer` for a question bound by th
 ```csharp
 try
 {
-    DecisionResponse<TicketDecision> response = await client.GetResponseAsync(ticket, TicketJsonContext.Default.SupportTicket, definition);
+    DecisionResponse<TicketDecision> response = await client.GetDecisionAsync(ticket, TicketJsonContext.Default.SupportTicket, definition);
 }
 catch (DecisionUnansweredException ex)
 {
@@ -102,7 +102,7 @@ DecisionEnumDefinition<TicketCategory> categories = new(
     new(TicketCategory.Account, "account", "Sign-in, profile, or account access."),
 ]);
 
-DecisionResponse response = await client.GetResponseAsync(
+DecisionResponse response = await client.GetDecisionAsync(
     ticket,
     TicketJsonContext.Default.SupportTicket,
     [categories.CreateQuestion("category", "Classify the customer's main concern."), refundQuestion]);
