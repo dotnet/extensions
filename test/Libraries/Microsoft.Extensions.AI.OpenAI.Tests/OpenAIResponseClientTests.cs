@@ -26,6 +26,56 @@ namespace Microsoft.Extensions.AI;
 
 public class OpenAIResponseClientTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsOpenAIResponseItems_UsesCompactJsonForFunctionPayloads(bool arguments)
+    {
+        using var payload = JsonDocument.Parse("""{"query":"notebook","max":10}""");
+        ChatMessage[] messages = arguments
+            ? [new(ChatRole.Assistant, [new FunctionCallContent("call_1", "search",
+                new Dictionary<string, object?> { ["query"] = "notebook", ["max"] = 10 })])]
+            : [new(ChatRole.Tool, [new FunctionResultContent("call_1", payload.RootElement)])];
+
+        var item = Assert.Single(messages.AsOpenAIResponseItems());
+        using var json = JsonDocument.Parse(ModelReaderWriter.Write(item, new ModelReaderWriterOptions("W")).ToMemory());
+        Assert.Equal("""{"query":"notebook","max":10}""", json.RootElement.GetProperty(arguments ? "arguments" : "output").GetString());
+        Assert.Equal("call_1", json.RootElement.GetProperty("call_id").GetString());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsOpenAIResponseItems_UsesCompactJsonForMcpArguments(bool approval)
+    {
+        var call = new McpServerToolCallContent("call_1", "search", "server")
+        {
+            Arguments = new Dictionary<string, object?> { ["query"] = "notebook", ["max"] = 10 },
+        };
+        ChatMessage[] messages = approval
+            ? [new(ChatRole.Assistant, [new ToolApprovalRequestContent("approval_1", call)])]
+            : [new(ChatRole.Assistant, [call, new McpServerToolResultContent("call_1") { Outputs = [new TextContent("found")] }])];
+
+        var item = Assert.Single(messages.AsOpenAIResponseItems());
+        using var json = JsonDocument.Parse(ModelReaderWriter.Write(item, new ModelReaderWriterOptions("W")).ToMemory());
+        Assert.Equal("""{"query":"notebook","max":10}""", json.RootElement.GetProperty("arguments").GetString());
+        Assert.Equal("search", json.RootElement.GetProperty("name").GetString());
+        Assert.Equal("server", json.RootElement.GetProperty("server_label").GetString());
+    }
+
+    [Fact]
+    public void AsOpenAIResponseItems_UsesCompactJsonForContentFallback()
+    {
+        ChatMessage[] messages = [new(ChatRole.Tool, [new FunctionResultContent("call_1", new ErrorContent("failed") { ErrorCode = "error" })])];
+        var item = Assert.Single(messages.AsOpenAIResponseItems());
+        using var json = JsonDocument.Parse(ModelReaderWriter.Write(item, new ModelReaderWriterOptions("W")).ToMemory());
+        string text = Assert.IsType<string>(json.RootElement.GetProperty("output")[0].GetProperty("text").GetString());
+        using var content = JsonDocument.Parse(text);
+        Assert.Equal("failed", content.RootElement.GetProperty("message").GetString());
+        Assert.DoesNotContain("\n", text);
+        Assert.DoesNotContain("\r", text);
+    }
+
     [Fact]
     public void AsIChatClient_InvalidArgs_Throws()
     {

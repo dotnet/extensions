@@ -32,6 +32,9 @@ public static class OpenAIClientExtensions
     /// <summary>Key into AdditionalProperties used to store a strict option.</summary>
     private const string StrictKey = "strict";
 
+    /// <summary>Gets the serializer options for JSON embedded in tool payloads.</summary>
+    internal static JsonSerializerOptions ToolJsonOptions { get; } = CreateToolJsonOptions();
+
     /// <summary>Gets the default OpenAI endpoint.</summary>
     internal static Uri DefaultOpenAIEndpoint { get; } = new("https://api.openai.com/v1");
 
@@ -220,6 +223,13 @@ public static class OpenAIClientExtensions
 #pragma warning restore OPENAI001
 
         return functionParameters;
+    }
+
+    private static JsonSerializerOptions CreateToolJsonOptions()
+    {
+        JsonSerializerOptions options = new(AIJsonUtilities.DefaultOptions) { WriteIndented = false };
+        options.MakeReadOnly();
+        return options;
     }
 
     /// <summary>Creates a new instance of <see cref="FunctionCallContent"/> parsing arguments using a specified encoding and parser.</summary>

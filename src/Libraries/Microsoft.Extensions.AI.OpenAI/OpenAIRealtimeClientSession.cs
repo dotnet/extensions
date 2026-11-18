@@ -636,7 +636,7 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         if (firstContent is FunctionResultContent functionResult)
         {
             string resultJson = functionResult.Result is not null
-                ? JsonSerializer.Serialize(functionResult.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)))
+                ? JsonSerializer.Serialize(functionResult.Result, OpenAIClientExtensions.ToolJsonOptions.GetTypeInfo(typeof(object)))
                 : string.Empty;
             return Sdk.RealtimeItem.CreateFunctionCallOutputItem(
                 functionResult.CallId ?? string.Empty,
@@ -646,7 +646,8 @@ public sealed class OpenAIRealtimeClientSession : IRealtimeClientSession
         if (firstContent is FunctionCallContent functionCall)
         {
             var arguments = functionCall.Arguments is not null
-                ? BinaryData.FromString(JsonSerializer.Serialize(functionCall.Arguments, OpenAIJsonContext.Default.IDictionaryStringObject))
+                ? BinaryData.FromString(JsonSerializer.Serialize(
+                    functionCall.Arguments, OpenAIClientExtensions.ToolJsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))
                 : BinaryData.FromString("{}");
             return Sdk.RealtimeItem.CreateFunctionCallItem(
                 functionCall.CallId ?? string.Empty,
