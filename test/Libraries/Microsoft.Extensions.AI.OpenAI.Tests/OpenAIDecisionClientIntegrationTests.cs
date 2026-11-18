@@ -23,7 +23,7 @@ public class OpenAIDecisionClientIntegrationTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_AnswersAllQuestionKinds()
+    public async Task GetDecisionAsync_AnswersAllQuestionKinds()
     {
         SkipIfNotEnabled();
 
@@ -43,7 +43,7 @@ public class OpenAIDecisionClientIntegrationTests
             ],
             [new TextContent("Gold-tier customers receive priority handling.")]);
 
-        DecisionResponse response = await _client!.GetResponseAsync(request);
+        DecisionResponse response = await _client!.GetDecisionAsync(request);
 
         Assert.Equal(3, response.Answers.Count);
         BinaryDecisionAnswer late = Assert.IsType<BinaryDecisionAnswer>(response.Answers[0]);
@@ -57,7 +57,7 @@ public class OpenAIDecisionClientIntegrationTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_AcceptsImageContent()
+    public async Task GetDecisionAsync_AcceptsImageContent()
     {
         SkipIfNotEnabled();
 
@@ -66,7 +66,7 @@ public class OpenAIDecisionClientIntegrationTests
             [new BinaryDecisionQuestion("is_purple", "Is the dominant color of the image purple?")],
             [new DataContent(ImageDataUri.GetImageDataUri(), "image/png")]);
 
-        DecisionResponse response = await _client!.GetResponseAsync(request);
+        DecisionResponse response = await _client!.GetDecisionAsync(request);
 
         BinaryDecisionAnswer answer = Assert.IsType<BinaryDecisionAnswer>(Assert.Single(response.Answers));
         Assert.Equal("is_purple", answer.QuestionId);

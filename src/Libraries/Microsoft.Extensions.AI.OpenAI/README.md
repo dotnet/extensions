@@ -248,7 +248,7 @@ IDecisionClient client =
 
 using JsonDocument state = JsonDocument.Parse("""{ "order": { "status": "delivered", "daysLate": 6 } }""");
 
-DecisionResponse response = await client.GetResponseAsync(new DecisionRequest(
+DecisionResponse response = await client.GetDecisionAsync(new DecisionRequest(
     state.RootElement,
     [
         new BinaryDecisionQuestion("is_late", "Was the order delivered late?"),

@@ -62,7 +62,7 @@ public class OpenAIDecisionClientTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_MapsRequestAndResponse()
+    public async Task GetDecisionAsync_MapsRequestAndResponse()
     {
         const string Input = $$"""
             {
@@ -187,7 +187,7 @@ public class OpenAIDecisionClientTests
                 new UriContent("https://example.com/photo.png", "image/png") { AdditionalProperties = new() { ["detail"] = "low" } },
             ]);
 
-        DecisionResponse response = await client.GetResponseAsync(request);
+        DecisionResponse response = await client.GetDecisionAsync(request);
 
         Assert.Equal("gpt-6-luna", response.ModelId);
         Assert.IsType<DecisionResource>(response.RawRepresentation);
@@ -219,7 +219,7 @@ public class OpenAIDecisionClientTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_RefusalMapsToUnansweredAnswer()
+    public async Task GetDecisionAsync_RefusalMapsToUnansweredAnswer()
     {
         const string Output = """
             {
@@ -230,7 +230,7 @@ public class OpenAIDecisionClientTests
 
         using IDecisionClient client = CreateDecisionClient(Output);
 
-        DecisionResponse response = await client.GetResponseAsync(Request([new BinaryDecisionQuestion("safe", "The content is safe.")]));
+        DecisionResponse response = await client.GetDecisionAsync(Request([new BinaryDecisionQuestion("safe", "The content is safe.")]));
 
         var answer = Assert.IsType<UnansweredDecisionAnswer>(Assert.Single(response.Answers));
         Assert.Equal("safe", answer.QuestionId);
@@ -240,7 +240,7 @@ public class OpenAIDecisionClientTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_UsesModelFromOptionsAndRawRepresentationFactory()
+    public async Task GetDecisionAsync_UsesModelFromOptionsAndRawRepresentationFactory()
     {
         const string Input = """
             {
@@ -259,7 +259,7 @@ public class OpenAIDecisionClientTests
         using HttpClient httpClient = new(handler);
         using IDecisionClient client = CreateDecisionClient(httpClient, defaultModelId: null);
 
-        DecisionResponse response = await client.GetResponseAsync(
+        DecisionResponse response = await client.GetDecisionAsync(
             Request([new BinaryDecisionQuestion("greeting", "Is it a greeting?")], [new TextContent("hello")]),
             new DecisionOptions
             {
@@ -271,24 +271,24 @@ public class OpenAIDecisionClientTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_NoModel_Throws()
+    public async Task GetDecisionAsync_NoModel_Throws()
     {
         using IDecisionClient client = CreateDecisionClient("{}", defaultModelId: null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            client.GetResponseAsync(Request([new BinaryDecisionQuestion("q", "Is it?")])));
+            client.GetDecisionAsync(Request([new BinaryDecisionQuestion("q", "Is it?")])));
     }
 
     [Fact]
-    public async Task GetResponseAsync_UnsupportedContent_Throws()
+    public async Task GetDecisionAsync_UnsupportedContent_Throws()
     {
         using IDecisionClient client = CreateDecisionClient("{}");
 
         await Assert.ThrowsAsync<NotSupportedException>(() =>
-            client.GetResponseAsync(Request([new BinaryDecisionQuestion("q", "Is it?")], [new DataContent(new byte[] { 1, 2, 3 }, "audio/wav")])));
+            client.GetDecisionAsync(Request([new BinaryDecisionQuestion("q", "Is it?")], [new DataContent(new byte[] { 1, 2, 3 }, "audio/wav")])));
 
         await Assert.ThrowsAsync<NotSupportedException>(() =>
-            client.GetResponseAsync(Request([new ChoiceDecisionQuestion("q", "Which?",
+            client.GetDecisionAsync(Request([new ChoiceDecisionQuestion("q", "Which?",
                 [new DecisionCandidate("a", [new UriContent("https://example.com/a.png", "image/png")]), new DecisionCandidate("b", "B")])])));
     }
 
@@ -299,12 +299,12 @@ public class OpenAIDecisionClientTests
     [InlineData("""{ "answers": [ { "type": "predicate", "probability": 0.5 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "predicate", "name": "q", "probability": 0.5 }, { "type": "predicate", "name": "q", "probability": 0.5 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "a", "probabilities": [ { "value": "a", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    public async Task GetResponseAsync_InvalidBinaryAnswers_ThrowsProtocolException(string output)
+    public async Task GetDecisionAsync_InvalidBinaryAnswers_ThrowsProtocolException(string output)
     {
         using IDecisionClient client = CreateDecisionClient(output);
 
         await Assert.ThrowsAsync<DecisionProtocolException>(() =>
-            client.GetResponseAsync(Request([new BinaryDecisionQuestion("q", "Is it?")])));
+            client.GetDecisionAsync(Request([new BinaryDecisionQuestion("q", "Is it?")])));
     }
 
     [Theory]
@@ -312,28 +312,28 @@ public class OpenAIDecisionClientTests
     [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "a", "probabilities": [ { "value": "c", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "a", "probabilities": [ { "value": "a", "probability": 0.5 }, { "value": "a", "probability": 0.5 } ], "confidence": 1.0 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": true, "probabilities": [ { "value": "a", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    public async Task GetResponseAsync_InvalidChoiceAnswers_ThrowsProtocolException(string output)
+    public async Task GetDecisionAsync_InvalidChoiceAnswers_ThrowsProtocolException(string output)
     {
         using IDecisionClient client = CreateDecisionClient(output);
 
         await Assert.ThrowsAsync<DecisionProtocolException>(() =>
-            client.GetResponseAsync(Request([new ChoiceDecisionQuestion("q", "Which?", [new DecisionCandidate("a", "A"), new DecisionCandidate("b", "B")])])));
+            client.GetDecisionAsync(Request([new ChoiceDecisionQuestion("q", "Which?", [new DecisionCandidate("a", "A"), new DecisionCandidate("b", "B")])])));
     }
 
     [Theory]
     [InlineData("""{ "answers": [ { "type": "score", "name": "q", "score": 1.0, "probabilities": [ { "value": 1, "label": "low", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "score", "name": "q", "score": 1.0, "probabilities": [ { "value": 2, "label": "extreme", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "score", "name": "q", "score": 0.0, "probabilities": [ { "value": 0, "label": "low", "probability": 0.0 }, { "value": 1, "label": "high", "probability": 0.0 } ], "confidence": 1.0 } ] }""")]
-    public async Task GetResponseAsync_InvalidScoreAnswers_ThrowsProtocolException(string output)
+    public async Task GetDecisionAsync_InvalidScoreAnswers_ThrowsProtocolException(string output)
     {
         using IDecisionClient client = CreateDecisionClient(output);
 
         await Assert.ThrowsAsync<DecisionProtocolException>(() =>
-            client.GetResponseAsync(Request([new ScoreDecisionQuestion("q", "How much?", [new DecisionScoreLevel("low", "Low"), new DecisionScoreLevel("high", "High")])])));
+            client.GetDecisionAsync(Request([new ScoreDecisionQuestion("q", "How much?", [new DecisionScoreLevel("low", "Low"), new DecisionScoreLevel("high", "High")])])));
     }
 
     [Fact]
-    public async Task GetResponseAsync_ScoreIsClampedToLevelScale()
+    public async Task GetDecisionAsync_ScoreIsClampedToLevelScale()
     {
         const string Output = """
             { "answers": [ { "type": "score", "name": "q", "score": 1.0000001, "probabilities": [ { "value": 0, "label": "low", "probability": 0.0 }, { "value": 1, "label": "high", "probability": 1.0 } ], "confidence": 1.0 } ] }
@@ -341,7 +341,7 @@ public class OpenAIDecisionClientTests
 
         using IDecisionClient client = CreateDecisionClient(Output);
 
-        DecisionResponse response = await client.GetResponseAsync(
+        DecisionResponse response = await client.GetDecisionAsync(
             Request([new ScoreDecisionQuestion("q", "How much?", [new DecisionScoreLevel("low", "Low"), new DecisionScoreLevel("high", "High")])]));
 
         Assert.Equal(1d, Assert.IsType<ScoreDecisionAnswer>(Assert.Single(response.Answers)).Score);
@@ -353,12 +353,12 @@ public class OpenAIDecisionClientTests
     [InlineData(HttpStatusCode.RequestTimeout, true)]
     [InlineData(HttpStatusCode.BadRequest, false)]
     [InlineData(HttpStatusCode.Unauthorized, false)]
-    public async Task GetResponseAsync_ServiceError_ThrowsDecisionClientException(HttpStatusCode statusCode, bool isTransient)
+    public async Task GetDecisionAsync_ServiceError_ThrowsDecisionClientException(HttpStatusCode statusCode, bool isTransient)
     {
         using IDecisionClient client = CreateDecisionClient("""{ "error": { "message": "failure" } }""", statusCode: statusCode);
 
         var ex = await Assert.ThrowsAsync<DecisionClientException>(() =>
-            client.GetResponseAsync(Request([new BinaryDecisionQuestion("q", "Is it?")])));
+            client.GetDecisionAsync(Request([new BinaryDecisionQuestion("q", "Is it?")])));
 
         Assert.Equal(isTransient, ex.IsTransient);
         Assert.IsType<ClientResultException>(ex.InnerException);

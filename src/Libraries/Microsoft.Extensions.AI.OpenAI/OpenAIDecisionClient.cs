@@ -64,7 +64,7 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
     }
 
     /// <inheritdoc />
-    public async Task<DecisionResponse> GetResponseAsync(
+    public async Task<DecisionResponse> GetDecisionAsync(
         DecisionRequest request, DecisionOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(request);
