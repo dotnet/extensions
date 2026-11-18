@@ -41,7 +41,31 @@ DecisionQuestion[] questions =
 
 ## Inputs
 
-A request has two optional inputs, and at least one must be provided: `State`, a JSON value, and `Contents`, a list of `AIContent` items. Both are request-level inputs shared by every question in the request:
+A request has two optional inputs, and at least one must be provided: `State`, a JSON value, and `Contents`, a list of `AIContent` items. Both are request-level inputs shared by every question in the request.
+
+The simplest way to send a request is to pass application state as a .NET object. The `GetDecisionAsync<TState>` extension serializes it to `State` with `AIJsonUtilities.DefaultOptions`:
+
+```csharp
+record SupportTicket(string Subject, string Body);
+
+SupportTicket ticket = new("Charged twice", "I was billed twice for my subscription this month.");
+
+DecisionResponse response = await client.GetDecisionAsync(
+    ticket,
+    questions,
+    contents: [new DataContent(screenshotBytes, "image/png")]);
+```
+
+For Native AOT, use the overload that accepts `JsonSerializerOptions` and pass options from a source-generated context:
+
+```csharp
+DecisionResponse response = await client.GetDecisionAsync(
+    ticket,
+    TicketJsonContext.Default.Options,
+    questions);
+```
+
+`AIContent` is passed through `contents`, not as state. For full control over the request, serialize the state yourself and pass the resulting `JsonElement` through a `DecisionRequest`:
 
 ```csharp
 using System.Text.Json;
@@ -49,19 +73,9 @@ using System.Text.Json;
 DecisionRequest request = new(
     state: JsonSerializer.SerializeToElement(ticket, TicketJsonContext.Default.SupportTicket),
     questions: questions,
-    contents: [new DataContent(screenshotBytes, "image/png")]);
+    contents: [new UriContent(screenshotUri, "image/png")]);
 
 DecisionResponse response = await client.GetDecisionAsync(request);
-```
-
-The `GetDecisionAsync<TState>` extension serializes application state with a supplied `JsonTypeInfo<TState>` and sends the request:
-
-```csharp
-DecisionResponse response = await client.GetDecisionAsync(
-    ticket,
-    TicketJsonContext.Default.SupportTicket,
-    questions,
-    contents: [new UriContent(screenshotUri, "image/png")]);
 ```
 
 Providers map the inputs they support and throw `NotSupportedException` for any state or content item they can't represent. They must not silently drop input. A provider can recognize a provider-specific content item through `AIContent.RawRepresentation`.

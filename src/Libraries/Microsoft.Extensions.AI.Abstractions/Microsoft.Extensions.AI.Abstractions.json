@@ -1822,7 +1822,11 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse> Microsoft.Extensions.AI.DecisionClientExtensions.GetDecisionAsync<TState>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TState> stateTypeInfo, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.DecisionQuestion> questions, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse> Microsoft.Extensions.AI.DecisionClientExtensions.GetDecisionAsync<TState>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.DecisionQuestion> questions, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse> Microsoft.Extensions.AI.DecisionClientExtensions.GetDecisionAsync<TState>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, System.Text.Json.JsonSerializerOptions serializerOptions, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.DecisionQuestion> questions, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
