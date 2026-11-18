@@ -108,6 +108,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "static Microsoft.Extensions.AI.IDecisionClient Microsoft.Extensions.AI.OpenAIClientExtensions.AsIDecisionClient(this OpenAI.Decisions.DecisionsClient decisionsClient, string? defaultModelId = null);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "static Microsoft.Extensions.AI.IEmbeddingGenerator<string, Microsoft.Extensions.AI.Embedding<float>> Microsoft.Extensions.AI.OpenAIClientExtensions.AsIEmbeddingGenerator(this OpenAI.Embeddings.EmbeddingClient embeddingClient, int? defaultModelDimensions = null);",
           "Stage": "Stable"
         },

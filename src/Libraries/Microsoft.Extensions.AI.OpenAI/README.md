@@ -236,6 +236,39 @@ foreach (var prompt in new[] { "What is AI?", "What is .NET?", "What is AI?" })
 }
 ```
 
+### Decisions (experimental)
+
+```csharp
+using System.Text.Json;
+using Microsoft.Extensions.AI;
+
+IDecisionClient client =
+    new OpenAI.Decisions.DecisionsClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
+    .AsIDecisionClient("gpt-6-luna");
+
+using JsonDocument state = JsonDocument.Parse("""{ "order": { "status": "delivered", "daysLate": 6 } }""");
+
+DecisionResponse response = await client.GetResponseAsync(new DecisionRequest(
+    state.RootElement,
+    [
+        new BinaryDecisionQuestion("is_late", "Was the order delivered late?"),
+        new ChoiceDecisionQuestion("action", "Which action should support take?",
+            [new DecisionCandidate("refund", "Issue a refund."), new DecisionCandidate("apology", "Send an apology.")]),
+    ]));
+
+foreach (DecisionAnswer answer in response.Answers)
+{
+    Console.WriteLine(answer switch
+    {
+        BinaryDecisionAnswer binary => $"{binary.QuestionId}: {binary.TrueProbability:P0}",
+        ChoiceDecisionAnswer choice => $"{choice.QuestionId}: {choice.SelectedCandidateId}",
+        _ => $"{answer.QuestionId}: {answer.Kind}",
+    });
+}
+```
+
+Question instructions and request contents can include images (`DataContent` or `UriContent`).
+
 ### Dependency Injection
 
 ```csharp
