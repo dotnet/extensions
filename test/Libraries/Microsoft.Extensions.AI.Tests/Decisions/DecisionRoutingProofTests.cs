@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -174,8 +175,7 @@ public sealed class DecisionRoutingProofTests
                 context.Messages.Select(static message => message.Text));
             RoutingState state = new(requestText, context.ChatOptions?.Tools is not null);
             DecisionResponse<RoutingDecision> response = await decisionClient.GetDecisionAsync(
-                state,
-                DecisionRoutingJsonContext.Default.RoutingState,
+                JsonSerializer.SerializeToElement(state, DecisionRoutingJsonContext.Default.RoutingState),
                 CreateDefinition(),
                 cancellationToken: cancellationToken);
 

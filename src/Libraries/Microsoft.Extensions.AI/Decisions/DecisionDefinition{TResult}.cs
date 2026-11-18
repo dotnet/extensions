@@ -332,7 +332,7 @@ public sealed class DecisionDefinition<TResult>
         return combined;
     }
 
-    private JsonTypeInfo<TState> GetStateTypeInfo<TState>()
+    internal JsonTypeInfo<TState> GetStateTypeInfo<TState>()
     {
         JsonTypeInfo? stateTypeInfo;
         try
@@ -683,12 +683,14 @@ public sealed class DecisionDefinition<TResult>
             [Description("The application state for the declared decision.")] TState state,
             CancellationToken cancellationToken)
         {
-            DecisionResponse<TResult> response = await client.GetDecisionAsync(
+            DecisionResponse<TResult> response = await DecisionClientTypedExtensions.GetDecisionCoreAsync(
+                client,
                 state,
                 stateTypeInfo,
                 definition,
-                options: decisionOptions?.Clone(),
-                cancellationToken: cancellationToken);
+                contents: null,
+                decisionOptions?.Clone(),
+                cancellationToken);
             return response.Result;
         }
     }

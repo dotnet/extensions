@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -56,7 +55,7 @@ public sealed class DecisionSemanticPipelineTests
                 writer);
             pipeline.ChunkProcessors.Add(new MetadataSeedProcessor());
             pipeline.ChunkProcessors.Add(
-                new SemanticDecisionChunkProcessor(decisionClient, DecisionPipelineJsonContext.Default.SemanticDecisionState));
+                new SemanticDecisionChunkProcessor(decisionClient, DecisionPipelineJsonContext.Default.Options));
 
             IngestionResult result = await pipeline.ProcessAsync([new FileInfo(path)]).SingleAsync();
 
@@ -105,7 +104,7 @@ public sealed class DecisionSemanticPipelineTests
                 CreateChunker(),
                 writer);
             pipeline.ChunkProcessors.Add(
-                new SemanticDecisionChunkProcessor(decisionClient, DecisionPipelineJsonContext.Default.SemanticDecisionState));
+                new SemanticDecisionChunkProcessor(decisionClient, DecisionPipelineJsonContext.Default.Options));
 
             IngestionResult result = await pipeline.ProcessAsync([new FileInfo(path)]).SingleAsync();
 
@@ -140,12 +139,12 @@ public sealed class DecisionSemanticPipelineTests
     private sealed class SemanticDecisionChunkProcessor : IngestionChunkProcessor<string>
     {
         private readonly IDecisionClient _client;
-        private readonly JsonTypeInfo<SemanticDecisionState> _stateTypeInfo;
+        private readonly JsonSerializerOptions _serializerOptions;
 
-        public SemanticDecisionChunkProcessor(IDecisionClient client, JsonTypeInfo<SemanticDecisionState> stateTypeInfo)
+        public SemanticDecisionChunkProcessor(IDecisionClient client, JsonSerializerOptions serializerOptions)
         {
             _client = client;
-            _stateTypeInfo = stateTypeInfo;
+            _serializerOptions = serializerOptions;
         }
 
         public override async IAsyncEnumerable<IngestionChunk<string>> ProcessAsync(
@@ -156,7 +155,7 @@ public sealed class DecisionSemanticPipelineTests
             {
                 DecisionResponse response = await _client.GetDecisionAsync(
                     new SemanticDecisionState(chunk.Content.Length, chunk.Context is not null),
-                    _stateTypeInfo,
+                    _serializerOptions,
                     [_question],
                     cancellationToken: cancellationToken).ConfigureAwait(false);
 

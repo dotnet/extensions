@@ -149,8 +149,7 @@ public sealed class DecisionTypedFunctionTests
         using SupportTicketDecisionClient client = new();
 
         DecisionResponse<TicketAnalysis> response = await client.GetDecisionAsync(
-            new SupportTicket("Combined state."),
-            DecisionStateOnlyJsonContext.Default.SupportTicket,
+            JsonSerializer.SerializeToElement(new SupportTicket("Combined state."), DecisionStateOnlyJsonContext.Default.SupportTicket),
             definition);
         AIFunction function = definition.AsAIFunction<SupportTicket>(client);
         JsonElement output = Assert.IsType<JsonElement>(await function.InvokeAsync(CreateRawDecisionArguments()));
@@ -396,8 +395,7 @@ public sealed class DecisionTypedFunctionTests
             CancellationToken cancellationToken)
         {
             DecisionResponse<TicketAnalysis> response = await client.GetDecisionAsync(
-                ticket,
-                DecisionTypedFunctionJsonContext.Default.SupportTicket,
+                JsonSerializer.SerializeToElement(ticket, DecisionTypedFunctionJsonContext.Default.SupportTicket),
                 definition,
                 cancellationToken: cancellationToken);
             record?.Invoke(response.Response);
@@ -411,8 +409,7 @@ public sealed class DecisionTypedFunctionTests
             CancellationToken cancellationToken)
         {
             DecisionResponse<TicketAnalysis> response = await client.GetDecisionAsync(
-                ticket,
-                DecisionTypedFunctionJsonContext.Default.SupportTicket,
+                JsonSerializer.SerializeToElement(ticket, DecisionTypedFunctionJsonContext.Default.SupportTicket),
                 definition,
                 cancellationToken: cancellationToken);
             record?.Invoke(response.Response);
