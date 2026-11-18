@@ -28,7 +28,7 @@ public static class DecisionClientExtensions
         return client.GetService(typeof(TService), serviceKey) is TService service ? service : default;
     }
 
-    /// <summary>Evaluates application-owned state and validates that the response corresponds to the request.</summary>
+    /// <summary>Evaluates application-owned state against an ordered batch of questions.</summary>
     /// <typeparam name="TState">The application state type.</typeparam>
     /// <param name="client">The client.</param>
     /// <param name="state">The application-owned state.</param>
@@ -37,8 +37,7 @@ public static class DecisionClientExtensions
     /// <param name="contents">Optional ordered content evaluated together with the state.</param>
     /// <param name="options">Optional per-request options.</param>
     /// <param name="cancellationToken">The cancellation token to monitor.</param>
-    /// <returns>A validated response with one answer per question, in request order.</returns>
-    /// <exception cref="DecisionProtocolException">The response does not correspond to the request.</exception>
+    /// <returns>The response, with one answer per question in request order.</returns>
     public static async Task<DecisionResponse> GetResponseAsync<TState>(
         this IDecisionClient client,
         TState state,
@@ -57,8 +56,6 @@ public static class DecisionClientExtensions
             questions.ToArray(),
             contents?.ToArray());
 
-        DecisionResponse response = await client.GetResponseAsync(request, options, cancellationToken).ConfigureAwait(false);
-        response.Validate(request);
-        return response;
+        return await client.GetResponseAsync(request, options, cancellationToken).ConfigureAwait(false);
     }
 }

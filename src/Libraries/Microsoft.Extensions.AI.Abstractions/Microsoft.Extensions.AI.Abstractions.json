@@ -2013,10 +2013,6 @@
         {
           "Member": "Microsoft.Extensions.AI.DecisionAnswer Microsoft.Extensions.AI.DecisionResponse.GetAnswer(string questionId);",
           "Stage": "Experimental"
-        },
-        {
-          "Member": "void Microsoft.Extensions.AI.DecisionResponse.Validate(Microsoft.Extensions.AI.DecisionRequest request);",
-          "Stage": "Experimental"
         }
       ],
       "Properties": [
@@ -5325,10 +5321,6 @@
         }
       ],
       "Properties": [
-        {
-          "Member": "string? Microsoft.Extensions.AI.UnansweredDecisionAnswer.Message { get; set; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "Microsoft.Extensions.AI.DecisionUnansweredReason? Microsoft.Extensions.AI.UnansweredDecisionAnswer.Reason { get; set; }",
           "Stage": "Experimental"

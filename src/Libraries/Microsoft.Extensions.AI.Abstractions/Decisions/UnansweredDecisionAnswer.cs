@@ -27,7 +27,4 @@ public sealed class UnansweredDecisionAnswer : DecisionAnswer
 
     /// <summary>Gets or sets the reason the question was not answered, if known.</summary>
     public DecisionUnansweredReason? Reason { get; set; }
-
-    /// <summary>Gets or sets an optional provider-supplied message explaining why the question was not answered.</summary>
-    public string? Message { get; set; }
 }

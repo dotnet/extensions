@@ -17,35 +17,6 @@ public class DecisionTests
 {
     private static readonly byte[] _imageBytes = [0x89, 0x50, 0x4E, 0x47];
 
-    public static IEnumerable<object[]> MalformedResponses()
-    {
-        yield return [new DecisionResponse([new BinaryDecisionAnswer("binary", 0.5)])];
-        yield return [new DecisionResponse([
-            new ChoiceDecisionAnswer("choice", "a", [new("a", 0.5), new("b", 0.5)]),
-            new BinaryDecisionAnswer("binary", 0.5),
-            new UnansweredDecisionAnswer("score", DecisionKind.Score)])];
-        yield return [new DecisionResponse([
-            new BinaryDecisionAnswer("binary", 0.5),
-            new UnansweredDecisionAnswer("choice", DecisionKind.Binary),
-            new UnansweredDecisionAnswer("score", DecisionKind.Score)])];
-        yield return [new DecisionResponse([
-            new BinaryDecisionAnswer("binary", 0.5),
-            new ChoiceDecisionAnswer("choice", "b", [new("b", 0.5), new("a", 0.5)]),
-            new UnansweredDecisionAnswer("score", DecisionKind.Score)])];
-        yield return [new DecisionResponse([
-            new BinaryDecisionAnswer("binary", 0.5),
-            new ChoiceDecisionAnswer("choice", "a", [new("a", 0.5), new("b", 0.4), new("c", 0.1)]),
-            new UnansweredDecisionAnswer("score", DecisionKind.Score)])];
-        yield return [new DecisionResponse([
-            new BinaryDecisionAnswer("binary", 0.5),
-            new UnansweredDecisionAnswer("choice", DecisionKind.Choice),
-            new ScoreDecisionAnswer("score", 0, [new("low", 0.5), new("medium", 0.5)])])];
-        yield return [new DecisionResponse([
-            new BinaryDecisionAnswer("binary", 0.5),
-            null!,
-            new UnansweredDecisionAnswer("score", DecisionKind.Score)])];
-    }
-
     [Fact]
     public void Questions_AcceptTextOrContentForInstructionsAndCriteria()
     {
@@ -154,12 +125,9 @@ public class DecisionTests
     }
 
     [Fact]
-    public void Validate_AcceptsMixedAnsweredAndUnansweredResponses()
+    public void GetAnswer_ReturnsMixedAnsweredAndUnansweredAnswers()
     {
-        DecisionRequest request = CreateRequest();
         DecisionResponse response = CreateMixedResponse();
-
-        response.Validate(request);
 
         UnansweredDecisionAnswer unanswered = Assert.IsType<UnansweredDecisionAnswer>(response.GetAnswer("score"));
         Assert.Equal(DecisionKind.Score, unanswered.Kind);
@@ -168,19 +136,12 @@ public class DecisionTests
         Assert.Throws<KeyNotFoundException>(() => response.GetAnswer("missing"));
     }
 
-    [Theory]
-    [MemberData(nameof(MalformedResponses))]
-    public void Validate_RejectsResponsesThatDoNotCorrespondToTheRequest(DecisionResponse response)
-    {
-        Assert.Throws<DecisionProtocolException>(() => response.Validate(CreateRequest()));
-    }
-
     [Fact]
     public void Response_DefaultsToEmptyAnswers()
     {
         DecisionResponse response = new(null);
         Assert.Empty(response.Answers);
-        Assert.Throws<DecisionProtocolException>(() => new DecisionResponse().Validate(CreateRequest()));
+        Assert.Empty(new DecisionResponse().Answers);
     }
 
     [Fact]
@@ -242,7 +203,7 @@ public class DecisionTests
         string json = JsonSerializer.Serialize(response, AIJsonUtilities.DefaultOptions);
         DecisionResponse roundTripped = JsonSerializer.Deserialize<DecisionResponse>(json, AIJsonUtilities.DefaultOptions)!;
 
-        roundTripped.Validate(CreateRequest());
+        Assert.Equal(3, roundTripped.Answers.Count);
         Assert.Equal("response", roundTripped.ResponseId);
         Assert.Equal("model", roundTripped.ModelId);
         Assert.Equal(10, roundTripped.Usage!.InputTokenCount);
@@ -252,7 +213,6 @@ public class DecisionTests
         UnansweredDecisionAnswer unanswered = Assert.IsType<UnansweredDecisionAnswer>(roundTripped.Answers[2]);
         Assert.Equal(DecisionKind.Score, unanswered.Kind);
         Assert.Equal(DecisionUnansweredReason.Refusal, unanswered.Reason);
-        Assert.Equal("Declined", unanswered.Message);
     }
 
     [Fact]
@@ -291,10 +251,11 @@ public class DecisionTests
     }
 
     [Fact]
-    public async Task GetResponseAsync_SerializesStatePassesContentsAndValidates()
+    public async Task GetResponseAsync_SerializesStateAndPassesContents()
     {
         DecisionOptions options = new() { ModelId = "model" };
-        using RecordingDecisionClient client = new(_ => CreateMixedResponse());
+        DecisionResponse expected = CreateMixedResponse();
+        using RecordingDecisionClient client = new(_ => expected);
         using CancellationTokenSource cts = new();
 
         DecisionResponse response = await client.GetResponseAsync(
@@ -305,15 +266,11 @@ public class DecisionTests
             options,
             cts.Token);
 
-        Assert.Equal(3, response.Answers.Count);
+        Assert.Same(expected, response);
         Assert.Equal("Refund", client.Request!.State!.Value.GetProperty("subject").GetString());
         Assert.IsType<DataContent>(Assert.Single(client.Request.Contents));
         Assert.Same(options, client.Options);
         Assert.Equal(cts.Token, client.CancellationToken);
-
-        using RecordingDecisionClient malformed = new(_ => new DecisionResponse([new BinaryDecisionAnswer("binary", 0.5)]));
-        await Assert.ThrowsAsync<DecisionProtocolException>(() => malformed.GetResponseAsync(
-            new TicketState("Refund", 3), TestJsonSerializerContext.Default.TicketState, CreateRequest().Questions));
     }
 
     private static DecisionRequest CreateRequest() =>
@@ -329,7 +286,7 @@ public class DecisionTests
         new([
             new BinaryDecisionAnswer("binary", 0.75),
             new ChoiceDecisionAnswer("choice", "b", [new("a", 0.1), new("b", 0.9)]),
-            new UnansweredDecisionAnswer("score", DecisionKind.Score) { Reason = DecisionUnansweredReason.Refusal, Message = "Declined" },
+            new UnansweredDecisionAnswer("score", DecisionKind.Score) { Reason = DecisionUnansweredReason.Refusal },
         ]);
 
     internal sealed record TicketState(

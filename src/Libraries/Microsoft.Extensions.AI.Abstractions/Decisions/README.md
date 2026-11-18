@@ -54,7 +54,7 @@ DecisionRequest request = new(
 DecisionResponse response = await client.GetResponseAsync(request);
 ```
 
-The `GetResponseAsync<TState>` extension serializes application state with a supplied `JsonTypeInfo<TState>`, sends the request, and validates that the response corresponds to it:
+The `GetResponseAsync<TState>` extension serializes application state with a supplied `JsonTypeInfo<TState>` and sends the request:
 
 ```csharp
 DecisionResponse response = await client.GetResponseAsync(
@@ -71,8 +71,6 @@ Providers must map every content item faithfully or throw `NotSupportedException
 A response contains exactly one answer per question, in request order. Each answer is either the kind-specific answer type or an `UnansweredDecisionAnswer`, which a provider returns when it declined or could not answer a question (for example, a refusal). Answers to other questions in the same request are preserved.
 
 ```csharp
-response.Validate(request);
-
 switch (response.GetAnswer("category"))
 {
     case ChoiceDecisionAnswer choice:
@@ -80,14 +78,14 @@ switch (response.GetAnswer("category"))
         break;
 
     case UnansweredDecisionAnswer unanswered:
-        Console.WriteLine($"Unanswered ({unanswered.Reason}): {unanswered.Message}");
+        Console.WriteLine($"Unanswered ({unanswered.Reason})");
         break;
 }
 ```
 
 Probabilities are reported as observed by the provider. Each value is in [0, 1], but the abstraction does not require distributions to sum to 1 because providers can report rounded values. `ScoreDecisionAnswer.ExpectedScore` computes the expectation over the observed distribution after normalizing by its total.
 
-`DecisionResponse.Validate` checks that a response has one answer per question in request order, that each answer's ID and kind match, and that each choice or score distribution contains exactly the requested candidate or level IDs in order. It throws `DecisionProtocolException` otherwise.
+`IDecisionClient` implementations are responsible for returning one answer per question in request order, and throw `DecisionProtocolException` when a provider response can't be mapped to the request.
 
 `RawRepresentation` and `AdditionalProperties` on responses and answers carry provider-specific data such as confidence labels.
 
