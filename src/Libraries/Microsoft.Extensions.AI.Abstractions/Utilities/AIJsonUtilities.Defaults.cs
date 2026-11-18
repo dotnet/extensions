@@ -158,6 +158,7 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(BinaryDecisionAnswer))]
     [JsonSerializable(typeof(ChoiceDecisionAnswer))]
     [JsonSerializable(typeof(ScoreDecisionAnswer))]
+    [JsonSerializable(typeof(UnansweredDecisionAnswer))]
     [JsonSerializable(typeof(DecisionProbability))]
 
     [EditorBrowsable(EditorBrowsableState.Never)] // Never use JsonContext directly, use DefaultOptions instead.
