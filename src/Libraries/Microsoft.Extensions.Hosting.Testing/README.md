@@ -50,3 +50,7 @@ using var host = await FakeHost.CreateBuilder(options => { });
 ## Feedback & Contributing
 
 For any feedback or contributions, please visit us in [our GitHub repo](https://github.com/dotnet/extensions).
+
+## Supported Platforms
+
+This package includes .NET Framework compatible targets, but is not officially supported on .NET Framework.
