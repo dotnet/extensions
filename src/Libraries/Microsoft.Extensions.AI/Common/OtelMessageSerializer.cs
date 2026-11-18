@@ -256,7 +256,10 @@ internal static class OtelMessageSerializer
     }
 
     /// <summary>Derives the OTel <c>modality</c> classifier from a media type's top-level type.</summary>
-    /// <remarks>The required modality allows custom strings; use <c>unknown</c> when the optional media type is unavailable.</remarks>
+    /// <remarks>
+    /// The modality is required by the OTel schema, so an empty string is returned when it can't be derived,
+    /// matching OTel's Python GenAI instrumentations.
+    /// </remarks>
     internal static string DeriveModalityFromMediaType(string? mediaType)
     {
         if (mediaType is not null)
@@ -272,7 +275,7 @@ internal static class OtelMessageSerializer
             }
         }
 
-        return "unknown";
+        return string.Empty;
     }
 
     /// <summary>Extracts code text from code interpreter inputs.</summary>

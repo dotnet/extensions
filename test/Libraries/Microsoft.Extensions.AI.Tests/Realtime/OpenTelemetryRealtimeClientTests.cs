@@ -1003,7 +1003,7 @@ public class OpenTelemetryRealtimeClientTests
         Assert.Equal("file-123", parts[2].GetProperty("file_id").GetString());
         Assert.Equal("file", parts[3].GetProperty("type").GetString());
         Assert.Equal("file-without-media-type", parts[3].GetProperty("file_id").GetString());
-        Assert.Equal("unknown", parts[3].GetProperty("modality").GetString());
+        Assert.Equal(string.Empty, parts[3].GetProperty("modality").GetString());
         Assert.False(parts[3].TryGetProperty("mime_type", out _));
     }
 

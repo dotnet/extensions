@@ -496,7 +496,7 @@ public class OpenTelemetryChatClientTests
                   {
                     "type": "file",
                     "file_id": "file-xyz789",
-                    "modality": "unknown"
+                    "modality": ""
                   }
                 ]
               },
@@ -565,7 +565,7 @@ public class OpenTelemetryChatClientTests
                   {
                     "type": "file",
                     "file_id": "file-abc123",
-                    "modality": "unknown"
+                    "modality": ""
                   }
                 ]
               }
