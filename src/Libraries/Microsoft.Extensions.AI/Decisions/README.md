@@ -66,7 +66,7 @@ IReadOnlyDictionary<TicketCategory, double> categories = response.GetDistributio
 DecisionResponse untyped = response.Response;
 ```
 
-State passed as a .NET object is serialized with the definition's `SerializerOptions`, so for Native AOT the state type must be in the same source-generated context as the result (for example, `TicketJsonContext.Default.Options`). For full control, serialize the state yourself with `JsonSerializer.SerializeToElement(state, typeInfo)` and pass the `JsonElement`.
+State passed as a .NET object is serialized with the definition's `SerializerOptions`, so for Native AOT the state type must be in the same source-generated context as the result (for example, `TicketJsonContext.Default.Options`). For full control, serialize the state yourself with `JsonSerializer.SerializeToElement(state, typeInfo)` and pass the `JsonElement`. `AIContent` and sequences of `AIContent` can't be used as state; pass them as contents instead, either as a collection expression or with the `contents:` named argument.
 
 `DecisionResponse<TResult>.Response` exposes the underlying `DecisionResponse`, including `ModelId`, `Usage`, and the raw answers. `GetDistribution` maps a choice question's distribution to enum values.
 
@@ -116,9 +116,15 @@ TicketTriage triage = response.Bind(answers => new TicketTriage(
 `AsAIFunction<TState>` exposes a definition as an `AIFunction` that accepts `TState` and returns `TResult`, so a chat model can request a decision through function calling:
 
 ```csharp
-AIFunction evaluate = definition.AsAIFunction(
-    decisionClient,
-    stateTypeInfo: TicketJsonContext.Default.SupportTicket);
+[JsonSerializable(typeof(SupportTicket))]
+[JsonSerializable(typeof(TicketDecision))]
+internal sealed partial class TicketJsonContext : JsonSerializerContext;
+
+DecisionDefinition<TicketDecision> definition = DecisionDefinition<TicketDecision>.Create(
+    builder => { /* declare questions */ },
+    TicketJsonContext.Default.Options);
+
+AIFunction evaluate = definition.AsAIFunction<SupportTicket>(decisionClient);
 ```
 
-When the state and result contracts come from different source-generated contexts, the function combines their resolvers.
+The function serializes the state with the definition's `SerializerOptions`, the same as `GetDecisionAsync`, so those options must contain contracts for both the state and result types.

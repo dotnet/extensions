@@ -109,25 +109,6 @@ public sealed class DecisionTypedFunctionTests
     }
 
     [Fact]
-    public async Task AsAIFunction_CombinesSeparateStateAndResultContexts()
-    {
-#if NET
-        Assert.False(JsonSerializer.IsReflectionEnabledByDefault);
-#endif
-        using SupportTicketDecisionClient client = new();
-        DecisionDefinition<TicketAnalysis> definition = CreateResultOnlyDefinition();
-
-        AIFunction function = definition.AsAIFunction(client, stateTypeInfo: DecisionStateOnlyJsonContext.Default.SupportTicket);
-
-        JsonElement output = Assert.IsType<JsonElement>(await function.InvokeAsync(CreateRawDecisionArguments()));
-
-        Assert.Equal("Technical", output.GetProperty("category").GetString());
-        Assert.Equal(0.25, output.GetProperty("refundRequestProbability").GetDouble());
-        Assert.Equal("Source-generated state.", client.LastRequest!.State!.Value.GetProperty("message").GetString());
-        Assert.Equal("state", Assert.Single(function.JsonSchema.GetProperty("properties").EnumerateObject()).Name);
-    }
-
-    [Fact]
     public async Task Create_SupportsCombinedSourceGeneratedResolvers()
     {
 #if NET
@@ -156,6 +137,8 @@ public sealed class DecisionTypedFunctionTests
 
         Assert.Equal(TicketCategory.Technical, response.Result.Category);
         Assert.Equal("Technical", output.GetProperty("category").GetString());
+        Assert.Equal("Source-generated state.", client.LastRequest!.State!.Value.GetProperty("message").GetString());
+        Assert.Equal("state", Assert.Single(function.JsonSchema.GetProperty("properties").EnumerateObject()).Name);
         Assert.Equal(2, client.CallCount);
     }
 

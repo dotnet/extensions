@@ -89,12 +89,11 @@ public static class DecisionClientTypedExtensions
     /// or serialize the state yourself and use the overload that accepts a <see cref="JsonElement"/>.
     /// </para>
     /// <para>
-    /// When <paramref name="state"/> is a sequence of <see cref="AIContent"/> and <paramref name="contents"/> is <see langword="null"/>,
-    /// the sequence is evaluated as content, as with the overload that accepts only content.
+    /// <see cref="AIContent"/> can't be used as state. Pass content through <paramref name="contents"/> or use the overload that accepts only content.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="definition"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="state"/> is an <see cref="AIContent"/>, or a sequence of <see cref="AIContent"/> while <paramref name="contents"/> is supplied.</exception>
+    /// <exception cref="ArgumentException"><paramref name="state"/> is an <see cref="AIContent"/> or a sequence of <see cref="AIContent"/>.</exception>
     /// <exception cref="NotSupportedException">The definition's serializer options do not contain a contract for <typeparamref name="TState"/>.</exception>
     /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
@@ -108,12 +107,6 @@ public static class DecisionClientTypedExtensions
     {
         _ = Throw.IfNull(client);
         _ = Throw.IfNull(definition);
-
-        // A List<AIContent> or AIContent[] argument binds to this overload rather than to the content-only overload.
-        if (state is IEnumerable<AIContent> stateContents && contents is null)
-        {
-            return GetDecisionAsync(client, stateContents, definition, options, cancellationToken);
-        }
 
         ThrowIfContentState(state);
         return GetDecisionCoreAsync(client, state, definition.GetStateTypeInfo<TState>(), definition, contents, options, cancellationToken);

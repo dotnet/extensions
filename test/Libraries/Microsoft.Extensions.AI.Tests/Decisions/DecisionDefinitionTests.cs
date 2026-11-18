@@ -210,13 +210,13 @@ public class DecisionDefinitionTests
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
         using RecordingDecisionClient client = new(request => CreateTypedDefinitionResponse(request));
-        List<AIContent> contents =
+        IEnumerable<AIContent> contents =
         [
             new TextContent("The product crashes when I sign in."),
             new DataContent(new byte[] { 1, 2, 3 }, "application/octet-stream"),
         ];
 
-        DecisionResponse<TypedDecisionResult> response = await client.GetDecisionAsync(contents, definition);
+        DecisionResponse<TypedDecisionResult> response = await client.GetDecisionAsync(contents: contents, definition: definition);
 
         Assert.Equal(TicketCategory.Technical, response.Result.Category);
         Assert.Equal(1, client.CallCount);
@@ -269,34 +269,29 @@ public class DecisionDefinitionTests
     }
 
     [Fact]
-    public async Task GetDecisionAsync_ContentArgumentsBindAsContents()
+    public async Task GetDecisionAsync_ContentAsStateThrowsAndCollectionExpressionBindsAsContents()
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
         using RecordingDecisionClient client = new(request => CreateTypedDefinitionResponse(request));
         List<AIContent> list = [new TextContent("list")];
         AIContent[] array = [new TextContent("array")];
 
-        _ = await client.GetDecisionAsync(list, definition);
-        Assert.Null(client.LastRequest!.State);
-        Assert.Equal(list, client.LastRequest.Contents);
-
-        _ = await client.GetDecisionAsync(array, definition);
-        Assert.Null(client.LastRequest!.State);
-        Assert.Equal(array, client.LastRequest.Contents);
+        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync(list, definition));
+        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync(array, definition));
+        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync(new TextContent("single"), definition));
+        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync(list, definition, [new TextContent("more")]));
+        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync<object, TypedDecisionResult>(new TextContent("object"), definition));
+        Assert.Equal(0, client.CallCount);
 
         _ = await client.GetDecisionAsync([new TextContent("collection expression")], definition);
         Assert.Null(client.LastRequest!.State);
         Assert.Equal("collection expression", Assert.IsType<TextContent>(Assert.Single(client.LastRequest.Contents)).Text);
+        Assert.Equal(1, client.CallCount);
 
-        JsonElement json = JsonSerializer.SerializeToElement(new TypedDecisionState("json"), DecisionTestJsonContext.Default.TypedDecisionState);
-        _ = await client.GetDecisionAsync(json, definition);
-        Assert.Equal("json", client.LastRequest!.State!.Value.GetProperty("message").GetString());
-        Assert.Equal(4, client.CallCount);
-
-        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync(new TextContent("single"), definition));
-        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync(list, definition, [new TextContent("more")]));
-        await Assert.ThrowsAsync<ArgumentException>("state", () => client.GetDecisionAsync<object, TypedDecisionResult>(new TextContent("object"), definition));
-        Assert.Equal(4, client.CallCount);
+        _ = await client.GetDecisionAsync(contents: list, definition: definition);
+        Assert.Null(client.LastRequest!.State);
+        Assert.Equal(list, client.LastRequest.Contents);
+        Assert.Equal(2, client.CallCount);
     }
 
     [Fact]

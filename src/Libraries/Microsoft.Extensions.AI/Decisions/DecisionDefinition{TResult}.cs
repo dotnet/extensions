@@ -91,28 +91,26 @@ public sealed class DecisionDefinition<TResult>
     /// <param name="client">The decision client used for each invocation.</param>
     /// <param name="functionOptions">Optional function factory options.</param>
     /// <param name="decisionOptions">Optional decision options. They are copied now and cloned for each invocation.</param>
-    /// <param name="stateTypeInfo">
-    /// Optional JSON contract for <typeparamref name="TState"/>. When omitted, <see cref="SerializerOptions"/> must
-    /// contain the state contract. When it comes from different options, the function serializes with a resolver
-    /// that combines the state and result resolvers.
-    /// </param>
     /// <returns>A function whose only input is <typeparamref name="TState"/> and whose result is <typeparamref name="TResult"/>.</returns>
+    /// <remarks>
+    /// The state is serialized using <see cref="SerializerOptions"/>, which must contain a contract for <typeparamref name="TState"/>.
+    /// For Native AOT, create the definition with options from a source-generated context that includes both the state and result types.
+    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
-    /// <exception cref="NotSupportedException">No contract for <typeparamref name="TState"/> is available.</exception>
+    /// <exception cref="NotSupportedException"><see cref="SerializerOptions"/> do not contain a contract for <typeparamref name="TState"/>.</exception>
     public AIFunction AsAIFunction<TState>(
         IDecisionClient client,
         AIFunctionFactoryOptions? functionOptions = null,
-        DecisionOptions? decisionOptions = null,
-        JsonTypeInfo<TState>? stateTypeInfo = null)
+        DecisionOptions? decisionOptions = null)
     {
         _ = Throw.IfNull(client);
 
-        stateTypeInfo ??= GetStateTypeInfo<TState>();
+        JsonTypeInfo<TState> stateTypeInfo = GetStateTypeInfo<TState>();
         DecisionFunctionInvoker<TState> invoker = new(client, this, stateTypeInfo, decisionOptions?.Clone());
 
         return AIFunctionFactory.Create(
             invoker.InvokeAsync,
-            GetFunctionOptions(functionOptions, GetFunctionSerializerOptions(stateTypeInfo.Options)));
+            GetFunctionOptions(functionOptions, SerializerOptions));
     }
 
     internal DecisionResponse<TResult> Bind(DecisionResponse response)
@@ -313,23 +311,6 @@ public sealed class DecisionDefinition<TResult>
         }
 
         return property;
-    }
-
-    private JsonSerializerOptions GetFunctionSerializerOptions(JsonSerializerOptions stateOptions)
-    {
-        if (ReferenceEquals(stateOptions, SerializerOptions) ||
-            stateOptions.TypeInfoResolver is not { } stateResolver ||
-            ReferenceEquals(stateResolver, SerializerOptions.TypeInfoResolver))
-        {
-            return stateOptions;
-        }
-
-        JsonSerializerOptions combined = new(stateOptions)
-        {
-            TypeInfoResolver = JsonTypeInfoResolver.Combine(stateResolver, SerializerOptions.TypeInfoResolver),
-        };
-        combined.MakeReadOnly();
-        return combined;
     }
 
     internal JsonTypeInfo<TState> GetStateTypeInfo<TState>()
