@@ -104,7 +104,24 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
         DecisionsUserMessageItem message = new();
         if (request.State is JsonElement state)
         {
-            message.Content.Add(new DecisionsInputJsonContentPart([BinaryData.FromString(state.GetRawText())]));
+            // The service accepts only JSON objects as JSON input, so other state values are sent as text.
+            switch (state.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    message.Content.Add(new DecisionsInputJsonContentPart([BinaryData.FromString(state.GetRawText())]));
+                    break;
+
+                case JsonValueKind.String:
+                    message.Content.Add(new DecisionsInputTextContentPart(state.GetString()));
+                    break;
+
+                case JsonValueKind.Null or JsonValueKind.Undefined:
+                    break;
+
+                default:
+                    message.Content.Add(new DecisionsInputTextContentPart(state.GetRawText()));
+                    break;
+            }
         }
 
         foreach (AIContent content in request.Contents)

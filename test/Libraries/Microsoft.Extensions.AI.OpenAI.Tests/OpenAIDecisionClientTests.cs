@@ -270,6 +270,37 @@ public class OpenAIDecisionClientTests
         Assert.Equal(1d, Assert.IsType<BinaryDecisionAnswer>(Assert.Single(response.Answers)).TrueProbability);
     }
 
+    [Theory]
+    [InlineData("""{ "status": "delivered" }""", """{ "type": "input_json", "data": [ { "status": "delivered" } ] },""")]
+    [InlineData("\"The order arrived late.\"", """{ "type": "input_text", "text": "The order arrived late." },""")]
+    [InlineData("[1,2]", """{ "type": "input_text", "text": "[1,2]" },""")]
+    [InlineData("42", """{ "type": "input_text", "text": "42" },""")]
+    [InlineData("null", "")]
+    public async Task GetDecisionAsync_MapsStateByJsonKind(string stateJson, string expectedStatePart)
+    {
+        string input = $$"""
+            {
+              "input": [ { "type": "message", "role": "user", "content": [ {{expectedStatePart}} { "type": "input_text", "text": "input" } ] } ],
+              "model": "gpt-6-luna",
+              "questions": [ { "type": "predicate", "instructions": [ { "type": "input_text", "text": "Is it?" } ], "name": "q" } ]
+            }
+            """;
+
+        const string Output = """
+            { "model": "gpt-6-luna", "answers": [ { "type": "predicate", "name": "q", "probability": 1.0 } ] }
+            """;
+
+        using VerbatimHttpHandler handler = new(input, Output);
+        using HttpClient httpClient = new(handler);
+        using IDecisionClient client = CreateDecisionClient(httpClient, "gpt-6-luna");
+        using JsonDocument state = JsonDocument.Parse(stateJson);
+
+        DecisionResponse response = await client.GetDecisionAsync(
+            new DecisionRequest(state.RootElement, [new BinaryDecisionQuestion("q", "Is it?")], [new TextContent("input")]));
+
+        Assert.Equal(1d, Assert.IsType<BinaryDecisionAnswer>(Assert.Single(response.Answers)).TrueProbability);
+    }
+
     [Fact]
     public async Task GetDecisionAsync_NoModel_Throws()
     {

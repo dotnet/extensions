@@ -239,22 +239,23 @@ foreach (var prompt in new[] { "What is AI?", "What is .NET?", "What is AI?" })
 ### Decisions (experimental)
 
 ```csharp
-using System.Text.Json;
 using Microsoft.Extensions.AI;
 
 IDecisionClient client =
     new OpenAI.Decisions.DecisionsClient(Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
     .AsIDecisionClient("gpt-6-luna");
 
-using JsonDocument state = JsonDocument.Parse("""{ "order": { "status": "delivered", "daysLate": 6 } }""");
+byte[] photoBytes = await File.ReadAllBytesAsync("package.png");
 
-DecisionResponse response = await client.GetDecisionAsync(new DecisionRequest(
-    state.RootElement,
+DecisionResponse response = await client.GetDecisionAsync(
+    new Order("delivered", 6),
     [
         new BinaryDecisionQuestion("is_late", "Was the order delivered late?"),
+        new BinaryDecisionQuestion("is_damaged", "Does the package in the photo look damaged?"),
         new ChoiceDecisionQuestion("action", "Which action should support take?",
             [new DecisionCandidate("refund", "Issue a refund."), new DecisionCandidate("apology", "Send an apology.")]),
-    ]));
+    ],
+    contents: [new DataContent(photoBytes, "image/png")]);
 
 foreach (DecisionAnswer answer in response.Answers)
 {
@@ -265,9 +266,11 @@ foreach (DecisionAnswer answer in response.Answers)
         _ => $"{answer.QuestionId}: {answer.Kind}",
     });
 }
+
+record Order(string Status, int DaysLate);
 ```
 
-Question instructions and request contents can include images (`DataContent` or `UriContent`).
+The state is serialized to JSON with `AIJsonUtilities.DefaultOptions`; for Native AOT, pass `JsonSerializerOptions` from a source-generated context. To send raw JSON state, construct a `DecisionRequest` with a `JsonElement`. JSON object state is sent as JSON input; other state values, such as strings, are sent as text. Question instructions and request contents can include images (`DataContent` or `UriContent`).
 
 ### Dependency Injection
 
