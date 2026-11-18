@@ -28,7 +28,7 @@ public static class DecisionClientTypedExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The typed result and the decision response it was bound from.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="definition"/> is <see langword="null"/>.</exception>
-    /// <exception cref="DecisionProtocolException">The response does not match the request or cannot be bound.</exception>
+    /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
     public static Task<DecisionResponse<TResult>> GetResponseAsync<TResult>(
         this IDecisionClient client,
@@ -56,7 +56,7 @@ public static class DecisionClientTypedExtensions
     /// <paramref name="client"/>, <paramref name="contents"/>, or <paramref name="definition"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException"><paramref name="contents"/> is empty.</exception>
-    /// <exception cref="DecisionProtocolException">The response does not match the request or cannot be bound.</exception>
+    /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
     public static Task<DecisionResponse<TResult>> GetResponseAsync<TResult>(
         this IDecisionClient client,
@@ -86,7 +86,7 @@ public static class DecisionClientTypedExtensions
     /// <exception cref="ArgumentNullException">
     /// <paramref name="client"/>, <paramref name="stateTypeInfo"/>, or <paramref name="definition"/> is <see langword="null"/>.
     /// </exception>
-    /// <exception cref="DecisionProtocolException">The response does not match the request or cannot be bound.</exception>
+    /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
     public static Task<DecisionResponse<TResult>> GetResponseAsync<TState, TResult>(
         this IDecisionClient client,
@@ -113,6 +113,6 @@ public static class DecisionClientTypedExtensions
         CancellationToken cancellationToken)
     {
         DecisionResponse response = await client.GetResponseAsync(request, options, cancellationToken);
-        return definition.Bind(response, request);
+        return definition.Bind(response);
     }
 }

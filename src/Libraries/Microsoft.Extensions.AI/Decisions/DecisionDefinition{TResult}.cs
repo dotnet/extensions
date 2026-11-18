@@ -115,16 +115,17 @@ public sealed class DecisionDefinition<TResult>
             GetFunctionOptions(functionOptions, GetFunctionSerializerOptions(stateTypeInfo.Options)));
     }
 
-    internal DecisionResponse<TResult> Bind(DecisionResponse response, DecisionRequest request)
+    internal DecisionResponse<TResult> Bind(DecisionResponse response)
     {
-        response.Validate(request);
-
+        DecisionAnswer[] answers = new DecisionAnswer[_questions.Count];
         List<string>? unanswered = null;
-        foreach (DecisionDefinitionQuestion<TResult> question in _questions)
+        for (int i = 0; i < answers.Length; i++)
         {
-            if (response.GetAnswer(question.Question.Id) is UnansweredDecisionAnswer)
+            DecisionQuestion question = _questions[i].Question;
+            answers[i] = GetBindableAnswer(response, question);
+            if (answers[i] is UnansweredDecisionAnswer)
             {
-                (unanswered ??= []).Add(question.Question.Id);
+                (unanswered ??= []).Add(question.Id);
             }
         }
 
@@ -137,10 +138,10 @@ public sealed class DecisionDefinition<TResult>
         using (Utf8JsonWriter writer = new(stream))
         {
             writer.WriteStartObject();
-            foreach (DecisionDefinitionQuestion<TResult> question in _questions)
+            for (int i = 0; i < answers.Length; i++)
             {
-                DecisionAnswer answer = response.GetAnswer(question.Question.Id);
-                switch (answer)
+                DecisionDefinitionQuestion<TResult> question = _questions[i];
+                switch (answers[i])
                 {
                     case BinaryDecisionAnswer binary:
                         writer.WriteNumber(question.PropertyName, binary.TrueProbability);
@@ -179,11 +180,11 @@ public sealed class DecisionDefinition<TResult>
             throw new DecisionProtocolException("The decision answers produced a null result.");
         }
 
-        foreach (DecisionDefinitionQuestion<TResult> question in _questions)
+        for (int i = 0; i < answers.Length; i++)
         {
-            DecisionAnswer answer = response.GetAnswer(question.Question.Id);
+            DecisionDefinitionQuestion<TResult> question = _questions[i];
             object? actualValue = question.ValueAccessor(result);
-            bool preserved = answer switch
+            bool preserved = answers[i] switch
             {
                 BinaryDecisionAnswer binary => actualValue is double actualBinary && actualBinary.Equals(binary.TrueProbability),
                 ChoiceDecisionAnswer choice => question.ChoiceValueMatches?.Invoke(actualValue, choice.SelectedCandidateId) is true,
@@ -222,6 +223,44 @@ public sealed class DecisionDefinition<TResult>
         }
 
         return new ReadOnlyDictionary<TEnum, double>(values);
+    }
+
+    /// <summary>Gets the answer for <paramref name="declaredQuestion"/> and checks that it carries what binding consumes.</summary>
+    private static DecisionAnswer GetBindableAnswer(DecisionResponse decisionResponse, DecisionQuestion declaredQuestion)
+    {
+        DecisionAnswer? answer = null;
+        foreach (DecisionAnswer? candidate in decisionResponse.Answers)
+        {
+            if (candidate is not null && string.Equals(candidate.QuestionId, declaredQuestion.Id, StringComparison.Ordinal))
+            {
+                answer = candidate;
+                break;
+            }
+        }
+
+        if (answer is null)
+        {
+            throw new DecisionProtocolException($"The response does not contain an answer for question '{declaredQuestion.Id}'.");
+        }
+
+        bool bindable = (declaredQuestion, answer) switch
+        {
+            (_, UnansweredDecisionAnswer) => answer.Kind == declaredQuestion.Kind,
+            (BinaryDecisionQuestion, BinaryDecisionAnswer) => true,
+            (ChoiceDecisionQuestion choice, ChoiceDecisionAnswer choiceAnswer) =>
+                choiceAnswer.Probabilities.Select(static p => p.Id).SequenceEqual(choice.Candidates.Select(static c => c.Id), StringComparer.Ordinal),
+            (ScoreDecisionQuestion score, ScoreDecisionAnswer scoreAnswer) =>
+                scoreAnswer.Probabilities.Select(static p => p.Id).SequenceEqual(score.Levels.Select(static l => l.Id), StringComparer.Ordinal),
+            _ => false,
+        };
+
+        if (!bindable)
+        {
+            throw new DecisionProtocolException(
+                $"The answer for question '{declaredQuestion.Id}' does not match the question's kind, candidates, or levels.");
+        }
+
+        return answer;
     }
 
     private static double GetScoreValue(DecisionDefinitionQuestion<TResult> question, ScoreDecisionAnswer score) =>

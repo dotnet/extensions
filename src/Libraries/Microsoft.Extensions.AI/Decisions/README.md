@@ -52,7 +52,7 @@ The definition uses the supplied `JsonSerializerOptions` to resolve the result c
 
 ## Getting a typed response
 
-The typed `GetResponseAsync` overloads send the definition's questions, validate the response, and bind it to `TResult`. The input can be JSON state, ordered `AIContent` items, or both:
+The typed `GetResponseAsync` overloads send the definition's questions and bind the response to `TResult`. Binding throws `DecisionProtocolException` when the answer for a declared question is missing or does not match its kind, candidates, or levels. The input can be JSON state, ordered `AIContent` items, or both:
 
 ```csharp
 DecisionResponse<TicketDecision> response = await client.GetResponseAsync(

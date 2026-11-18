@@ -272,7 +272,6 @@ public class DecisionDefinitionTests
             response.Answers[1] = new UnansweredDecisionAnswer(request.Questions[1].Id, DecisionKind.Binary)
             {
                 Reason = DecisionUnansweredReason.Refusal,
-                Message = "Declined.",
             };
             return response;
         });
@@ -319,6 +318,8 @@ public class DecisionDefinitionTests
     [InlineData("wrong-kind")]
     [InlineData("wrong-id")]
     [InlineData("count")]
+    [InlineData("unanswered-wrong-kind")]
+    [InlineData("score-levels")]
     public async Task GetResponseAsync_RejectsResponseNotMatchingSentRequest(string mutation)
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
@@ -618,6 +619,13 @@ public class DecisionDefinitionTests
                 break;
             case "count":
                 response.Answers.RemoveAt(2);
+                break;
+            case "unanswered-wrong-kind":
+                response.Answers[1] = new UnansweredDecisionAnswer(request.Questions[1].Id, DecisionKind.Score);
+                break;
+            case "score-levels":
+                ScoreDecisionQuestion score = (ScoreDecisionQuestion)request.Questions[2];
+                response.Answers[2] = new ScoreDecisionAnswer(score.Id, 1, [new(score.Levels[2].Id, 0.7), new(score.Levels[1].Id, 0.2), new(score.Levels[0].Id, 0.1)]);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(mutation));
