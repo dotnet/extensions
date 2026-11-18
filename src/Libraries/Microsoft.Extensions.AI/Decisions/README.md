@@ -52,21 +52,22 @@ The definition uses the supplied `JsonSerializerOptions` to resolve the result c
 
 ## Getting a typed response
 
-The typed `GetDecisionAsync` overloads send the definition's questions and bind the response to `TResult`. Binding throws `DecisionProtocolException` when the answer for a declared question is missing or does not match its kind, candidates, or levels. The request-level inputs, shared by every question, can be JSON state, `AIContent` items, or both:
+The typed `GetDecisionAsync` overloads send the definition's questions and bind the response to `TResult`. Binding throws `DecisionProtocolException` when the answer for a declared question is missing or does not match its kind, candidates, or levels. The request-level inputs, shared by every question, are the state and optional `AIContent` items such as an image:
 
 ```csharp
 DecisionResponse<TicketDecision> response = await client.GetDecisionAsync(ticket, definition);
 
-DecisionResponse<TicketDecision> fromContents = await client.GetDecisionAsync(
-    [new TextContent(ticketText), new DataContent(screenshotBytes, "image/png")],
-    definition);
+DecisionResponse<TicketDecision> withImage = await client.GetDecisionAsync(
+    ticketText,
+    definition,
+    contents: [new DataContent(screenshotBytes, "image/png")]);
 
 TicketDecision decision = response.Result;
 IReadOnlyDictionary<TicketCategory, double> categories = response.GetDistribution(result => result.Category);
 DecisionResponse untyped = response.Response;
 ```
 
-State passed as a .NET object is serialized with the definition's `SerializerOptions`, so for Native AOT the state type must be in the same source-generated context as the result (for example, `TicketJsonContext.Default.Options`). For full control, serialize the state yourself with `JsonSerializer.SerializeToElement(state, typeInfo)` and pass the `JsonElement`. `AIContent` and sequences of `AIContent` can't be used as state; pass them as contents instead, either as a collection expression or with the `contents:` named argument.
+State passed as a .NET object is serialized with the definition's `SerializerOptions`, so for Native AOT the state type must be in the same source-generated context as the result (for example, `TicketJsonContext.Default.Options`). For full control, serialize the state yourself with `JsonSerializer.SerializeToElement(state, typeInfo)` and pass the `JsonElement`. `AIContent` and sequences of `AIContent` can't be used as state; pass them through the `contents` parameter. To evaluate content without state, create a `DecisionRequest` with `Contents` and call the untyped `IDecisionClient.GetDecisionAsync`.
 
 `DecisionResponse<TResult>.Response` exposes the underlying `DecisionResponse`, including `ModelId`, `Usage`, and the raw answers. `GetDistribution` maps a choice question's distribution to enum values.
 

@@ -44,34 +44,6 @@ public static class DecisionClientTypedExtensions
         return GetDecisionCoreAsync(client, new DecisionRequest(state, definition.Questions, contents?.ToArray()), definition, options, cancellationToken);
     }
 
-    /// <summary>Evaluates a typed decision definition for content.</summary>
-    /// <typeparam name="TResult">The application-owned result type.</typeparam>
-    /// <param name="client">The decision client.</param>
-    /// <param name="contents">The content evaluated by every declared question.</param>
-    /// <param name="definition">The typed decision definition.</param>
-    /// <param name="options">Optional request options.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
-    /// <returns>The typed result and the decision response it was bound from.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// <paramref name="client"/>, <paramref name="contents"/>, or <paramref name="definition"/> is <see langword="null"/>.
-    /// </exception>
-    /// <exception cref="ArgumentException"><paramref name="contents"/> is empty.</exception>
-    /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
-    /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
-    public static Task<DecisionResponse<TResult>> GetDecisionAsync<TResult>(
-        this IDecisionClient client,
-        IEnumerable<AIContent> contents,
-        DecisionDefinition<TResult> definition,
-        DecisionOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(client);
-        _ = Throw.IfNull(contents);
-        _ = Throw.IfNull(definition);
-
-        return GetDecisionCoreAsync(client, new DecisionRequest(null, definition.Questions, contents.ToArray()), definition, options, cancellationToken);
-    }
-
     /// <summary>Evaluates a typed decision definition for application-owned state.</summary>
     /// <typeparam name="TState">The application-owned state type.</typeparam>
     /// <typeparam name="TResult">The application-owned result type.</typeparam>
@@ -89,7 +61,8 @@ public static class DecisionClientTypedExtensions
     /// or serialize the state yourself and use the overload that accepts a <see cref="JsonElement"/>.
     /// </para>
     /// <para>
-    /// <see cref="AIContent"/> can't be used as state. Pass content through <paramref name="contents"/> or use the overload that accepts only content.
+    /// <see cref="AIContent"/> can't be used as state. Pass content through <paramref name="contents"/>, or construct a
+    /// <see cref="DecisionRequest"/> and set <see cref="DecisionRequest.Contents"/> to evaluate content without state.
     /// </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="definition"/> is <see langword="null"/>.</exception>

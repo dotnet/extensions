@@ -376,10 +376,6 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse<TResult>> Microsoft.Extensions.AI.DecisionClientTypedExtensions.GetDecisionAsync<TResult>(this Microsoft.Extensions.AI.IDecisionClient client, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent> contents, Microsoft.Extensions.AI.DecisionDefinition<TResult> definition, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse<TResult>> Microsoft.Extensions.AI.DecisionClientTypedExtensions.GetDecisionAsync<TState, TResult>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, Microsoft.Extensions.AI.DecisionDefinition<TResult> definition, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
