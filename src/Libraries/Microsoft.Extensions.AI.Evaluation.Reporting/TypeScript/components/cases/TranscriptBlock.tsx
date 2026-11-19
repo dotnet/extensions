@@ -544,12 +544,15 @@ const SystemGroup = ({ content, imageAlt }: { content: AIContent; imageAlt?: str
 };
 
 export const TranscriptBlock = ({ messages, model: modelProp }: { messages: ChatMessageDisplay[]; model?: string }) => {
-    const { dataset, prettifyJson } = useReportContext();
+    const { dataset, prettifyJson, scoreSummary, activeExecution } = useReportContext();
     const classes = useStyles();
     const s = useReportStyles();
     const headingId = useId();
     const groups = buildGroups(messages, prettifyJson);
     const date = reportDate(dataset.createdAt);
+    // `dotnet aieval report` only keeps transcripts for the latest execution (the first one in the dataset).
+    const latestExecution = scoreSummary.primaryResult.executionName;
+    const transcriptNotKept = scoreSummary.executionHistory.size > 1 && activeExecution !== latestExecution;
 
     return (
         <Card appearance="outline" className="eval-transcript">
@@ -558,7 +561,13 @@ export const TranscriptBlock = ({ messages, model: modelProp }: { messages: Chat
                     <h2 id={headingId} className={s.eyebrow} style={{ margin: 0 }}>Transcript</h2>
                 </div>
                 <div className={classes.blockBody} role="region" aria-labelledby={headingId}>
-                    {groups.length === 0 && <div className={classes.empty}>No transcript for this case.</div>}
+                    {groups.length === 0 && (
+                        <div className={classes.empty}>
+                            {transcriptNotKept
+                                ? `Transcript not kept for this execution. Reports only keep transcripts for the latest execution (${latestExecution}).`
+                                : 'No transcript for this case.'}
+                        </div>
+                    )}
                     {groups.length > 0 && date && (
                         <div className={classes.divider}>
                             <span className={classes.dividerLine} />

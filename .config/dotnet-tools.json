@@ -9,13 +9,13 @@
       ]
     },
     "dotnet-reportgenerator-globaltool": {
-      "version": "5.5.11",
+      "version": "5.5.12",
       "commands": [
         "reportgenerator"
       ]
     },
     "microsoft.visualstudio.slngen.tool": {
-      "version": "12.0.58",
+      "version": "13.0.3",
       "commands": [
         "slngen"
       ]
