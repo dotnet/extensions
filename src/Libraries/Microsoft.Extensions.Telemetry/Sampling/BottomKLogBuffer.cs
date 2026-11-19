@@ -422,39 +422,28 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
         public AlgorithmConfiguration(BottomKLogSamplingOptions options)
         {
             Capacity = options.Capacity;
-            PreserveCapacity = options.PreserveCapacity;
-            MinPeriodCount = options.MinPeriodCount;
             UnseenWeightMode = options.UnseenWeightMode;
         }
 
         public int Capacity { get; }
-
-        public long MinPeriodCount { get; }
-
-        public int PreserveCapacity { get; }
 
         public BottomKUnseenWeightMode UnseenWeightMode { get; }
 
         public BottomKSampler<int, SerializedLogRecord> CreateReservoir()
             => new(
                 Capacity,
-                PreserveCapacity,
-                MinPeriodCount,
                 UnseenWeightMode,
-                seed: null,
                 releasePayload: SerializedLogRecordFactory.Return);
 
         public bool Equals(AlgorithmConfiguration other)
             => Capacity == other.Capacity
-                && PreserveCapacity == other.PreserveCapacity
-                && MinPeriodCount == other.MinPeriodCount
                 && UnseenWeightMode == other.UnseenWeightMode;
 
         public override bool Equals(object? obj)
             => obj is AlgorithmConfiguration other && Equals(other);
 
         public override int GetHashCode()
-            => HashCode.Combine(Capacity, PreserveCapacity, MinPeriodCount, UnseenWeightMode);
+            => HashCode.Combine(Capacity, UnseenWeightMode);
     }
 
     private sealed class FixedOptionsMonitor : IOptionsMonitor<BottomKLogSamplingOptions>

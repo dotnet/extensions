@@ -258,7 +258,6 @@ internal static class SustainedGcPressureMeasurement
                         options.Capacity = Math.Max(
                             1,
                             (int)(logsPerMinute * flushInterval.TotalMinutes / 100 / CategoryCount));
-                        options.PreserveCapacity = 0;
                         options.FlushInterval = flushInterval;
                         options.Rules.Add(new BottomKLogSamplingFilterRule());
                     });

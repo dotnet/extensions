@@ -142,14 +142,6 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "long Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.MinPeriodCount { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "int Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.PreserveCapacity { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
           "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingFilterRule> Microsoft.Extensions.Diagnostics.Sampling.BottomKLogSamplingOptions.Rules { get; set; }",
           "Stage": "Experimental"
         },

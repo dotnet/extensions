@@ -28,26 +28,14 @@ public sealed class BottomKLogSamplingOptions
     public int Capacity { get; set; } = 128;
 
     /// <summary>
-    /// Gets or sets the per-period novelty-preserve capacity (<c>R</c>). <c>0</c> disables the preserve.
-    /// </summary>
-    [Range(0, int.MaxValue)]
-    public int PreserveCapacity { get; set; } = 128;
-
-    /// <summary>
-    /// Gets or sets the minimum prior-period arrival count below which the frozen frequency table is
-    /// discarded and the next period is treated as warmup.
-    /// </summary>
-    [Range(0, long.MaxValue)]
-    public long MinPeriodCount { get; set; } = 32;
-
-    /// <summary>
     /// Gets or sets the period length. When this much time has elapsed the reservoir is flushed and a
     /// new period begins.
     /// </summary>
     public TimeSpan FlushInterval { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Gets or sets the strategy used to weight callsites unseen in the frozen table.
+    /// Gets or sets how sampling weights a log event when no records with the same numeric event ID
+    /// were observed for its logger category during the previous sampling period.
     /// </summary>
     public BottomKUnseenWeightMode UnseenWeightMode { get; set; } = BottomKUnseenWeightMode.Chao1;
 

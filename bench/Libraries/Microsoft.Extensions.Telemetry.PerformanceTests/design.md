@@ -75,7 +75,7 @@ The novelty preserve is disabled so retained records are controlled only by the 
 
 ### Bottom-K log-level policy cost
 
-`BottomKLogLevelPolicyBench` isolates the incremental cost of a log-level-constrained sampling rule. Both pipelines process the same Information-only workload with the same bottom-K capacity, preserve setting, flush interval, categories, event IDs, and exporter. The baseline uses an unrestricted rule. The comparison uses a rule through `Warning`, which still matches, so both pipelines perform equivalent bottom-K admission and retain equivalent output.
+`BottomKLogLevelPolicyBench` isolates the incremental cost of a log-level-constrained sampling rule. Both pipelines process the same Information-only workload with the same bottom-K capacity, flush interval, categories, event IDs, and exporter. Preserve is disabled by the production integration. The baseline uses an unrestricted rule. The comparison uses a rule through `Warning`, which still matches, so both pipelines perform equivalent bottom-K admission and retain equivalent output.
 
 The benchmark measures the full logging path. `LogLevel` is already present on `LogEntry`; reading it does not construct or parse a value. The reported delta therefore covers evaluating the configured log-level constraint.
 

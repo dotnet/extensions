@@ -76,7 +76,6 @@ public class BottomKLogLevelPolicyBench
             builder.AddBottomKLogSampling(options =>
             {
                 options.Capacity = AdaptiveCapacity;
-                options.PreserveCapacity = 0;
                 options.FlushInterval = TimeSpan.FromDays(1);
                 options.Rules.Clear();
                 options.Rules.Add(retainProtectedLevels

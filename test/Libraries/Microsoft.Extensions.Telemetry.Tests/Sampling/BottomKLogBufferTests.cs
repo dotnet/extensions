@@ -131,6 +131,31 @@ public class BottomKLogBufferTests
     }
 
     [Fact]
+    public void Flush_EmitsAtMostCapacityWithoutPreserveRecords()
+    {
+        var destination = new RecordingBufferedLogger();
+        using var buffer = CreateBuffer(new TestTimeProvider());
+
+        for (int i = 0; i < 100; i++)
+        {
+            var eventId = new EventId(i);
+            if (buffer.Admit("category", eventId))
+            {
+                Assert.True(TryEnqueue(buffer, destination, eventId));
+            }
+        }
+
+        buffer.Flush();
+
+        BufferedLogRecord record = Assert.Single(destination.Records);
+        Assert.Contains(
+            record.Attributes,
+            attribute => attribute.Key == "sampling.count"
+                && attribute.Value is double samplingCount
+                && samplingCount >= 1.0);
+    }
+
+    [Fact]
     public void LoggingPipeline_PreservesEnrichmentAndSupportsOrdinaryProvider()
     {
         using var provider = new CapturingProvider();
@@ -141,7 +166,6 @@ public class BottomKLogBufferTests
             builder.AddBottomKLogSampling(options =>
             {
                 options.Capacity = 1;
-                options.PreserveCapacity = 0;
                 options.Rules.Add(new BottomKLogSamplingFilterRule());
             });
         });
@@ -343,7 +367,6 @@ public class BottomKLogBufferTests
         var initial = new BottomKLogSamplingOptions
         {
             Capacity = 1,
-            PreserveCapacity = 0,
             Rules = [new BottomKLogSamplingFilterRule()],
         };
         var monitor = new MutableOptionsMonitor(initial);
@@ -354,7 +377,6 @@ public class BottomKLogBufferTests
         var updated = new BottomKLogSamplingOptions
         {
             Capacity = 2,
-            PreserveCapacity = 0,
             Rules = [new BottomKLogSamplingFilterRule()],
         };
         monitor.Set(updated);
@@ -369,7 +391,6 @@ public class BottomKLogBufferTests
         var initial = new BottomKLogSamplingOptions
         {
             Capacity = 1,
-            PreserveCapacity = 0,
             Rules = [new BottomKLogSamplingFilterRule()],
         };
         var monitor = new MutableOptionsMonitor(initial);
@@ -390,7 +411,6 @@ public class BottomKLogBufferTests
         var updated = new BottomKLogSamplingOptions
         {
             Capacity = 2,
-            PreserveCapacity = 0,
             Rules = [new BottomKLogSamplingFilterRule()],
         };
         monitor.Set(updated);
@@ -460,7 +480,6 @@ public class BottomKLogBufferTests
             builder.AddBottomKLogSampling(options =>
             {
                 options.Capacity = 1;
-                options.PreserveCapacity = 0;
                 options.Rules.Add(new BottomKLogSamplingFilterRule());
             });
         });
@@ -482,7 +501,6 @@ public class BottomKLogBufferTests
             new BottomKLogSamplingOptions
             {
                 Capacity = 1,
-                PreserveCapacity = 0,
                 FlushInterval = TimeSpan.FromSeconds(1),
                 Rules = [new BottomKLogSamplingFilterRule()],
             },

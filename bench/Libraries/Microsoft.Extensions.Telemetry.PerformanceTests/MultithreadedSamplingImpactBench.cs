@@ -86,7 +86,6 @@ public class MultithreadedSamplingImpactBench
                     builder.AddBottomKLogSampling(options =>
                     {
                         options.Capacity = RecordsPerMinute / 100 / CategoryCount;
-                        options.PreserveCapacity = 0;
                         options.FlushInterval = TimeSpan.FromDays(1);
                         options.Rules.Add(new BottomKLogSamplingFilterRule());
                     });

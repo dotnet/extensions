@@ -84,7 +84,6 @@ public class CategoryCardinalityImpactBench
                     builder.AddBottomKLogSampling(options =>
                     {
                         options.Capacity = RecordsPerMinute / 100 / categoryCount;
-                        options.PreserveCapacity = 0;
                         options.FlushInterval = TimeSpan.FromDays(1);
                         options.Rules.Add(new BottomKLogSamplingFilterRule());
                     });

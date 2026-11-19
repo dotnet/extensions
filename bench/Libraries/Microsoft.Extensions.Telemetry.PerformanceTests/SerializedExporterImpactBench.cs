@@ -125,7 +125,6 @@ public class SerializedExporterImpactBench
                         options.Capacity = Math.Max(
                             1,
                             recordCount / 100 / LoggingBenchmarkWorkload.CategoryCount);
-                        options.PreserveCapacity = 0;
                         options.FlushInterval = TimeSpan.FromDays(1);
                         options.Rules.Add(new BottomKLogSamplingFilterRule());
                     });

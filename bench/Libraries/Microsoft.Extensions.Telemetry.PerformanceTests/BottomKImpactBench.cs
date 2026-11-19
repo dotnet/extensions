@@ -125,7 +125,6 @@ public class BottomKImpactBench
         return CreateServices(options =>
         {
             options.Capacity = capacity.Value;
-            options.PreserveCapacity = 0;
             options.FlushInterval = TimeSpan.FromDays(1);
             options.Rules.Add(new BottomKLogSamplingFilterRule());
         });

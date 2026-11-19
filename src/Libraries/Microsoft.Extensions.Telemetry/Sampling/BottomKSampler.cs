@@ -34,6 +34,7 @@ internal sealed class BottomKSampler<TCallsite, TPayload>
     where TCallsite : notnull
 {
     private const long DefaultMinPeriodCount = 32;
+    private const int DefaultPreserveCapacity = 0;
 
     private readonly int _reservoirCapacity;
     private readonly int _preserveCapacity;
@@ -50,12 +51,27 @@ internal sealed class BottomKSampler<TCallsite, TPayload>
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BottomKSampler{TCallsite, TPayload}"/> class using the
-    /// default preserve capacity (equal to <paramref name="reservoirCapacity"/>), the default Chao1
-    /// stability threshold, <see cref="BottomKUnseenWeightMode.Chao1"/>, and an OS-derived seed.
+    /// default preserve capacity of zero, the default Chao1 stability threshold,
+    /// <see cref="BottomKUnseenWeightMode.Chao1"/>, and a .NET-generated default seed.
     /// </summary>
     /// <param name="reservoirCapacity">The sample size <c>T</c> per period. Must be at least 1.</param>
     public BottomKSampler(int reservoirCapacity)
-        : this(reservoirCapacity, reservoirCapacity, DefaultMinPeriodCount, BottomKUnseenWeightMode.Chao1, null)
+        : this(reservoirCapacity, BottomKUnseenWeightMode.Chao1)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BottomKSampler{TCallsite, TPayload}"/> class using
+    /// no preserve capacity, the default stability threshold, and a .NET-generated default seed.
+    /// </summary>
+    /// <param name="reservoirCapacity">The sample size <c>T</c> per period. Must be at least 1.</param>
+    /// <param name="unseenWeightMode">The strategy used to weight unseen callsites.</param>
+    /// <param name="releasePayload">An optional callback invoked for payloads excluded from the final sample.</param>
+    public BottomKSampler(
+        int reservoirCapacity,
+        BottomKUnseenWeightMode unseenWeightMode,
+        Action<TPayload>? releasePayload = null)
+        : this(reservoirCapacity, DefaultPreserveCapacity, DefaultMinPeriodCount, unseenWeightMode, null, releasePayload)
     {
     }
 
@@ -67,7 +83,7 @@ internal sealed class BottomKSampler<TCallsite, TPayload>
     /// <param name="preserveCapacity">The novelty-preserve capacity <c>R</c> (<c>0</c> disables the preserve). Must not be negative.</param>
     /// <param name="minPeriodCount">The minimum prior-period arrival count below which the frozen table is discarded and the next period is treated as warmup. Must not be negative.</param>
     /// <param name="unseenWeightMode">The strategy used to weight unseen callsites.</param>
-    /// <param name="seed">An optional RNG seed for deterministic behavior; <see langword="null"/> uses an OS-derived seed.</param>
+    /// <param name="seed">An optional RNG seed for deterministic behavior; <see langword="null"/> uses a .NET-generated default seed.</param>
     /// <param name="releasePayload">An optional callback invoked for payloads excluded from the final sample.</param>
     public BottomKSampler(
         int reservoirCapacity,
