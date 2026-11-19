@@ -31,7 +31,7 @@ public class DecisionDefinitionTests
 
         Assert.Equal(["approve|v1", "reject|v1"], definition.Candidates.Select(static c => c.Id));
         Assert.Equal(Classification.Approved, definition.Parse("approve|v1"));
-        Assert.Throws<DecisionProtocolException>(() => definition.Parse("approve"));
+        Assert.Throws<InvalidOperationException>(() => definition.Parse("approve"));
         Assert.Throws<ArgumentException>(() => new DecisionEnumDefinition<Classification>([]));
         Assert.Throws<ArgumentException>(() => new DecisionEnumDefinition<Classification>(
         [
@@ -70,7 +70,7 @@ public class DecisionDefinitionTests
                 Approved = answers.GetBinary("binary").TrueProbability > 0.5,
                 Selected = answers.GetChoice("choice").SelectedCandidateId,
                 Score = score.Score!.Value,
-                ExpectedScore = score.ExpectedScore,
+                ExpectedScore = score.GetExpectedScore(new ScoreDecisionQuestion("score", "Score?", [new("low", "Low"), new("medium", "Medium"), new("high", "High")]))!.Value,
             };
         });
 
@@ -85,9 +85,9 @@ public class DecisionDefinitionTests
     {
         DecisionResponse response = CreateMixedResponse();
 
-        Assert.Throws<DecisionProtocolException>(() => response.Bind(answers => answers.GetChoice("binary")));
-        Assert.Throws<DecisionProtocolException>(() => response.Bind(answers => answers.GetScore("choice")));
-        Assert.Throws<DecisionProtocolException>(() => response.Bind(answers => answers.GetBinary("score")));
+        Assert.Throws<InvalidOperationException>(() => response.Bind(answers => answers.GetChoice("binary")));
+        Assert.Throws<InvalidOperationException>(() => response.Bind(answers => answers.GetScore("choice")));
+        Assert.Throws<InvalidOperationException>(() => response.Bind(answers => answers.GetBinary("score")));
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
             () => response.Bind<DecisionResult>(_ => throw new InvalidOperationException("mapper failed")));
@@ -327,23 +327,55 @@ public class DecisionDefinitionTests
 
     [Theory]
     [InlineData("case")]
-    [InlineData("missing")]
-    [InlineData("reordered")]
     [InlineData("extra")]
     [InlineData("wrong-kind")]
     [InlineData("wrong-id")]
     [InlineData("count")]
     [InlineData("unanswered-wrong-kind")]
-    [InlineData("score-levels")]
+    [InlineData("score-out-of-range")]
     public async Task GetDecisionAsync_RejectsResponseNotMatchingSentRequest(string mutation)
     {
         DecisionDefinition<TypedDecisionResult> definition = CreateTypedDefinition();
         using RecordingDecisionClient client = new(request => CreateMismatchedResponse(request, mutation));
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetDecisionAsync(
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetDecisionAsync(
             new TypedDecisionState("request"),
             definition));
         Assert.Equal(1, client.CallCount);
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("reordered")]
+    [InlineData("score-levels")]
+    public async Task GetDecisionAsync_BindsPartialOrReorderedDistributions(string mutation)
+    {
+        using RecordingDecisionClient client = new(request => CreateMismatchedResponse(request, mutation));
+
+        DecisionResponse<TypedDecisionResult> response = await client.GetDecisionAsync(
+            new TypedDecisionState("request"),
+            CreateTypedDefinition());
+
+        Assert.Equal(TicketCategory.Technical, response.Result.Category);
+        Assert.Equal(mutation == "score-levels" ? 1 : 1.6, response.Result.Satisfaction, precision: 12);
+    }
+
+    [Fact]
+    public async Task ExpectedScore_UsesLevelIdsRegardlessOfReportedOrder()
+    {
+        DecisionDefinition<TypedDecisionResult> definition = DecisionDefinition<TypedDecisionResult>.Create(
+            builder =>
+            {
+                builder.Choice(result => result.Category);
+                builder.BinaryProbability(result => result.RefundRequestProbability);
+                builder.ExpectedScore(result => result.Satisfaction, CreateLevels());
+            },
+            DecisionTestJsonContext.Default.Options);
+        using RecordingDecisionClient client = new(request => CreateMismatchedResponse(request, "score-levels"));
+
+        DecisionResponse<TypedDecisionResult> response = await client.GetDecisionAsync(new TypedDecisionState("request"), definition);
+
+        Assert.Equal(1.6, response.Result.Satisfaction, precision: 12);
     }
 
     [Fact]
@@ -382,7 +414,7 @@ public class DecisionDefinitionTests
         Assert.Equal(1.6, expectedResponse.Result.Satisfaction, precision: 12);
         Assert.Null(((ScoreDecisionAnswer)expectedResponse.Response.Answers[2]).Score);
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetDecisionAsync(
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetDecisionAsync(
             new TypedDecisionState("request"),
             CreateTypedDefinition()));
     }
@@ -443,7 +475,7 @@ public class DecisionDefinitionTests
             DecisionTestJsonContext.Default.Options);
         using RecordingDecisionClient client = new(request => new DecisionResponse([new BinaryDecisionAnswer(request.Questions[0].Id, 0.25)]));
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetDecisionAsync(RequestState, definition));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetDecisionAsync(RequestState, definition));
     }
 
     [Fact]
@@ -495,7 +527,7 @@ public class DecisionDefinitionTests
             options);
         using RecordingDecisionClient client = new(request => new DecisionResponse([new BinaryDecisionAnswer(request.Questions[0].Id, 0.75)]));
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() => client.GetDecisionAsync(RequestState, definition));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetDecisionAsync(RequestState, definition));
         Assert.False(options.IsReadOnly);
     }
 
@@ -633,6 +665,9 @@ public class DecisionDefinitionTests
                 break;
             case "unanswered-wrong-kind":
                 response.Answers[1] = new UnansweredDecisionAnswer(request.Questions[1].Id, DecisionKind.Score);
+                break;
+            case "score-out-of-range":
+                response.Answers[2] = new ScoreDecisionAnswer(request.Questions[2].Id, 3, CreateDistribution((ScoreDecisionQuestion)request.Questions[2], [0.1, 0.2, 0.7]));
                 break;
             case "score-levels":
                 ScoreDecisionQuestion score = (ScoreDecisionQuestion)request.Questions[2];

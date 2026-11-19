@@ -28,7 +28,7 @@ public static class DecisionClientTypedExtensions
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The typed result and the decision response it was bound from.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="definition"/> is <see langword="null"/>.</exception>
-    /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
+    /// <exception cref="InvalidOperationException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
     public static Task<DecisionResponse<TResult>> GetDecisionAsync<TResult>(
         this IDecisionClient client,
@@ -68,7 +68,7 @@ public static class DecisionClientTypedExtensions
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="definition"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="state"/> is an <see cref="AIContent"/> or a sequence of <see cref="AIContent"/>.</exception>
     /// <exception cref="NotSupportedException">The definition's serializer options do not contain a contract for <typeparamref name="TState"/>.</exception>
-    /// <exception cref="DecisionProtocolException">The response cannot be bound to the definition's questions.</exception>
+    /// <exception cref="InvalidOperationException">The response cannot be bound to the definition's questions.</exception>
     /// <exception cref="DecisionUnansweredException">A declared question was not answered.</exception>
     public static Task<DecisionResponse<TResult>> GetDecisionAsync<TState, TResult>(
         this IDecisionClient client,

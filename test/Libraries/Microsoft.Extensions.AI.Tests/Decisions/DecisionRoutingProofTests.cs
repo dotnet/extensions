@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable SA1402 // Test models and their source-generated context are co-located.
@@ -105,7 +105,7 @@ public sealed class DecisionRoutingProofTests
                 [RouteKind.Reasoning] = reasoningClient,
             });
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(
+        await Assert.ThrowsAsync<InvalidOperationException>(
             () => router.GetResponseAsync([new(ChatRole.User, "select a route")]));
 
         Assert.Equal(1, decisionClient.CallCount);
@@ -132,7 +132,7 @@ public sealed class DecisionRoutingProofTests
 
         Type exceptionType = failure == RouteResponseFailure.Provider
             ? typeof(DecisionClientException)
-            : typeof(DecisionProtocolException);
+            : typeof(InvalidOperationException);
         Exception exception = await Assert.ThrowsAsync(
             exceptionType,
             () => router.GetResponseAsync([new(ChatRole.User, "select a route")]));

@@ -46,13 +46,13 @@ public enum TicketCategory
 | `Choice` | Choice over the enum's members, using their serialized names as candidate IDs and their `[Description]` or name as descriptions | The selected enum value |
 | `BinaryProbability` | Binary | `BinaryDecisionAnswer.TrueProbability` |
 | `Score` | Score over the supplied levels | `ScoreDecisionAnswer.Score`, which the provider must report |
-| `ExpectedScore` | Score over the supplied levels | `ScoreDecisionAnswer.ExpectedScore` |
+| `ExpectedScore` | Score over the supplied levels | `ScoreDecisionAnswer.GetExpectedScore(question)` |
 
 The definition uses the supplied `JsonSerializerOptions` to resolve the result contract, so it works with source-generated contexts and Native AOT.
 
 ## Getting a typed response
 
-The typed `GetDecisionAsync` overloads send the definition's questions and bind the response to `TResult`. Binding throws `DecisionProtocolException` when the answer for a declared question is missing or does not match its kind, candidates, or levels. The request-level inputs, shared by every question, are the state and optional `AIContent` items such as an image:
+The typed `GetDecisionAsync` overloads send the definition's questions and bind the response to `TResult`. Binding throws `InvalidOperationException` when the answer for a declared question is missing or does not match its kind, candidates, or levels. The request-level inputs, shared by every question, are the state and optional `AIContent` items such as an image:
 
 ```csharp
 DecisionResponse<TicketDecision> response = await client.GetDecisionAsync(ticket, definition);

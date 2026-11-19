@@ -154,7 +154,7 @@ public sealed class DecisionDefinition<TResult>
                         break;
 
                     default:
-                        throw new DecisionProtocolException($"Unsupported answer type for question '{question.Question.Id}'.");
+                        throw new InvalidOperationException($"Unsupported answer type for question '{question.Question.Id}'.");
                 }
             }
 
@@ -168,14 +168,14 @@ public sealed class DecisionDefinition<TResult>
         }
         catch (Exception exception) when (exception is JsonException or NotSupportedException)
         {
-            throw new DecisionProtocolException(
+            throw new InvalidOperationException(
                 "The decision answers could not be materialized as the declared result type.",
                 exception);
         }
 
         if (result is null)
         {
-            throw new DecisionProtocolException("The decision answers produced a null result.");
+            throw new InvalidOperationException("The decision answers produced a null result.");
         }
 
         for (int i = 0; i < answers.Length; i++)
@@ -192,7 +192,7 @@ public sealed class DecisionDefinition<TResult>
 
             if (!preserved)
             {
-                throw new DecisionProtocolException(
+                throw new InvalidOperationException(
                     $"The decision answer for result member '{question.Property.Name}' was not preserved by the configured JSON contract.");
             }
         }
@@ -238,7 +238,7 @@ public sealed class DecisionDefinition<TResult>
 
         if (answer is null)
         {
-            throw new DecisionProtocolException($"The response does not contain an answer for question '{declaredQuestion.Id}'.");
+            throw new InvalidOperationException($"The response does not contain an answer for question '{declaredQuestion.Id}'.");
         }
 
         bool bindable = (declaredQuestion, answer) switch
@@ -246,15 +246,17 @@ public sealed class DecisionDefinition<TResult>
             (_, UnansweredDecisionAnswer) => answer.Kind == declaredQuestion.Kind,
             (BinaryDecisionQuestion, BinaryDecisionAnswer) => true,
             (ChoiceDecisionQuestion choice, ChoiceDecisionAnswer choiceAnswer) =>
-                choiceAnswer.Probabilities.Select(static p => p.Id).SequenceEqual(choice.Candidates.Select(static c => c.Id), StringComparer.Ordinal),
+                choice.Candidates.Any(c => string.Equals(c.Id, choiceAnswer.SelectedCandidateId, StringComparison.Ordinal)) &&
+                choiceAnswer.Probabilities.All(p => choice.Candidates.Any(c => string.Equals(c.Id, p.Id, StringComparison.Ordinal))),
             (ScoreDecisionQuestion score, ScoreDecisionAnswer scoreAnswer) =>
-                scoreAnswer.Probabilities.Select(static p => p.Id).SequenceEqual(score.Levels.Select(static l => l.Id), StringComparer.Ordinal),
+                (scoreAnswer.Score is not double reported || reported <= score.Levels.Count - 1) &&
+                scoreAnswer.Probabilities.All(p => score.Levels.Any(l => string.Equals(l.Id, p.Id, StringComparison.Ordinal))),
             _ => false,
         };
 
         if (!bindable)
         {
-            throw new DecisionProtocolException(
+            throw new InvalidOperationException(
                 $"The answer for question '{declaredQuestion.Id}' does not match the question's kind, candidates, or levels.");
         }
 
@@ -262,8 +264,10 @@ public sealed class DecisionDefinition<TResult>
     }
 
     private static double GetScoreValue(DecisionDefinitionQuestion<TResult> question, ScoreDecisionAnswer score) =>
-        question.UsesExpectedScore ? score.ExpectedScore :
-        score.Score ?? throw new DecisionProtocolException($"Question '{question.Question.Id}' does not contain a provider-reported score.");
+        question.UsesExpectedScore
+            ? score.GetExpectedScore((ScoreDecisionQuestion)question.Question)
+                ?? throw new InvalidOperationException($"Question '{question.Question.Id}' does not contain a positive probability for any level.")
+            : score.Score ?? throw new InvalidOperationException($"Question '{question.Question.Id}' does not contain a provider-reported score.");
 
     private static AIFunctionFactoryOptions GetFunctionOptions(
         AIFunctionFactoryOptions? functionOptions,
@@ -405,7 +409,7 @@ public sealed class DecisionDefinition<TResult>
         /// <param name="instructions">
         /// Optional question instructions. When omitted, the property's <see cref="DescriptionAttribute"/> or name is used.
         /// </param>
-        /// <remarks>Binding fails with <see cref="DecisionProtocolException"/> when the answer has no reported score.</remarks>
+        /// <remarks>Binding fails with <see cref="InvalidOperationException"/> when the answer has no reported score.</remarks>
         public void Score(
             Expression<Func<TResult, double>> selector,
             IReadOnlyList<DecisionScoreLevel> levels,
@@ -418,7 +422,7 @@ public sealed class DecisionDefinition<TResult>
         /// <param name="instructions">
         /// Optional question instructions. When omitted, the property's <see cref="DescriptionAttribute"/> or name is used.
         /// </param>
-        /// <remarks>The bound value is <see cref="ScoreDecisionAnswer.ExpectedScore"/>, computed from the answer's distribution.</remarks>
+        /// <remarks>The bound value is <see cref="ScoreDecisionAnswer.GetExpectedScore(ScoreDecisionQuestion)"/>, computed from the answer's distribution.</remarks>
         public void ExpectedScore(
             Expression<Func<TResult, double>> selector,
             IReadOnlyList<DecisionScoreLevel> levels,

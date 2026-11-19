@@ -73,7 +73,7 @@ public sealed class DecisionEnumDefinition<TEnum>
     /// <summary>Maps a candidate ID to its enum value.</summary>
     /// <param name="candidateId">The exact candidate ID.</param>
     /// <returns>The mapped enum value.</returns>
-    /// <exception cref="DecisionProtocolException"><paramref name="candidateId"/> is not a candidate of this mapping.</exception>
+    /// <exception cref="InvalidOperationException"><paramref name="candidateId"/> is not a candidate of this mapping.</exception>
     public TEnum Parse(string candidateId)
     {
         _ = Throw.IfNullOrWhitespace(candidateId);
@@ -82,6 +82,6 @@ public sealed class DecisionEnumDefinition<TEnum>
             return value;
         }
 
-        throw new DecisionProtocolException($"Unknown candidate ID '{candidateId}'.");
+        throw new InvalidOperationException($"Unknown candidate ID '{candidateId}'.");
     }
 }

@@ -24,14 +24,14 @@ public sealed class DecisionAnswerSet
     /// <param name="questionId">The exact question ID.</param>
     /// <returns>The binary answer.</returns>
     /// <exception cref="DecisionUnansweredException">The question was not answered.</exception>
-    /// <exception cref="DecisionProtocolException">The answer is not a binary answer.</exception>
+    /// <exception cref="InvalidOperationException">The answer is not a binary answer.</exception>
     public BinaryDecisionAnswer GetBinary(string questionId) => GetAnswer<BinaryDecisionAnswer>(questionId, "binary");
 
     /// <summary>Gets a choice answer by question ID.</summary>
     /// <param name="questionId">The exact question ID.</param>
     /// <returns>The choice answer.</returns>
     /// <exception cref="DecisionUnansweredException">The question was not answered.</exception>
-    /// <exception cref="DecisionProtocolException">The answer is not a choice answer.</exception>
+    /// <exception cref="InvalidOperationException">The answer is not a choice answer.</exception>
     public ChoiceDecisionAnswer GetChoice(string questionId) => GetAnswer<ChoiceDecisionAnswer>(questionId, "a choice");
 
     /// <summary>Gets a choice answer by question ID and maps its selected candidate ID to an enum value.</summary>
@@ -40,7 +40,7 @@ public sealed class DecisionAnswerSet
     /// <param name="definition">The enum mapping.</param>
     /// <returns>The mapped enum value.</returns>
     /// <exception cref="DecisionUnansweredException">The question was not answered.</exception>
-    /// <exception cref="DecisionProtocolException">The answer is not a choice answer, or its selected candidate is not mapped.</exception>
+    /// <exception cref="InvalidOperationException">The answer is not a choice answer, or its selected candidate is not mapped.</exception>
     public TEnum GetChoice<TEnum>(string questionId, DecisionEnumDefinition<TEnum> definition)
         where TEnum : struct, Enum
     {
@@ -52,7 +52,7 @@ public sealed class DecisionAnswerSet
     /// <param name="questionId">The exact question ID.</param>
     /// <returns>The score answer.</returns>
     /// <exception cref="DecisionUnansweredException">The question was not answered.</exception>
-    /// <exception cref="DecisionProtocolException">The answer is not a score answer.</exception>
+    /// <exception cref="InvalidOperationException">The answer is not a score answer.</exception>
     public ScoreDecisionAnswer GetScore(string questionId) => GetAnswer<ScoreDecisionAnswer>(questionId, "a score");
 
     private TAnswer GetAnswer<TAnswer>(string questionId, string kind)
@@ -61,6 +61,6 @@ public sealed class DecisionAnswerSet
         {
             TAnswer answer => answer,
             UnansweredDecisionAnswer => throw new DecisionUnansweredException(Response, [questionId]),
-            _ => throw new DecisionProtocolException($"Question '{questionId}' is not {kind}."),
+            _ => throw new InvalidOperationException($"Question '{questionId}' is not {kind}."),
         };
 }

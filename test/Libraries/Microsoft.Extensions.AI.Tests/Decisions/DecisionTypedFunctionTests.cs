@@ -179,7 +179,7 @@ public sealed class DecisionTypedFunctionTests
         using SupportTicketDecisionClient client = new() { Mismatch = mismatch };
         AIFunction function = CreateDefinition().AsAIFunction<SupportTicket>(client);
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() => function.InvokeAsync(CreateDecisionArguments()).AsTask());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => function.InvokeAsync(CreateDecisionArguments()).AsTask());
 
         Assert.Equal(1, client.CallCount);
     }
@@ -318,7 +318,7 @@ public sealed class DecisionTypedFunctionTests
         SupportTicketFunction host = new(client, CreateDefinition(), _ => recordCalls++);
         AIFunction function = CreateFunction(host.AnalyzeWithMetadataAsync);
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() => function.InvokeAsync(CreateArguments()).AsTask());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => function.InvokeAsync(CreateArguments()).AsTask());
 
         Assert.Equal(1, client.CallCount);
         Assert.Equal(0, recordCalls);
