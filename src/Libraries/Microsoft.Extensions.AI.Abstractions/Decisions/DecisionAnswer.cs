@@ -61,9 +61,9 @@ public abstract class DecisionAnswer
         _ = Throw.IfNull(probabilities, paramName);
 
         DecisionProbability[] copy = probabilities.ToArray();
-        if (copy.Length == 0 || Array.Exists(copy, static probability => probability is null))
+        if (Array.Exists(copy, static probability => probability is null))
         {
-            Throw.ArgumentException(paramName, "Probabilities must be nonempty and must not contain null entries.");
+            Throw.ArgumentException(paramName, "Probabilities must not contain null entries.");
         }
 
         HashSet<string> ids = new(StringComparer.Ordinal);

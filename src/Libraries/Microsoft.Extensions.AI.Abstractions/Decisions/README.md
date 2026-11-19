@@ -81,6 +81,19 @@ DecisionResponse response = await client.GetDecisionAsync(request);
 
 Providers map the inputs they support and throw `NotSupportedException` for any state or content item they can't represent. They must not silently drop input. A provider can recognize a provider-specific content item through `AIContent.RawRepresentation`.
 
+### Reference guidance
+
+Guidance that applies to every question, such as a policy, rubric, or definitions, is an input like any other. Pass it as a `TextContent` in `contents`, or include it in `State`:
+
+```csharp
+DecisionResponse response = await client.GetDecisionAsync(
+    ticket,
+    questions,
+    contents: [new TextContent(refundPolicy)]);
+```
+
+Guidance that applies to a single question belongs in that question's `Instructions`. To use a provider-specific channel, such as a system or developer message, supply native request options through `DecisionOptions.RawRepresentationFactory`.
+
 ## Answers
 
 A response contains exactly one answer per question, in request order. Each answer is either the kind-specific answer type or an `UnansweredDecisionAnswer`, which a provider returns when it declined or could not answer a question (for example, a refusal). Answers to other questions in the same request are preserved.
@@ -98,9 +111,9 @@ switch (response.GetAnswer("category"))
 }
 ```
 
-Probabilities are reported as observed by the provider. Each value is in [0, 1], but the abstraction does not require distributions to sum to 1 because providers can report rounded values. `ScoreDecisionAnswer.ExpectedScore` computes the expectation over the observed distribution after normalizing by its total.
+Probabilities are reported as observed by the provider. Each value is in [0, 1], but the abstraction does not require distributions to be complete, ordered, or to sum to 1, because providers can round values or report only some options. Answers only validate what is intrinsic to them; checking an answer against its question's candidates or levels is the job of the consumer that holds the question. `ScoreDecisionAnswer.GetExpectedScore(question)` computes the expectation over the reported levels by level ID, after normalizing by their total.
 
-`IDecisionClient` implementations are responsible for returning one answer per question in request order, and throw `DecisionProtocolException` when a provider response can't be mapped to the request.
+`IDecisionClient` implementations are responsible for returning one answer per question in request order, and throw `InvalidOperationException` when a provider response can't be mapped to the request.
 
 `RawRepresentation` and `AdditionalProperties` on responses and answers carry provider-specific data such as confidence labels.
 
@@ -109,7 +122,7 @@ Probabilities are reported as observed by the provider. Each value is in [0, 1],
 An `IDecisionClient` implementation:
 
 - Maps the request inputs (state and contents), instructions, and criteria to the provider's input format, and throws `NotSupportedException` for anything it can't represent.
-- Returns exactly one answer per question in request order, using `UnansweredDecisionAnswer` for questions that the provider declined to answer.
-- Reports distributions using the requested candidate and level IDs in request order.
+- Returns exactly one answer per question in request order, using `UnansweredDecisionAnswer` for questions that the provider declined or failed to answer.
+- Reports distributions using the requested candidate and level IDs, as the provider reported them. It doesn't need to fill in, reorder, or renormalize them.
 - Throws `DecisionClientException` for provider failures, setting `IsTransient` for failures that a caller can retry.
 - Uses `DecisionOptions.RawRepresentationFactory` to let callers supply provider-specific request options.
