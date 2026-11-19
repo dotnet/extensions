@@ -26,9 +26,9 @@ public class BottomKSamplerTests
     [Fact]
     public void Admission_ImplementsValueEquality()
     {
-        Admission first = Admission.Admit(1.5);
-        Admission same = Admission.Admit(1.5);
-        Admission different = Admission.Admit(2.5);
+        var first = Admission.Admit(1.5);
+        var same = Admission.Admit(1.5);
+        var different = Admission.Admit(2.5);
         object boxed = same;
         object otherType = "other";
 

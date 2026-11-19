@@ -133,7 +133,11 @@ internal sealed class BottomKSampler<TCallsite, TPayload>
     /// </summary>
     public int ReserveLength { get; private set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Records an arrival and decides whether its payload should be inserted, preserved, or skipped.
+    /// </summary>
+    /// <param name="callsite">The callsite identifier.</param>
+    /// <returns>The admission decision, including the sampling rank when admitted.</returns>
     public Admission Admit(TCallsite callsite)
     {
         // Always count arrivals for the next period's frozen table, even when skipped.
@@ -165,7 +169,12 @@ internal sealed class BottomKSampler<TCallsite, TPayload>
         return Admission.Skip;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Inserts the payload associated with a non-skip admission.
+    /// </summary>
+    /// <param name="callsite">The callsite identifier.</param>
+    /// <param name="admission">The admission returned by <see cref="Admit"/>.</param>
+    /// <param name="payload">The formatted log payload.</param>
     public void Insert(TCallsite callsite, Admission admission, TPayload payload)
     {
         switch (admission.Kind)
@@ -185,7 +194,10 @@ internal sealed class BottomKSampler<TCallsite, TPayload>
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Drains the current sample into the supplied collection and begins a new sampling period.
+    /// </summary>
+    /// <param name="output">The collection that receives the sampled records.</param>
     public void FlushInto(ICollection<SampledRecord<TCallsite, TPayload>> output)
     {
         _ = Throw.IfNull(output);
@@ -256,7 +268,10 @@ internal sealed class BottomKSampler<TCallsite, TPayload>
         Tau = double.PositiveInfinity;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Drains and returns the current sample, then begins a new sampling period.
+    /// </summary>
+    /// <returns>The sampled records from the completed period.</returns>
     public List<SampledRecord<TCallsite, TPayload>> Flush()
     {
         var output = new List<SampledRecord<TCallsite, TPayload>>(_heap.Count + ReserveLength);

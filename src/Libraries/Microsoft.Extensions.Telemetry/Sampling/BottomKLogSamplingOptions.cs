@@ -47,6 +47,8 @@ public sealed class BottomKLogSamplingOptions
     /// An empty collection causes every log message to be emitted normally.
     /// </remarks>
     [Required]
+#pragma warning disable CA2227 // The setter is required for options binding and ruleset replacement.
     public IList<BottomKLogSamplingFilterRule> Rules { get; set; } = [];
+#pragma warning restore CA2227
 }
 #endif

@@ -172,7 +172,10 @@ public class BottomKLogBufferTests
         });
 
         ILogger logger = factory.CreateLogger("category");
-        logger.LogInformation("message {property}", 42);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("message {property}", 42);
+        }
 
         var disposingFactory = Assert.IsType<Utils.DisposingLoggerFactory>(factory);
         disposingFactory.ServiceProvider.GetRequiredService<LogBuffer>().Flush();
@@ -206,7 +209,7 @@ public class BottomKLogBufferTests
             new("{OriginalFormat}", "message"),
         ];
 
-        Task logging = Task.Run(() => logger.Log(
+        var logging = Task.Run(() => logger.Log(
             LogLevel.Information,
             new EventId(1),
             state,
@@ -443,7 +446,7 @@ public class BottomKLogBufferTests
         using var admitted = new ManualResetEventSlim();
         using var continueInsertion = new ManualResetEventSlim();
 
-        Task<bool> insertion = Task.Run(() =>
+        var insertion = Task.Run(() =>
         {
             bool result = buffer.Admit("category", LogLevel.Information, new EventId(1));
             admitted.Set();
@@ -473,7 +476,7 @@ public class BottomKLogBufferTests
         using var admitted = new ManualResetEventSlim();
         using var continueInsertion = new ManualResetEventSlim();
 
-        Task<bool> insertion = Task.Run(() =>
+        var insertion = Task.Run(() =>
         {
             Assert.True(buffer.Admit("category", new EventId(1)));
             admitted.Set();
@@ -531,7 +534,7 @@ public class BottomKLogBufferTests
                 ready.SignalAndWait();
                 return TryEnqueue(buffer, destination, eventId);
             });
-            Task disposal = Task.Run(() =>
+            var disposal = Task.Run(() =>
             {
                 ready.SignalAndWait();
                 buffer.Dispose();

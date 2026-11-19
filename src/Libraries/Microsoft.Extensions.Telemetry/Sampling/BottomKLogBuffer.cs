@@ -115,7 +115,7 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
             return true;
         }
 
-        IReadOnlyList<KeyValuePair<string, object?>>? attributes =
+        var attributes =
             logEntry.State as IReadOnlyList<KeyValuePair<string, object?>>;
         if (attributes is null)
         {
@@ -217,7 +217,9 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
             {
                 reservoir.Flush();
             }
+#pragma warning disable CA1031 // A failing category must not prevent other categories from flushing.
             catch (Exception)
+#pragma warning restore CA1031
             {
                 // Automatic flushing is best-effort; one category must not prevent the others from flushing.
             }
