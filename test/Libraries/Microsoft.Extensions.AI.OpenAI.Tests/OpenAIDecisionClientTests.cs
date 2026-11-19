@@ -200,8 +200,8 @@ public class OpenAIDecisionClientTests
 
         var choice = Assert.IsType<ChoiceDecisionAnswer>(response.Answers[1]);
         Assert.Equal("shipping", choice.SelectedCandidateId);
-        Assert.Equal(["billing", "shipping", "other"], choice.Probabilities.Select(p => p.Id));
-        Assert.Equal([0.1, 0.9, 0d], choice.Probabilities.Select(p => p.Value));
+        Assert.Equal(["shipping", "billing"], choice.Probabilities.Select(p => p.Id));
+        Assert.Equal([0.9, 0.1], choice.Probabilities.Select(p => p.Value));
         Assert.Equal(0.8, choice.AdditionalProperties?["confidence"]);
 
         var score = Assert.IsType<ScoreDecisionAnswer>(response.Answers[2]);
@@ -324,43 +324,92 @@ public class OpenAIDecisionClientTests
     }
 
     [Theory]
-    [InlineData("""{ "answers": [] }""")]
-    [InlineData("""{ "answers": [ { "type": "predicate", "name": "other", "probability": 0.5 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "predicate", "name": "q", "probability": 0.5 }, { "type": "predicate", "name": "other", "probability": 0.5 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "predicate", "probability": 0.5 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "predicate", "name": "q", "probability": 0.5 }, { "type": "predicate", "name": "q", "probability": 0.5 } ] }""")]
     [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "a", "probabilities": [ { "value": "a", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    public async Task GetDecisionAsync_InvalidBinaryAnswers_ThrowsProtocolException(string output)
+    [InlineData("""{ "answers": [ { "type": "predicate", "name": "q", "probability": 1.5 } ] }""")]
+    public async Task GetDecisionAsync_InvalidBinaryAnswer_Throws(string output)
     {
         using IDecisionClient client = CreateDecisionClient(output);
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             client.GetDecisionAsync(Request([new BinaryDecisionQuestion("q", "Is it?")])));
     }
 
-    [Theory]
-    [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "c", "probabilities": [ { "value": "a", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "a", "probabilities": [ { "value": "c", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": "a", "probabilities": [ { "value": "a", "probability": 0.5 }, { "value": "a", "probability": 0.5 } ], "confidence": 1.0 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "choice", "name": "q", "choice": true, "probabilities": [ { "value": "a", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    public async Task GetDecisionAsync_InvalidChoiceAnswers_ThrowsProtocolException(string output)
+    [Fact]
+    public async Task GetDecisionAsync_NonCandidateChoice_Throws()
     {
-        using IDecisionClient client = CreateDecisionClient(output);
+        const string Output = """
+            { "answers": [ { "type": "choice", "name": "q", "choice": true, "probabilities": [ { "value": "a", "probability": 1.0 } ], "confidence": 1.0 } ] }
+            """;
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() =>
+        using IDecisionClient client = CreateDecisionClient(Output);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
             client.GetDecisionAsync(Request([new ChoiceDecisionQuestion("q", "Which?", [new DecisionCandidate("a", "A"), new DecisionCandidate("b", "B")])])));
     }
 
     [Theory]
-    [InlineData("""{ "answers": [ { "type": "score", "name": "q", "score": 1.0, "probabilities": [ { "value": 1, "label": "low", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "score", "name": "q", "score": 1.0, "probabilities": [ { "value": 2, "label": "extreme", "probability": 1.0 } ], "confidence": 1.0 } ] }""")]
-    [InlineData("""{ "answers": [ { "type": "score", "name": "q", "score": 0.0, "probabilities": [ { "value": 0, "label": "low", "probability": 0.0 }, { "value": 1, "label": "high", "probability": 0.0 } ], "confidence": 1.0 } ] }""")]
-    public async Task GetDecisionAsync_InvalidScoreAnswers_ThrowsProtocolException(string output)
+    [InlineData("""{ "answers": [] }""")]
+    [InlineData("""{ "answers": [ { "type": "predicate", "name": "other", "probability": 0.5 } ] }""")]
+    [InlineData("""{ "answers": [ { "type": "predicate", "probability": 0.5 } ] }""")]
+    public async Task GetDecisionAsync_MissingAnswer_IsUnanswered(string output)
     {
         using IDecisionClient client = CreateDecisionClient(output);
 
-        await Assert.ThrowsAsync<DecisionProtocolException>(() =>
-            client.GetDecisionAsync(Request([new ScoreDecisionQuestion("q", "How much?", [new DecisionScoreLevel("low", "Low"), new DecisionScoreLevel("high", "High")])])));
+        DecisionResponse response = await client.GetDecisionAsync(Request([new BinaryDecisionQuestion("q", "Is it?")]));
+
+        var answer = Assert.IsType<UnansweredDecisionAnswer>(Assert.Single(response.Answers));
+        Assert.Equal("q", answer.QuestionId);
+        Assert.Equal(DecisionKind.Binary, answer.Kind);
+        Assert.Null(answer.Reason);
+        Assert.Null(answer.RawRepresentation);
+    }
+
+    [Fact]
+    public async Task GetDecisionAsync_ExtraAndDuplicateAnswers_LastAskedAnswerWins()
+    {
+        const string Output = """
+            { "answers": [ { "type": "predicate", "name": "q", "probability": 0.25 }, { "type": "predicate", "name": "other", "probability": 0.5 }, { "type": "predicate", "name": "q", "probability": 0.75 } ] }
+            """;
+
+        using IDecisionClient client = CreateDecisionClient(Output);
+
+        DecisionResponse response = await client.GetDecisionAsync(Request([new BinaryDecisionQuestion("q", "Is it?")]));
+
+        Assert.Equal(0.75, Assert.IsType<BinaryDecisionAnswer>(Assert.Single(response.Answers)).TrueProbability);
+    }
+
+    [Fact]
+    public async Task GetDecisionAsync_ChoiceDistribution_IsPassedThroughAsReported()
+    {
+        const string Output = """
+            { "answers": [ { "type": "choice", "name": "q", "choice": "c", "probabilities": [ { "value": "b", "probability": 0.25 }, { "value": "c", "probability": 0.5 }, { "value": "b", "probability": 0.4 } ], "confidence": 1.0 } ] }
+            """;
+
+        using IDecisionClient client = CreateDecisionClient(Output);
+
+        DecisionResponse response = await client.GetDecisionAsync(
+            Request([new ChoiceDecisionQuestion("q", "Which?", [new DecisionCandidate("a", "A"), new DecisionCandidate("b", "B")])]));
+
+        var answer = Assert.IsType<ChoiceDecisionAnswer>(Assert.Single(response.Answers));
+        Assert.Equal("c", answer.SelectedCandidateId);
+        Assert.Equal([("b", 0.4), ("c", 0.5)], answer.Probabilities.Select(p => (p.Id, p.Value)));
+    }
+
+    [Fact]
+    public async Task GetDecisionAsync_ScoreDistribution_IsPassedThroughAsReported()
+    {
+        const string Output = """
+            { "answers": [ { "type": "score", "name": "q", "score": 0.0, "probabilities": [ { "value": 7, "label": "high", "probability": 0.0 }, { "value": 0, "label": "extreme", "probability": 0.0 } ], "confidence": 1.0 } ] }
+            """;
+
+        using IDecisionClient client = CreateDecisionClient(Output);
+
+        DecisionResponse response = await client.GetDecisionAsync(
+            Request([new ScoreDecisionQuestion("q", "How much?", [new DecisionScoreLevel("low", "Low"), new DecisionScoreLevel("high", "High")])]));
+
+        var answer = Assert.IsType<ScoreDecisionAnswer>(Assert.Single(response.Answers));
+        Assert.Equal(0d, answer.Score);
+        Assert.Equal([("high", 0d), ("extreme", 0d)], answer.Probabilities.Select(p => (p.Id, p.Value)));
     }
 
     [Fact]

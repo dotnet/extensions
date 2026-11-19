@@ -270,15 +270,18 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
     }
 
     /// <summary>Converts an OpenAI <see cref="DecisionResource"/> to a <see cref="DecisionResponse"/>.</summary>
+    /// <remarks>
+    /// Answers are correlated to questions by name. Answers the service did not return become <see cref="UnansweredDecisionAnswer"/>,
+    /// and answers for questions that were not asked are ignored. Distributions are passed through as reported.
+    /// </remarks>
     private static DecisionResponse FromOpenAIDecision(DecisionRequest request, DecisionResource resource)
     {
         Dictionary<string, DecisionsAnswer> nativeAnswers = new(StringComparer.Ordinal);
         foreach (DecisionsAnswer native in resource.Answers)
         {
-            string? name = GetAnswerName(native);
-            if (name is null || !TryAdd(nativeAnswers, name, native))
+            if (GetAnswerName(native) is string name)
             {
-                throw new DecisionProtocolException("The OpenAI decision response contains an answer without a unique question name.");
+                nativeAnswers[name] = native;
             }
         }
 
@@ -287,7 +290,8 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
         {
             if (!nativeAnswers.TryGetValue(question.Id, out DecisionsAnswer? native))
             {
-                throw new DecisionProtocolException($"The OpenAI decision response does not answer question '{question.Id}'.");
+                answers.Add(new UnansweredDecisionAnswer(question.Id, question.Kind));
+                continue;
             }
 
             DecisionAnswer answer;
@@ -297,23 +301,18 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
                 {
                     (_, DecisionsRefusalAnswer) => new UnansweredDecisionAnswer(question.Id, question.Kind) { Reason = DecisionUnansweredReason.Refusal },
                     (BinaryDecisionQuestion, DecisionsPredicateAnswer predicate) => new BinaryDecisionAnswer(question.Id, ToDouble(predicate.Probability)),
-                    (ChoiceDecisionQuestion choice, DecisionsChoiceAnswer choiceAnswer) => FromChoiceAnswer(choice, choiceAnswer),
+                    (ChoiceDecisionQuestion, DecisionsChoiceAnswer choiceAnswer) => FromChoiceAnswer(question.Id, choiceAnswer),
                     (ScoreDecisionQuestion score, DecisionsScoreAnswer scoreAnswer) => FromScoreAnswer(score, scoreAnswer),
-                    _ => throw new DecisionProtocolException($"The OpenAI decision answer for question '{question.Id}' does not match the question kind."),
+                    _ => throw new InvalidOperationException($"The OpenAI decision answer for question '{question.Id}' does not match the question kind."),
                 };
             }
             catch (ArgumentException ex)
             {
-                throw new DecisionProtocolException($"The OpenAI decision answer for question '{question.Id}' is invalid: {ex.Message}", ex);
+                throw new InvalidOperationException($"The OpenAI decision answer for question '{question.Id}' is invalid: {ex.Message}", ex);
             }
 
             answer.RawRepresentation = native;
             answers.Add(answer);
-        }
-
-        if (nativeAnswers.Count != answers.Count)
-        {
-            throw new DecisionProtocolException("The OpenAI decision response contains answers for questions that were not asked.");
         }
 
         return new DecisionResponse(answers)
@@ -330,22 +329,18 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
         DecisionsChoiceAnswer choice => choice.Name,
         DecisionsScoreAnswer score => score.Name,
         DecisionsRefusalAnswer refusal => refusal.Name,
-        _ => throw new DecisionProtocolException($"The OpenAI decision response contains an unsupported answer kind '{answer.Kind}'."),
+        _ => null,
     };
 
-    private static ChoiceDecisionAnswer FromChoiceAnswer(ChoiceDecisionQuestion question, DecisionsChoiceAnswer answer)
+    private static ChoiceDecisionAnswer FromChoiceAnswer(string questionId, DecisionsChoiceAnswer answer)
     {
-        Dictionary<string, double> reported = new(StringComparer.Ordinal);
+        List<DecisionProbability> probabilities = [];
         foreach (DecisionsChoiceProbability probability in answer.Probabilities)
         {
-            if (!TryAdd(reported, ToCandidateId(probability.Value), ToDouble(probability.Probability)))
-            {
-                throw new DecisionProtocolException($"The OpenAI decision answer for '{question.Id}' reports a candidate more than once.");
-            }
+            AddOrReplace(probabilities, new DecisionProbability(ToCandidateId(probability.Value), ToDouble(probability.Probability)));
         }
 
-        DecisionProbability[] probabilities = ToDistribution(question.Id, question.Candidates.Count, i => question.Candidates[i].Id, reported);
-        return new ChoiceDecisionAnswer(question.Id, ToCandidateId(answer.Choice), probabilities)
+        return new ChoiceDecisionAnswer(questionId, ToCandidateId(answer.Choice), probabilities)
         {
             AdditionalProperties = new() { [ConfidenceKey] = ToDouble(answer.Confidence) },
         };
@@ -353,87 +348,51 @@ internal sealed class OpenAIDecisionClient : IDecisionClient
 
     private static ScoreDecisionAnswer FromScoreAnswer(ScoreDecisionQuestion question, DecisionsScoreAnswer answer)
     {
-        // OpenAI reports each level's zero-based position as its value, and the score as the probability-weighted position.
-        Dictionary<string, double> reported = new(StringComparer.Ordinal);
+        List<DecisionProbability> probabilities = [];
         foreach (DecisionsScoreProbability probability in answer.Probabilities)
         {
-            if (probability.Label is null || probability.Value != IndexOfLevel(question, probability.Label) || !TryAdd(reported, probability.Label, ToDouble(probability.Probability)))
+            if (probability.Label is string label)
             {
-                throw new DecisionProtocolException($"The OpenAI decision answer for '{question.Id}' reports levels that do not match the requested levels.");
+                AddOrReplace(probabilities, new DecisionProbability(label, ToDouble(probability.Probability)));
             }
         }
 
         if (double.IsNaN(answer.Score) || double.IsInfinity(answer.Score))
         {
-            throw new DecisionProtocolException("The OpenAI decision response contains a non-finite value.");
+            throw new InvalidOperationException("The OpenAI decision response contains a non-finite value.");
         }
 
-        // Clamp to the level scale to absorb rounding in the service-computed expectation.
+        // OpenAI reports the score as the probability-weighted level position; clamp it to absorb rounding at the ends of the scale.
         double score = Math.Min(Math.Max(answer.Score, 0d), question.Levels.Count - 1);
 
-        DecisionProbability[] probabilities = ToDistribution(question.Id, question.Levels.Count, i => question.Levels[i].Id, reported);
         return new ScoreDecisionAnswer(question.Id, score, probabilities)
         {
             AdditionalProperties = new() { [ConfidenceKey] = ToDouble(answer.Confidence) },
         };
     }
 
-    private static int IndexOfLevel(ScoreDecisionQuestion question, string? label)
-    {
-        for (int i = 0; i < question.Levels.Count; i++)
-        {
-            if (string.Equals(question.Levels[i].Id, label, StringComparison.Ordinal))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    /// <summary>Builds a distribution in requested order, treating options omitted by the provider as having zero probability.</summary>
-    private static DecisionProbability[] ToDistribution(string questionId, int count, Func<int, string> getId, Dictionary<string, double> reported)
-    {
-        DecisionProbability[] probabilities = new DecisionProbability[count];
-        int matched = 0;
-        for (int i = 0; i < count; i++)
-        {
-            string id = getId(i);
-            if (reported.TryGetValue(id, out double value))
-            {
-                matched++;
-            }
-
-            probabilities[i] = new DecisionProbability(id, value);
-        }
-
-        if (matched != reported.Count)
-        {
-            throw new DecisionProtocolException($"The OpenAI decision answer for question '{questionId}' reports options that were not requested.");
-        }
-
-        return probabilities;
-    }
-
-    private static bool TryAdd<TValue>(Dictionary<string, TValue> dictionary, string key, TValue value)
-    {
-        if (dictionary.ContainsKey(key))
-        {
-            return false;
-        }
-
-        dictionary[key] = value;
-        return true;
-    }
-
     private static string ToCandidateId(DecisionsChoiceValue? value) =>
-        value?.StringValue ?? throw new DecisionProtocolException("The OpenAI decision response contains a choice that is not a candidate ID.");
+        value?.StringValue ?? throw new InvalidOperationException("The OpenAI decision response contains a choice that is not a candidate ID.");
+
+    /// <summary>Adds a reported probability in reported order; when an ID is reported more than once, the last value wins.</summary>
+    private static void AddOrReplace(List<DecisionProbability> probabilities, DecisionProbability probability)
+    {
+        int index = probabilities.FindIndex(p => string.Equals(p.Id, probability.Id, StringComparison.Ordinal));
+        if (index < 0)
+        {
+            probabilities.Add(probability);
+        }
+        else
+        {
+            probabilities[index] = probability;
+        }
+    }
 
     /// <summary>Converts a single-precision value reported by the service without introducing binary widening artifacts.</summary>
     // Use the shortest round-trippable float text so 0.1f maps to 0.1 rather than 0.10000000149011612.
     private static double ToDouble(float value) =>
         float.IsNaN(value) || float.IsInfinity(value) ?
-            throw new DecisionProtocolException("The OpenAI decision response contains a non-finite value.") :
+            throw new InvalidOperationException("The OpenAI decision response contains a non-finite value.") :
             double.Parse(value.ToString("R", CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture);
 
     private static UsageDetails ToUsageDetails(DecisionsUsage usage)
