@@ -33,6 +33,12 @@ public sealed class ExtractionDocument
     public AIContent? Content { get; set; }
 
     /// <summary>Gets the ordered root sections of the document.</summary>
+    /// <remarks>
+    /// Producers choose the section shape: for example, one root section per page, or nested sections that follow the
+    /// document's headings. Consumers should not assume that root sections directly contain all content elements;
+    /// use <see cref="EnumerateContent"/> or <see cref="ExtractionDocumentExtensions.GetText(ExtractionDocument)"/>
+    /// to read content independently of the section shape.
+    /// </remarks>
     public List<ExtractionDocumentSection> Sections { get; } = [];
 
     /// <summary>Gets the metadata associated with the document.</summary>
@@ -52,9 +58,18 @@ public sealed class ExtractionDocument
 
     /// <summary>Enumerates non-section content in depth-first document order.</summary>
     /// <remarks>
-    /// This structural traversal does not flatten table cells or return document/section-local payloads.
-    /// Use the hierarchy to inspect those local payloads and table cells directly.
-    /// Cyclic section relationships and null entries are rejected when traversed.
+    /// <para>
+    /// This structural traversal descends through nested sections and yields every non-section element, such as text,
+    /// image, table and custom elements. It does not yield sections themselves, does not descend into table cells,
+    /// and does not return the document's or sections' local <see cref="Content"/> payloads.
+    /// </para>
+    /// <para>
+    /// Text can therefore exist outside the yielded text elements: in a section's local payload, in table cells
+    /// (whose content can itself be a section), in <see cref="ExtractionDocumentImageElement.Text"/>, and in this
+    /// document's local payload. Use <see cref="ExtractionDocumentExtensions.GetText(ExtractionDocument)"/> to read all
+    /// of that text, or inspect the hierarchy and <see cref="ExtractionDocumentTableElement.Cells"/> directly.
+    /// </para>
+    /// <para>Cyclic section relationships and null entries are rejected when traversed.</para>
     /// </remarks>
     /// <returns>The content elements in document order.</returns>
     public IEnumerable<ExtractionDocumentElement> EnumerateContent()
@@ -69,7 +84,7 @@ public sealed class ExtractionDocument
         }
     }
 
-    private static IEnumerable<ExtractionDocumentElement> EnumerateSection(
+    internal static IEnumerable<ExtractionDocumentElement> EnumerateSection(
         ExtractionDocumentSection section, HashSet<ExtractionDocumentSection> path)
     {
         if (section is null || !path.Add(section))

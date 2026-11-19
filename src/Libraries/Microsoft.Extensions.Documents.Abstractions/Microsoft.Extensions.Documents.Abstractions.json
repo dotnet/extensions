@@ -116,6 +116,24 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Documents.ExtractionDocumentExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static string Microsoft.Extensions.Documents.ExtractionDocumentExtensions.GetText(this Microsoft.Extensions.Documents.ExtractionDocument document);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.Documents.ExtractionDocumentExtensions.GetText(this Microsoft.Extensions.Documents.ExtractionDocumentElement element);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.Documents.ExtractionDocumentExtensions.GetText(this Microsoft.Extensions.Documents.ExtractionDocumentTableCell cell);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Documents.ExtractionDocumentImageElement : Microsoft.Extensions.Documents.ExtractionDocumentElement",
       "Stage": "Experimental",
       "Methods": [
@@ -234,6 +252,10 @@
         {
           "Member": "Microsoft.Extensions.Documents.ExtractionDocumentSection.ExtractionDocumentSection(Microsoft.Extensions.AI.AIContent? content = null);",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Documents.ExtractionDocumentElement> Microsoft.Extensions.Documents.ExtractionDocumentSection.EnumerateContent();",
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
@@ -344,11 +366,15 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Documents.ExtractionDocumentTableCellCollection : System.Collections.Generic.IEnumerable<Microsoft.Extensions.Documents.ExtractionDocumentTableCell?>, System.Collections.IEnumerable",
+      "Type": "sealed class Microsoft.Extensions.Documents.ExtractionDocumentTableCellCollection : System.Collections.Generic.IEnumerable<Microsoft.Extensions.Documents.ExtractionDocumentTableCell>, System.Collections.IEnumerable",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "System.Collections.Generic.IEnumerator<Microsoft.Extensions.Documents.ExtractionDocumentTableCell?> Microsoft.Extensions.Documents.ExtractionDocumentTableCellCollection.GetEnumerator();",
+          "Member": "Microsoft.Extensions.Documents.ExtractionDocumentTableCell? Microsoft.Extensions.Documents.ExtractionDocumentTableCellCollection.GetCoveringCell(int row, int column);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IEnumerator<Microsoft.Extensions.Documents.ExtractionDocumentTableCell> Microsoft.Extensions.Documents.ExtractionDocumentTableCellCollection.GetEnumerator();",
           "Stage": "Experimental"
         }
       ],

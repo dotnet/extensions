@@ -56,7 +56,26 @@ public sealed class ExtractionDocumentSection : ExtractionDocumentElement
     }
 
     /// <summary>Gets the ordered elements in this section, including nested sections.</summary>
+    /// <remarks>Use <see cref="EnumerateContent"/> to read every non-section element regardless of nesting depth.</remarks>
     public List<ExtractionDocumentElement> Elements { get; } = [];
+
+    /// <summary>Enumerates non-section content in this section in depth-first order.</summary>
+    /// <remarks>
+    /// This traversal has the same semantics as <see cref="ExtractionDocument.EnumerateContent"/>: it descends through
+    /// nested sections, does not yield sections themselves, does not descend into table cells, and does not return
+    /// local <see cref="ExtractionDocumentElement.Content"/> payloads of sections. Use
+    /// <see cref="ExtractionDocumentExtensions.GetText(ExtractionDocumentElement)"/> to read all text in this section.
+    /// Cyclic section relationships and null entries are rejected when traversed.
+    /// </remarks>
+    /// <returns>The content elements in this section, in document order.</returns>
+    public IEnumerable<ExtractionDocumentElement> EnumerateContent()
+    {
+        HashSet<ExtractionDocumentSection> path = [];
+        foreach (ExtractionDocumentElement element in ExtractionDocument.EnumerateSection(this, path))
+        {
+            yield return element;
+        }
+    }
 }
 
 /// <summary>Represents text in a document, with an optional semantic role.</summary>
@@ -113,7 +132,10 @@ public sealed class ExtractionDocumentImageElement : ExtractionDocumentElement
     public Uri? Source { get; set; }
 
     /// <summary>Gets or sets OCR or transcription text associated with the image.</summary>
-    /// <remarks>Captions and descriptions belong in <see cref="AlternativeText"/> instead.</remarks>
+    /// <remarks>
+    /// Captions and descriptions belong in <see cref="AlternativeText"/> instead. Producers can place text that appears
+    /// inside a figure here rather than in separate text elements, so text-only consumers should read this value too.
+    /// </remarks>
     public string? Text { get; set; }
 
     /// <summary>Gets or sets the alternative text for the image.</summary>

@@ -30,10 +30,9 @@ public sealed class ExtractionDocumentTableElement : ExtractionDocumentElement
     }
 
     /// <summary>
-    /// Gets the addressable nullable cells in this table.
+    /// Gets the table cells, addressable by row and column and enumerable as anchor cells.
     /// </summary>
     public ExtractionDocumentTableCellCollection Cells { get; }
-
 }
 
 /// <summary>
@@ -120,9 +119,16 @@ public sealed class ExtractionDocumentTableCell
 }
 
 /// <summary>
-/// Provides explicit row and column addressing for nullable table cells.
+/// Provides explicit row and column addressing for table cells and enumerates the table's anchor cells.
 /// </summary>
-public sealed class ExtractionDocumentTableCellCollection : IEnumerable<ExtractionDocumentTableCell?>
+/// <remarks>
+/// Enumerating the collection yields only anchor cells, in row-major order of their anchor positions. It does not yield
+/// <see langword="null"/> for empty positions or for positions covered by another anchor's span, so the number of
+/// enumerated cells can be less than <see cref="RowCount"/> multiplied by <see cref="ColumnCount"/>. Use
+/// <see cref="ExtractionDocumentTableCell.RowIndex"/>, <see cref="ExtractionDocumentTableCell.ColumnIndex"/> and the
+/// cell spans to place each anchor, or <see cref="GetCoveringCell(int, int)"/> to resolve any grid position.
+/// </remarks>
+public sealed class ExtractionDocumentTableCellCollection : IEnumerable<ExtractionDocumentTableCell>
 {
     private readonly ExtractionDocumentTableElement _owner;
     private readonly ExtractionDocumentTableCell?[,] _cells;
@@ -150,6 +156,7 @@ public sealed class ExtractionDocumentTableCellCollection : IEnumerable<Extracti
     /// </summary>
     /// <remarks>
     /// The getter returns <see langword="null"/> for an empty position or a position covered by another anchor's span.
+    /// Use <see cref="GetCoveringCell(int, int)"/> to distinguish those positions.
     /// A covered position must be edited through its anchor cell.
     /// </remarks>
     /// <param name="row">The zero-based row index.</param>
@@ -197,9 +204,17 @@ public sealed class ExtractionDocumentTableCellCollection : IEnumerable<Extracti
         }
     }
 
-    /// <summary>Gets the anchor cell covering a position, or <see langword="null"/> for an empty position.</summary>
-    /// <returns>The covering anchor, or <see langword="null"/>.</returns>
-    internal ExtractionDocumentTableCell? GetCoveringCell(int row, int column)
+    /// <summary>Gets the anchor cell whose span covers a row and column address.</summary>
+    /// <remarks>
+    /// Unlike the indexer, this method returns the anchor cell for positions covered by a merged cell's span as well as
+    /// for the anchor position itself. A position is covered by another anchor when the returned cell's
+    /// <see cref="ExtractionDocumentTableCell.RowIndex"/> or <see cref="ExtractionDocumentTableCell.ColumnIndex"/>
+    /// differs from the requested address.
+    /// </remarks>
+    /// <param name="row">The zero-based row index.</param>
+    /// <param name="column">The zero-based column index.</param>
+    /// <returns>The covering anchor cell, or <see langword="null"/> for an empty position.</returns>
+    public ExtractionDocumentTableCell? GetCoveringCell(int row, int column)
     {
         ValidateAddress(row, column);
         return _coveringCells[row, column];
@@ -210,14 +225,18 @@ public sealed class ExtractionDocumentTableCellCollection : IEnumerable<Extracti
     internal bool IsCovered(int row, int column)
         => GetCoveringCell(row, column) is { } cell && (cell.RowIndex != row || cell.ColumnIndex != column);
 
-    /// <inheritdoc/>
-    public IEnumerator<ExtractionDocumentTableCell?> GetEnumerator()
+    /// <summary>Returns an enumerator over the anchor cells in row-major order of their anchor positions.</summary>
+    /// <returns>An enumerator that does not yield empty or covered positions.</returns>
+    public IEnumerator<ExtractionDocumentTableCell> GetEnumerator()
     {
         for (int row = 0; row < RowCount; row++)
         {
             for (int column = 0; column < ColumnCount; column++)
             {
-                yield return _cells[row, column];
+                if (_cells[row, column] is { } cell)
+                {
+                    yield return cell;
+                }
             }
         }
     }
