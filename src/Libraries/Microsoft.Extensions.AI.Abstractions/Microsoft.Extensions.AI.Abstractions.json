@@ -1943,24 +1943,6 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.AI.DecisionProtocolException : System.Exception",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.AI.DecisionProtocolException.DecisionProtocolException();",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.DecisionProtocolException.DecisionProtocolException(string message);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.AI.DecisionProtocolException.DecisionProtocolException(string message, System.Exception innerException);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "abstract class Microsoft.Extensions.AI.DecisionQuestion",
       "Stage": "Experimental",
       "Properties": [
@@ -4518,13 +4500,13 @@
         {
           "Member": "Microsoft.Extensions.AI.ScoreDecisionAnswer.ScoreDecisionAnswer(string questionId, double? score, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> probabilities);",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.AI.ScoreDecisionAnswer.GetExpectedScore(Microsoft.Extensions.AI.ScoreDecisionQuestion question);",
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
-        {
-          "Member": "double Microsoft.Extensions.AI.ScoreDecisionAnswer.ExpectedScore { get; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionProbability> Microsoft.Extensions.AI.ScoreDecisionAnswer.Probabilities { get; }",
           "Stage": "Experimental"
