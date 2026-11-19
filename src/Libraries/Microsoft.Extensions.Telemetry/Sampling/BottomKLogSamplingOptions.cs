@@ -44,7 +44,7 @@ public sealed class BottomKLogSamplingOptions
     /// </summary>
     /// <remarks>
     /// The most specific matching rule is applied. If no rule matches, the log message is emitted normally.
-    /// An empty collection applies bottom-K sampling to every log message.
+    /// An empty collection causes every log message to be emitted normally.
     /// </remarks>
     [Required]
     public IList<BottomKLogSamplingFilterRule> Rules { get; set; } = [];

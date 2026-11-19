@@ -31,7 +31,11 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
         Assert.IsType<BottomKLoggingSampler>(provider.GetRequiredService<LoggingSampler>());
         BottomKLogSamplingOptions options =
             provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
-        Assert.Empty(options.Rules);
+        BottomKLogSamplingFilterRule rule = Assert.Single(options.Rules);
+        Assert.Null(rule.CategoryName);
+        Assert.Null(rule.LogLevel);
+        Assert.Null(rule.EventId);
+        Assert.Null(rule.EventName);
     }
 
     [Fact]
@@ -50,6 +54,7 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
 
         Assert.Equal(17, options.Capacity);
         Assert.Equal(BottomKUnseenWeightMode.RarestSeen, options.UnseenWeightMode);
+        Assert.Empty(options.Rules);
     }
 
     [Fact]
@@ -77,6 +82,27 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
         BottomKLogSamplingFilterRule rule = Assert.Single(options.Rules);
         Assert.Equal("Sampled.*", rule.CategoryName);
         Assert.Equal(LogLevel.Information, rule.LogLevel);
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_WithEmptyConfigurationSection_LeavesRulesEmpty()
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Logging:BottomK:Capacity"] = "23",
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging(builder =>
+            builder.AddBottomKLogSampling(configuration.GetSection("Logging:BottomK")));
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+
+        Assert.Equal(23, options.Capacity);
+        Assert.Empty(options.Rules);
     }
 
     [Fact]
@@ -141,6 +167,9 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
 
         using ServiceProvider provider = services.BuildServiceProvider();
         Assert.IsType<BottomKLoggingSampler>(provider.GetRequiredService<LoggingSampler>());
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+        Assert.Single(options.Rules);
     }
 
     [Fact]
@@ -181,6 +210,106 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
 
         BottomKLogSamplingFilterRule rule = Assert.Single(options.Rules);
         Assert.Equal("Explicit.Category", rule.CategoryName);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddBottomKLogSampling_DefaultAndEmptyDelegate_UsesDefaultRule(bool defaultFirst)
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
+        {
+            if (defaultFirst)
+            {
+                builder.AddBottomKLogSampling();
+            }
+
+            builder.AddBottomKLogSampling(_ => { });
+
+            if (!defaultFirst)
+            {
+                builder.AddBottomKLogSampling();
+            }
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+
+        Assert.Single(options.Rules);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddBottomKLogSampling_DefaultAndEmptyConfiguration_UsesDefaultRule(bool defaultFirst)
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Logging:BottomK:Capacity"] = "23",
+            })
+            .Build();
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
+        {
+            if (defaultFirst)
+            {
+                builder.AddBottomKLogSampling();
+            }
+
+            builder.AddBottomKLogSampling(configuration.GetSection("Logging:BottomK"));
+
+            if (!defaultFirst)
+            {
+                builder.AddBottomKLogSampling();
+            }
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+
+        Assert.Equal(23, options.Capacity);
+        Assert.Single(options.Rules);
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_DefaultAndNullRules_ReportsValidationFailure()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging(builder =>
+        {
+            builder.AddBottomKLogSampling();
+            builder.AddBottomKLogSampling(options => options.Rules = null!);
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        IOptionsMonitor<BottomKLogSamplingOptions> options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>();
+
+        Assert.Throws<OptionsValidationException>(() => options.CurrentValue);
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_DefaultAndReadOnlyEmptyRules_UsesDefaultRule()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging(builder =>
+        {
+            builder.AddBottomKLogSampling();
+            builder.AddBottomKLogSampling(options =>
+                options.Rules = Array.Empty<BottomKLogSamplingFilterRule>());
+        });
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+        BottomKLogSamplingOptions options =
+            provider.GetRequiredService<IOptionsMonitor<BottomKLogSamplingOptions>>().CurrentValue;
+
+        Assert.Single(options.Rules);
     }
 
     [Fact]
@@ -239,6 +368,20 @@ public class BottomKSamplingLoggingBuilderExtensionsTests
         Assert.DoesNotContain(
             services,
             descriptor => descriptor.ServiceType == typeof(IConfigureOptions<BottomKLogSamplingOptions>));
+    }
+
+    [Fact]
+    public void AddBottomKLogSampling_DefaultWhenRejected_DoesNotRegisterOptions()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<LoggingSampler, StubSampler>();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            services.AddLogging(builder => builder.AddBottomKLogSampling()));
+
+        Assert.DoesNotContain(
+            services,
+            descriptor => descriptor.ServiceType == typeof(IPostConfigureOptions<BottomKLogSamplingOptions>));
     }
 
     [Fact]

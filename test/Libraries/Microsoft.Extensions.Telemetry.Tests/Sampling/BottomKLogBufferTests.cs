@@ -249,9 +249,9 @@ public class BottomKLogBufferTests
     }
 
     [Fact]
-    public void EmptyRules_ApplyBottomKToEveryLevel()
+    public void EmptyRules_BypassBottomKAtEveryLevel()
     {
-        AssertUsesBottomK(
+        AssertBypasses(
             new BottomKLogSamplingOptions(),
             "category",
             LogLevel.Critical,

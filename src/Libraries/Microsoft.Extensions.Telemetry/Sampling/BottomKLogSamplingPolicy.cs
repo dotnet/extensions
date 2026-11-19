@@ -9,15 +9,12 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 internal sealed class BottomKLogSamplingPolicy
 {
-    private static readonly BottomKLogSamplingFilterRule[] _defaultRules =
-        [new()];
-
     private readonly BottomKLogSamplingFilterRule[] _rules;
 
     public BottomKLogSamplingPolicy(BottomKLogSamplingOptions options)
     {
         Options = options;
-        _rules = options.Rules.Count == 0 ? _defaultRules : options.Rules.ToArray();
+        _rules = options.Rules.ToArray();
     }
 
     public BottomKLogSamplingOptions Options { get; }

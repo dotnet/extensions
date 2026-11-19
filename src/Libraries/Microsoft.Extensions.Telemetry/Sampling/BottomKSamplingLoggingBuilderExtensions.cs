@@ -32,6 +32,15 @@ public static class BottomKSamplingLoggingBuilderExtensions
     public static ILoggingBuilder AddBottomKLogSampling(this ILoggingBuilder builder)
     {
         _ = Throw.IfNull(builder);
+        _ = EnsureBottomKCompatible(builder);
+
+        _ = builder.Services.PostConfigure<BottomKLogSamplingOptions>(options =>
+        {
+            if (options.Rules is { Count: 0 })
+            {
+                options.Rules = [new BottomKLogSamplingFilterRule()];
+            }
+        });
 
         return builder.AddBottomKLogSamplingCore();
     }
