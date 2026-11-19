@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Test;
 using Microsoft.Extensions.Options;
 using Xunit;
+using static Microsoft.Extensions.Logging.Test.Utils;
 
 namespace Microsoft.Extensions.Telemetry.Sampling;
 
@@ -180,6 +181,49 @@ public class BottomKLogBufferTests
         Assert.Contains(state, pair => pair.Key == "enriched" && Equals(pair.Value, "value"));
         Assert.Contains(state, pair => pair.Key == "sampling.count" && pair.Value is double weight && weight >= 1.0);
         Assert.Equal("{OriginalFormat}", state[^1].Key);
+    }
+
+    [Fact]
+    public async Task LoggingPipeline_WhenFlushInvalidatesAdmission_EmitsNormallyExactlyOnce()
+    {
+        using var provider = new CapturingProvider();
+        using ILoggerFactory factory = CreateLoggerFactory(builder =>
+        {
+            builder.AddProvider(provider);
+            builder.AddBottomKLogSampling(options =>
+            {
+                options.Capacity = 1;
+                options.Rules.Add(new BottomKLogSamplingFilterRule());
+            });
+        });
+        var disposingFactory = Assert.IsType<DisposingLoggerFactory>(factory);
+        var buffer = disposingFactory.ServiceProvider.GetRequiredService<BottomKLogBuffer>();
+        ILogger logger = factory.CreateLogger("category");
+        using var formatting = new ManualResetEventSlim();
+        using var continueFormatting = new ManualResetEventSlim();
+        IReadOnlyList<KeyValuePair<string, object?>> state =
+        [
+            new("{OriginalFormat}", "message"),
+        ];
+
+        Task logging = Task.Run(() => logger.Log(
+            LogLevel.Information,
+            new EventId(1),
+            state,
+            null,
+            (value, _) =>
+            {
+                formatting.Set();
+                continueFormatting.Wait();
+                return "message";
+            }));
+
+        formatting.Wait();
+        buffer.Flush();
+        continueFormatting.Set();
+        await logging;
+
+        Assert.Single(provider.States);
     }
 
     [Fact]
@@ -386,7 +430,7 @@ public class BottomKLogBufferTests
     }
 
     [Fact]
-    public async Task AlgorithmOptionsChange_InvalidatesAdmissionFromPreviousGeneration()
+    public async Task AlgorithmOptionsChange_InvalidatedAdmissionIsNotConsumed()
     {
         var initial = new BottomKLogSamplingOptions
         {
@@ -417,7 +461,57 @@ public class BottomKLogBufferTests
         _ = buffer.Admit("category", LogLevel.Information, new EventId(2));
         continueInsertion.Set();
 
-        Assert.True(await insertion);
+        Assert.False(await insertion);
+        Assert.Empty(destination.Records);
+    }
+
+    [Fact]
+    public async Task Flush_InvalidatedAdmissionIsNotConsumed()
+    {
+        using var buffer = CreateBuffer(new TestTimeProvider());
+        var destination = new RecordingBufferedLogger();
+        using var admitted = new ManualResetEventSlim();
+        using var continueInsertion = new ManualResetEventSlim();
+
+        Task<bool> insertion = Task.Run(() =>
+        {
+            Assert.True(buffer.Admit("category", new EventId(1)));
+            admitted.Set();
+            continueInsertion.Wait();
+            return TryEnqueue(buffer, destination, new EventId(1));
+        });
+
+        admitted.Wait();
+        buffer.Flush();
+        continueInsertion.Set();
+
+        Assert.False(await insertion);
+        Assert.Empty(destination.Records);
+    }
+
+    [Fact]
+    public async Task AutomaticFlush_InvalidatedAdmissionIsNotConsumed()
+    {
+        var timeProvider = new TestTimeProvider();
+        using var buffer = CreateBuffer(timeProvider);
+        var destination = new RecordingBufferedLogger();
+        using var admitted = new ManualResetEventSlim();
+        using var continueInsertion = new ManualResetEventSlim();
+
+        Task<bool> insertion = Task.Run(() =>
+        {
+            Assert.True(buffer.Admit("category", new EventId(1)));
+            admitted.Set();
+            continueInsertion.Wait();
+            return TryEnqueue(buffer, destination, new EventId(1));
+        });
+
+        admitted.Wait();
+        timeProvider.Advance(TimeSpan.FromSeconds(2));
+        Enqueue(buffer, destination, "category", new EventId(2));
+        continueInsertion.Set();
+
+        Assert.False(await insertion);
         Assert.Empty(destination.Records);
     }
 

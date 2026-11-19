@@ -138,7 +138,7 @@ internal sealed class BottomKLogBuffer : LogBuffer, IDisposable, IFlushOnShutdow
             SerializedLogRecordFactory.Return(record);
         }
 
-        return result != InsertResult.Disposed;
+        return result == InsertResult.Inserted;
     }
 
     /// <inheritdoc/>
