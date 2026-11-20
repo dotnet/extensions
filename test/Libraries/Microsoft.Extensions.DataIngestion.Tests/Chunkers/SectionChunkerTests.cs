@@ -152,12 +152,62 @@ namespace Microsoft.Extensions.DataIngestion.Chunkers.Tests
                     new IngestionDocumentParagraph(text)
                 }
             });
-            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 512);
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 512, overlapTokens: 0);
             IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
             Assert.Equal(2, chunks.Count);
             Assert.True(chunks[0].Content.Split(' ').Length <= 512);
             Assert.True(chunks[1].Content.Split(' ').Length <= 512);
             Assert.Equal(text, string.Join("", chunks.Select(c => c.Content)), ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public async Task SizeLimit_WithOverlap()
+        {
+            IngestionDocument doc = new IngestionDocument("overlapExample");
+            doc.Sections.Add(new IngestionDocumentSection
+            {
+                Elements =
+                {
+                    new IngestionDocumentParagraph("The quick brown fox jumps over the lazy dog")
+                }
+            });
+
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 4, overlapTokens: 1);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+            // Same result as DocumentTokenChunker with the same options.
+            Assert.Equal(3, chunks.Count);
+            Assert.Equal("The quick brown fox", chunks[0].Content);
+            Assert.Equal(" fox jumps over the", chunks[1].Content);
+            Assert.Equal(" the lazy dog", chunks[2].Content);
+        }
+
+        [Fact]
+        public async Task Overlap_DoesNotCrossSections()
+        {
+            IngestionDocument doc = new IngestionDocument("doc");
+            doc.Sections.Add(new IngestionDocumentSection { Elements = { new IngestionDocumentParagraph("This is a paragraph in section 1.") } });
+            doc.Sections.Add(new IngestionDocumentSection { Elements = { new IngestionDocumentParagraph("This is a paragraph in section 2.") } });
+
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 100, overlapTokens: 50);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+            Assert.Equal(2, chunks.Count);
+            Assert.Equal("This is a paragraph in section 1.", chunks[0].Content);
+            Assert.Equal("This is a paragraph in section 2.", chunks[1].Content);
+        }
+
+        [Fact]
+        public async Task Overlap_NoChunkWithOnlyOverlap()
+        {
+            string text = string.Join(" ", Enumerable.Repeat("word", 600)); // each word is 1 token
+            IngestionDocument doc = new IngestionDocument("doc");
+            doc.Sections.Add(new IngestionDocumentSection { Elements = { new IngestionDocumentParagraph(text) } });
+
+            IngestionChunker<string> chunker = CreateDocumentChunker(maxTokensPerChunk: 600, overlapTokens: 100);
+            IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+            Assert.Equal(text, Assert.Single(chunks).Content);
         }
 
         [Fact]
