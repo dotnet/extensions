@@ -158,14 +158,14 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
                     values.Select(v => v is string s
                         ? s
                         : throw new InvalidOperationException($"Property '{ModelName}' was configured with an embedding generator accepting a string, but {v?.GetType().Name ?? "null"} was provided.")),
-                    cancellationToken: cancellationToken).ConfigureAwait(false),
+                    CreateEmbeddingGenerationOptions(), cancellationToken).ConfigureAwait(false),
 
             IEmbeddingGenerator<DataContent, TEmbedding> generator when EmbeddingType == typeof(TEmbedding)
                 => await generator.GenerateAsync(
                     values.Select(v => v is DataContent c
                         ? c
                         : throw new InvalidOperationException($"Property '{ModelName}' was configured with an embedding generator accepting a {nameof(DataContent)}, but {v?.GetType().Name ?? "null"} was provided.")),
-                    cancellationToken: cancellationToken).ConfigureAwait(false),
+                    CreateEmbeddingGenerationOptions(), cancellationToken).ConfigureAwait(false),
 
             null => throw new UnreachableException("This method should only be called when an embedding generator is configured."),
 
@@ -181,16 +181,27 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
         => EmbeddingGenerator switch
         {
             IEmbeddingGenerator<string, TEmbedding> generator when value is string s
-                => await generator.GenerateAsync(s, cancellationToken: cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateAsync(s, CreateEmbeddingGenerationOptions(), cancellationToken).ConfigureAwait(false),
 
             IEmbeddingGenerator<DataContent, TEmbedding> generator when value is DataContent c
-                => await generator.GenerateAsync(c, cancellationToken: cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateAsync(c, CreateEmbeddingGenerationOptions(), cancellationToken).ConfigureAwait(false),
 
             null => throw new UnreachableException("This method should only be called when an embedding generator is configured."),
 
             _ => throw new InvalidOperationException(
                 VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(value?.GetType() ?? typeof(object), EmbeddingGenerator!.GetType())),
         };
+
+    /// <summary>
+    /// Creates the <see cref="EmbeddingGenerationOptions"/> to pass to the <see cref="EmbeddingGenerator"/> when generating embeddings for this property.
+    /// </summary>
+    /// <remarks>
+    /// If <see cref="Dimensions"/> has been configured, it is flowed to <see cref="EmbeddingGenerationOptions.Dimensions"/>, so that
+    /// generators which support multiple output sizes (e.g. models trained with Matryoshka Representation Learning) produce embeddings
+    /// matching the configured dimensionality.
+    /// </remarks>
+    private protected EmbeddingGenerationOptions? CreateEmbeddingGenerationOptions()
+        => Dimensions > 0 ? new() { Dimensions = Dimensions } : null;
 
     /// <summary>
     /// Returns the types of input that this property model supports.
