@@ -331,7 +331,7 @@ public class OpenAIResponseClientTests
             {
                 // Reasoning updates
                 Assert.Single(updates[i].Contents);
-                Assert.Null(updates[i].Role);
+                Assert.Equal(ChatRole.Assistant, updates[i].Role);
 
                 var reasoning = Assert.IsType<TextReasoningContent>(updates[i].Contents.Single());
                 Assert.NotNull(reasoning);
@@ -355,6 +355,139 @@ public class OpenAIResponseClientTests
         Assert.Equal(17, usage.Details.InputTokenCount);
         Assert.Equal(122, usage.Details.OutputTokenCount);
         Assert.Equal(139, usage.Details.TotalTokenCount);
+    }
+
+    [Theory]
+    [InlineData(false, true, 0)]
+    [InlineData(true, true, 0)]
+    [InlineData(false, true, 1)]
+    [InlineData(true, true, 1)]
+    [InlineData(false, true, 2)]
+    [InlineData(true, true, 2)]
+    [InlineData(false, false, 0)]
+    [InlineData(true, false, 0)]
+    public async Task StreamingNonMessageOutput_AfterToolResult_DoesNotMergeMessages(bool asyncAggregation, bool reasoning, int messageCount)
+    {
+        const string Input = """
+            {"model":"o4-mini","input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],"stream":true}
+            """;
+
+        string output = """
+            event: response.created
+            data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_1","object":"response","created_at":1700000001,"status":"in_progress","model":"o4-mini","output":[]}}
+
+
+            """;
+        output += reasoning ? """
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":1,"output_index":0,"item":{"id":"rs_1","type":"reasoning","summary":[]}}
+
+            event: response.reasoning_summary_text.delta
+            data: {"type":"response.reasoning_summary_text.delta","sequence_number":2,"item_id":"rs_1","output_index":0,"summary_index":0,"delta":"Thinking "}
+
+            event: response.reasoning_summary_text.delta
+            data: {"type":"response.reasoning_summary_text.delta","sequence_number":3,"item_id":"rs_1","output_index":0,"summary_index":0,"delta":"about the menu."}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":4,"output_index":0,"item":{"id":"rs_1","type":"reasoning","summary":[{"type":"summary_text","text":"Thinking about the menu."}],"encrypted_content":"encrypted-reasoning"}}
+
+
+            """ : """
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","sequence_number":1,"output_index":0,"item":{"id":"cmp_1","type":"compaction","encrypted_content":"encrypted-compaction"}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","sequence_number":2,"output_index":0,"item":{"id":"cmp_1","type":"compaction","encrypted_content":"encrypted-compaction"}}
+
+
+            """;
+
+        for (int i = 1; i <= messageCount; i++)
+        {
+            output += $$$"""
+                event: response.output_item.added
+                data: {"type":"response.output_item.added","sequence_number":{{{5 + ((i - 1) * 3)}}},"output_index":{{{i}}},"item":{"id":"msg_{{{i}}}","type":"message","status":"in_progress","role":"assistant","content":[]}}
+
+                event: response.output_text.delta
+                data: {"type":"response.output_text.delta","sequence_number":{{{6 + ((i - 1) * 3)}}},"item_id":"msg_{{{i}}}","output_index":{{{i}}},"content_index":0,"delta":"Answer {{{i}}}."}
+
+                event: response.output_item.done
+                data: {"type":"response.output_item.done","sequence_number":{{{7 + ((i - 1) * 3)}}},"output_index":{{{i}}},"item":{"id":"msg_{{{i}}}","type":"message","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Answer {{{i}}}.","annotations":[]}]}}
+
+
+                """;
+        }
+
+        output += $$$"""
+            event: response.completed
+            data: {"type":"response.completed","sequence_number":{{{5 + (messageCount * 3)}}},"response":{"id":"resp_1","object":"response","created_at":1700000001,"status":"completed","model":"o4-mini","output":[]}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "o4-mini");
+
+        FunctionResultContent toolResult = new("call_1", "menu");
+        List<ChatResponseUpdate> modelUpdates = [];
+        async IAsyncEnumerable<ChatResponseUpdate> GetUpdatesAsync()
+        {
+            yield return new(ChatRole.Tool, [toolResult]);
+            await foreach (var update in client.GetStreamingResponseAsync("test"))
+            {
+                modelUpdates.Add(update);
+                yield return update;
+            }
+        }
+
+        ChatResponse response;
+        if (asyncAggregation)
+        {
+            response = await GetUpdatesAsync().ToChatResponseAsync();
+        }
+        else
+        {
+            List<ChatResponseUpdate> updates = [];
+            await foreach (var update in GetUpdatesAsync())
+            {
+                updates.Add(update);
+            }
+
+            response = updates.ToChatResponse();
+        }
+
+        Assert.Equal(1 + Math.Max(1, messageCount), response.Messages.Count);
+        Assert.Equal(ChatRole.Tool, response.Messages[0].Role);
+        Assert.Same(toolResult, Assert.Single(response.Messages[0].Contents));
+        Assert.All(response.Messages.Skip(1), message => Assert.Equal(ChatRole.Assistant, message.Role));
+        Assert.All(modelUpdates, update => Assert.Equal(ChatRole.Assistant, update.Role));
+        Assert.All(modelUpdates.Where(update => update.Contents.Any(content => content is not TextContent)), update => Assert.Null(update.MessageId));
+
+        ChatMessage firstAssistant = response.Messages[1];
+        Assert.Equal(messageCount == 0 ? null : "msg_1", firstAssistant.MessageId);
+        Assert.Equal(messageCount == 0 ? 1 : 2, firstAssistant.Contents.Count);
+        if (reasoning)
+        {
+            var content = Assert.IsType<TextReasoningContent>(firstAssistant.Contents[0]);
+            Assert.Equal("Thinking about the menu.", content.Text);
+            Assert.Equal("encrypted-reasoning", content.ProtectedData);
+        }
+        else
+        {
+            var content = Assert.IsType<AIContent>(Assert.Single(firstAssistant.Contents));
+            Assert.Equal("cmp_1", Assert.IsAssignableFrom<ResponseItem>(content.RawRepresentation).Id);
+        }
+
+        for (int i = 1; i <= messageCount; i++)
+        {
+            Assert.Equal($"msg_{i}", response.Messages[i].MessageId);
+            Assert.Equal($"Answer {i}.", Assert.IsType<TextContent>(response.Messages[i].Contents.Last()).Text);
+            if (i > 1)
+            {
+                Assert.Single(response.Messages[i].Contents);
+            }
+        }
     }
 
     [Fact]
@@ -464,7 +597,7 @@ public class OpenAIResponseClientTests
         Assert.All(reasoningUpdates, u =>
         {
             Assert.Single(u.Contents);
-            Assert.Null(u.Role);
+            Assert.Equal(ChatRole.Assistant, u.Role);
             var reasoning = Assert.IsType<TextReasoningContent>(u.Contents.Single());
             Assert.NotNull(reasoning.Text);
         });
@@ -584,7 +717,7 @@ public class OpenAIResponseClientTests
         Assert.All(reasoningUpdates, u =>
         {
             Assert.Single(u.Contents);
-            Assert.Null(u.Role);
+            Assert.Equal(ChatRole.Assistant, u.Role);
             var reasoning = Assert.IsType<TextReasoningContent>(u.Contents.Single());
             Assert.NotNull(reasoning.Text);
         });
@@ -1121,7 +1254,7 @@ public class OpenAIResponseClientTests
             Assert.Null(updates[i].AdditionalProperties);
             Assert.Equal(i >= 3 ? 1 : 0, updates[i].Contents.Count);
             Assert.Equal(i >= 4 ? ChatFinishReason.Stop : null, updates[i].FinishReason);
-            Assert.Null(updates[i].Role);
+            Assert.Equal(ChatRole.Assistant, updates[i].Role);
         }
 
         ToolCallContent content = Assert.IsType<ToolCallContent>(Assert.Single(updates[3].Contents));
