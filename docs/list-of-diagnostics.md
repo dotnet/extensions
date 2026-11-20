@@ -134,6 +134,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `METGEN016` | Metric methods mustn't use any generic type as the return type |
 | `METGEN018` | Xml comment was not parsed correctly |
 | `METGEN019` | A metric class has cycles in its type hierarchy |
+| `METGEN020` | Histogram bucket boundaries must be distinct, in increasing order and not NaN |
 
 ## AuditReports
 

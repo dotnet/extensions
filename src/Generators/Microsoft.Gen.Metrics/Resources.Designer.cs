@@ -96,6 +96,24 @@ namespace Microsoft.Gen.Metrics {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The histogram bucket boundaries of metric method &apos;{0}&apos; must be distinct, in increasing order and not NaN.
+        /// </summary>
+        internal static string ErrorInvalidHistogramBucketBoundariesMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHistogramBucketBoundariesMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Histogram bucket boundaries must be distinct, in increasing order and not NaN.
+        /// </summary>
+        internal static string ErrorInvalidHistogramBucketBoundariesTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHistogramBucketBoundariesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Metric method names cannot start with _.
         /// </summary>
         internal static string ErrorInvalidMethodNameMessage {

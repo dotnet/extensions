@@ -231,4 +231,10 @@
   <data name="ErrorTagTypeCycleDetectedTitle" xml:space="preserve">
     <value>A metric class has cycles in its type hierarchy</value>
   </data>
+  <data name="ErrorInvalidHistogramBucketBoundariesMessage" xml:space="preserve">
+    <value>The histogram bucket boundaries of metric method '{0}' must be distinct, in increasing order and not NaN</value>
+  </data>
+  <data name="ErrorInvalidHistogramBucketBoundariesTitle" xml:space="preserve">
+    <value>Histogram bucket boundaries must be distinct, in increasing order and not NaN</value>
+  </data>
 </root>
