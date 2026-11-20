@@ -98,16 +98,15 @@ public class DocumentTableElementTests
     }
 
     [Fact]
-    public void StoresDimensionsAndCreatesNullableCells()
+    public void StoresDimensionsWithoutFabricatingCells()
     {
         ExtractionDocumentTableElement table = new(new TextContent("stored table"), 2, 3);
 
         Assert.Equal("stored table", Assert.IsType<TextContent>(table.Content).Text);
         Assert.Equal(2, table.Cells.RowCount);
         Assert.Equal(3, table.Cells.ColumnCount);
-        Assert.Equal(
-            new ExtractionDocumentTableCell?[] { null, null, null, null, null, null },
-            table.Cells.ToArray());
+        Assert.Empty(table.Cells);
+        Assert.Null(table.Cells[1, 2]);
     }
 
     [Theory]
@@ -153,11 +152,12 @@ public class DocumentTableElementTests
         Assert.Throws<ArgumentOutOfRangeException>(
             parameterName,
             () => table.Cells[row, column] = null);
+        Assert.Throws<ArgumentOutOfRangeException>(
+            parameterName,
+            () => table.Cells.GetCoveringCell(row, column));
 
         Assert.Null(candidate.Table);
-        Assert.Equal(
-            new ExtractionDocumentTableCell?[] { null, null, null, null },
-            table.Cells.ToArray());
+        Assert.Empty(table.Cells);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class DocumentTableElementTests
         table.Cells[0, 1] = new ExtractionDocumentTableCell(new ExtractionDocumentTextElement(new TextContent("one")));
         table.Cells[1, 0] = new ExtractionDocumentTableCell(new ExtractionDocumentTextElement(new TextContent("two")));
 
-        Assert.Equal(6, table.Cells.Count());
+        Assert.Equal(new[] { table.Cells[0, 1], table.Cells[1, 0] }, table.Cells);
         Assert.Null(table.Cells[0, 0]);
         Assert.Null(table.Cells[0, 2]);
         Assert.Null(table.Cells[1, 1]);
@@ -271,9 +271,7 @@ public class DocumentTableElementTests
         Assert.Equal(columnSpan, anchor.ColumnSpan);
         Assert.Equal("A|<", Assert.IsType<TextContent>(text.Content).Text);
         Assert.Null(anchor.Role);
-        Assert.Equal(
-            new ExtractionDocumentTableCell?[] { empty, null, null, null, null, anchor, null, null, null, null, null, null },
-            table.Cells.ToArray());
+        Assert.Equal(new[] { empty, anchor }, table.Cells);
         for (int row = 0; row < 3; row++)
         {
             for (int column = 0; column < 4; column++)
@@ -345,14 +343,14 @@ public class DocumentTableElementTests
 
         Assert.Equal(2, table.Cells.RowCount);
         Assert.Equal(2, table.Cells.ColumnCount);
-        Assert.Equal(new ExtractionDocumentTableCell?[] { null, null, null, null }, table.Cells.ToArray());
+        Assert.Empty(table.Cells);
         Assert.Null(table.Cells.GetCoveringCell(0, 0));
         Assert.False(table.Cells.IsCovered(0, 0));
         Assert.Same(table, Assert.Single(document.EnumerateContent()));
         Assert.Null(table.Content);
         Assert.Same(providerMarkdown, table.Sources[0].GetRawRepresentation());
         Assert.Null(document.Content);
-        Assert.Equal(new ExtractionDocumentTableCell?[] { null, null, null, null }, table.Cells.ToArray());
+        Assert.Empty(table.Cells);
     }
 
     [Fact]
@@ -371,7 +369,7 @@ public class DocumentTableElementTests
         Assert.Null(table.Content);
         Assert.Same(providerMarkdown, table.Sources[0].GetRawRepresentation());
         Assert.Null(document.Content);
-        Assert.Equal(new ExtractionDocumentTableCell?[] { null, null, null, empty }, table.Cells.ToArray());
+        Assert.Same(empty, Assert.Single(table.Cells));
         Assert.Null(empty.Content);
         Assert.Same(empty, table.Cells.GetCoveringCell(1, 1));
         Assert.False(table.Cells.IsCovered(1, 1));
@@ -404,7 +402,7 @@ public class DocumentTableElementTests
 
         Assert.Null(table.Content);
         Assert.Null(document.Content);
-        Assert.Equal(new ExtractionDocumentTableCell?[] { null, null, null, null }, table.Cells.ToArray());
+        Assert.Empty(table.Cells);
         Assert.Equal(2, table.Cells.RowCount);
         Assert.Equal(2, table.Cells.ColumnCount);
         Assert.Equal("mapped A", Assert.IsType<TextContent>(text.Content).Text);

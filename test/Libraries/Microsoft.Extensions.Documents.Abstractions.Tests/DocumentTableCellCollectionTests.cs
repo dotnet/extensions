@@ -12,27 +12,22 @@ namespace Microsoft.Extensions.Documents.Tests;
 public class DocumentTableCellCollectionTests
 {
     [Fact]
-    public void EnumeratesNullableCellsInRowMajorOrder()
+    public void EnumeratesAnchorCellsInRowMajorOrderWithoutEmptyPositions()
     {
         ExtractionDocumentTableElement table = new(null, 2, 3);
         ExtractionDocumentTextElement firstContent = new(new TextContent("first"));
         ExtractionDocumentTextElement lastContent = new(new TextContent("last"));
 
-        table.Cells[0, 1] = new ExtractionDocumentTableCell(firstContent);
         table.Cells[1, 2] = new ExtractionDocumentTableCell(lastContent);
+        table.Cells[0, 1] = new ExtractionDocumentTableCell(firstContent);
 
-        ExtractionDocumentTableCell?[] cells = table.Cells.ToArray();
+        ExtractionDocumentTableCell[] cells = table.Cells.ToArray();
 
-        Assert.Equal(6, cells.Length);
-        Assert.Null(cells[0]);
-        Assert.Same(firstContent, cells[1]!.Content);
-        Assert.Null(cells[2]);
-        Assert.Null(cells[3]);
-        Assert.Null(cells[4]);
-        Assert.Same(lastContent, cells[5]!.Content);
-        Assert.Equal(
-            new ExtractionDocumentTableCell?[] { null, cells[1], null, null, null, cells[5] },
-            cells);
+        Assert.Equal(2, cells.Length);
+        Assert.Same(firstContent, cells[0].Content);
+        Assert.Same(lastContent, cells[1].Content);
+        Assert.Same(table.Cells[0, 1], cells[0]);
+        Assert.Same(table.Cells[1, 2], cells[1]);
     }
 
     [Fact]
@@ -376,7 +371,7 @@ public class DocumentTableCellCollectionTests
         Assert.Null(table.Cells[2, 2]);
         Assert.False(table.Cells.IsCovered(2, 2));
         Assert.Null(table.Cells.GetCoveringCell(2, 2));
-        Assert.Equal(new ExtractionDocumentTableCell?[] { anchor, null, null, null, null, null, ordinary, null, null }, table.Cells.ToArray());
+        Assert.Equal(new[] { anchor, ordinary }, table.Cells);
     }
 
     [Fact]
@@ -571,13 +566,7 @@ public class DocumentTableCellCollectionTests
             }
         }
 
-        Assert.Equal(
-            new ExtractionDocumentTableCell?[]
-            {
-                replacement, empty, null, null, null, null, null, null,
-                null, null, oldAnchor, null, null, null, null, null
-            },
-            table.Cells.ToArray());
+        Assert.Equal(new[] { replacement, empty, oldAnchor }, table.Cells);
         Assert.Null(table.Content);
         Assert.Same(frame, Assert.Single(document.SourcePages));
         Assert.Same(frame, oldAnchor.Sources[0].Page);
