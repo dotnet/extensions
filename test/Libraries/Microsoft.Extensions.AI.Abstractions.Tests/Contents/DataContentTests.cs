@@ -33,10 +33,15 @@ public sealed class DataContentTests
     [InlineData("data:type/subtype;;parameter=value;else,", typeof(UriFormatException))] // parameter without value
     [InlineData("data:type/subtype;parameter=va=lue;else,", typeof(UriFormatException))] // parameter with multiple =
     [InlineData("data:type/subtype;=value;else,", typeof(UriFormatException))] // empty parameter name
+    [InlineData("data:;charset=,hello", typeof(UriFormatException))]
+    [InlineData("data:;=utf-8,hello", typeof(UriFormatException))]
+    [InlineData("data:;charset=;base64,aGVsbG8=", typeof(UriFormatException))]
+    [InlineData("data:;=utf-8;base64,aGVsbG8=", typeof(UriFormatException))]
     [InlineData("data:image/j/peg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD", typeof(UriFormatException))] // multiple slashes in media type
 
     // Base64 Validation Errors
     [InlineData("data:text;base64,something!", typeof(UriFormatException))]  // Invalid base64 due to invalid character '!'
+    [InlineData("data:;charset=utf-8;base64,something!", typeof(UriFormatException))]
     [InlineData("data:text/plain;base64,U29tZQ==\t", typeof(UriFormatException))] // Invalid base64 due to tab character
     [InlineData("data:text/plain;base64,U29tZQ==\r", typeof(UriFormatException))] // Invalid base64 due to carriage return character
     [InlineData("data:text/plain;base64,U29tZQ==\n", typeof(UriFormatException))] // Invalid base64 due to line feed character
@@ -56,6 +61,7 @@ public sealed class DataContentTests
     [InlineData("type/subtype;key=")]
     [InlineData("type/subtype;=value")]
     [InlineData("type/subtype;key=value;another=")]
+    [InlineData(";charset=utf-8")]
     public void Ctor_InvalidMediaType_Throws(string type)
     {
         Assert.Throws<ArgumentException>("mediaType", () => new DataContent("data:image/png;base64,aGVsbG8=", type));
@@ -136,6 +142,30 @@ public sealed class DataContentTests
         // When media type is omitted in the URI but provided as a parameter, the parameter takes precedence
         var content = new DataContent(uri, mediaType);
         Assert.Equal(mediaType, content.MediaType);
+    }
+
+    [Theory]
+    [InlineData(false, false, null)]
+    [InlineData(false, true, null)]
+    [InlineData(true, false, null)]
+    [InlineData(true, true, null)]
+    [InlineData(false, false, "text/plain")]
+    [InlineData(false, true, "text/plain")]
+    [InlineData(true, false, "text/plain")]
+    [InlineData(true, true, "text/plain")]
+    public void Ctor_OmittedMediaTypeWithCharset_MatchesExplicitTextPlain(bool base64, bool useUri, string? mediaType)
+    {
+        string suffix = base64 ? ";base64,aGVsbG8=" : ",hello";
+        string uri = $"data:;charset=utf-8{suffix}";
+        string explicitUri = $"data:text/plain;charset=utf-8{suffix}";
+
+        DataContent content = useUri ? new DataContent(new Uri(uri), mediaType) : new DataContent(uri, mediaType);
+        DataContent explicitContent = useUri ? new DataContent(new Uri(explicitUri), mediaType) : new DataContent(explicitUri, mediaType);
+
+        Assert.Equal([104, 101, 108, 108, 111], content.Data.ToArray());
+        Assert.Equal(mediaType ?? "text/plain;charset=utf-8", content.MediaType);
+        Assert.Equal(explicitContent.Data.ToArray(), content.Data.ToArray());
+        Assert.Equal(explicitContent.MediaType, content.MediaType);
     }
 
     [Fact]

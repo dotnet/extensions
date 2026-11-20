@@ -67,6 +67,13 @@ internal static class DataUriParser
         // Per RFC 2397, if the media type is omitted, it defaults to "text/plain;charset=US-ASCII".
         ReadOnlySpan<char> span = metadata.Span.Trim();
         string? mediaType = null;
+        if (!span.IsEmpty && span[0] == ';')
+        {
+            // RFC 2397 allows "text/plain" to be omitted while parameters are supplied.
+            mediaType = "text/plain" + span.ToString();
+            span = mediaType.AsSpan();
+        }
+
         if (span.IsEmpty)
         {
             mediaType = DefaultMediaType;
