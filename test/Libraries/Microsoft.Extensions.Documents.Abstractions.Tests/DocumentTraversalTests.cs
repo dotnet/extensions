@@ -168,14 +168,6 @@ public class DocumentTraversalTests
     }
 
     [Fact]
-    public void GetText_RejectsNullArguments()
-    {
-        Assert.Throws<ArgumentNullException>("document", () => ((ExtractionDocument)null!).GetText());
-        Assert.Throws<ArgumentNullException>("element", () => ((ExtractionDocumentElement)null!).GetText());
-        Assert.Throws<ArgumentNullException>("cell", () => ((ExtractionDocumentTableCell)null!).GetText());
-    }
-
-    [Fact]
     public void ProviderShapes_ProduceTheSameTextRegardlessOfSectionAndCellShape()
     {
         ExtractionDocument[] shapes = [FlatPageShape(), NestedHeadingShape(), SectionValuedCellShape()];

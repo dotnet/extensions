@@ -17,7 +17,9 @@ Text can be in text elements at any section depth, table cells (whose content ca
 ```csharp
 foreach (ExtractionDocumentElement element in document.EnumerateContent())
 {
-    if (element is ExtractionDocumentTextElement { Role: "pageHeader" or "pageFooter" })
+    if (element is ExtractionDocumentTextElement { Role: { } role } &&
+        (role.Equals("pageHeader", StringComparison.OrdinalIgnoreCase) ||
+         role.Equals("pageFooter", StringComparison.OrdinalIgnoreCase)))
     {
         continue;
     }

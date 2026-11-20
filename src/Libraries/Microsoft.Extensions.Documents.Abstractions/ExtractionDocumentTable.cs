@@ -95,6 +95,12 @@ public sealed class ExtractionDocumentTableCell
 
     internal ExtractionDocumentTableElement? Table => _table;
 
+    /// <summary>Gets all text in this cell's content, in document order.</summary>
+    /// <remarks>This method reads text with the same rules as <see cref="ExtractionDocument.GetText"/>.</remarks>
+    /// <returns>The text in the cell, or an empty string when the cell has no text.</returns>
+    /// <exception cref="InvalidOperationException">The cell contains a null entry or a cyclic relationship.</exception>
+    public string GetText() => ExtractionDocumentText.Read(Content);
+
     internal void Attach(ExtractionDocumentTableElement table, int row, int column)
     {
         if (_table is not null)

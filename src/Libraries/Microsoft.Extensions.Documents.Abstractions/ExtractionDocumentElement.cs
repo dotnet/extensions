@@ -43,6 +43,15 @@ public abstract class ExtractionDocumentElement
     /// <summary>Gets optional page and region associations.</summary>
     /// <remarks>Adding a reference does not add its page to a document. Producers explicitly populate the source-page list.</remarks>
     public List<ExtractionDocumentSourceReference> Sources { get; } = [];
+
+    /// <summary>Gets all text in this element and its descendants, in document order.</summary>
+    /// <remarks>
+    /// This method reads text with the same rules as <see cref="ExtractionDocument.GetText"/>. For a custom element
+    /// type, only its local <see cref="TextContent"/> payload is read.
+    /// </remarks>
+    /// <returns>The text in the element, or an empty string when the element has no text.</returns>
+    /// <exception cref="InvalidOperationException">The element contains a null entry or a cyclic relationship.</exception>
+    public string GetText() => ExtractionDocumentText.Read(this);
 }
 
 /// <summary>Represents a section in a document. Sections can be nested in the ordered element collection.</summary>
@@ -64,7 +73,7 @@ public sealed class ExtractionDocumentSection : ExtractionDocumentElement
     /// This traversal has the same semantics as <see cref="ExtractionDocument.EnumerateContent"/>: it descends through
     /// nested sections, does not yield sections themselves, does not descend into table cells, and does not return
     /// local <see cref="ExtractionDocumentElement.Content"/> payloads of sections. Use
-    /// <see cref="ExtractionDocumentExtensions.GetText(ExtractionDocumentElement)"/> to read all text in this section.
+    /// <see cref="ExtractionDocumentElement.GetText"/> to read all text in this section.
     /// Cyclic section relationships and null entries are rejected when traversed.
     /// </remarks>
     /// <returns>The content elements in this section, in document order.</returns>
@@ -135,6 +144,7 @@ public sealed class ExtractionDocumentImageElement : ExtractionDocumentElement
     /// <remarks>
     /// Captions and descriptions belong in <see cref="AlternativeText"/> instead. Producers can place text that appears
     /// inside a figure here rather than in separate text elements, so text-only consumers should read this value too.
+    /// <see cref="ExtractionDocumentElement.GetText"/> returns this value after any local <see cref="TextContent"/> payload.
     /// </remarks>
     public string? Text { get; set; }
 

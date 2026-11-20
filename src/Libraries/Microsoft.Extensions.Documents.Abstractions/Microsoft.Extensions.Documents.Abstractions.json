@@ -12,6 +12,10 @@
         {
           "Member": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Documents.ExtractionDocumentElement> Microsoft.Extensions.Documents.ExtractionDocument.EnumerateContent();",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Documents.ExtractionDocument.GetText();",
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
@@ -102,6 +106,10 @@
         {
           "Member": "Microsoft.Extensions.Documents.ExtractionDocumentElement.ExtractionDocumentElement(Microsoft.Extensions.AI.AIContent? content);",
           "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Documents.ExtractionDocumentElement.GetText();",
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
@@ -111,24 +119,6 @@
         },
         {
           "Member": "System.Collections.Generic.List<Microsoft.Extensions.Documents.ExtractionDocumentSourceReference> Microsoft.Extensions.Documents.ExtractionDocumentElement.Sources { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Documents.ExtractionDocumentExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static string Microsoft.Extensions.Documents.ExtractionDocumentExtensions.GetText(this Microsoft.Extensions.Documents.ExtractionDocument document);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static string Microsoft.Extensions.Documents.ExtractionDocumentExtensions.GetText(this Microsoft.Extensions.Documents.ExtractionDocumentElement element);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static string Microsoft.Extensions.Documents.ExtractionDocumentExtensions.GetText(this Microsoft.Extensions.Documents.ExtractionDocumentTableCell cell);",
           "Stage": "Experimental"
         }
       ]
@@ -331,6 +321,10 @@
         },
         {
           "Member": "Microsoft.Extensions.Documents.ExtractionDocumentTableCell.ExtractionDocumentTableCell(int rowSpan = 1, int columnSpan = 1, string? role = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Documents.ExtractionDocumentTableCell.GetText();",
           "Stage": "Experimental"
         }
       ],
