@@ -25,6 +25,16 @@ namespace Microsoft.Extensions.AI;
 public static partial class AIJsonUtilitiesTests
 {
     [Fact]
+    public static void DefaultOptions_SerializesAIContentListAsObject()
+    {
+        object contents = new List<AIContent> { new TextContent("hello") };
+
+        string json = JsonSerializer.Serialize(contents, AIJsonUtilities.DefaultOptions);
+
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""[{"$type":"text","text":"hello"}]"""), JsonNode.Parse(json)));
+    }
+
+    [Fact]
     public static void DefaultOptions_HasExpectedConfiguration()
     {
         var options = AIJsonUtilities.DefaultOptions;
