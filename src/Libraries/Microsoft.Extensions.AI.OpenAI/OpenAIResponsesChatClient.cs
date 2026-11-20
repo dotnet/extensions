@@ -1518,7 +1518,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                                 elements.Add(new()
                                                 {
                                                     Type = "input_text",
-                                                    Text = JsonSerializer.Serialize(content, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object))),
+                                                    Text = JsonSerializer.Serialize(
+                                                        content, OpenAIClientExtensions.ToolJsonOptions.GetTypeInfo(typeof(object))),
                                                 });
                                             }
                                             catch (NotSupportedException)
@@ -1554,7 +1555,8 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     {
                                         try
                                         {
-                                            result = JsonSerializer.Serialize(resultContent.Result, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(object)));
+                                            result = JsonSerializer.Serialize(
+                                                resultContent.Result, OpenAIClientExtensions.ToolJsonOptions.GetTypeInfo(typeof(object)));
                                         }
                                         catch (NotSupportedException)
                                         {
@@ -1622,7 +1624,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 callContent.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                     callContent.Arguments,
-                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
+                                    OpenAIClientExtensions.ToolJsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
                         case ToolApprovalRequestContent toolReq when toolReq.ToolCall is McpServerToolCallContent mcpToolCall:
@@ -1632,7 +1634,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                 mcpToolCall.Name,
                                 BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                     mcpToolCall.Arguments!,
-                                    AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
+                                    OpenAIClientExtensions.ToolJsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                             break;
 
                         case McpServerToolResultContent mstrc:
@@ -1644,7 +1646,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                                     associatedCall.Name,
                                     BinaryData.FromBytes(JsonSerializer.SerializeToUtf8Bytes(
                                         associatedCall.Arguments!,
-                                        AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
+                                        OpenAIClientExtensions.ToolJsonOptions.GetTypeInfo(typeof(IDictionary<string, object?>)))));
                                 if (mstrc.Outputs?.OfType<ErrorContent>().FirstOrDefault() is ErrorContent errorContent)
                                 {
                                     mtci.Error = BinaryData.FromString(errorContent.Message);
