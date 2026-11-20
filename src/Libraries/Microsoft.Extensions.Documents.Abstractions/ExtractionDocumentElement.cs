@@ -47,11 +47,25 @@ public abstract class ExtractionDocumentElement
     /// <summary>Gets all text in this element and its descendants, in document order.</summary>
     /// <remarks>
     /// This method reads text with the same rules as <see cref="ExtractionDocument.GetText"/>. For a custom element
-    /// type, only its local <see cref="TextContent"/> payload is read.
+    /// type, its local <see cref="TextContent"/> payload is read, followed by any text from
+    /// <see cref="GetAdditionalText"/>.
     /// </remarks>
     /// <returns>The text in the element, or an empty string when the element has no text.</returns>
     /// <exception cref="InvalidOperationException">The element contains a null entry or a cyclic relationship.</exception>
     public string GetText() => ExtractionDocumentText.Read(this);
+
+    /// <summary>Gets text that this element holds outside its <see cref="Content"/> payload and its child elements.</summary>
+    /// <remarks>
+    /// <see cref="GetText"/> and <see cref="ExtractionDocument.GetText"/> include this text after the element's local
+    /// <see cref="TextContent"/> payload and before any child elements. Overriding this method is optional: the base
+    /// implementation returns <see langword="null"/>, and a <see cref="TextContent"/> payload is read without an
+    /// override. Override it in a custom element type that stores text in its own properties. Don't include the
+    /// <see cref="Content"/> payload or the text of child elements, because they are read separately.
+    /// </remarks>
+    /// <returns>The additional text, or <see langword="null"/> when the element has none.</returns>
+    protected virtual string? GetAdditionalText() => null;
+
+    internal string? ReadAdditionalText() => GetAdditionalText();
 }
 
 /// <summary>Represents a section in a document. Sections can be nested in the ordered element collection.</summary>
@@ -150,4 +164,8 @@ public sealed class ExtractionDocumentImageElement : ExtractionDocumentElement
 
     /// <summary>Gets or sets the alternative text for the image.</summary>
     public string? AlternativeText { get; set; }
+
+    /// <summary>Gets the image's <see cref="Text"/>.</summary>
+    /// <returns>The OCR or transcription text, or <see langword="null"/> when there is none.</returns>
+    protected override string? GetAdditionalText() => Text;
 }

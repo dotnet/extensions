@@ -44,6 +44,7 @@ internal static class ExtractionDocumentText
     private static void AppendElement(StringBuilder builder, ExtractionDocumentElement element, HashSet<ExtractionDocumentElement> path)
     {
         AppendPayload(builder, element.Content);
+        AppendText(builder, element.ReadAdditionalText());
 
         switch (element)
         {
@@ -85,10 +86,6 @@ internal static class ExtractionDocumentText
                     _ = path.Remove(table);
                 }
 
-                break;
-
-            case ExtractionDocumentImageElement image:
-                AppendText(builder, image.Text);
                 break;
         }
     }

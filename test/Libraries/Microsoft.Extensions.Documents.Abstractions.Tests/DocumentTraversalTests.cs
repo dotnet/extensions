@@ -168,6 +168,24 @@ public class DocumentTraversalTests
     }
 
     [Fact]
+    public void GetText_ReadsAdditionalTextFromCustomElementsAfterTheirPayload()
+    {
+        ExtractionDocumentTableElement table = new(null, 1, 2);
+        table.Cells[0, 0] = new(new FormulaElement(null, "x = 1"));
+        table.Cells[0, 1] = new(new FormulaElement(null, null));
+        ExtractionDocumentSection section = new();
+        section.Elements.AddRange(
+            [new FormulaElement(new TextContent("caption"), "E = mc^2"), table, new CustomElement(new TextContent("custom"))]);
+        ExtractionDocument document = new("formulas");
+        document.Sections.Add(section);
+
+        Assert.Equal(Join("caption", "E = mc^2", "x = 1", "custom"), document.GetText());
+        Assert.Equal(Join("caption", "E = mc^2"), section.Elements[0].GetText());
+        Assert.Equal("x = 1", table.Cells[0, 0]!.GetText());
+        Assert.Equal(string.Empty, table.Cells[0, 1]!.GetText());
+    }
+
+    [Fact]
     public void ProviderShapes_ProduceTheSameTextRegardlessOfSectionAndCellShape()
     {
         ExtractionDocument[] shapes = [FlatPageShape(), NestedHeadingShape(), SectionValuedCellShape()];
@@ -273,4 +291,9 @@ public class DocumentTraversalTests
     }
 
     private sealed class CustomElement(AIContent? content) : ExtractionDocumentElement(content);
+
+    private sealed class FormulaElement(AIContent? content, string? formula) : ExtractionDocumentElement(content)
+    {
+        protected override string? GetAdditionalText() => formula;
+    }
 }

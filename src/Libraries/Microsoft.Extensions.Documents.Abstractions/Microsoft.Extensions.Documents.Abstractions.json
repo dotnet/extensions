@@ -108,6 +108,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "virtual string? Microsoft.Extensions.Documents.ExtractionDocumentElement.GetAdditionalText();",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "string Microsoft.Extensions.Documents.ExtractionDocumentElement.GetText();",
           "Stage": "Experimental"
         }
@@ -129,6 +133,10 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Documents.ExtractionDocumentImageElement.ExtractionDocumentImageElement(Microsoft.Extensions.AI.AIContent? content = null, string? text = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override string? Microsoft.Extensions.Documents.ExtractionDocumentImageElement.GetAdditionalText();",
           "Stage": "Experimental"
         }
       ],

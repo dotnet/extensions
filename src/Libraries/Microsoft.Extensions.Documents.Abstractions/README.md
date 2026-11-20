@@ -4,7 +4,7 @@
 
 Extraction adapters, application-created content, source viewers and ingestion integrations are examples of components that can use this boundary. Payloads use the standard `AIContent` types from `Microsoft.Extensions.AI.Abstractions`. The model does not depend on DataIngestion, Markdig, provider SDKs, credentials or network calls.
 
-The model contains an ordered section hierarchy. Sections contain ordered `ExtractionDocumentElement` instances, including nested sections, text, images and tables. Applications can derive their own element types when needed. Producers choose the hierarchy shape: one producer can emit flat page sections while another nests sections by heading, so consumers should not assume a fixed depth (see [Reading a document](#reading-a-document)). This package has no structural renderer such as Markdown or HTML output; `GetText()` is a plain-text projection.
+The model contains an ordered section hierarchy. Sections contain ordered `ExtractionDocumentElement` instances, including nested sections, text, images and tables. Applications can derive their own element types when needed; a custom element whose text is stored outside its `TextContent` payload can override the optional `GetAdditionalText()` to include that text in `GetText()`. Producers choose the hierarchy shape: one producer can emit flat page sections while another nests sections by heading, so consumers should not assume a fixed depth (see [Reading a document](#reading-a-document)). This package has no structural renderer such as Markdown or HTML output; `GetText()` is a plain-text projection.
 
 ## Reading a document
 

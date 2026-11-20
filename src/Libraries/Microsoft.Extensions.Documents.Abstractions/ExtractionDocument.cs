@@ -62,10 +62,13 @@ public sealed class ExtractionDocument
     /// children. The document's local payload is read first, followed by its sections. Each section's local payload
     /// is followed by its elements. Each table's local payload is followed by the content of each anchor cell in
     /// row-major order. Each image's local <see cref="TextContent"/> payload is followed by
-    /// <see cref="ExtractionDocumentImageElement.Text"/>.
+    /// <see cref="ExtractionDocumentImageElement.Text"/>. A custom element type can contribute text that it stores
+    /// outside its payload by overriding <see cref="ExtractionDocumentElement.GetAdditionalText"/>; that text follows
+    /// the element's local payload.
     /// </para>
     /// <para>
-    /// Only <see cref="TextContent"/> payloads and image text are read. Other payloads such as bytes or references,
+    /// Only <see cref="TextContent"/> payloads, image text and text from
+    /// <see cref="ExtractionDocumentElement.GetAdditionalText"/> are read. Other payloads such as bytes or references,
     /// <see cref="ExtractionDocumentImageElement.AlternativeText"/>, metadata and native representations are excluded.
     /// Elements are not filtered by role, so page headers and footers are included. Text is returned verbatim, without
     /// converting formatted text, and non-empty text blocks are separated by <see cref="Environment.NewLine"/>.
