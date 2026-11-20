@@ -398,7 +398,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         string? responseId = resumeResponseId;
         string? modelId = null;
         string? lastMessageId = null;
-        ChatRole? lastRole = null;
+        ChatRole? lastRole = ChatRole.Assistant;
         bool anyFunctions = false;
         bool storedOutputDisabled = false;
         string? serviceTier = null;
