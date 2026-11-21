@@ -256,23 +256,25 @@ internal static class OtelMessageSerializer
     }
 
     /// <summary>Derives the OTel <c>modality</c> classifier from a media type's top-level type.</summary>
-    internal static string? DeriveModalityFromMediaType(string? mediaType)
+    /// <remarks>
+    /// The modality is required by the OTel schema, so an empty string is returned when a modality cannot be derived.
+    /// </remarks>
+    internal static string DeriveModalityFromMediaType(string? mediaType)
     {
         if (mediaType is not null)
         {
             int pos = mediaType.IndexOf('/');
-            if (pos >= 0)
+            if (pos > 0)
             {
-                ReadOnlySpan<char> topLevel = mediaType.AsSpan(0, pos);
-                return
-                    topLevel.Equals("image", StringComparison.OrdinalIgnoreCase) ? "image" :
-                    topLevel.Equals("audio", StringComparison.OrdinalIgnoreCase) ? "audio" :
-                    topLevel.Equals("video", StringComparison.OrdinalIgnoreCase) ? "video" :
-                    null;
+                ReadOnlySpan<char> topLevel = mediaType.AsSpan(0, pos).Trim();
+                if (!topLevel.IsEmpty)
+                {
+                    return topLevel.ToString().ToLowerInvariant();
+                }
             }
         }
 
-        return null;
+        return string.Empty;
     }
 
     /// <summary>Extracts code text from code interpreter inputs.</summary>
