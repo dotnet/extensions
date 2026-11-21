@@ -4,7 +4,10 @@
     <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet472)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' != 'net8.0' And '$(TargetFramework)' != 'net9.0'">
+    <DefineConstants>$(DefineConstants);RUNTIME_PACKAGES_11_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -153,7 +153,7 @@ internal partial class DefaultHybridCache
                 else
                 {
                     // not what we expected! assume invalid
-                    timestamp = CurrentTimestamp();
+                    timestamp = CurrentTimestamp() - 1;
                 }
 
                 buffer.RecycleIfAppropriate();
@@ -172,7 +172,7 @@ internal partial class DefaultHybridCache
             Debug.WriteLine(ex.Message);
 
             // if anything goes wrong reading tag invalidations; we have to assume the tag is invalid
-            return CurrentTimestamp();
+            return CurrentTimestamp() - 1;
         }
     }
 
@@ -225,7 +225,7 @@ internal partial class DefaultHybridCache
         byte[] oversized = ArrayPool<byte>.Shared.Rent(maxLength);
 
         int length = HybridCachePayload.Write(oversized, key, cacheItem.CreationTimestamp, GetL2AbsoluteExpirationRelativeToNow(options),
-            HybridCachePayload.PayloadFlags.None, cacheItem.Tags, payload.AsSequence());
+            HybridCachePayload.PayloadFlags.None, cacheItem.Tags, payload.AsSequence(), localCacheSize: GetLocalSize(options));
 
         await SetDirectL2Async(key, new(oversized, 0, length, true), GetL2DistributedCacheOptions(options), token).ConfigureAwait(false);
 

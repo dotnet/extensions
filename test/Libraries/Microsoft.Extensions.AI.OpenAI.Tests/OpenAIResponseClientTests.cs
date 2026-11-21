@@ -33,6 +33,14 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public void GetStreamingResponseAsync_NullMessages_ThrowsSynchronously()
+    {
+        using IChatClient client = new OpenAIClient(new ApiKeyCredential("key")).GetResponsesClient().AsIChatClient("model");
+
+        Assert.Throws<ArgumentNullException>("messages", () => client.GetStreamingResponseAsync(null!));
+    }
+
+    [Fact]
     public void AsIChatClient_ProducesExpectedMetadata()
     {
         Uri endpoint = new("http://localhost/some/endpoint");
@@ -3357,7 +3365,7 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
-    public async Task GetStreamingResponseAsync_BackgroundResponses_StreamResumption_WithMessages()
+    public void GetStreamingResponseAsync_BackgroundResponses_StreamResumption_WithMessages()
     {
         using VerbatimHttpHandler handler = new(string.Empty, string.Empty);
         using HttpClient httpClient = new(handler);
@@ -3373,14 +3381,7 @@ public class OpenAIResponseClientTests
             }
         };
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await foreach (var update in client.GetStreamingResponseAsync("Please book a hotel for me", chatOptions))
-#pragma warning disable S108 // Nested blocks of code should not be left empty
-            {
-            }
-#pragma warning restore S108 // Nested blocks of code should not be left empty
-        });
+        Assert.Throws<InvalidOperationException>(() => client.GetStreamingResponseAsync("Please book a hotel for me", chatOptions));
     }
 
     [Fact]
