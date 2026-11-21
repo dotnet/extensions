@@ -5692,6 +5692,50 @@ public class OpenAIResponseClientTests
     }
 
     [Fact]
+    public async Task UserMessageWithNonPdfFile_ConvertsToInputFile()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[
+                    {
+                        "type":"message",
+                        "role":"user",
+                        "content":[
+                            {"type":"input_file","file_data":"data:text/plain;base64,aGVsbG8=","filename":"notes.txt"},
+                            {"type":"input_file","file_url":"https://example.com/sheet.xlsx"}
+                        ]
+                    }
+                ]
+            }
+            """;
+
+        const string Output = """
+            {
+              "id":"resp_001",
+              "object":"response",
+              "created_at":1741892091,
+              "status":"completed",
+              "model":"gpt-4o-mini",
+              "output":[{"type":"message","id":"msg_001","status":"completed","role":"assistant","content":[{"type":"output_text","text":"Done","annotations":[]}]}]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        var response = await client.GetResponseAsync([
+            new ChatMessage(ChatRole.User, [
+                new DataContent(Convert.FromBase64String("aGVsbG8="), "text/plain") { Name = "notes.txt" },
+                new UriContent(new Uri("https://example.com/sheet.xlsx"), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            ])
+        ]);
+
+        Assert.Equal("Done", response.Text);
+    }
+
+    [Fact]
     public async Task UserMessageWithInvalidImageDetail_OmitsDetail()
     {
         const string Input = """
