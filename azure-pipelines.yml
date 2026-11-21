@@ -337,7 +337,7 @@ extends:
           enableSymbolValidation: false
           enableSigningValidation: false
           enableNugetValidation: false
-          enableSourceLinkValidation: false
+          enableSourceLinkValidation: true
           # these param values come from the DotNet-Winforms-SDLValidation-Params azdo variable group
           SDLValidationParameters:
             enable: false
