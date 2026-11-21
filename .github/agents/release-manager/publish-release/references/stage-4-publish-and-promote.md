@@ -41,17 +41,27 @@ Publishing is irreversible (a published version cannot be overwritten or truly d
    the agent session). Never run the push, and never handle the API keys.
 6. Verify exact nuget.org ID/version listings and record the **final published manifest** for validate-release and notes; attempt consumer restore separately. A listing is not a restore.
 
+### API key package scope
+
+Before the terminal handoff, recommend the `Microsoft.*` glob pattern for the nuget.org API key's package scope. Individually selecting package IDs is slow, cumbersome, and error-prone, so do not recommend it. Check that `Microsoft.*` covers every approved ID in the manifest; if any approved ID falls outside it, tell the user the additional glob needed. NuGet's [scoped API key guidance](https://learn.microsoft.com/en-us/nuget/nuget-org/scoped-api-keys) describes glob patterns and permissions.
+
+Limit the key's other privileges: select the push-new-versions scope when all package IDs already exist, avoid unlist permission, and set a short expiration. A matching glob does not establish account or API-key publishing permission and is not an upload list: push only the individually approved paths.
+
 ### Secure API key entry (user-run helper)
 
 The API key must never be pasted into the agent conversation (it would be captured in session history) and the agent must never run the push or hold the key in a process it controls. Instead, the **user** runs a self-contained helper in their own terminal that captures the key through an editor, pushes the staged packages, then shreds the key file. The key is never echoed and never leaves the user's machine.
 
+After the candidate-specific publication approval, do not add a typed phrase or other confirmation prompt to the helper. Saving a nonempty key file and closing it is the user's confirmation to start uploading; leaving it empty cancels. Make this immediate effect clear in the terminal handoff. This does not replace the prior publication approval.
+
 The helper opens a throwaway key file in the user's editor with a **wait** flag (so the command blocks until the file is saved and closed), reads the key after close, pushes each staged package, then overwrites and deletes the key file in a `finally` block (so cleanup runs even on error or Ctrl-C). Editors are launched with the flag that blocks until the file is closed:
+
+Do not hard-code a release engineer's editor preference into repository guidance. Honor an explicit editor choice first, then an available preferred editor stated in the user's personal Copilot instructions or profile. Pass that choice through the helper's `-Editor` option. Otherwise, detect an installed editor from the supported list below. If an explicitly selected editor is unavailable, stop with an actionable error rather than silently switching. Other editors may be supported after verifying their file-close wait behavior; do not assume that launching a process waits for its document to close.
 
 | Editor | Invocation |
 |---|---|
 | Sublime Text | `subl --wait <file>` |
 | VS Code | `code --wait -- <file>` |
-| Notepad | `Start-Process notepad.exe -ArgumentList <file> -Wait` |
+| Notepad | `Start-Process notepad.exe -ArgumentList '"<file>"' -Wait` |
 
 ```powershell
 #requires -Version 5.1
@@ -59,26 +69,46 @@ The helper opens a throwaway key file in the user's editor with a **wait** flag 
 param(
   # Absolute paths to the staged .nupkg files to publish.
   [Parameter(Mandatory)][string[]] $Package,
-  # Editor used to capture the key. Default is Sublime Text.
-  [ValidateSet('subl','code','notepad')][string] $Editor = 'subl',
+  # Use an explicit choice or detect an available supported editor.
+  [ValidateSet('auto','subl','code','notepad')][string] $Editor = 'auto',
   [string] $Source = 'https://api.nuget.org/v3/index.json'
 )
 
 $ErrorActionPreference = 'Stop'
+if ($Editor -eq 'auto') {
+  $detectedEditor = @('subl','code','notepad') | Where-Object {
+    $command = if ($_ -eq 'notepad') { 'notepad.exe' } else { $_ }
+    Get-Command $command -CommandType Application -ErrorAction SilentlyContinue
+  } | Select-Object -First 1
+  if (-not $detectedEditor) { throw "No supported editor found. Install one or make its command available on PATH." }
+  $Editor = $detectedEditor
+}
+$editorCommand = if ($Editor -eq 'notepad') { 'notepad.exe' } else { $Editor }
+$editorPath = (Get-Command $editorCommand -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $key = $null
 $keyFile = Join-Path ([System.IO.Path]::GetTempPath()) ("nugetkey_{0}.txt" -f ([guid]::NewGuid().ToString('N')))
 Set-Content -LiteralPath $keyFile -Value '' -NoNewline
 
 try {
-  Write-Host "Opening '$Editor'. Paste the nuget.org API key, save, then CLOSE the file to continue..."
+  Write-Host "Opening '$Editor'. Paste the nuget.org API key, save and close the file to start uploading. Leave it empty to cancel."
   switch ($Editor) {
-    'subl'    { & subl --wait $keyFile }
-    'code'    { & code --wait -- $keyFile }
-    'notepad' { Start-Process -FilePath notepad.exe -ArgumentList $keyFile -Wait }
+    'subl' {
+      & $editorPath --wait $keyFile
+      if ($LASTEXITCODE -ne 0) { throw "Editor failed; nothing pushed." }
+    }
+    'code' {
+      & $editorPath --wait -- $keyFile
+      if ($LASTEXITCODE -ne 0) { throw "Editor failed; nothing pushed." }
+    }
+    'notepad' {
+      $process = Start-Process -FilePath $editorPath -ArgumentList ('"{0}"' -f $keyFile) -Wait -PassThru
+      if ($process.ExitCode -ne 0) { throw "Editor failed; nothing pushed." }
+    }
   }
 
-  $key = ([string](Get-Content -LiteralPath $keyFile -Raw)).Trim()
+  $key = Get-Content -LiteralPath $keyFile -Raw
   if ([string]::IsNullOrWhiteSpace($key)) { throw "No API key was entered; aborting (nothing pushed)." }
+  $key = $key.Trim()
 
   foreach ($p in $Package) {
     if (-not (Test-Path -LiteralPath $p)) { throw "Package not found: $p" }
@@ -107,7 +137,7 @@ finally {
 ```
 
 Notes:
-- Pass the staged `.nupkg` paths via `-Package`; select the editor with `-Editor subl|code|notepad` (default `subl`, matching this repository's release engineer's preference).
+- Pass the staged `.nupkg` paths via `-Package`; select the editor with `-Editor subl|code|notepad`. The default `auto` searches for Sublime Text, VS Code, then Notepad on PATH; this is a fallback order, not a user preference. A personal instruction such as "When asking me to submit or revise a file, prefer Sublime Text when available. Launch the editor in wait mode and consume the file only after I save and close it" lets the agent select `-Editor subl` without imposing that preference on other release engineers.
 - The key is passed to `dotnet nuget push` as `--api-key`, so it is briefly visible in local process listings for the duration of each push -- acceptable on the release engineer's own machine. To avoid even that exposure, upload the `.nupkg` files through the nuget.org web UI instead.
 - `Microsoft.Agents.AI.ProjectTemplates` uses the separate **MicrosoftAgentFramework** account key; when it is in scope, run the helper a second time with only that package so its key is entered separately.
 
