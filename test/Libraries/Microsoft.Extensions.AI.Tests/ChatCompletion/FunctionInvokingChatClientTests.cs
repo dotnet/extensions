@@ -39,6 +39,7 @@ public class FunctionInvokingChatClientTests
         Assert.Equal(40, client.MaximumIterationsPerRequest);
         Assert.Equal(3, client.MaximumConsecutiveErrorsPerRequest);
         Assert.Null(client.FunctionInvoker);
+        Assert.Null(client.RejectionResultFactory);
         Assert.Null(client.AdditionalTools);
     }
 
@@ -68,6 +69,11 @@ public class FunctionInvokingChatClientTests
         Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> invoker = (ctx, ct) => new ValueTask<object?>("test");
         client.FunctionInvoker = invoker;
         Assert.Same(invoker, client.FunctionInvoker);
+
+        Assert.Null(client.RejectionResultFactory);
+        Func<ToolApprovalResponseContent, object?> rejectionResultFactory = response => "test";
+        client.RejectionResultFactory = rejectionResultFactory;
+        Assert.Same(rejectionResultFactory, client.RejectionResultFactory);
 
         Assert.Null(client.AdditionalTools);
         IList<AITool> additionalTools = [AIFunctionFactory.Create(() => "Additional Tool")];

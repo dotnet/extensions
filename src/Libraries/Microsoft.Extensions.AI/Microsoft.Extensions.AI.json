@@ -658,6 +658,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "System.Func<Microsoft.Extensions.AI.ToolApprovalResponseContent, object?>? Microsoft.Extensions.AI.FunctionInvokingChatClient.RejectionResultFactory { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "bool Microsoft.Extensions.AI.FunctionInvokingChatClient.TerminateOnUnknownCalls { get; set; }",
           "Stage": "Stable"
         }
