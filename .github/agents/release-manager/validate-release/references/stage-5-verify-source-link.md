@@ -18,6 +18,8 @@ Apply the shared invariant to every package in the final published manifest, rec
 
 ## Sub-stage 2 - Verify Source Link and symbols
 
+Check the [candidate validation guidance](../../references/candidate-validation.md) before running these checks.
+
 Run the Source Link sweep against the folder containing the published packages for this release scope:
 
 ```
