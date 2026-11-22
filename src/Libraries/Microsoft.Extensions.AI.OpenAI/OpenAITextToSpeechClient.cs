@@ -85,14 +85,14 @@ internal sealed class OpenAITextToSpeechClient : ITextToSpeechClient
         SpeechGenerationOptions openAIOptions = ToOpenAISpeechOptions(options);
         string mediaType = GetMediaType(openAIOptions.ResponseFormat);
 
-        AsyncCollectionResult<StreamingSpeechUpdate>? streamingResult = null;
+        AsyncStreamingResult<StreamingSpeechUpdate>? streamingResult = null;
         try
         {
-            streamingResult = _audioClient.GenerateSpeechStreamingAsync(
+            streamingResult = await _audioClient.GenerateSpeechStreamingAsync(
                 text,
                 new GeneratedSpeechVoice(options?.VoiceId ?? DefaultVoice),
                 openAIOptions,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
         catch (NotSupportedException)
         {
@@ -110,7 +110,7 @@ internal sealed class OpenAITextToSpeechClient : ITextToSpeechClient
             yield break;
         }
 
-        await foreach (var update in streamingResult.ConfigureAwait(false))
+        await foreach (var update in ((IAsyncEnumerable<StreamingSpeechUpdate>)streamingResult).ConfigureAwait(false))
         {
             switch (update)
             {
