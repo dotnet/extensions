@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.AI;
 [JsonDerivedType(typeof(ScoreDecisionQuestion), "score")]
 public abstract class DecisionQuestion
 {
-    private protected DecisionQuestion(string id, DecisionKind kind, IReadOnlyList<AIContent> instructions)
+    private protected DecisionQuestion(string id, DecisionKind kind, IList<AIContent> instructions)
     {
         Id = Throw.IfNullOrWhitespace(id);
         Kind = kind;
@@ -36,6 +36,9 @@ public abstract class DecisionQuestion
     public DecisionKind Kind { get; }
 
     /// <summary>Gets the owned, ordered instructions that define the question.</summary>
-    /// <remarks>The list is empty when the question has no instructions.</remarks>
-    public IReadOnlyList<AIContent> Instructions { get; }
+    /// <remarks>
+    /// The list is a read-only snapshot and is empty when the question has no instructions.
+    /// Attempting to modify it throws <see cref="System.NotSupportedException"/>.
+    /// </remarks>
+    public IList<AIContent> Instructions { get; }
 }

@@ -108,7 +108,6 @@ public static partial class AIJsonUtilities
     [JsonSerializable(typeof(IEnumerable<string>))]
     [JsonSerializable(typeof(AIContent))]
     [JsonSerializable(typeof(IEnumerable<AIContent>))]
-    [JsonSerializable(typeof(List<AIContent>))]
 
     // IEmbeddingGenerator
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]

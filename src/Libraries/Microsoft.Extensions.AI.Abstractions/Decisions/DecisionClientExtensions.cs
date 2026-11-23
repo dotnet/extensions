@@ -84,10 +84,11 @@ public static class DecisionClientExtensions
 
         serializerOptions.MakeReadOnly();
         JsonTypeInfo<TState> stateTypeInfo = (JsonTypeInfo<TState>)serializerOptions.GetTypeInfo(typeof(TState));
-        DecisionRequest request = new(
-            JsonSerializer.SerializeToElement(state, stateTypeInfo),
-            questions.ToArray(),
-            contents?.ToArray());
+        DecisionRequest request = new(questions.ToArray())
+        {
+            State = JsonSerializer.SerializeToElement(state, stateTypeInfo),
+            Contents = contents?.ToArray(),
+        };
 
         return await client.GetDecisionAsync(request, options, cancellationToken).ConfigureAwait(false);
     }

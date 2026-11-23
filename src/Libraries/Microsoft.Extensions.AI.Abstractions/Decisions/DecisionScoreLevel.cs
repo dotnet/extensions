@@ -25,7 +25,7 @@ public sealed class DecisionScoreLevel
     /// <param name="id">The exact opaque, caller-owned level ID.</param>
     /// <param name="description">The nonempty criteria for this level.</param>
     [JsonConstructor]
-    public DecisionScoreLevel(string id, IReadOnlyList<AIContent> description)
+    public DecisionScoreLevel(string id, IList<AIContent> description)
     {
         Id = Throw.IfNullOrWhitespace(id);
         Description = DecisionContents.SnapshotRequired(description, nameof(description));
@@ -35,5 +35,6 @@ public sealed class DecisionScoreLevel
     public string Id { get; }
 
     /// <summary>Gets the owned criteria for this level.</summary>
-    public IReadOnlyList<AIContent> Description { get; }
+    /// <remarks>The list is a read-only snapshot. Attempting to modify it throws <see cref="System.NotSupportedException"/>.</remarks>
+    public IList<AIContent> Description { get; }
 }

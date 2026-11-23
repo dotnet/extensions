@@ -16,7 +16,12 @@ namespace Microsoft.Extensions.AI;
 /// <remarks>
 /// <para>
 /// <see cref="State"/> (optional JSON) and <see cref="Contents"/> (optional <see cref="AIContent"/> items) are both
-/// request-level inputs. They are shared by every question in <see cref="Questions"/>. At least one of them must be provided.
+/// request-level inputs. They are shared by every question in <see cref="Questions"/>.
+/// </para>
+/// <para>
+/// A completed request must provide <see cref="State"/>, nonempty <see cref="Contents"/>, or both. Because both are
+/// optional, settable properties, this type cannot enforce that invariant on its own; each <see cref="IDecisionClient"/>
+/// implementation validates it when the request is executed.
 /// </para>
 /// <para>
 /// <see cref="Contents"/> and question instructions and criteria may contain any <see cref="AIContent"/>.
@@ -29,22 +34,13 @@ namespace Microsoft.Extensions.AI;
 [Experimental(DiagnosticIds.Experiments.AIDecisions, UrlFormat = DiagnosticIds.UrlFormat)]
 public sealed class DecisionRequest
 {
-    /// <summary>Initializes a new instance of the <see cref="DecisionRequest"/> class and snapshots its inputs and questions.</summary>
-    /// <param name="state">The optional JSON state, a request-level input shared by every question.</param>
+    /// <summary>Initializes a new instance of the <see cref="DecisionRequest"/> class and snapshots its questions.</summary>
     /// <param name="questions">The ordered heterogeneous question batch.</param>
-    /// <param name="contents">The optional content, a request-level input shared by every question.</param>
-    /// <exception cref="ArgumentException">
-    /// Neither <paramref name="state"/> nor nonempty <paramref name="contents"/> were provided, <paramref name="questions"/> is empty,
-    /// or question IDs are not unique.
-    /// </exception>
+    /// <exception cref="ArgumentNullException"><paramref name="questions"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="questions"/> is empty, contains <see langword="null"/>, or question IDs are not unique.</exception>
     [JsonConstructor]
-    public DecisionRequest(JsonElement? state, IReadOnlyList<DecisionQuestion> questions, IReadOnlyList<AIContent>? contents = null)
+    public DecisionRequest(IReadOnlyList<DecisionQuestion> questions)
     {
-        if (state is { ValueKind: JsonValueKind.Undefined })
-        {
-            Throw.ArgumentException(nameof(state), "State must be explicit JSON.");
-        }
-
         _ = Throw.IfNull(questions);
 
         DecisionQuestion[] copy = questions.ToArray();
@@ -62,29 +58,46 @@ public sealed class DecisionRequest
             }
         }
 
-        Contents = DecisionContents.Snapshot(contents, nameof(contents));
-        if (state is null && Contents.Count == 0)
-        {
-            Throw.ArgumentException(nameof(state), "A request requires state, contents, or both.");
-        }
-
-        State = state?.Clone();
         Questions = Array.AsReadOnly(copy);
     }
 
-    /// <summary>Gets the optional JSON state shared by every question in the request.</summary>
+    /// <summary>Gets or sets the optional JSON state shared by every question in the request.</summary>
     /// <remarks>
-    /// The value is an owned snapshot, or <see langword="null"/> when the request has no state.
+    /// The assigned value is cloned, so the request owns its snapshot. <see langword="null"/> means the request has no state,
+    /// which is distinct from a <see cref="JsonElement"/> whose <see cref="JsonElement.ValueKind"/> is <see cref="JsonValueKind.Null"/>.
+    /// When serialized to JSON, both an absent state and an explicit JSON <c>null</c> state deserialize as <see langword="null"/>.
     /// An implementation that cannot represent the state throws <see cref="NotSupportedException"/>.
     /// </remarks>
-    public JsonElement? State { get; }
+    /// <exception cref="ArgumentException">The assigned value has <see cref="JsonValueKind.Undefined"/> kind.</exception>
+    public JsonElement? State
+    {
+        get;
+        set
+        {
+            if (value is { ValueKind: JsonValueKind.Undefined })
+            {
+                Throw.ArgumentException(nameof(value), "State must be explicit JSON.");
+            }
 
-    /// <summary>Gets the optional content shared by every question in the request.</summary>
+            field = value?.Clone();
+        }
+    }
+
+    /// <summary>Gets or sets the optional content shared by every question in the request.</summary>
     /// <remarks>
-    /// The list is an owned snapshot and is empty when the request has no content.
+    /// Assigning a list copies it into an owned, read-only snapshot; the <see cref="AIContent"/> items themselves are shared.
+    /// Although the property is typed as <see cref="IList{T}"/>, the returned list cannot be modified in place; attempting to
+    /// do so throws <see cref="NotSupportedException"/>. Assign a new list to change the contents.
+    /// Assigning <see langword="null"/> resets the contents to an empty list.
     /// An implementation throws <see cref="NotSupportedException"/> for any item it cannot represent.
     /// </remarks>
-    public IReadOnlyList<AIContent> Contents { get; }
+    /// <exception cref="ArgumentException">The assigned list contains a <see langword="null"/> item.</exception>
+    [AllowNull]
+    public IList<AIContent> Contents
+    {
+        get;
+        set => field = DecisionContents.Snapshot(value, nameof(value));
+    } = DecisionContents.Snapshot(null, "value");
 
     /// <summary>Gets the ordered, owned question snapshot.</summary>
     public IReadOnlyList<DecisionQuestion> Questions { get; }

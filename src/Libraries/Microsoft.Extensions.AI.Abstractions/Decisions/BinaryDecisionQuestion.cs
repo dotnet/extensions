@@ -45,9 +45,9 @@ public sealed class BinaryDecisionQuestion : DecisionQuestion
     [JsonConstructor]
     public BinaryDecisionQuestion(
         string id,
-        IReadOnlyList<AIContent>? instructions,
-        IReadOnlyList<AIContent>? trueDescription = null,
-        IReadOnlyList<AIContent>? falseDescription = null)
+        IList<AIContent>? instructions,
+        IList<AIContent>? trueDescription = null,
+        IList<AIContent>? falseDescription = null)
         : base(id, DecisionKind.Binary, DecisionContents.Snapshot(instructions, nameof(instructions)))
     {
         TrueDescription = DecisionContents.SnapshotOptional(trueDescription, nameof(trueDescription));
@@ -62,8 +62,10 @@ public sealed class BinaryDecisionQuestion : DecisionQuestion
     }
 
     /// <summary>Gets the optional owned criteria describing a true result.</summary>
-    public IReadOnlyList<AIContent>? TrueDescription { get; }
+    /// <remarks>The list is a read-only snapshot. Attempting to modify it throws <see cref="System.NotSupportedException"/>.</remarks>
+    public IList<AIContent>? TrueDescription { get; }
 
     /// <summary>Gets the optional owned criteria describing a false result.</summary>
-    public IReadOnlyList<AIContent>? FalseDescription { get; }
+    /// <remarks>The list is a read-only snapshot. Attempting to modify it throws <see cref="System.NotSupportedException"/>.</remarks>
+    public IList<AIContent>? FalseDescription { get; }
 }

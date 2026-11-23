@@ -25,7 +25,7 @@ public sealed class DecisionCandidate
     /// <param name="id">The exact opaque candidate ID to round-trip in results.</param>
     /// <param name="description">The nonempty criteria for the candidate.</param>
     [JsonConstructor]
-    public DecisionCandidate(string id, IReadOnlyList<AIContent> description)
+    public DecisionCandidate(string id, IList<AIContent> description)
     {
         Id = Throw.IfNullOrWhitespace(id);
         Description = DecisionContents.SnapshotRequired(description, nameof(description));
@@ -35,5 +35,6 @@ public sealed class DecisionCandidate
     public string Id { get; }
 
     /// <summary>Gets the owned criteria for the candidate.</summary>
-    public IReadOnlyList<AIContent> Description { get; }
+    /// <remarks>The list is a read-only snapshot. Attempting to modify it throws <see cref="System.NotSupportedException"/>.</remarks>
+    public IList<AIContent> Description { get; }
 }

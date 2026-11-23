@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.AI;
 [JsonSerializable(typeof(ScoreDecisionAnswer))]
 [JsonSerializable(typeof(DecisionProbability))]
 [JsonSerializable(typeof(UnansweredDecisionAnswer))]
-[JsonSerializable(typeof(DecisionTests.TicketState))]
-[JsonSerializable(typeof(DecisionTests.OrderState))]
-[JsonSerializable(typeof(DecisionTests.CustomContent))]
+[JsonSerializable(typeof(DecisionTestData.TicketState))]
+[JsonSerializable(typeof(DecisionTestData.OrderState))]
+[JsonSerializable(typeof(DecisionTestData.CustomContent))]
 internal sealed partial class TestJsonSerializerContext : JsonSerializerContext;

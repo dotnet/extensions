@@ -9,14 +9,18 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides helpers for owned decision content snapshots.</summary>
+/// <remarks>
+/// Snapshots are exposed as <see cref="IList{T}"/> to match the existing <see cref="AIContent"/> list contract,
+/// but are read-only. The list is owned; the <see cref="AIContent"/> items themselves are shared.
+/// </remarks>
 internal static class DecisionContents
 {
-    internal static IReadOnlyList<AIContent> Empty { get; } = Array.AsReadOnly(Array.Empty<AIContent>());
+    private static IList<AIContent> Empty { get; } = Array.AsReadOnly(Array.Empty<AIContent>());
 
-    internal static IReadOnlyList<AIContent> FromText(string? text) =>
+    internal static IList<AIContent> FromText(string? text) =>
         string.IsNullOrWhiteSpace(text) ? Empty : Array.AsReadOnly(new AIContent[] { new TextContent(text) });
 
-    internal static IReadOnlyList<AIContent> Snapshot(IEnumerable<AIContent>? contents, string paramName)
+    internal static IList<AIContent> Snapshot(IEnumerable<AIContent>? contents, string paramName)
     {
         if (contents is null)
         {
@@ -32,10 +36,10 @@ internal static class DecisionContents
         return copy.Length == 0 ? Empty : Array.AsReadOnly(copy);
     }
 
-    internal static IReadOnlyList<AIContent> SnapshotRequired(IEnumerable<AIContent>? contents, string paramName)
+    internal static IList<AIContent> SnapshotRequired(IEnumerable<AIContent>? contents, string paramName)
     {
         _ = Throw.IfNull(contents, paramName);
-        IReadOnlyList<AIContent> copy = Snapshot(contents, paramName);
+        IList<AIContent> copy = Snapshot(contents, paramName);
         if (copy.Count == 0)
         {
             Throw.ArgumentException(paramName, "Content must be nonempty.");
@@ -44,14 +48,14 @@ internal static class DecisionContents
         return copy;
     }
 
-    internal static IReadOnlyList<AIContent>? SnapshotOptional(IEnumerable<AIContent>? contents, string paramName)
+    internal static IList<AIContent>? SnapshotOptional(IEnumerable<AIContent>? contents, string paramName)
     {
         if (contents is null)
         {
             return null;
         }
 
-        IReadOnlyList<AIContent> copy = Snapshot(contents, paramName);
+        IList<AIContent> copy = Snapshot(contents, paramName);
         if (copy.Count == 0)
         {
             Throw.ArgumentException(paramName, "Content must be nonempty when specified.");
@@ -60,7 +64,7 @@ internal static class DecisionContents
         return copy;
     }
 
-    internal static IReadOnlyList<AIContent>? FromOptionalText(string? text, string paramName)
+    internal static IList<AIContent>? FromOptionalText(string? text, string paramName)
     {
         if (text is null)
         {

@@ -41,9 +41,6 @@ public class DecisionResponse
         set => _answers = value;
     }
 
-    /// <summary>Gets or sets the ID of the response, if the provider reports one.</summary>
-    public string? ResponseId { get; set; }
-
     /// <summary>Gets or sets the ID of the model that produced the response.</summary>
     public string? ModelId { get; set; }
 

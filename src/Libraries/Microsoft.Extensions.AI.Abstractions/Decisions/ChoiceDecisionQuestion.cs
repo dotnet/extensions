@@ -17,19 +17,19 @@ public sealed class ChoiceDecisionQuestion : DecisionQuestion
 {
     /// <summary>Initializes a new instance of the <see cref="ChoiceDecisionQuestion"/> class.</summary>
     /// <param name="id">The opaque, caller-owned question ID.</param>
-    /// <param name="instructions">The optional text instructions defining the choice.</param>
     /// <param name="candidates">The ordered, caller-defined candidates.</param>
-    public ChoiceDecisionQuestion(string id, string? instructions, IReadOnlyList<DecisionCandidate> candidates)
-        : this(id, DecisionContents.FromText(instructions), candidates)
+    /// <param name="instructions">The optional text instructions defining the choice.</param>
+    public ChoiceDecisionQuestion(string id, IReadOnlyList<DecisionCandidate> candidates, string? instructions = null)
+        : this(id, candidates, DecisionContents.FromText(instructions))
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="ChoiceDecisionQuestion"/> class.</summary>
     /// <param name="id">The opaque, caller-owned question ID.</param>
-    /// <param name="instructions">The optional instructions defining the choice.</param>
     /// <param name="candidates">The ordered, caller-defined candidates.</param>
+    /// <param name="instructions">The optional instructions defining the choice.</param>
     [JsonConstructor]
-    public ChoiceDecisionQuestion(string id, IReadOnlyList<AIContent>? instructions, IReadOnlyList<DecisionCandidate> candidates)
+    public ChoiceDecisionQuestion(string id, IReadOnlyList<DecisionCandidate> candidates, IList<AIContent>? instructions)
         : base(id, DecisionKind.Choice, DecisionContents.Snapshot(instructions, nameof(instructions)))
     {
         _ = Throw.IfNull(candidates);

@@ -17,19 +17,19 @@ public sealed class ScoreDecisionQuestion : DecisionQuestion
 {
     /// <summary>Initializes a new instance of the <see cref="ScoreDecisionQuestion"/> class.</summary>
     /// <param name="id">The opaque, caller-owned question ID.</param>
-    /// <param name="instructions">The optional text instructions defining the score.</param>
     /// <param name="levels">The ordered, caller-defined score levels, from lowest to highest.</param>
-    public ScoreDecisionQuestion(string id, string? instructions, IReadOnlyList<DecisionScoreLevel> levels)
-        : this(id, DecisionContents.FromText(instructions), levels)
+    /// <param name="instructions">The optional text instructions defining the score.</param>
+    public ScoreDecisionQuestion(string id, IReadOnlyList<DecisionScoreLevel> levels, string? instructions = null)
+        : this(id, levels, DecisionContents.FromText(instructions))
     {
     }
 
     /// <summary>Initializes a new instance of the <see cref="ScoreDecisionQuestion"/> class.</summary>
     /// <param name="id">The opaque, caller-owned question ID.</param>
-    /// <param name="instructions">The optional instructions defining the score.</param>
     /// <param name="levels">The ordered, caller-defined score levels, from lowest to highest.</param>
+    /// <param name="instructions">The optional instructions defining the score.</param>
     [JsonConstructor]
-    public ScoreDecisionQuestion(string id, IReadOnlyList<AIContent>? instructions, IReadOnlyList<DecisionScoreLevel> levels)
+    public ScoreDecisionQuestion(string id, IReadOnlyList<DecisionScoreLevel> levels, IList<AIContent>? instructions)
         : base(id, DecisionKind.Score, DecisionContents.Snapshot(instructions, nameof(instructions)))
     {
         _ = Throw.IfNull(levels);
