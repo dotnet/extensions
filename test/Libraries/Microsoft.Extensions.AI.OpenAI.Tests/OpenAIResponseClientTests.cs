@@ -6235,14 +6235,20 @@ public class OpenAIResponseClientTests
         var response = updates.ToChatResponse();
         Assert.Equal("resp_001", response.ResponseId);
         Assert.Equal("gpt-4o-mini", response.ModelId);
-        Assert.Single(response.Messages);
-        var message = response.Messages[0];
-        Assert.Equal(ChatRole.Assistant, message.Role);
 
-        // Message should contain: FunctionCallContent, FunctionResultContent, and TextContent
-        Assert.Single(message.Contents.OfType<FunctionCallContent>());
-        Assert.Single(message.Contents.OfType<FunctionResultContent>());
-        var textContent = Assert.Single(message.Contents.OfType<TextContent>());
+        // Function call + result are grouped under the function call item's id; the text is a separate message.
+        Assert.Equal(2, response.Messages.Count);
+
+        var toolMessage = response.Messages[0];
+        Assert.Equal(ChatRole.Assistant, toolMessage.Role);
+        Assert.Equal("fc_001", toolMessage.MessageId);
+        Assert.Single(toolMessage.Contents.OfType<FunctionCallContent>());
+        Assert.Single(toolMessage.Contents.OfType<FunctionResultContent>());
+
+        var textMessage = response.Messages[1];
+        Assert.Equal(ChatRole.Assistant, textMessage.Role);
+        Assert.Equal("msg_001", textMessage.MessageId);
+        var textContent = Assert.Single(textMessage.Contents.OfType<TextContent>());
         Assert.Equal("It's 25°C and sunny in Paris.", textContent.Text);
 
         // Verify usage
@@ -9437,5 +9443,50 @@ public class OpenAIResponseClientTests
         Assert.NotNull(coalesced.Arguments);
         Assert.Equal("my-server", ((JsonElement)coalesced.Arguments["resource_name"]!).GetString());
         Assert.Equal("production", ((JsonElement)coalesced.Arguments["env"]!).GetString());
+    }
+
+    [Fact]
+    public async Task StreamingResponseWithFunctionCall_PreservesMessageId()
+    {
+        const string Input = """
+            {
+                "model":"gpt-4o-mini",
+                "input":[{"type":"message","role":"user","content":[{"type":"input_text","text":"test"}]}],
+                "stream":true
+            }
+            """;
+
+        const string Output = """
+            event: response.created
+            data: {"type":"response.created","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"in_progress","model":"gpt-4o-mini","output":[]}}
+
+            event: response.output_item.added
+            data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call","id":"fc_001","call_id":"call_123","name":"get_weather","arguments":"","status":"in_progress"}}
+
+            event: response.output_item.done
+            data: {"type":"response.output_item.done","output_index":0,"item":{"type":"function_call","id":"fc_001","call_id":"call_123","name":"get_weather","arguments":"{\"city\":\"Paris\"}","status":"completed"}}
+
+            event: response.completed
+            data: {"type":"response.completed","response":{"id":"resp_001","object":"response","created_at":1741892091,"status":"completed","model":"gpt-4o-mini","output":[{"type":"function_call","id":"fc_001","call_id":"call_123","name":"get_weather","arguments":"{\"city\":\"Paris\"}","status":"completed"}],"usage":{"input_tokens":5,"output_tokens":5,"total_tokens":10}}}
+
+
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateResponseClient(httpClient, "gpt-4o-mini");
+
+        List<ChatResponseUpdate> updates = [];
+        await foreach (var update in client.GetStreamingResponseAsync("test"))
+        {
+            updates.Add(update);
+        }
+
+        var functionCallUpdate = Assert.Single(updates, u => u.Contents.OfType<FunctionCallContent>().Any());
+        Assert.Equal("fc_001", functionCallUpdate.MessageId);
+
+        var response = updates.ToChatResponse();
+        var message = Assert.Single(response.Messages);
+        Assert.Equal("fc_001", message.MessageId);
     }
 }
