@@ -24,6 +24,31 @@ namespace Microsoft.Extensions.AI;
 
 public static partial class AIJsonUtilitiesTests
 {
+    [Theory]
+    [InlineData("list")]
+    [InlineData("array")]
+    [InlineData("read-only collection")]
+    [InlineData("custom list")]
+    public static void DefaultOptions_SerializesAIContentCollectionAsObject(string collectionType)
+    {
+        AIContent[] items = [new TextContent("hello")];
+        object contents = collectionType switch
+        {
+            "list" => new List<AIContent>(items),
+            "array" => items,
+            "read-only collection" => Array.AsReadOnly(items),
+            "custom list" => new CustomAIContentList(items),
+            _ => throw new ArgumentOutOfRangeException(nameof(collectionType)),
+        };
+
+        string json = JsonSerializer.Serialize(contents, AIJsonUtilities.DefaultOptions);
+
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""[{"$type":"text","text":"hello"}]"""), JsonNode.Parse(json)));
+    }
+
+    // Collection<T> implements both IList<T> and IReadOnlyList<T> and has no registered contract.
+    private sealed class CustomAIContentList(IList<AIContent> items) : System.Collections.ObjectModel.Collection<AIContent>(items);
+
     [Fact]
     public static void DefaultOptions_HasExpectedConfiguration()
     {
