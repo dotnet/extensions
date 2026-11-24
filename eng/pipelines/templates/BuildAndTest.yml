@@ -23,6 +23,27 @@ parameters:
     default: false
 
 steps:
+  - ${{ if ne(parameters.skipTests, 'true') }}:
+    - pwsh: |
+        $pesterVersion = '6.2.0'
+        $moduleDirectory = Join-Path '$(Agent.TempDirectory)' 'CoverageScriptModules'
+        New-Item $moduleDirectory -ItemType Directory -Force | Out-Null
+        Save-Module -Name Pester -RequiredVersion $pesterVersion -Path $moduleDirectory -Force -ErrorAction Stop
+        Import-Module (Join-Path $moduleDirectory "Pester/$pesterVersion/Pester.psd1") -Force -ErrorAction Stop
+
+        $resultsDirectory = '${{ parameters.repoTestResultsPath }}/Pester'
+        New-Item $resultsDirectory -ItemType Directory -Force | Out-Null
+        $configuration = New-PesterConfiguration
+        $configuration.Run.Path = '$(Build.SourcesDirectory)/eng/scripts/ValidateProjectCoverage.Tests.ps1'
+        $configuration.Run.Exit = $true
+        $configuration.Output.Verbosity = 'Detailed'
+        $configuration.TestResult.Enabled = $true
+        $configuration.TestResult.OutputFormat = 'NUnitXml'
+        $configuration.TestResult.OutputPath = Join-Path $resultsDirectory 'coverage-script-tests.xml'
+        Invoke-Pester -Configuration $configuration
+      displayName: Test coverage script
+      continueOnError: true # Defer failure until results are published after the other build steps.
+
   - template: /eng/pipelines/templates/RestoreAndBuild.yml
     parameters:
       buildScript: ${{ parameters.buildScript }}
@@ -158,3 +179,15 @@ steps:
               /p:Build=false
               $(_OfficialBuildIdArgs)
       displayName: Sign and publish
+
+  - ${{ if ne(parameters.skipTests, 'true') }}:
+    - task: PublishTestResults@2
+      displayName: Publish coverage script test results
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: NUnit
+        testResultsFiles: '${{ parameters.repoTestResultsPath }}/Pester/coverage-script-tests.xml'
+        testRunTitle: 'Coverage script tests ($(Agent.JobName))'
+        failTaskOnFailedTests: true
+        failTaskOnMissingResultsFile: true
+        failTaskOnFailureToPublishResults: true
