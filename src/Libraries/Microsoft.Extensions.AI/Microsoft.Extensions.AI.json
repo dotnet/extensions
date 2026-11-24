@@ -330,6 +330,196 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionAnswerSet",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.BinaryDecisionAnswer Microsoft.Extensions.AI.DecisionAnswerSet.GetBinary(string questionId);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChoiceDecisionAnswer Microsoft.Extensions.AI.DecisionAnswerSet.GetChoice(string questionId);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "TEnum Microsoft.Extensions.AI.DecisionAnswerSet.GetChoice<TEnum>(string questionId, Microsoft.Extensions.AI.DecisionEnumDefinition<TEnum> definition);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ScoreDecisionAnswer Microsoft.Extensions.AI.DecisionAnswerSet.GetScore(string questionId);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.DecisionResponse Microsoft.Extensions.AI.DecisionAnswerSet.Response { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.DecisionBindingExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static TResult Microsoft.Extensions.AI.DecisionBindingExtensions.Bind<TResult>(this Microsoft.Extensions.AI.DecisionResponse response, System.Func<Microsoft.Extensions.AI.DecisionAnswerSet, TResult> map);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.AI.DecisionClientTypedExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse<TResult>> Microsoft.Extensions.AI.DecisionClientTypedExtensions.GetDecisionAsync<TResult>(this Microsoft.Extensions.AI.IDecisionClient client, System.Text.Json.JsonElement state, Microsoft.Extensions.AI.DecisionDefinition<TResult> definition, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.AI.DecisionResponse<TResult>> Microsoft.Extensions.AI.DecisionClientTypedExtensions.GetDecisionAsync<TState, TResult>(this Microsoft.Extensions.AI.IDecisionClient client, TState state, Microsoft.Extensions.AI.DecisionDefinition<TResult> definition, System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.AIContent>? contents = null, Microsoft.Extensions.AI.DecisionOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionDefinition<TResult>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.AIFunction Microsoft.Extensions.AI.DecisionDefinition<TResult>.AsAIFunction<TState>(Microsoft.Extensions.AI.IDecisionClient client, Microsoft.Extensions.AI.AIFunctionFactoryOptions? functionOptions = null, Microsoft.Extensions.AI.DecisionOptions? decisionOptions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.AI.DecisionDefinition<TResult> Microsoft.Extensions.AI.DecisionDefinition<TResult>.Create(System.Action<Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder> configure, System.Text.Json.JsonSerializerOptions? serializerOptions = null);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionQuestion> Microsoft.Extensions.AI.DecisionDefinition<TResult>.Questions { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Text.Json.Serialization.Metadata.JsonTypeInfo<TResult> Microsoft.Extensions.AI.DecisionDefinition<TResult>.ResultTypeInfo { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.AI.DecisionDefinition<TResult>.SerializerOptions { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.BinaryProbability(System.Linq.Expressions.Expression<System.Func<TResult, double>> selector, string? instructions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.Choice<TEnum>(System.Linq.Expressions.Expression<System.Func<TResult, TEnum>> selector, string? instructions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.ExpectedScore(System.Linq.Expressions.Expression<System.Func<TResult, double>> selector, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionScoreLevel> levels, string? instructions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AI.DecisionDefinition<TResult>.Builder.Score(System.Linq.Expressions.Expression<System.Func<TResult, double>> selector, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionScoreLevel> levels, string? instructions = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionEnumDefinition<TEnum> where TEnum : struct, System.Enum",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DecisionEnumDefinition<TEnum>.DecisionEnumDefinition(System.Collections.Generic.IEnumerable<Microsoft.Extensions.AI.DecisionEnumValue<TEnum>> values);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.ChoiceDecisionQuestion Microsoft.Extensions.AI.DecisionEnumDefinition<TEnum>.CreateQuestion(string id, string? instructions = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "TEnum Microsoft.Extensions.AI.DecisionEnumDefinition<TEnum>.Parse(string candidateId);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.AI.DecisionCandidate> Microsoft.Extensions.AI.DecisionEnumDefinition<TEnum>.Candidates { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionEnumValue<TEnum> where TEnum : struct, System.Enum",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DecisionEnumValue<TEnum>.DecisionEnumValue(TEnum value, string id, string description);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.AI.DecisionEnumValue<TEnum>.Description { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.AI.DecisionEnumValue<TEnum>.Id { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "TEnum Microsoft.Extensions.AI.DecisionEnumValue<TEnum>.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionResponse<TResult>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<TEnum, double> Microsoft.Extensions.AI.DecisionResponse<TResult>.GetDistribution<TEnum>(System.Linq.Expressions.Expression<System.Func<TResult, TEnum>> selector);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.AI.DecisionResponse Microsoft.Extensions.AI.DecisionResponse<TResult>.Response { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "TResult Microsoft.Extensions.AI.DecisionResponse<TResult>.Result { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.AI.DecisionUnansweredException : System.InvalidOperationException",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AI.DecisionUnansweredException.DecisionUnansweredException(Microsoft.Extensions.AI.DecisionResponse response, System.Collections.Generic.IEnumerable<string> questionIds);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.AI.DecisionUnansweredException.QuestionIds { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.AI.DecisionResponse Microsoft.Extensions.AI.DecisionUnansweredException.Response { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.AI.DistributedCachingChatClient : Microsoft.Extensions.AI.CachingChatClient",
       "Stage": "Stable",
       "Methods": [

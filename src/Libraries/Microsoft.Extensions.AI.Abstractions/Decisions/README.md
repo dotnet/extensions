@@ -4,6 +4,7 @@
 
 The abstraction intentionally has a narrow scope. It transports questions to a provider and returns provider-observed answers. It does not threshold, calibrate, renormalize, retry, or turn probabilities into business decisions; those remain application concerns.
 
+The `Microsoft.Extensions.AI` package adds [typed decision APIs](../../Microsoft.Extensions.AI/Decisions/README.md) that declare questions from a .NET result type and bind answers back to it.
 ## Questions
 
 A request contains one or more questions with caller-owned IDs that are unique within the request. Three kinds are supported:
