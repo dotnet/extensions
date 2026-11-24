@@ -55,6 +55,7 @@ internal static class DiagnosticIds
         internal const string AIMcpServers = AIExperiments;
         internal const string AIFunctionApprovals = AIExperiments;
         internal const string AIApprovalsInvocationRequired = AIExperiments;
+        internal const string AIApprovalsRejectionResult = AIExperiments;
         internal const string AIFunctionAndParameterName = AIExperiments;
 
         internal const string AIChatReduction = AIExperiments;

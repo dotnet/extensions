@@ -742,6 +742,374 @@ public class FunctionInvokingChatClientApprovalsTests
     }
 
     [Fact]
+    public async Task RejectionResultFactoryReplacesDefaultRejectionResultAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((string s) => $"Result 3: {s}", "Func3"),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new ToolApprovalRequestContent("ficc_callId3", new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "Not now" },
+                new ToolApprovalResponseContent("ficc_callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new ToolApprovalResponseContent("ficc_callId3", true, new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+            ]),
+        ];
+
+        // The factory replaces the whole result: a string for Func1 (which includes the Reason itself) and a structured value for Func2.
+        Dictionary<string, object?> structuredResult = new() { ["status"] = "denied", ["retry"] = false };
+        List<string> factoryRequestIds = [];
+        object? RejectionResultFactory(ToolApprovalResponseContent response)
+        {
+            Assert.False(response.Approved);
+            factoryRequestIds.Add(response.RequestId);
+
+            var functionCall = Assert.IsType<FunctionCallContent>(response.ToolCall);
+            return functionCall.Name == "Func1" ?
+                $"The user declined to run {functionCall.Name} ({response.Reason})" :
+                structuredResult;
+        }
+
+        Func<ChatClientBuilder, ChatClientBuilder> configurePipeline =
+            b => b.Use(s => new FunctionInvokingChatClient(s) { RejectionResultFactory = RejectionResultFactory });
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "The user declined to run Func1 (Not now)"),
+                new FunctionResultContent("callId2", result: structuredResult)
+            ]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Result 3: test")]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> nonStreamingOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "The user declined to run Func1 (Not now)"),
+                new FunctionResultContent("callId2", result: structuredResult)
+            ]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId3", result: "Result 3: test")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> streamingOutput =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "The user declined to run Func1 (Not now)"),
+                new FunctionResultContent("callId2", result: structuredResult),
+                new FunctionResultContent("callId3", result: "Result 3: test")
+            ]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> actualOutput = await InvokeAndAssertAsync(options, input, downstreamClientOutput, nonStreamingOutput, expectedDownstreamClientInput, configurePipeline);
+
+        // The factory is called once per rejection, in order, and not for the approved call. Its return value is used as-is.
+        Assert.Equal(["ficc_callId1", "ficc_callId2"], factoryRequestIds);
+        Assert.Same(structuredResult, actualOutput.SelectMany(m => m.Contents).OfType<FunctionResultContent>().Single(frc => frc.CallId == "callId2").Result);
+
+        factoryRequestIds.Clear();
+        actualOutput = await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, streamingOutput, expectedDownstreamClientInput, configurePipeline);
+
+        Assert.Equal(["ficc_callId1", "ficc_callId2"], factoryRequestIds);
+        Assert.Same(structuredResult, actualOutput.SelectMany(m => m.Contents).OfType<FunctionResultContent>().Single(frc => frc.CallId == "callId2").Result);
+    }
+
+    [Fact]
+    public async Task RejectionResultFactoryReturningNullUsesDefaultRejectionResultAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+                AIFunctionFactory.Create((string s) => $"Result 3: {s}", "Func3"),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new ToolApprovalRequestContent("ficc_callId3", new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")) { Reason = "Custom rejection for Func1" },
+                new ToolApprovalResponseContent("ficc_callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })),
+                new ToolApprovalResponseContent("ficc_callId3", false, new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } }))
+            ]),
+        ];
+
+        // The factory only supplies a result for Func3; the other rejections fall back to the default, including the appended Reason.
+        int factoryCallCount = 0;
+        object? RejectionResultFactory(ToolApprovalResponseContent response)
+        {
+            factoryCallCount++;
+            return ((FunctionCallContent)response.ToolCall).Name == "Func3" ? "Func3 is disabled." : null;
+        }
+
+        Func<ChatClientBuilder, ChatClientBuilder> configurePipeline =
+            b => b.Use(s => new FunctionInvokingChatClient(s) { RejectionResultFactory = RejectionResultFactory });
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected."),
+                new FunctionResultContent("callId3", result: "Func3 is disabled.")
+            ]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new FunctionCallContent("callId1", "Func1"),
+                new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }),
+                new FunctionCallContent("callId3", "Func3", arguments: new Dictionary<string, object?> { { "s", "test" } })
+            ]),
+            new ChatMessage(ChatRole.Tool,
+            [
+                new FunctionResultContent("callId1", result: "Tool call invocation rejected. Custom rejection for Func1"),
+                new FunctionResultContent("callId2", result: "Tool call invocation rejected."),
+                new FunctionResultContent("callId3", result: "Func3 is disabled.")
+            ]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, configurePipeline);
+        Assert.Equal(3, factoryCallCount);
+
+        factoryCallCount = 0;
+        await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, configurePipeline);
+        Assert.Equal(3, factoryCallCount);
+    }
+
+    [Fact]
+    public async Task RejectionResultFactoryReturningFunctionResultContentIsUsedDirectlyAsync()
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")),
+            ]),
+        ];
+
+        // A FunctionResultContent with the call's CallId is used as-is, rather than becoming the Result of a new one.
+        FunctionResultContent? factoryResult = null;
+        Func<ChatClientBuilder, ChatClientBuilder> configurePipeline = b => b.Use(s => new FunctionInvokingChatClient(s)
+        {
+            RejectionResultFactory = response => factoryResult = new FunctionResultContent(response.ToolCall.CallId, "Func1 was declined.")
+            {
+                AdditionalProperties = new() { ["rejected"] = true },
+            },
+        });
+
+        List<ChatMessage> expectedDownstreamClientInput =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Func1 was declined.")]),
+        ];
+
+        List<ChatMessage> downstreamClientOutput =
+        [
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> output =
+        [
+            new ChatMessage(ChatRole.Assistant, [new FunctionCallContent("callId1", "Func1")]),
+            new ChatMessage(ChatRole.Tool, [new FunctionResultContent("callId1", result: "Func1 was declined.")]),
+            new ChatMessage(ChatRole.Assistant, "world"),
+        ];
+
+        List<ChatMessage> actualOutput = await InvokeAndAssertAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, configurePipeline);
+        Assert.NotNull(factoryResult);
+        Assert.Same(factoryResult, Assert.Single(actualOutput.SelectMany(m => m.Contents).OfType<FunctionResultContent>()));
+
+        factoryResult = null;
+        actualOutput = await InvokeAndAssertStreamingAsync(options, input, downstreamClientOutput, output, expectedDownstreamClientInput, configurePipeline);
+        Assert.NotNull(factoryResult);
+        Assert.Same(factoryResult, Assert.Single(actualOutput.SelectMany(m => m.Contents).OfType<FunctionResultContent>()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RejectionResultFactoryExceptionLeavesInputUnchangedAsync(bool streaming)
+    {
+        var options = new ChatOptions
+        {
+            Tools =
+            [
+                new ApprovalRequiredAIFunction(AIFunctionFactory.Create(() => "Result 1", "Func1")),
+                AIFunctionFactory.Create((int i) => $"Result 2: {i}", "Func2"),
+            ]
+        };
+
+        List<ChatMessage> input =
+        [
+            new ChatMessage(ChatRole.User, "hello"),
+            new ChatMessage(ChatRole.Assistant,
+            [
+                new ToolApprovalRequestContent("ficc_callId1", new FunctionCallContent("callId1", "Func1")),
+                new ToolApprovalRequestContent("ficc_callId2", new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+            ]) { MessageId = "resp1" },
+            new ChatMessage(ChatRole.User,
+            [
+                new ToolApprovalResponseContent("ficc_callId1", false, new FunctionCallContent("callId1", "Func1")),
+                new ToolApprovalResponseContent("ficc_callId2", false, new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } }))
+            ]),
+        ];
+
+        // The factory fails on the second rejection of the first attempt, after it has produced a result for the first.
+        bool failOnSecondCall = true;
+        int factoryCallCount = 0;
+        object? RejectionResultFactory(ToolApprovalResponseContent response)
+        {
+            if (++factoryCallCount == 2 && failOnSecondCall)
+            {
+                throw new InvalidOperationException("Factory failed.");
+            }
+
+            return $"Rejected {((FunctionCallContent)response.ToolCall).Name}";
+        }
+
+        List<ChatMessage>? downstreamClientInput = null;
+        using var innerClient = new TestChatClient
+        {
+            GetResponseAsyncCallback = (contents, _, _) =>
+            {
+                downstreamClientInput = contents.ToList();
+                return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "world")));
+            },
+            GetStreamingResponseAsyncCallback = (contents, _, _) =>
+            {
+                downstreamClientInput = contents.ToList();
+                return YieldAsync(new ChatResponse(new ChatMessage(ChatRole.Assistant, "world")).ToChatResponseUpdates());
+            },
+        };
+
+        using var client = new FunctionInvokingChatClient(innerClient) { RejectionResultFactory = RejectionResultFactory };
+
+        // Both attempts are given the same message and content instances.
+        async Task<ChatResponse> InvokeAsync() => streaming ?
+            await client.GetStreamingResponseAsync(input, options).ToChatResponseAsync() :
+            await client.GetResponseAsync(input, options);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(InvokeAsync);
+        Assert.Equal("Factory failed.", exception.Message);
+        Assert.Equal(2, factoryCallCount);
+        Assert.Null(downstreamClientInput);
+        Assert.All(
+            input.SelectMany(m => m.Contents).Select(c => c switch
+            {
+                ToolApprovalRequestContent request => request.ToolCall,
+                ToolApprovalResponseContent response => response.ToolCall,
+                _ => null,
+            }).OfType<FunctionCallContent>(),
+            functionCall => Assert.False(functionCall.InformationalOnly));
+
+        // Submitting the same messages again rejects both calls.
+        failOnSecondCall = false;
+        factoryCallCount = 0;
+        await InvokeAsync();
+
+        Assert.Equal(2, factoryCallCount);
+        Assert.NotNull(downstreamClientInput);
+        AssertExtensions.EqualMessageLists(
+            [
+                new ChatMessage(ChatRole.User, "hello"),
+                new ChatMessage(ChatRole.Assistant,
+                [
+                    new FunctionCallContent("callId1", "Func1"),
+                    new FunctionCallContent("callId2", "Func2", arguments: new Dictionary<string, object?> { { "i", 42 } })
+                ]),
+                new ChatMessage(ChatRole.Tool,
+                [
+                    new FunctionResultContent("callId1", result: "Rejected Func1"),
+                    new FunctionResultContent("callId2", result: "Rejected Func2")
+                ]),
+            ],
+            downstreamClientInput);
+    }
+
+    [Fact]
     public async Task ApprovedInputsAreExecutedAndFunctionResultsAreConvertedAsync()
     {
         var options = new ChatOptions

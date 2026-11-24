@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
@@ -272,6 +273,30 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// this delegate to assume all invocation handling of the function.
     /// </remarks>
     public Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>>? FunctionInvoker { get; set; }
+
+    /// <summary>Gets or sets a delegate used to create the result of a rejected function call.</summary>
+    /// <remarks>
+    /// <para>
+    /// When a <see cref="ToolApprovalResponseContent"/> rejects a function call, the function isn't invoked. Instead, a
+    /// <see cref="FunctionResultContent"/> is created for the call, stating that it was rejected. By default,
+    /// the <see cref="FunctionResultContent.Result"/> is the text "Tool call invocation rejected.", followed by the
+    /// <see cref="ToolApprovalResponseContent.Reason"/> if one was provided.
+    /// </para>
+    /// <para>
+    /// If this delegate is set to a non-<see langword="null"/> value, it is called for each such result with the
+    /// <see cref="ToolApprovalResponseContent"/> that rejected the function call, and the value it returns is used as the
+    /// <see cref="FunctionResultContent.Result"/> in place of the default. The <see cref="ToolApprovalResponseContent.Reason"/>
+    /// is not appended to that value; the delegate is responsible for including it if desired. If the delegate returns a
+    /// <see cref="FunctionResultContent"/> with the same <see cref="ToolCallContent.CallId"/> as the function call,
+    /// that instance is used directly. If the delegate returns <see langword="null"/>, the default result is used for
+    /// that function call.
+    /// </para>
+    /// <para>
+    /// An exception thrown by the delegate is not caught by the <see cref="FunctionInvokingChatClient"/>.
+    /// </para>
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIApprovalsRejectionResult, UrlFormat = DiagnosticIds.UrlFormat)]
+    public Func<ToolApprovalResponseContent, object?>? RejectionResultFactory { get; set; }
 
     /// <inheritdoc/>
     public override async Task<ChatResponse> GetResponseAsync(
@@ -1546,27 +1571,46 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// </summary>
     /// <param name="rejections">Any rejected approval responses.</param>
     /// <returns>The <see cref="AIContent"/> for the rejected function calls.</returns>
-    private List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections) =>
-        rejections is { Count: > 0 } ?
-            rejections.ConvertAll(m =>
+    private List<AIContent>? GenerateRejectedFunctionResults(List<ApprovalResultWithRequestMessage>? rejections)
+    {
+        if (rejections is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        // Create all of the results before marking any of the function calls as handled, so that if RejectionResultFactory
+        // throws, none of the caller's content has been changed and the same messages can be submitted again.
+        var rejectionResultFactory = RejectionResultFactory;
+        List<AIContent> results = rejections.ConvertAll(m =>
+        {
+            LogFunctionRejected(m.ResponseFunctionCallContent.Name, m.Response.Reason);
+
+            object? result = rejectionResultFactory?.Invoke(m.Response);
+            if (result is null)
             {
-                LogFunctionRejected(m.ResponseFunctionCallContent.Name, m.Response.Reason);
+                const string DefaultResult = "Tool call invocation rejected.";
+                result = string.IsNullOrWhiteSpace(m.Response.Reason) ?
+                    DefaultResult :
+                    $"{DefaultResult} {m.Response.Reason}";
+            }
 
-                string result = "Tool call invocation rejected.";
-                if (!string.IsNullOrWhiteSpace(m.Response.Reason))
-                {
-                    result = $"{result} {m.Response.Reason}";
-                }
+            // As with the result of an invoked function, a FunctionResultContent with a matching CallId is used directly.
+            return result is FunctionResultContent frc && frc.CallId == m.ResponseFunctionCallContent.CallId ?
+                frc :
+                (AIContent)new FunctionResultContent(m.ResponseFunctionCallContent.CallId, result);
+        });
 
-                // Mark the function call as purely informational since we're handling it (by rejecting it).
-                // We mark both the response and request FunctionCallContent to ensure consistency
-                // across serialization boundaries where they may be separate object instances.
-                m.ResponseFunctionCallContent.InformationalOnly = true;
-                _ = m.RequestFunctionCallContent?.InformationalOnly = true;
+        foreach (var m in rejections)
+        {
+            // Mark the function call as purely informational since we're handling it (by rejecting it).
+            // We mark both the response and request FunctionCallContent to ensure consistency
+            // across serialization boundaries where they may be separate object instances.
+            m.ResponseFunctionCallContent.InformationalOnly = true;
+            _ = m.RequestFunctionCallContent?.InformationalOnly = true;
+        }
 
-                return (AIContent)new FunctionResultContent(m.ResponseFunctionCallContent.CallId, result);
-            }) :
-            null;
+        return results;
+    }
 
     /// <summary>
     /// Extracts the <see cref="FunctionCallContent"/> from the provided <see cref="ToolApprovalResponseContent"/> to recreate the original function call messages.
