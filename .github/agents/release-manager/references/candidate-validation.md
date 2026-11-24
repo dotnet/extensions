@@ -14,7 +14,21 @@ Before any retry, inspect parent and child timelines, failed task, published art
 
 List official build artifacts and inspect `resource.type` first. Use PipelineArtifact tooling for `PipelineArtifact`; for `Container` (`PackageArtifacts`/`PdbArtifacts` can be Container), use the authenticated AzDO Container ZIP/download endpoint or human portal download. Do not repeatedly try pipeline-artifact CLI download for Container resources. Keep tokens in the authenticated human context; never print tokens, credential-bearing URLs or headers.
 
-Record artifact name/type, build ID/source SHA, downloaded archive/package hashes and extraction path. Use `.symbols.nupkg` under the matching PackageArtifacts as the original compiler Portable PDB source; `PdbArtifacts` may contain converted native Windows PDBs. Compare like-for-like package/version/TFM/DLL/PDB identity and hash, never filename alone.
+Record artifact name/type, build ID/source SHA, downloaded archive/package hashes and extraction path. Use `.symbols.nupkg` from the matching build's BlobArtifacts or PackageArtifacts as the original compiler Portable PDB source; `PdbArtifacts` may contain converted native Windows PDBs. Compare like-for-like package/version/TFM/DLL/PDB identity and hash, never filename alone.
+
+## Known Source Link issue
+
+[#7971](https://github.com/dotnet/extensions/issues/7971) tracks empty Source Link payloads in published package PDBs. Before the prepublication and published-symbol gates, check its current state:
+
+```powershell
+gh issue view 7971 --repo dotnet/extensions --json state,stateReason,url
+```
+
+While the issue is open, still run the relevant checks and record their actual results. If a candidate exhibits the tracked defect, explain the impact on automatic source retrieval and request a candidate-specific **validation exception** before proceeding; the open issue is not itself an exception. Do not waive PDB identity, symbol availability, dependency checks, or publication approval.
+
+When the issue is closed as completed, expect working Source Link rather than treating failures as known. Check the current artifacts: a closed issue does not repair previously built PDBs. Treat any continued failure as a regression and apply the normal validation gate. Remove this known-issue section from the release-manager guidance as maintenance, following the normal review, commit, and push approval gates.
+
+If the issue is inaccessible or closed for another reason, report its status and do not assume either a fix or an exception.
 
 ## Prepublication metadata gate (Stage 4a)
 
