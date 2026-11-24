@@ -41,17 +41,17 @@ public class DocumentReferencesTests
         Assert.False(typeof(ExtractionDocumentSourceReference).GetProperty("Page")!.CanWrite);
         Assert.False(typeof(ExtractionDocumentSourceReference).GetProperty("Polygon")!.CanWrite);
         Assert.False(typeof(ExtractionDocument).GetProperty("SourcePages")!.CanWrite);
-        foreach (string name in new[] { "SetContent", "GetCoveringCell", "IsCovered" })
+        foreach (string name in new[] { "SetContent", "IsCovered" })
         {
             Assert.Null(typeof(ExtractionDocumentTableCellCollection).GetMethod(name));
         }
 
-        foreach (string name in new[] { "GetCoveringCell", "IsCovered" })
-        {
-            var method = typeof(ExtractionDocumentTableCellCollection).GetMethod(name,
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-            Assert.True(method.IsAssembly);
-        }
+        var isCovered = typeof(ExtractionDocumentTableCellCollection).GetMethod("IsCovered",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        Assert.True(isCovered.IsAssembly);
+        var getCoveringCell = typeof(ExtractionDocumentTableCellCollection).GetMethod("GetCoveringCell")!;
+        Assert.True(getCoveringCell.IsPublic);
+        Assert.Equal(typeof(ExtractionDocumentTableCell), getCoveringCell.ReturnType);
 
         Assert.Null(typeof(ExtractionDocumentTableCell).GetProperty("Kind"));
         Assert.Null(typeof(ExtractionDocumentTableCell).GetProperty("CellKind"));

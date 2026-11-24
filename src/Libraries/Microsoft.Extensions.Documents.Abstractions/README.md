@@ -4,7 +4,33 @@
 
 Extraction adapters, application-created content, source viewers and ingestion integrations are examples of components that can use this boundary. Payloads use the standard `AIContent` types from `Microsoft.Extensions.AI.Abstractions`. The model does not depend on DataIngestion, Markdig, provider SDKs, credentials or network calls.
 
-The model contains an ordered section hierarchy. Sections contain ordered `ExtractionDocumentElement` instances, including nested sections, text, images and tables. Applications can derive their own element types when needed. `ExtractionDocument.EnumerateContent()` preserves its depth-first traversal of non-section elements: it returns tables as elements, not flattened cells, and does not return document/section-local payloads. Inspect the hierarchy and grid directly for those payloads. This package has no structural renderer or public rendering methods.
+The model contains an ordered section hierarchy. Sections contain ordered `ExtractionDocumentElement` instances, including nested sections, text, images and tables. Applications can derive their own element types when needed; a custom element whose text is stored outside its `TextContent` payload can override the optional `GetAdditionalText()` to include that text in `GetText()`. Producers choose the hierarchy shape: one producer can emit flat page sections while another nests sections by heading, so consumers should not assume a fixed depth (see [Reading a document](#reading-a-document)). This package has no structural renderer such as Markdown or HTML output; `GetText()` is a plain-text projection.
+
+## Reading a document
+
+Text can be in text elements at any section depth, table cells (whose content can itself be a section), image `Text`, and the local `Content` of the document, sections and tables. A loop that only visits `document.Sections` and their direct `Elements`, or that only keeps `ExtractionDocumentTextElement` instances, still compiles but silently drops some of that text, and how much it drops depends on the producer.
+
+- Use `document.GetText()` to get all text, in document order. It includes page headers/footers, table cells and image `Text`, and excludes `AlternativeText`, bytes and references.
+- Use `document.EnumerateContent()` (or `section.EnumerateContent()`) with `element.GetText()` to filter or process elements individually. `EnumerateContent()` descends nested sections and returns tables and images as elements, so call `GetText()` on every element instead of keeping only text elements. It does not return document/section-local payloads.
+- Walk `Sections` and `Elements` recursively when you need the hierarchy. Handle nested `ExtractionDocumentSection` elements, read table content through `table.Cells` (which enumerates anchor cells), and use `GetCoveringCell` to resolve merged positions.
+
+```csharp
+foreach (ExtractionDocumentElement element in document.EnumerateContent())
+{
+    if (element is ExtractionDocumentTextElement { Role: { } role } &&
+        (role.Equals("pageHeader", StringComparison.OrdinalIgnoreCase) ||
+         role.Equals("pageFooter", StringComparison.OrdinalIgnoreCase)))
+    {
+        continue;
+    }
+
+    string text = element.GetText();
+    if (text.Length > 0)
+    {
+        Console.WriteLine(text);
+    }
+}
+```
 
 ## Intentional API boundaries
 
@@ -15,8 +41,8 @@ The model contains an ordered section hierarchy. Sections contain ordered `Extra
 - `Metadata` is an application-property bag on the document, not on every element. For example, an application can retain the original file's hash for citation identity. Provider-specific confidence, detections and transforms are not standardized by this model; native observations remain available through source references.
 - `Sources` on an element or table cell contains `ExtractionDocumentSourceReference` instances: a typed source page, an optional polygon and explicit borrowed native-observation access. A page-only reference has no polygon. References preserve order and duplicates; they do not verify content or establish durable citation identity.
 - `ExtractionDocumentSourcePage` identifies an originating page and coordinate frame separately from assembly order. `PageNumber` is nullable and positive when supplied; named or unnumbered frames keep their identity without fabricating a number. Dimensions, coordinate unit and origin are optional: unknown values stay unknown. Default dimensions and explicit `(0,0)` dimensions are the same empty value, but source pages reject empty dimensions and use `null` for unknown size. Nonempty dimensions must be finite and positive in both axes. Geometry uses explicit readonly value structs with coordinate-based equality. A source reference snapshots any supplied vertex sequence once in order; it does not reduce rotated regions to rectangles.
-- Table cells are constructed through the row/column indexer and can contain an element, including an image or a section with ordered mixed content, or retain an empty anchor with sources. Use a section's `Elements` for multiple paragraphs and images in one cell; its local `Content` is not an aggregate copy. Positive row/column spans describe merged cells; covered positions do not contain a second anchor. The indexer returns `null` for both empty and covered positions; edit a covered position through its anchor. Optional `Role` describes a cell classification such as `columnHeader` or `rowHeader`, not the content's CLR type. The grid rejects overlapping/out-of-bounds spans and reuse of a cell instance at multiple addresses. This is a constructible exchange model, not a document editor.
-- Mutable collections use ordinary `List<T>` and `Dictionary<TKey, TValue>` properties. Composition does not attach elements to a parent, register sources, or track mutation versions. Elements can be shared. Structural traversal rejects null entries and cyclic section paths while returning every occurrence of shared acyclic content. It does not recurse into table cells; the typed grid validates its own cell coordinates and spans. Consumers performing additional recursive traversal must validate their active paths.
+- Table cells are constructed through the row/column indexer and can contain an element, including an image or a section with ordered mixed content, or retain an empty anchor with sources. Use a section's `Elements` for multiple paragraphs and images in one cell; its local `Content` is not an aggregate copy. Positive row/column spans describe merged cells; covered positions do not contain a second anchor. The indexer returns `null` for both empty and covered positions; edit a covered position through its anchor, and use `GetCoveringCell` to find the anchor covering any position. Enumerating `Cells` yields only explicit anchor cells, in row-major order. Optional `Role` describes a cell classification such as `columnHeader` or `rowHeader`, not the content's CLR type. The grid rejects overlapping/out-of-bounds spans and reuse of a cell instance at multiple addresses. This is a constructible exchange model, not a document editor.
+- Mutable collections use ordinary `List<T>` and `Dictionary<TKey, TValue>` properties. Composition does not attach elements to a parent, register sources, or track mutation versions. Elements can be shared. Structural traversal rejects null entries and cyclic section paths while returning every occurrence of shared acyclic content. `EnumerateContent()` does not recurse into table cells; the typed grid validates its own cell coordinates and spans. `GetText()` reads table cells and rejects cyclic section or table paths. Consumers performing additional recursive traversal must validate their active paths.
 - Applications supply their own durable identifiers and revisions; the model has no editing-framework ownership, address, mutation-version or disposal bookkeeping.
 
 ## Native inspection and lifetime
@@ -53,15 +79,13 @@ ExtractionDocument document = new("invoice-42");
 ExtractionDocumentSection section = new();
 section.Elements.Add(new ExtractionDocumentTextElement(new TextContent("# Invoice"), role: "heading") { HeadingLevel = 1 });
 section.Elements.Add(new ExtractionDocumentTextElement(new TextContent("Total: $10")));
+ExtractionDocumentTableElement table = new(content: null, rowCount: 1, columnCount: 2);
+table.Cells[0, 0] = new ExtractionDocumentTableCell(new ExtractionDocumentTextElement(new TextContent("Item")), role: "rowHeader");
+table.Cells[0, 1] = new ExtractionDocumentTableCell(new ExtractionDocumentTextElement(new TextContent("Widget")));
+section.Elements.Add(table);
 document.Sections.Add(section);
 
-foreach (ExtractionDocumentElement element in document.EnumerateContent())
-{
-    if (element is ExtractionDocumentTextElement text)
-    {
-        Console.WriteLine(((TextContent)text.Content!).Text);
-    }
-}
+Console.WriteLine(document.GetText());
 ```
 
 ## Supported Platforms

@@ -43,6 +43,29 @@ public abstract class ExtractionDocumentElement
     /// <summary>Gets optional page and region associations.</summary>
     /// <remarks>Adding a reference does not add its page to a document. Producers explicitly populate the source-page list.</remarks>
     public List<ExtractionDocumentSourceReference> Sources { get; } = [];
+
+    /// <summary>Gets all text in this element and its descendants, in document order.</summary>
+    /// <remarks>
+    /// This method reads text with the same rules as <see cref="ExtractionDocument.GetText"/>. For a custom element
+    /// type, its local <see cref="TextContent"/> payload is read, followed by any text from
+    /// <see cref="GetAdditionalText"/>.
+    /// </remarks>
+    /// <returns>The text in the element, or an empty string when the element has no text.</returns>
+    /// <exception cref="InvalidOperationException">The element contains a null entry or a cyclic relationship.</exception>
+    public string GetText() => ExtractionDocumentText.Read(this);
+
+    /// <summary>Gets text that this element holds outside its <see cref="Content"/> payload and its child elements.</summary>
+    /// <remarks>
+    /// <see cref="GetText"/> and <see cref="ExtractionDocument.GetText"/> include this text after the element's local
+    /// <see cref="TextContent"/> payload and before any child elements. Overriding this method is optional: the base
+    /// implementation returns <see langword="null"/>, and a <see cref="TextContent"/> payload is read without an
+    /// override. Override it in a custom element type that stores text in its own properties. Don't include the
+    /// <see cref="Content"/> payload or the text of child elements, because they are read separately.
+    /// </remarks>
+    /// <returns>The additional text, or <see langword="null"/> when the element has none.</returns>
+    protected virtual string? GetAdditionalText() => null;
+
+    internal string? ReadAdditionalText() => GetAdditionalText();
 }
 
 /// <summary>Represents a section in a document. Sections can be nested in the ordered element collection.</summary>
@@ -56,7 +79,26 @@ public sealed class ExtractionDocumentSection : ExtractionDocumentElement
     }
 
     /// <summary>Gets the ordered elements in this section, including nested sections.</summary>
+    /// <remarks>Use <see cref="EnumerateContent"/> to read every non-section element regardless of nesting depth.</remarks>
     public List<ExtractionDocumentElement> Elements { get; } = [];
+
+    /// <summary>Enumerates non-section content in this section in depth-first order.</summary>
+    /// <remarks>
+    /// This traversal has the same semantics as <see cref="ExtractionDocument.EnumerateContent"/>: it descends through
+    /// nested sections, does not yield sections themselves, does not descend into table cells, and does not return
+    /// local <see cref="ExtractionDocumentElement.Content"/> payloads of sections. Use
+    /// <see cref="ExtractionDocumentElement.GetText"/> to read all text in this section.
+    /// Cyclic section relationships and null entries are rejected when traversed.
+    /// </remarks>
+    /// <returns>The content elements in this section, in document order.</returns>
+    public IEnumerable<ExtractionDocumentElement> EnumerateContent()
+    {
+        HashSet<ExtractionDocumentSection> path = [];
+        foreach (ExtractionDocumentElement element in ExtractionDocument.EnumerateSection(this, path))
+        {
+            yield return element;
+        }
+    }
 }
 
 /// <summary>Represents text in a document, with an optional semantic role.</summary>
@@ -113,9 +155,17 @@ public sealed class ExtractionDocumentImageElement : ExtractionDocumentElement
     public Uri? Source { get; set; }
 
     /// <summary>Gets or sets OCR or transcription text associated with the image.</summary>
-    /// <remarks>Captions and descriptions belong in <see cref="AlternativeText"/> instead.</remarks>
+    /// <remarks>
+    /// Captions and descriptions belong in <see cref="AlternativeText"/> instead. Producers can place text that appears
+    /// inside a figure here rather than in separate text elements, so text-only consumers should read this value too.
+    /// <see cref="ExtractionDocumentElement.GetText"/> returns this value after any local <see cref="TextContent"/> payload.
+    /// </remarks>
     public string? Text { get; set; }
 
     /// <summary>Gets or sets the alternative text for the image.</summary>
     public string? AlternativeText { get; set; }
+
+    /// <summary>Gets the image's <see cref="Text"/>.</summary>
+    /// <returns>The OCR or transcription text, or <see langword="null"/> when there is none.</returns>
+    protected override string? GetAdditionalText() => Text;
 }
