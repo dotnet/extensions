@@ -411,7 +411,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
         await foreach (var streamingUpdate in streamingResponseUpdates.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
             // Create an update populated with the current state of the response.
-            ChatResponseUpdate CreateUpdate(AIContent? content = null) =>
+            ChatResponseUpdate CreateUpdate(AIContent? content = null, string? messageId = null) =>
                 new(lastRole, content is not null ? [content] : null)
                 {
                     ContinuationToken = CreateContinuationToken(
@@ -421,7 +421,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                         streamingUpdate.SequenceNumber),
                     ConversationId = conversationId,
                     CreatedAt = createdAt,
-                    MessageId = lastMessageId,
+                    MessageId = messageId ?? lastMessageId,
                     ModelId = modelId,
                     RawRepresentation = streamingUpdate,
                     ResponseId = responseId,
@@ -544,7 +544,7 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
                     {
                         // Translate completed ResponseItems into their corresponding abstraction representations.
                         case FunctionCallResponseItem fcri:
-                            yield return CreateUpdate(OpenAIClientExtensions.ParseCallContent(fcri.FunctionArguments.ToString(), fcri.CallId, fcri.FunctionName));
+                            yield return CreateUpdate(OpenAIClientExtensions.ParseCallContent(fcri.FunctionArguments.ToString(), fcri.CallId, fcri.FunctionName), messageId: fcri.Id);
                             break;
 
                         case McpToolCallItem mtci:
@@ -586,7 +586,18 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         case FunctionCallOutputResponseItem functionCallOutputItem:
                             lastRole ??= ChatRole.Assistant;
-                            yield return CreateUpdate(new FunctionResultContent(functionCallOutputItem.CallId, functionCallOutputItem.FunctionOutput) { RawRepresentation = functionCallOutputItem });
+                            string? functionOutput = functionCallOutputItem.FunctionOutput;
+
+                            if (functionOutput is null &&
+                                functionCallOutputItem.Patch.TryGetValue("$.output"u8, out string? patchOutput))
+                            {
+                                functionOutput = patchOutput;
+                            }
+
+                            yield return CreateUpdate(new FunctionResultContent(functionCallOutputItem.CallId, functionOutput)
+                            {
+                                RawRepresentation = functionCallOutputItem
+                            });
                             break;
 
                         case CodeInterpreterCallResponseItem cicri:
@@ -670,6 +681,22 @@ internal sealed class OpenAIResponsesChatClient : IChatClient
 
                         // For everything else, yield an AIContent for the ResponseItem.
                         default:
+                            if (outputItemDoneUpdate.Item is ResponseItem item &&
+                                item.Patch.TryGetValue("$.type"u8, out string? itemType) &&
+                                itemType == "function_call_output")
+                            {
+                                lastRole ??= ChatRole.Assistant;
+                                _ = item.Patch.TryGetValue("$.call_id"u8, out string? patchCallId);
+                                string callId = patchCallId ?? item.Id ?? string.Empty;
+                                _ = item.Patch.TryGetValue("$.output"u8, out string? defaultOutput);
+
+                                yield return CreateUpdate(new FunctionResultContent(callId, defaultOutput)
+                                {
+                                    RawRepresentation = item
+                                });
+                                break;
+                            }
+
                             yield return CreateUpdate(new AIContent { RawRepresentation = outputItemDoneUpdate.Item });
                             break;
                     }
