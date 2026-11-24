@@ -16,12 +16,14 @@ using OpenAI;
 using OpenAI.Audio;
 using OpenAI.Chat;
 using OpenAI.Containers;
+using OpenAI.Decisions;
 using OpenAI.Embeddings;
 using OpenAI.Files;
 using OpenAI.Images;
 using OpenAI.Responses;
 
 #pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+#pragma warning disable OPENAI001 // The OpenAI Decisions API is experimental
 #pragma warning disable SA1515 // Single-line comment should be preceded by blank line
 
 namespace Microsoft.Extensions.AI;
@@ -151,6 +153,22 @@ public static class OpenAIClientExtensions
     [Experimental(DiagnosticIds.Experiments.AIImageGeneration, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IImageGenerator AsIImageGenerator(this ImageClient imageClient) =>
         new OpenAIImageGenerator(imageClient);
+
+    /// <summary>Gets an <see cref="IDecisionClient"/> for use with this <see cref="DecisionsClient"/>.</summary>
+    /// <param name="decisionsClient">The client.</param>
+    /// <param name="defaultModelId">The model to use when <see cref="DecisionOptions.ModelId"/> is not specified.</param>
+    /// <returns>An <see cref="IDecisionClient"/> that can be used to request decisions via the <see cref="DecisionsClient"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="decisionsClient"/> is <see langword="null"/>.</exception>
+    /// <remarks>
+    /// Request state is sent as a JSON input part, and text and image contents are sent as text and image input parts.
+    /// Question instructions may contain text and images, while candidate and level descriptions must be text.
+    /// The image detail level can be set with a <c>"detail"</c> entry in the content's <see cref="AIContent.AdditionalProperties"/>.
+    /// Refusals are surfaced as <see cref="UnansweredDecisionAnswer"/> instances with <see cref="DecisionUnansweredReason.Refusal"/>,
+    /// and native confidence values are available under the <c>"confidence"</c> key of <see cref="DecisionAnswer.AdditionalProperties"/>.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.AIDecisions, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IDecisionClient AsIDecisionClient(this DecisionsClient decisionsClient, string? defaultModelId = null) =>
+        new OpenAIDecisionClient(decisionsClient, defaultModelId);
 
     /// <summary>Gets an <see cref="IEmbeddingGenerator{String, Single}"/> for use with this <see cref="EmbeddingClient"/>.</summary>
     /// <param name="embeddingClient">The client.</param>
