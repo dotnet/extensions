@@ -124,4 +124,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.ErrorTagTypeCycleDetectedTitle,
         messageFormat: Resources.ErrorTagTypeCycleDetectedMessage,
         category: Category);
+
+    public static DiagnosticDescriptor ErrorInvalidHistogramBucketBoundaries { get; } = Make(
+        id: DiagnosticIds.Metrics.METGEN020,
+        title: Resources.ErrorInvalidHistogramBucketBoundariesTitle,
+        messageFormat: Resources.ErrorInvalidHistogramBucketBoundariesMessage,
+        category: Category);
 }
