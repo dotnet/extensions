@@ -8,12 +8,12 @@ The .NET Extensions repository contains a suite of libraries providing facilitie
 
 ### Prerequisites and Bootstrap
 - **CRITICAL**: Ensure you have access to the appropriate Azure DevOps feeds. If build fails with "Name or service not known" for `pkgs.dev.azure.com`, this indicates network/authentication issues with required internal feeds.
-- Install the .NET SDK version pinned in `global.json` (11.0.100-rc.3.26522.148) if you do not already have it:
+- Install the .NET SDK version pinned in `global.json` (11.0.100) if you do not already have it:
   ```bash
-  curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 11.0.100-rc.3.26522.148 --install-dir ~/.dotnet
+  curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 11.0.100 --install-dir ~/.dotnet
   export PATH="$HOME/.dotnet:$PATH"
   ```
-- Verify installation: `dotnet --version` should show `11.0.100-rc.3.26522.148`
+- Verify installation: `dotnet --version` should show `11.0.100`
 
 ### Essential Build Commands
 - **Restore dependencies**: `./restore.sh` (Linux/Mac) or `restore.cmd` (Windows)
