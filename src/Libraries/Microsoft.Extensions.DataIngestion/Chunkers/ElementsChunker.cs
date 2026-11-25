@@ -15,6 +15,7 @@ internal sealed class ElementsChunker
 {
     private readonly Tokenizer _tokenizer;
     private readonly int _maxTokensPerChunk;
+    private readonly int _overlapTokens;
     private readonly StringBuilder _currentChunk;
 
     internal ElementsChunker(IngestionChunkerOptions options)
@@ -23,6 +24,7 @@ internal sealed class ElementsChunker
 
         _tokenizer = options.Tokenizer;
         _maxTokensPerChunk = options.MaxTokensPerChunk;
+        _overlapTokens = options.OverlapTokens;
 
         // Token count != character count, but StringBuilder will grow as needed.
         _currentChunk = new(capacity: _maxTokensPerChunk);
@@ -47,6 +49,10 @@ internal sealed class ElementsChunker
         }
 
         _currentChunk.Append(context);
+
+        // Leave room for at least one token of new content next to the context and the overlap.
+        int maxOverlapTokens = Math.Min(_overlapTokens, _maxTokensPerChunk - contextTokenCount - 1);
+        int overlapTokenCount = 0;
 
         for (int elementIndex = 0; elementIndex < elements.Count; elementIndex++)
         {
@@ -95,6 +101,11 @@ internal sealed class ElementsChunker
                     {
                         // We can't add the header row, so commit what we have accumulated so far.
                         Commit();
+
+                        if (HasOnlyOverlap() && headerTokenCount + totalTokenCount >= _maxTokensPerChunk)
+                        {
+                            DropOverlap();
+                        }
                     }
 
                     totalTokenCount += headerTokenCount;
@@ -115,9 +126,15 @@ internal sealed class ElementsChunker
                             {
                                 AppendNewLineAndSpan(_currentChunk, tableBuilder.AsSpan(0, tableLength - Environment.NewLine.Length));
                             }
+                            else
+                            {
+                                // The header was not appended, so don't count it in the chunk we commit.
+                                totalTokenCount -= headerTokenCount;
+                            }
 
                             // And commit the table we built so far.
-                            Commit();
+                            // No overlap here: the next chunk repeats the table header instead.
+                            Commit(addOverlap: false);
 
                             // Erase previous rows and keep only the header.
                             tableBuilder.Length = headerLength;
@@ -147,6 +164,7 @@ internal sealed class ElementsChunker
             else
             {
                 ReadOnlySpan<char> remainingContent = semanticContent.AsSpan();
+                int elementLength = remainingContent.Length;
 
                 while (!remainingContent.IsEmpty)
                 {
@@ -170,10 +188,31 @@ internal sealed class ElementsChunker
                             tokenCount = CountTokens(remainingContent.Slice(0, index));
                         }
 
+                        // When the chunk starts with an overlap taken from the middle of this element, continue the text without a new line.
+                        bool continuesOverlap = remainingContent.Length != elementLength && HasOnlyOverlap();
+
                         totalTokenCount += tokenCount;
                         ReadOnlySpan<char> spanToAppend = remainingContent.Slice(0, index);
-                        AppendNewLineAndSpan(_currentChunk, spanToAppend);
+                        if (continuesOverlap)
+                        {
+#if NET
+                            _currentChunk.Append(spanToAppend);
+#else
+                            _currentChunk.Append(spanToAppend.ToString());
+#endif
+                        }
+                        else
+                        {
+                            AppendNewLineAndSpan(_currentChunk, spanToAppend);
+                        }
+
                         remainingContent = remainingContent.Slice(index);
+                    }
+                    else if (HasOnlyOverlap())
+                    {
+                        // Nothing fits next to the overlap, so start the chunk without it.
+                        DropOverlap();
+                        continue;
                     }
                     else if (totalTokenCount == contextTokenCount)
                     {
@@ -194,7 +233,7 @@ internal sealed class ElementsChunker
             }
         }
 
-        if (totalTokenCount > contextTokenCount)
+        if (totalTokenCount > contextTokenCount + overlapTokenCount)
         {
             chunks.Add(new(_currentChunk.ToString(), document, context));
         }
@@ -203,15 +242,55 @@ internal sealed class ElementsChunker
 
         return chunks;
 
-        void Commit()
+        void Commit(bool addOverlap = true)
         {
-            chunks.Add(new(_currentChunk.ToString(), document, context));
+            // Never emit a chunk that only repeats the end of the previous one.
+            if (HasOnlyOverlap())
+            {
+                DropOverlap();
+                return;
+            }
+
+            string chunkContent = _currentChunk.ToString();
+            chunks.Add(new(chunkContent, document, context));
 
             // We keep the context in the current chunk as it's the same for all elements.
             _currentChunk.Remove(
                 startIndex: context.Length,
                 length: _currentChunk.Length - context.Length);
             totalTokenCount = contextTokenCount;
+            overlapTokenCount = 0;
+
+            if (addOverlap && maxOverlapTokens > 0)
+            {
+                // Start the next chunk with the end of this one (never the context, which every chunk already has).
+                ReadOnlySpan<char> committed = chunkContent.AsSpan(context.Length);
+                int index = _tokenizer.GetIndexByTokenCountFromEnd(
+                    text: committed,
+                    maxTokenCount: maxOverlapTokens,
+                    out string? _,
+                    out int _,
+                    considerNormalization: false);
+
+                ReadOnlySpan<char> overlap = committed.Slice(index).TrimStart(['\r', '\n']);
+                int overlapTokens = overlap.IsEmpty ? 0 : CountTokens(overlap);
+                if (overlapTokens > 0 && overlapTokens <= maxOverlapTokens)
+                {
+                    AppendNewLineAndSpan(_currentChunk, overlap);
+                    overlapTokenCount = overlapTokens;
+                    totalTokenCount += overlapTokens;
+                }
+            }
+        }
+
+        bool HasOnlyOverlap()
+            => overlapTokenCount > 0 && totalTokenCount == contextTokenCount + overlapTokenCount;
+
+        void DropOverlap()
+        {
+            _currentChunk.Length = context.Length;
+            totalTokenCount = contextTokenCount;
+            overlapTokenCount = 0;
         }
 
         static void ThrowTokenCountExceeded()

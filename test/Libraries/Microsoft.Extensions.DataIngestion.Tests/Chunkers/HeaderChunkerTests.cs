@@ -217,6 +217,100 @@ public class HeaderChunkerTests
             """, chunks[5].Content, ignoreLineEndingDifferences: true);
     }
 
+    [Fact]
+    public async Task HonorsOverlapTokens()
+    {
+        IngestionDocument doc = CreateDocumentWithTwoHeaders();
+
+        HeaderChunker chunker = new(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = 8, OverlapTokens = 2 });
+        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+        Assert.Equal(3, chunks.Count);
+
+        // The second chunk starts with the header once, then the last 2 tokens of the previous chunk.
+        Assert.Equal("Header A", chunks[0].Context);
+        Assert.Equal("Header A\nThe quick brown fox jumps over", chunks[0].Content, ignoreLineEndingDifferences: true);
+        Assert.Equal("Header A", chunks[1].Context);
+        Assert.Equal("Header A\n jumps over the lazy dog", chunks[1].Content, ignoreLineEndingDifferences: true);
+
+        // The overlap never crosses into another header.
+        Assert.Equal("Header B", chunks[2].Context);
+        Assert.Equal("Header B\nShort one.", chunks[2].Content, ignoreLineEndingDifferences: true);
+    }
+
+    [Fact]
+    public async Task OverlapIsCappedToLeaveRoomForNewContent()
+    {
+        IngestionDocument doc = CreateDocumentWithTwoHeaders();
+
+        // "Header A" takes 2 tokens, so at most 3 tokens of overlap are carried and every chunk adds new text.
+        HeaderChunker chunker = new(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = 6, OverlapTokens = 5 });
+        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+        Assert.Equal(
+            [
+                "Header A\nThe quick brown fox",
+                "Header A\n quick brown fox jumps",
+                "Header A\n brown fox jumps over",
+                "Header A\n fox jumps over the",
+                "Header A\n jumps over the lazy",
+                "Header A\n over the lazy dog",
+                "Header B\nShort one.",
+            ],
+            chunks.Select(chunk => chunk.Content.Replace("\r\n", "\n")));
+    }
+
+    [Fact]
+    public async Task ZeroOverlapTokensKeepsChunksWithoutOverlap()
+    {
+        IngestionDocument doc = CreateDocumentWithTwoHeaders();
+
+        HeaderChunker chunker = new(new(TiktokenTokenizer.CreateForModel("gpt-4")) { MaxTokensPerChunk = 8, OverlapTokens = 0 });
+        IReadOnlyList<IngestionChunk<string>> chunks = await chunker.ProcessAsync(doc).ToListAsync();
+
+        Assert.Equal(
+            [
+                "Header A\nThe quick brown fox jumps over",
+                "Header A\n the lazy dog",
+                "Header B\nShort one.",
+            ],
+            chunks.Select(chunk => chunk.Content.Replace("\r\n", "\n")));
+    }
+
+    [Theory]
+    [InlineData(50, 10)]
+    [InlineData(100, 30)]
+    public async Task TableSplitRepeatsHeaderInsteadOfOverlap(int maxTokensPerChunk, int overlapTokens)
+    {
+        IngestionDocument document = CreateDocumentWithLargeTable();
+
+        Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
+        HeaderChunker withOverlap = new(new(tokenizer) { MaxTokensPerChunk = maxTokensPerChunk, OverlapTokens = overlapTokens });
+        HeaderChunker withoutOverlap = new(new(tokenizer) { MaxTokensPerChunk = maxTokensPerChunk, OverlapTokens = 0 });
+
+        IReadOnlyList<IngestionChunk<string>> chunks = await withOverlap.ProcessAsync(document).ToListAsync();
+        IReadOnlyList<IngestionChunk<string>> expected = await withoutOverlap.ProcessAsync(document).ToListAsync();
+
+        Assert.Equal(expected.Select(chunk => chunk.Content), chunks.Select(chunk => chunk.Content));
+    }
+
+    private static IngestionDocument CreateDocumentWithTwoHeaders()
+    {
+        IngestionDocument doc = new("overlap");
+        doc.Sections.Add(new()
+        {
+            Elements =
+            {
+                new IngestionDocumentHeader("Header A") { Level = 1 },
+                    new IngestionDocumentParagraph("The quick brown fox jumps over the lazy dog"),
+                new IngestionDocumentHeader("Header B") { Level = 1 },
+                    new IngestionDocumentParagraph("Short one."),
+            }
+        });
+
+        return doc;
+    }
+
     private static IngestionDocument CreateDocumentWithLargeTable()
     {
         IngestionDocumentTable table = new("""
