@@ -43,7 +43,7 @@ public class FakeTimeProvider : TimeProvider
     {
         _ = Throw.IfLessThan(startDateTime.Ticks, 0);
 
-        _now = startDateTime;
+        _now = startDateTime.ToUniversalTime();
         Start = _now;
     }
 
@@ -104,7 +104,7 @@ public class FakeTimeProvider : TimeProvider
                 Throw.ArgumentOutOfRangeException(nameof(value), $"Cannot go back in time. Current time is {_now}.");
             }
 
-            _now = value;
+            _now = value.ToUniversalTime();
         }
 
         WakeWaiters();
@@ -147,7 +147,7 @@ public class FakeTimeProvider : TimeProvider
         lock (Waiters)
         {
             var delta = value - _now;
-            _now = value;
+            _now = value.ToUniversalTime();
 
             // adjust the wake times so they're relative to the new time value
             foreach (var w in Waiters)
