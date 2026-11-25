@@ -1620,12 +1620,14 @@ public class OpenAIConversionTests
     [Fact]
     public void AsOpenAIChatCompletion_WithDifferentFinishReasons_MapsCorrectly()
     {
-        var testCases = new[]
+        var testCases = new (ChatFinishReason?, OpenAI.Chat.ChatFinishReason)[]
         {
+            (null, OpenAI.Chat.ChatFinishReason.Stop),
             (ChatFinishReason.Stop, OpenAI.Chat.ChatFinishReason.Stop),
             (ChatFinishReason.Length, OpenAI.Chat.ChatFinishReason.Length),
             (ChatFinishReason.ContentFilter, OpenAI.Chat.ChatFinishReason.ContentFilter),
-            (ChatFinishReason.ToolCalls, OpenAI.Chat.ChatFinishReason.ToolCalls)
+            (ChatFinishReason.ToolCalls, OpenAI.Chat.ChatFinishReason.ToolCalls),
+            (new ChatFinishReason("function_call"), OpenAI.Chat.ChatFinishReason.FunctionCall)
         };
 
         foreach (var (inputFinishReason, expectedOpenAIFinishReason) in testCases)
@@ -1904,12 +1906,14 @@ public class OpenAIConversionTests
     [Fact]
     public async Task AsOpenAIStreamingChatCompletionUpdatesAsync_WithDifferentFinishReasons_MapsCorrectly()
     {
-        var testCases = new[]
+        var testCases = new (ChatFinishReason?, OpenAI.Chat.ChatFinishReason?)[]
         {
+            (null, null),
             (ChatFinishReason.Stop, OpenAI.Chat.ChatFinishReason.Stop),
             (ChatFinishReason.Length, OpenAI.Chat.ChatFinishReason.Length),
             (ChatFinishReason.ContentFilter, OpenAI.Chat.ChatFinishReason.ContentFilter),
-            (ChatFinishReason.ToolCalls, OpenAI.Chat.ChatFinishReason.ToolCalls)
+            (ChatFinishReason.ToolCalls, OpenAI.Chat.ChatFinishReason.ToolCalls),
+            (new ChatFinishReason("function_call"), OpenAI.Chat.ChatFinishReason.FunctionCall)
         };
 
         foreach (var (inputFinishReason, expectedOpenAIFinishReason) in testCases)
@@ -1960,13 +1964,65 @@ public class OpenAIConversionTests
 
         Assert.Equal("response-123", result[0].CompletionId);
         Assert.Equal("Hello, ", Assert.Single(result[0].ContentUpdate).Text);
-
-        // The ToChatFinishReason method defaults null to Stop
-        Assert.Equal(OpenAI.Chat.ChatFinishReason.Stop, result[0].FinishReason);
+        Assert.Null(result[0].FinishReason);
 
         Assert.Equal("response-123", result[1].CompletionId);
         Assert.Equal("world!", Assert.Single(result[1].ContentUpdate).Text);
         Assert.Equal(OpenAI.Chat.ChatFinishReason.Stop, result[1].FinishReason);
+    }
+
+    [Fact]
+    public async Task AsOpenAIStreamingChatCompletionUpdatesAsync_WithNullFinishReason_OmitsFinishReasonUntilTerminalChunk()
+    {
+        var updates = new[]
+        {
+            new ChatResponseUpdate(ChatRole.Assistant, "Hello")
+            {
+                ResponseId = "r1",
+                ModelId = "m"
+            },
+            new ChatResponseUpdate
+            {
+                ResponseId = "r1",
+                ModelId = "m",
+                FinishReason = ChatFinishReason.Length
+            }
+        };
+
+        var result = new List<StreamingChatCompletionUpdate>();
+        await foreach (var update in CreateAsyncEnumerable(updates).AsOpenAIStreamingChatCompletionUpdatesAsync())
+        {
+            result.Add(update);
+        }
+
+        Assert.Equal(2, result.Count);
+        Assert.Null(result[0].FinishReason);
+        Assert.Equal(OpenAI.Chat.ChatFinishReason.Length, result[1].FinishReason);
+
+        using (var firstChunkJson = JsonDocument.Parse(ModelReaderWriter.Write(result[0], ModelReaderWriterOptions.Json)))
+        {
+            var firstChoice = firstChunkJson.RootElement.GetProperty("choices")[0];
+            Assert.False(
+                firstChoice.TryGetProperty("finish_reason", out var firstFinishReason) && firstFinishReason.ValueKind != JsonValueKind.Null);
+        }
+
+        using (var lastChunkJson = JsonDocument.Parse(ModelReaderWriter.Write(result[1], ModelReaderWriterOptions.Json)))
+        {
+            var lastChoice = lastChunkJson.RootElement.GetProperty("choices")[0];
+            Assert.Equal("length", lastChoice.GetProperty("finish_reason").GetString());
+        }
+
+        // Round-tripping back to ChatResponseUpdates should preserve the terminal FinishReason.
+        var roundTripped = new List<ChatResponseUpdate>();
+        await foreach (var update in CreateAsyncEnumerable(result).AsChatResponseUpdatesAsync())
+        {
+            roundTripped.Add(update);
+        }
+
+        Assert.Equal(2, roundTripped.Count);
+        Assert.Null(roundTripped[0].FinishReason);
+        Assert.Equal(ChatFinishReason.Length, roundTripped[1].FinishReason);
+        Assert.Equal(ChatFinishReason.Length, roundTripped.ToChatResponse().FinishReason);
     }
 
     [Fact]
