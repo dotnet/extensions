@@ -576,4 +576,65 @@ public class FakeTimeProviderTests
         Assert.False(result.IsCompleted);
         Assert.Equal(retries, tries);
     }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(-5)]
+    public void Constructor_NonZeroOffset_NormalizesToUtc(int offsetHours)
+    {
+        var start = new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.FromHours(offsetHours));
+        var timeProvider = new FakeTimeProvider(start);
+
+        var utcNow = timeProvider.GetUtcNow();
+        Assert.Equal(TimeSpan.Zero, utcNow.Offset);
+        Assert.Equal(start.ToUniversalTime(), utcNow);
+        Assert.Equal(TimeSpan.Zero, timeProvider.Start.Offset);
+        Assert.Equal(start.ToUniversalTime(), timeProvider.Start);
+        Assert.Equal(TimeSpan.Zero, timeProvider.GetLocalNow().Offset);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(-5)]
+    public void SetUtcNow_NonZeroOffset_NormalizesToUtcAndFiresTimersCorrectly(int offsetHours)
+    {
+        var start = new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.FromHours(offsetHours));
+        var timeProvider = new FakeTimeProvider(start);
+        var startTimestamp = timeProvider.GetTimestamp();
+
+        var timerTicks = 0;
+        using var timer = timeProvider.CreateTimer(_ => timerTicks++, null, TimeSpan.FromHours(1), TimeSpan.Zero);
+
+        var targetUtc = start.ToUniversalTime().AddHours(1);
+        var targetWithDifferentOffset = targetUtc.ToOffset(TimeSpan.FromHours(-offsetHours));
+        timeProvider.SetUtcNow(targetWithDifferentOffset);
+
+        var utcNow = timeProvider.GetUtcNow();
+        Assert.Equal(TimeSpan.Zero, utcNow.Offset);
+        Assert.Equal(targetUtc, utcNow);
+        Assert.Equal(TimeSpan.FromHours(1), timeProvider.GetElapsedTime(startTimestamp));
+        Assert.Equal(1, timerTicks);
+    }
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(-5)]
+    public void AdjustTime_NonZeroOffset_NormalizesToUtcWithoutAffectingTimers(int offsetHours)
+    {
+        var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 1, 1, 2, 0, 0, TimeSpan.Zero));
+
+        var timerTicks = 0;
+        using var timer = timeProvider.CreateTimer(_ => timerTicks++, null, TimeSpan.FromHours(1), TimeSpan.Zero);
+
+        var adjusted = new DateTimeOffset(2026, 1, 1, 15, 0, 0, TimeSpan.FromHours(offsetHours));
+        timeProvider.AdjustTime(adjusted);
+
+        var utcNow = timeProvider.GetUtcNow();
+        Assert.Equal(TimeSpan.Zero, utcNow.Offset);
+        Assert.Equal(adjusted.ToUniversalTime(), utcNow);
+        Assert.Equal(0, timerTicks);
+
+        timeProvider.Advance(TimeSpan.FromHours(1));
+        Assert.Equal(1, timerTicks);
+    }
 }
