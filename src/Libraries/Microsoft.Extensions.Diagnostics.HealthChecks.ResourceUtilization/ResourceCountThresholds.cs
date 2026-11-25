@@ -19,9 +19,9 @@ public class ResourceCountThresholds
     /// <value>
     /// The default value is <see langword="null" />.
     /// </value>
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "Validating the Range attribute on a long does not require reflection, it is handled intrinsically.")]
     [Range(typeof(long), "0", "9223372036854775807")]
-#pragma warning restore IL2026
     public long? DegradedCount { get; set; }
 
     /// <summary>
@@ -30,8 +30,8 @@ public class ResourceCountThresholds
     /// <value>
     /// The default value is <see langword="null" />.
     /// </value>
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "Validating the Range attribute on a long does not require reflection, it is handled intrinsically.")]
     [Range(typeof(long), "0", "9223372036854775807")]
-#pragma warning restore IL2026
     public long? UnhealthyCount { get; set; }
 }
