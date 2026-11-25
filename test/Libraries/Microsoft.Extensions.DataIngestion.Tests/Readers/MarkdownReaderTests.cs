@@ -100,6 +100,23 @@ public class MarkdownReaderTests : DocumentReaderConformanceTests
     }
 
     [Fact]
+    public async Task SupportsTaskLists()
+    {
+        // Task list items ("- [ ]" and "- [x]") were throwing NotSupportedException before the fix.
+        string markdownContent = """
+        # Checklist
+
+        - [ ] first task
+        - [x] second task
+        """;
+
+        IngestionDocument document = await ReadAsync(markdownContent);
+
+        string[] items = document.EnumerateContent().OfType<IngestionDocumentParagraph>().Select(paragraph => paragraph.Text!.Trim()).ToArray();
+        Assert.Equal(["[ ] first task", "[x] second task"], items);
+    }
+
+    [Fact]
     public override async Task SupportsImages()
     {
         string contentType1 = "image/png";

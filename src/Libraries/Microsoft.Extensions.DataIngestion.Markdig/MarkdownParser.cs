@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using Markdig;
 using Markdig.Extensions.Tables;
+using Markdig.Extensions.TaskLists;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Microsoft.Shared.Diagnostics;
@@ -231,6 +232,11 @@ internal static class MarkdownParser
             else if (inline is HtmlInline htmlInline)
             {
                 content.Append(htmlInline.Tag);
+            }
+            else if (inline is TaskList taskList)
+            {
+                // A task list item ("- [ ] text" or "- [x] text"): keep the marker, the text that follows has the space.
+                content.Append(taskList.Checked ? "[x]" : "[ ]");
             }
             else
             {
