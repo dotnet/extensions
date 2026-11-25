@@ -31,6 +31,14 @@ public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(this IHealt
 public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(this IHealthChecksBuilder builder, Action<ResourceUtilizationHealthCheckOptions> configure)
 public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(this IHealthChecksBuilder builder, Action<ResourceUtilizationHealthCheckOptions> configure, params string[] tags)
 public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(this IHealthChecksBuilder builder, Action<ResourceUtilizationHealthCheckOptions> configure, IEnumerable<string> tags)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, params string[] tags)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, IEnumerable<string> tags)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, IConfigurationSection section)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, IConfigurationSection section, params string[] tags)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, IConfigurationSection section, IEnumerable<string> tags)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, Action<NetworkUtilizationHealthCheckOptions> configure)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, Action<NetworkUtilizationHealthCheckOptions> configure, params string[] tags)
+public static IHealthChecksBuilder AddNetworkUtilizationHealthCheck(this IHealthChecksBuilder builder, Action<NetworkUtilizationHealthCheckOptions> configure, IEnumerable<string> tags)
 ```
 
 For example:
@@ -62,6 +70,35 @@ app.Run();
 ```
 
 `CpuThresholds` and `MemoryThresholds`'s percentages default to `null` and will not be reported as degraded or unhealthy unless configured. The `SamplingWindow` defaults to 5 seconds.
+
+The network utilization health check works the same way, but for TCP connection counts reported by the Resource Monitoring library instead of CPU and memory percentages. It tracks the number of established connections and the number of connections in the SYN received state, and reports degraded or unhealthy when a count goes above the configured threshold:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHealthChecks()
+    .AddNetworkUtilizationHealthCheck(o =>
+    {
+        o.EstablishedConnectionsThresholds = new ResourceCountThresholds
+        {
+            DegradedCount = 500,
+            UnhealthyCount = 1000,
+        };
+        o.SynReceivedConnectionsThresholds = new ResourceCountThresholds
+        {
+            DegradedCount = 100,
+            UnhealthyCount = 500,
+        };
+    });
+
+var app = builder.Build();
+
+app.MapHealthChecks("/healthz");
+
+app.Run();
+```
+
+`EstablishedConnectionsThresholds` and `SynReceivedConnectionsThresholds`'s counts default to `null` and will not be reported as degraded or unhealthy unless configured.
 
 ## Feedback & Contributing
 

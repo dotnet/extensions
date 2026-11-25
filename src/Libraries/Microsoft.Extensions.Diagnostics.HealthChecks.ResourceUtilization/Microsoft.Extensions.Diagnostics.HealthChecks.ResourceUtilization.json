@@ -2,22 +2,40 @@
   "Name": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds",
-      "Stage": "Stable",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions",
+      "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.ResourceUsageThresholds();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "double? Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.DegradedUtilizationPercentage { get; set; }",
-          "Stage": "Stable"
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
+          "Stage": "Experimental"
         },
         {
-          "Member": "double? Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.UnhealthyUtilizationPercentage { get; set; }",
-          "Stage": "Stable"
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params string[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, System.Collections.Generic.IEnumerable<string> tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.NetworkUtilizationHealthCheckOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.NetworkUtilizationHealthCheckOptions> configure, params string[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.NetworkUtilizationHealthCheckExtensions.AddNetworkUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.NetworkUtilizationHealthCheckOptions> configure, System.Collections.Generic.IEnumerable<string> tags);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -55,6 +73,66 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions> configure, System.Collections.Generic.IEnumerable<string> tags);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.NetworkUtilizationHealthCheckOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.NetworkUtilizationHealthCheckOptions.NetworkUtilizationHealthCheckOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceCountThresholds Microsoft.Extensions.Diagnostics.HealthChecks.NetworkUtilizationHealthCheckOptions.EstablishedConnectionsThresholds { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceCountThresholds Microsoft.Extensions.Diagnostics.HealthChecks.NetworkUtilizationHealthCheckOptions.SynReceivedConnectionsThresholds { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceCountThresholds",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceCountThresholds.ResourceCountThresholds();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "long? Microsoft.Extensions.Diagnostics.HealthChecks.ResourceCountThresholds.DegradedCount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "long? Microsoft.Extensions.Diagnostics.HealthChecks.ResourceCountThresholds.UnhealthyCount { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.ResourceUsageThresholds();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "double? Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.DegradedUtilizationPercentage { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double? Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.UnhealthyUtilizationPercentage { get; set; }",
           "Stage": "Stable"
         }
       ]
