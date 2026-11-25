@@ -63,7 +63,7 @@ public static class MicrosoftExtensionsAIChatExtensions
 
         ChatMessageRole role = ToChatMessageRole(lastMessage?.Role);
 
-        ChatFinishReason finishReason = ToChatFinishReason(response.FinishReason);
+        ChatFinishReason finishReason = ToChatFinishReason(response.FinishReason) ?? ChatFinishReason.Stop;
 
         ChatTokenUsage usage = OpenAIChatModelFactory.ChatTokenUsage(
             (int?)response.Usage?.OutputTokenCount ?? 0,
@@ -291,9 +291,10 @@ public static class MicrosoftExtensionsAIChatExtensions
         };
 
     /// <summary>Converts the <see cref="Microsoft.Extensions.AI.ChatFinishReason"/> to a <see cref="ChatFinishReason"/>.</summary>
-    private static ChatFinishReason ToChatFinishReason(Microsoft.Extensions.AI.ChatFinishReason? finishReason) =>
+    private static ChatFinishReason? ToChatFinishReason(Microsoft.Extensions.AI.ChatFinishReason? finishReason) =>
         finishReason?.Value switch
         {
+            null => null,
             "length" => ChatFinishReason.Length,
             "content_filter" => ChatFinishReason.ContentFilter,
             "tool_calls" => ChatFinishReason.ToolCalls,
