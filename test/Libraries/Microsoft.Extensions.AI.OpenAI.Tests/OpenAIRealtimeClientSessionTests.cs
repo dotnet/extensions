@@ -2,16 +2,44 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ClientModel.Primitives;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
 #pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+#pragma warning disable OPENAI002 // OpenAI Realtime API is experimental
 
 namespace Microsoft.Extensions.AI;
 
 public class OpenAIRealtimeClientSessionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ToRealtimeItem_UsesCompactJsonForFunctionPayloads(bool arguments)
+    {
+        using var payload = JsonDocument.Parse("""{"query":"notebook","max":10}""");
+        AIContent content = arguments
+            ? new FunctionCallContent("call_1", "search", new Dictionary<string, object?>
+            {
+                ["query"] = payload.RootElement.GetProperty("query"),
+                ["max"] = payload.RootElement.GetProperty("max"),
+            })
+            : new FunctionResultContent("call_1", payload.RootElement);
+        var item = new RealtimeConversationItem([content]);
+
+        var converted = Assert.IsAssignableFrom<OpenAI.Realtime.RealtimeItem>(
+            typeof(OpenAIRealtimeClientSession).GetMethod("ToRealtimeItem", BindingFlags.Static | BindingFlags.NonPublic)!
+                .Invoke(null, [item]));
+        using var json = JsonDocument.Parse(ModelReaderWriter.Write(converted, new ModelReaderWriterOptions("W")).ToMemory());
+        Assert.Equal("""{"query":"notebook","max":10}""", json.RootElement.GetProperty(arguments ? "arguments" : "output").GetString());
+        Assert.Equal("call_1", json.RootElement.GetProperty("call_id").GetString());
+    }
+
     [Fact]
     public async Task GetService_ReturnsExpectedServices()
     {
