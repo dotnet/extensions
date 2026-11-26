@@ -1437,7 +1437,7 @@ public class OpenAIChatClientTests
                     {
                         "role": "tool",
                         "tool_call_id": "12345",
-                        "content": "{ \"$type\": \"text\", \"text\": \"Said hello\" }"
+                        "content": "Said hello"
                     },
                     {
                         "role":"tool",
@@ -1537,6 +1537,70 @@ public class OpenAIChatClientTests
             { "OutputTokenDetails.AcceptedPredictionTokenCount", 0 },
             { "OutputTokenDetails.RejectedPredictionTokenCount", 0 },
         }, response.Usage.AdditionalCounts);
+    }
+
+    [Fact]
+    public async Task FunctionResultContent_TextContents_SentAsTextParts_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "What's the weather in Paris?"
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": "call_1",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "22 C"
+                            },
+                            {
+                                "type": "text",
+                                "text": "sunny"
+                            }
+                        ]
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADx3PvAnCwJg0woha4pYsBTi3ZpOI",
+              "object": "chat.completion",
+              "created": 1727888631,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "It is 22 C and sunny in Paris.",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ]
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.User, "What's the weather in Paris?"),
+            new(ChatRole.Tool, [new FunctionResultContent("call_1", new List<AIContent> { new TextContent("22 C"), new TextContent("sunny") })]),
+        ];
+
+        var response = await client.GetResponseAsync(messages);
+        Assert.Equal("It is 22 C and sunny in Paris.", response.Text);
     }
 
     [Fact]

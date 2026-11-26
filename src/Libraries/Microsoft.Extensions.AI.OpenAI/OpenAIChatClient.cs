@@ -184,6 +184,15 @@ internal sealed partial class OpenAIChatClient : IChatClient
                 {
                     if (item is FunctionResultContent resultContent)
                     {
+                        if (GetTextResults(resultContent.Result) is { } texts)
+                        {
+                            // Send text results as text rather than as the JSON serialization of the content.
+                            yield return texts.Count == 1
+                                ? new ToolChatMessage(resultContent.CallId, texts[0])
+                                : new ToolChatMessage(resultContent.CallId, texts.Select(ChatMessageContentPart.CreateTextPart));
+                            continue;
+                        }
+
                         string? result = resultContent.Result as string;
                         if (result is null && resultContent.Result is not null)
                         {
@@ -254,6 +263,36 @@ internal sealed partial class OpenAIChatClient : IChatClient
 
                 yield return message;
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets the texts of a function result that is a <see cref="TextContent"/> or contains only <see cref="TextContent"/>,
+    /// or <see langword="null"/> if the result is anything else.
+    /// </summary>
+    private static List<string>? GetTextResults(object? result)
+    {
+        switch (result)
+        {
+            case TextContent textContent:
+                return [textContent.Text];
+
+            case IEnumerable<AIContent> contents:
+                List<string>? texts = null;
+                foreach (AIContent content in contents)
+                {
+                    if (content is not TextContent text)
+                    {
+                        return null;
+                    }
+
+                    (texts ??= []).Add(text.Text);
+                }
+
+                return texts;
+
+            default:
+                return null;
         }
     }
 
